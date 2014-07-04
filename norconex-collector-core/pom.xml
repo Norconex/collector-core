@@ -14,7 +14,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Norconex Filesystem Collector. If not, see <http://www.gnu.org/licenses/>.
+along with Norconex Collector Core. If not, see <http://www.gnu.org/licenses/>.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
@@ -167,6 +167,7 @@ along with Norconex Filesystem Collector. If not, see <http://www.gnu.org/licens
           <target>1.7</target>
         </configuration>
       </plugin> 
+<!-- 
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
@@ -185,6 +186,7 @@ along with Norconex Filesystem Collector. If not, see <http://www.gnu.org/licens
           </execution>
         </executions>
       </plugin>
+ -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
@@ -244,7 +246,7 @@ along with Norconex Filesystem Collector. If not, see <http://www.gnu.org/licens
   <distributionManagement>
     <site>
       <id>norconex-site-deployment</id>
-      <url>${site.baseurl}/collector-fs</url>
+      <url>${site.baseurl}/collector-core</url>
     </site>
     <repository>  
       <id>norconex-release-repo</id>
