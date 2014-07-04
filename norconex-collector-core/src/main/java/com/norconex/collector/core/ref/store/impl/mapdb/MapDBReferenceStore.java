@@ -28,6 +28,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
+import org.mapdb.Serializer;
 
 import com.norconex.collector.core.ref.IReference;
 import com.norconex.collector.core.ref.store.IReferenceStore;
@@ -60,9 +61,17 @@ public abstract class MapDBReferenceStore<T extends IReference>
     
     private long commitCounter;
     
-    public MapDBReferenceStore(/*String crawlerId, */ String path, boolean resume) {
+    private final Serializer<T> valueSerializer;
+    
+    
+    public MapDBReferenceStore(String path, boolean resume) {
+        this(path, resume, null);
+    }
+    public MapDBReferenceStore(String path, boolean resume,
+            Serializer<T> valueSerializer) {
         super();
         
+        this.valueSerializer = valueSerializer;
         this.path = path;
 
         //this.crawlerId = crawlerId;
@@ -122,12 +131,16 @@ public abstract class MapDBReferenceStore<T extends IReference>
     private void initDB(boolean create) {
         queue = new MappedQueue<>(db, STORE_QUEUE, create);
         if (create) {
-            active = db.createHashMap(STORE_ACTIVE).counterEnable().make();
-            cache = db.createHashMap(STORE_CACHE).counterEnable().make();
+            active = db.createHashMap(STORE_ACTIVE)
+                    .valueSerializer(valueSerializer).counterEnable().make();
+            cache = db.createHashMap(STORE_CACHE)
+                    .valueSerializer(valueSerializer).counterEnable().make();
             processedValid = db.createHashMap(
-                    STORE_PROCESSED_VALID).counterEnable().make();
+                    STORE_PROCESSED_VALID)
+                    .valueSerializer(valueSerializer).counterEnable().make();
             processedInvalid = db.createHashMap(
-                    STORE_PROCESSED_INVALID).counterEnable().make();
+                    STORE_PROCESSED_INVALID)
+                    .valueSerializer(valueSerializer).counterEnable().make();
         } else {
             active = db.getHashMap(STORE_ACTIVE);
             cache = db.getHashMap(STORE_CACHE);
