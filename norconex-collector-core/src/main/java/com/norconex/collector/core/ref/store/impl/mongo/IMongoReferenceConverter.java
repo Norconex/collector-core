@@ -16,33 +16,18 @@
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.ref;
+package com.norconex.collector.core.ref.store.impl.mongo;
 
-import java.io.Serializable;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.norconex.collector.core.ref.IReference;
 
 /**
- * A pointer that uniquely identifies a resource being processed (e.g. a 
- * URL, a file path, etc).
  * @author Pascal Essiembre
+ *
  */
-public interface IReference extends Serializable, Cloneable {
+public interface IMongoReferenceConverter {
 
-    /**
-     * Gets the unique identifier of this reference (e.g. URL, path, etc).
-     * @return reference unique identifier
-     */
-    String getReference();
-    
-    /**
-     * Gets this reference state. Default state should be 
-     *      {@link ReferenceState#UNPROCESSED}
-     * @return state
-     */
-    ReferenceState getState();
-    
-    /**
-     * Clones this reference.
-     * @return a copy of this instance
-     */
-    IReference safeClone();
+    BasicDBObject convertToMongo(IReference reference);
+    IReference convertFromMongo(DBObject object);
 }

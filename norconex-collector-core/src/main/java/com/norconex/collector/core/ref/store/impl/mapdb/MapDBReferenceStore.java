@@ -31,10 +31,9 @@ import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
 
 import com.norconex.collector.core.ref.IReference;
-import com.norconex.collector.core.ref.store.IReferenceStore;
+import com.norconex.collector.core.ref.store.AbstractReferenceStore;
 
-public abstract class MapDBReferenceStore<T extends IReference> 
-        implements IReferenceStore<T> {
+public class MapDBReferenceStore extends AbstractReferenceStore {
 
     private static final Logger LOG = 
             LogManager.getLogger(MapDBReferenceStore.class);
@@ -52,23 +51,23 @@ public abstract class MapDBReferenceStore<T extends IReference>
     //private final String crawlerId; 
     private final String path;
     private final DB db;
-    private Queue<T> queue;
-    private Map<String, T> active;
-    private Map<String, T> cache;
-    private Map<String, T> processedValid;
-    private Map<String, T> processedInvalid;
+    private Queue<IReference> queue;
+    private Map<String, IReference> active;
+    private Map<String, IReference> cache;
+    private Map<String, IReference> processedValid;
+    private Map<String, IReference> processedInvalid;
     private Set<String> sitemap;
     
     private long commitCounter;
     
-    private final Serializer<T> valueSerializer;
+    private final Serializer<IReference> valueSerializer;
     
     
     public MapDBReferenceStore(String path, boolean resume) {
         this(path, resume, null);
     }
     public MapDBReferenceStore(String path, boolean resume,
-            Serializer<T> valueSerializer) {
+            Serializer<IReference> valueSerializer) {
         super();
         
         this.valueSerializer = valueSerializer;
@@ -90,7 +89,7 @@ public abstract class MapDBReferenceStore<T extends IReference>
         if (resume) {
             LOG.debug(path
                     + " Resuming: putting active URLs back in the queue...");
-            for (T reference : active.values()) {
+            for (IReference reference : active.values()) {
                 queue.add(reference);
             }
             LOG.debug(path + ": Cleaning active database...");
@@ -151,10 +150,10 @@ public abstract class MapDBReferenceStore<T extends IReference>
     }
     
     @Override
-    public void queue(T reference) {
+    public void queue(IReference reference) {
         // Short of being immutable, make a defensive copy of crawl URL.
-        @SuppressWarnings("unchecked")
-        T crawlUrlCopy = (T) reference.clone();
+        //TODO why again?
+        IReference crawlUrlCopy = (IReference) reference.safeClone();
         queue.add(crawlUrlCopy);
     }
 
@@ -174,8 +173,8 @@ public abstract class MapDBReferenceStore<T extends IReference>
     }
 
     @Override
-    public synchronized T nextQueued() {
-        T reference = (T) queue.poll();
+    public synchronized IReference nextQueued() {
+        IReference reference = (IReference) queue.poll();
         if (reference != null) {
             active.put(reference.getReference(), reference);
         }
@@ -193,7 +192,7 @@ public abstract class MapDBReferenceStore<T extends IReference>
     }
 
     @Override
-    public T getCached(String cacheURL) {
+    public IReference getCached(String cacheURL) {
         return cache.get(cacheURL);
     }
 
@@ -203,11 +202,12 @@ public abstract class MapDBReferenceStore<T extends IReference>
     }
 
     @Override
-    public synchronized void processed(T reference) {
+    public synchronized void processed(IReference reference) {
         // Short of being immutable, make a defensive copy of crawl URL.
-        @SuppressWarnings("unchecked")
-        T referenceCopy = (T) reference.clone();
-        if (isValid(referenceCopy)) {
+
+        //TODO why clone here if we are only readonly?
+        IReference referenceCopy = (IReference) reference.safeClone();
+        if (referenceCopy.getState().isValid()) {
 //        if (isValidStatus(referenceCopy)) {
             processedValid.put(referenceCopy.getReference(), referenceCopy);
         } else {
@@ -240,25 +240,37 @@ public abstract class MapDBReferenceStore<T extends IReference>
         return processedValid.size() + processedInvalid.size();
     }
 
-    public Iterator<T> getCacheIterator() {
+    public Iterator<IReference> getCacheIterator() {
         return cache.values().iterator();
     };
     
-    @Override
-    public boolean isVanished(T reference) {
-        T cachedReference = getCached(reference.getReference());
-        if (cachedReference == null) {
-            return false;
-        }
-        return isVanished(reference, cachedReference);
-//        ReferenceStatus cur = reference.getStatus();
-//        ReferenceStatus last = cachedURL.getStatus();
-//        return cur != ReferenceStatus.OK && cur != ReferenceStatus.UNMODIFIED
-//              && (last == ReferenceStatus.OK ||  last == ReferenceStatus.UNMODIFIED);
-    }
+//    @Override
+//    public boolean isVanished(IReference reference) {
+//        IReference cachedReference = getCached(reference.getReference());
+//        if (cachedReference == null) {
+//            return false;
+//        }
+////        return isVanished(reference, cachedReference);
+//        ReferenceState current = reference.getState();
+//        ReferenceState last = cachedReference.getState();
+//        return !current.isValid() && last.isValid();
+//    }
 
-    protected abstract boolean isVanished(
-            T currentReference, T cachedReference);
+//    @Override
+//    public boolean isVanished(CrawlURL crawlURL) {
+//        CrawlURL cachedURL = getCached(crawlURL.getUrl());
+//        if (cachedURL == null) {
+//            return false;
+//        }
+//        CrawlStatus cur = crawlURL.getStatus();
+//        CrawlStatus last = cachedURL.getStatus();
+//        return cur != CrawlStatus.OK && cur != CrawlStatus.UNMODIFIED
+//              && (last == CrawlStatus.OK ||  last == CrawlStatus.UNMODIFIED);
+//    }    
+    
+    
+//    protected abstract boolean isVanished(
+//            IReference currentReference, IReference cachedReference);
     
 //    @Override
 //    public void sitemapResolved(String urlRoot) {
@@ -279,11 +291,11 @@ public abstract class MapDBReferenceStore<T extends IReference>
         }
     }
     
-    protected abstract boolean isValid(T reference);
-//    private boolean isValidStatus(T reference) {
-//        return reference.getStatus() == ReferenceStatus.OK
-//                || reference.getStatus() == ReferenceStatus.UNMODIFIED;
-//    }
+//    protected abstract boolean isValid(IReference reference);
+////    private boolean isValidStatus(IReference reference) {
+////        return reference.getStatus() == ReferenceStatus.OK
+////                || reference.getStatus() == ReferenceStatus.UNMODIFIED;
+////    }
     
     @Override
     protected void finalize() throws Throwable {

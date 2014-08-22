@@ -36,16 +36,15 @@ import com.norconex.collector.core.ref.IReference;
  *       the next run.</li>
  * </ul>
  * @author Pascal Essiembre
- * @param <T> the reference type
  */
-public interface IReferenceStore<T extends IReference> {
+public interface IReferenceStore {
 
     /**
      * <p>
      * Queues a reference for future processing. 
      * @param reference  the reference to eventually be processed
      */
-    void queue(T reference);
+    void queue(IReference reference);
 
     /**
      * Whether there are any references to process in the queue.
@@ -74,7 +73,7 @@ public interface IReferenceStore<T extends IReference> {
      * is effectively removed from the queue.
      * @return next reference 
      */
-    T nextQueued();
+    IReference nextQueued();
     
     /**
      * Whether the given reference is currently being processed (i.e. active).
@@ -95,7 +94,7 @@ public interface IReferenceStore<T extends IReference> {
      * @param cacheReference reference cached from previous run
      * @return url
      */
-    T getCached(String cacheReference);
+    IReference getCached(String cacheReference);
     
     /**
      * Whether there are any references the the cache from a previous crawler 
@@ -109,7 +108,7 @@ public interface IReferenceStore<T extends IReference> {
      * processed again in the same crawl run.
      * @param reference processed reference
      */
-    void processed(T reference);
+    void processed(IReference reference);
 
     /**
      * Whether the given reference has been processed.
@@ -128,7 +127,7 @@ public interface IReferenceStore<T extends IReference> {
      * Gets the cache iterator.
      * @return cache iterator
      */
-    Iterator<T> getCacheIterator();
+    Iterator<IReference> getCacheIterator();
     
     /**
      * Whether a reference has been deleted.  To find this out, the reference 
@@ -137,7 +136,7 @@ public interface IReferenceStore<T extends IReference> {
      * @param reference the reference
      * @return <code>true</code> if reference has been deleted on site
      */
-    boolean isVanished(T reference);
+    boolean isVanished(IReference reference);
     
     /**
      * Closes a database connection. This method gets called a the end
