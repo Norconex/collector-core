@@ -25,7 +25,7 @@ import java.io.Serializable;
  * URL, a file path, etc).
  * @author Pascal Essiembre
  */
-public interface IReference extends Serializable, Cloneable {
+public interface IReference extends Serializable {
 
     /**
      * Gets the unique identifier of this reference (e.g. URL, path, etc).
@@ -45,4 +45,15 @@ public interface IReference extends Serializable, Cloneable {
      * @return a copy of this instance
      */
     IReference safeClone();
+    
+    
+    boolean isRootParentReference();
+    
+    String getParentRootReference();
+    
+    
+    String getMetaChecksum();
+
+    String getContentChecksum();
+
 }

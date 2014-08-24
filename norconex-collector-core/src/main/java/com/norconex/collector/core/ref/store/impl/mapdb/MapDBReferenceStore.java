@@ -46,7 +46,7 @@ public class MapDBReferenceStore extends AbstractReferenceStore {
     private static final String STORE_CACHE = "cache";
     private static final String STORE_PROCESSED_VALID = "valid";
     private static final String STORE_PROCESSED_INVALID = "invalid";
-    private static final String STORE_SITEMAP = "sitemap";
+//    private static final String STORE_SITEMAP = "sitemap";
     
     //private final String crawlerId; 
     private final String path;
@@ -56,7 +56,7 @@ public class MapDBReferenceStore extends AbstractReferenceStore {
     private Map<String, IReference> cache;
     private Map<String, IReference> processedValid;
     private Map<String, IReference> processedInvalid;
-    private Set<String> sitemap;
+//    private Set<String> sitemap;
     
     private long commitCounter;
     
@@ -101,8 +101,8 @@ public class MapDBReferenceStore extends AbstractReferenceStore {
             active.clear();
             LOG.debug(path + ": Cleaning invalid URLs database...");
             processedInvalid.clear();
-            LOG.debug(path + ": Cleaning sitemap database...");
-            sitemap.clear();
+//            LOG.debug(path + ": Cleaning sitemap database...");
+//            sitemap.clear();
             LOG.debug(path + ": Cleaning cache database...");
             db.delete(STORE_CACHE);
             LOG.debug(path 
@@ -146,7 +146,7 @@ public class MapDBReferenceStore extends AbstractReferenceStore {
             processedValid = db.getHashMap(STORE_PROCESSED_VALID);
             processedInvalid = db.getHashMap(STORE_PROCESSED_INVALID);
         }
-        sitemap = db.getHashSet(STORE_SITEMAP);
+//        sitemap = db.getHashSet(STORE_SITEMAP);
     }
     
     @Override

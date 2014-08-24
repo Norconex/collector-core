@@ -39,6 +39,7 @@ public class ReferenceState implements Serializable {
     
     /**
      * Constructor.
+     * @param state state code
      */
     protected ReferenceState(String state) {
         this.state = state;
