@@ -18,9 +18,12 @@
  */
 package com.norconex.collector.core.ref;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.apache.commons.beanutils.BeanUtils;
 
 import com.norconex.collector.core.CollectorException;
+
 
 /**
  * @author Pascal Essiembre
@@ -92,11 +95,13 @@ public class BasicReference implements IReference {
     public IReference safeClone() {
         try {
             return (IReference) BeanUtils.cloneBean(this);
-        } catch (Exception e) {
+        } catch (IllegalAccessException | InstantiationException
+                | InvocationTargetException | NoSuchMethodException e) {
             throw new CollectorException(
-                    "Cannot clone reference: " + toString(), e);
+                    "Cannot clone HttpDocReference: " + this, e);
         }
     }
+
     @Override
     public int hashCode() {
         final int prime = 31;

@@ -153,7 +153,7 @@ public class MapDBReferenceStore extends AbstractReferenceStore {
     public void queue(IReference reference) {
         // Short of being immutable, make a defensive copy of crawl URL.
         //TODO why again?
-        IReference crawlUrlCopy = (IReference) reference.safeClone();
+        IReference crawlUrlCopy = reference.safeClone();
         queue.add(crawlUrlCopy);
     }
 

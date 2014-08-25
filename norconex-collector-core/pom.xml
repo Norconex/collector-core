@@ -80,11 +80,6 @@ along with Norconex Collector Core. If not, see <http://www.gnu.org/licenses/>.
 
   <dependencies>    
     <dependency>
-        <groupId>org.mongodb</groupId>
-        <artifactId>mongo-java-driver</artifactId>
-        <version>2.11.1</version>
-    </dependency>
-    <dependency>
         <groupId>org.mapdb</groupId>
         <artifactId>mapdb</artifactId>
         <version>1.0.6</version>

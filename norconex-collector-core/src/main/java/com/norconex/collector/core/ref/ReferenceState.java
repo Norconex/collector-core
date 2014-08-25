@@ -15,6 +15,9 @@ import org.apache.commons.lang3.ArrayUtils;
  */
 public class ReferenceState implements Serializable {
 
+    private static final Map<String, ReferenceState> STATUSES = 
+            new HashMap<>();
+    
     //TODO delete this after refactoring complete:
     public static final ReferenceState OK = new ReferenceState("OK");
 
@@ -31,9 +34,6 @@ public class ReferenceState implements Serializable {
     public static final ReferenceState ERROR = new ReferenceState("ERROR");
     public static final ReferenceState REJECTED = 
             new ReferenceState("REJECTED");
-    
-    private static final Map<String, ReferenceState> STATUSES = 
-            new HashMap<>();
     
     private final String state;
     
@@ -57,7 +57,7 @@ public class ReferenceState implements Serializable {
      * @return <code>true</code> if status is valid.
      */
     public boolean isValid() {
-        return isOneOf(NEW, MODIFIED, UNMODIFIED);
+        return isOneOf(OK, NEW, MODIFIED, UNMODIFIED);
     }
     
     public boolean isOneOf(ReferenceState... states) {
