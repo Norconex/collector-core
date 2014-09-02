@@ -16,16 +16,29 @@
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.ref.store;
+package com.norconex.collector.core.doccrawl.store;
 
-import java.io.Serializable;
+import com.norconex.collector.core.CollectorException;
 
-import com.norconex.collector.core.crawler.ICrawlerConfig;
+public class DocCrawlStoreException extends CollectorException {
 
-public interface IReferenceStoreFactory 
-        extends Serializable {
-
-    IReferenceStore createReferenceStore(
-            ICrawlerConfig config, boolean resume);
     
+    private static final long serialVersionUID = 5416591514078326431L;
+
+    public DocCrawlStoreException() {
+        super();
+    }
+
+    public DocCrawlStoreException(String message) {
+        super(message);
+    }
+
+    public DocCrawlStoreException(Throwable cause) {
+        super(cause);
+    }
+
+    public DocCrawlStoreException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

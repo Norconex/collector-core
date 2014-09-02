@@ -16,7 +16,7 @@
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.ref;
+package com.norconex.collector.core.doccrawl;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -26,25 +26,26 @@ import com.norconex.collector.core.CollectorException;
 
 
 /**
+ * Create a new {@link IDocCrawl} with a default state of NEW.
  * @author Pascal Essiembre
- *
  */
-public class BasicReference implements IReference {
+public class BasicDocCrawl implements IDocCrawl {
 
     private static final long serialVersionUID = 8711781555253202315L;
 
     private String reference;
     private String parentRootReference;
     private boolean isRootParentReference;
-    private ReferenceState state;
+    private DocCrawlState state;
     private String metaChecksum;
     private String contentChecksum;
     
     /**
      * Constructor.
      */
-    public BasicReference() {
+    public BasicDocCrawl() {
         super();
+        setState(DocCrawlState.NEW);
     }
     @Override
     public String getReference() {
@@ -71,10 +72,10 @@ public class BasicReference implements IReference {
     }
 
     @Override
-    public ReferenceState getState() {
+    public DocCrawlState getState() {
         return state;
     }
-    public void setState(ReferenceState state) {
+    public void setState(DocCrawlState state) {
         this.state = state;
     }
     
@@ -92,9 +93,9 @@ public class BasicReference implements IReference {
         this.contentChecksum = contentChecksum;
     }
     @Override
-    public IReference safeClone() {
+    public IDocCrawl safeClone() {
         try {
-            return (IReference) BeanUtils.cloneBean(this);
+            return (IDocCrawl) BeanUtils.cloneBean(this);
         } catch (IllegalAccessException | InstantiationException
                 | InvocationTargetException | NoSuchMethodException e) {
             throw new CollectorException(
@@ -128,10 +129,10 @@ public class BasicReference implements IReference {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof BasicReference)) {
+        if (!(obj instanceof BasicDocCrawl)) {
             return false;
         }
-        BasicReference other = (BasicReference) obj;
+        BasicDocCrawl other = (BasicDocCrawl) obj;
         if (contentChecksum == null) {
             if (other.contentChecksum != null) {
                 return false;
@@ -174,7 +175,7 @@ public class BasicReference implements IReference {
     }
     @Override
     public String toString() {
-        return "BasicReference [reference=" + reference
+        return "BasicDocCrawlDetails [reference=" + reference
                 + ", parentRootReference=" + parentRootReference
                 + ", isRootParentReference=" + isRootParentReference
                 + ", state=" + state + ", metaChecksum=" + metaChecksum

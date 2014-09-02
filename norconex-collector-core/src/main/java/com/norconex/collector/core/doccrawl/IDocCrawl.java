@@ -16,7 +16,7 @@
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.ref;
+package com.norconex.collector.core.doccrawl;
 
 import java.io.Serializable;
 
@@ -25,7 +25,7 @@ import java.io.Serializable;
  * URL, a file path, etc).
  * @author Pascal Essiembre
  */
-public interface IReference extends Serializable {
+public interface IDocCrawl extends Serializable {
 
     /**
      * Gets the unique identifier of this reference (e.g. URL, path, etc).
@@ -35,16 +35,16 @@ public interface IReference extends Serializable {
     
     /**
      * Gets this reference state. Default state should be 
-     *      {@link ReferenceState#UNPROCESSED}
+     *      {@link DocCrawlState#UNPROCESSED}
      * @return state
      */
-    ReferenceState getState();
+    DocCrawlState getState();
     
     /**
      * Clones this reference.
      * @return a copy of this instance
      */
-    IReference safeClone();
+    IDocCrawl safeClone();
     
     
     boolean isRootParentReference();

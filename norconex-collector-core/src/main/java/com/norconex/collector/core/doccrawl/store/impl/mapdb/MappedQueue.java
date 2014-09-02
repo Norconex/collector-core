@@ -16,7 +16,7 @@
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.ref.store.impl.mapdb;
+package com.norconex.collector.core.doccrawl.store.impl.mapdb;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -25,9 +25,9 @@ import java.util.Queue;
 
 import org.mapdb.DB;
 
-import com.norconex.collector.core.ref.IReference;
+import com.norconex.collector.core.doccrawl.IDocCrawl;
 
-public class MappedQueue<T extends IReference> implements Queue<T> {
+public class MappedQueue<T extends IDocCrawl> implements Queue<T> {
 
     private final Queue<String> queue;
     private final Map<String, T> map;
@@ -94,8 +94,8 @@ public class MappedQueue<T extends IReference> implements Queue<T> {
         if (o instanceof String) {
             return map.containsKey((String) o);
         }
-        if (o instanceof IReference) {
-            return map.containsKey(((IReference) o).getReference());
+        if (o instanceof IDocCrawl) {
+            return map.containsKey(((IDocCrawl) o).getReference());
         }
         return false;
     }
@@ -121,8 +121,8 @@ public class MappedQueue<T extends IReference> implements Queue<T> {
             }
             return present;
         }
-        if (o instanceof IReference) {
-            String reference = ((IReference) o).getReference();
+        if (o instanceof IDocCrawl) {
+            String reference = ((IDocCrawl) o).getReference();
             boolean present = queue.remove(reference);
             if (present) {
                 map.remove(reference);

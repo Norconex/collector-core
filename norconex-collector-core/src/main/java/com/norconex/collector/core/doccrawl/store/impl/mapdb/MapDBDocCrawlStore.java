@@ -16,7 +16,7 @@
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.ref.store.impl.mapdb;
+package com.norconex.collector.core.doccrawl.store.impl.mapdb;
 
 import java.io.File;
 import java.util.Iterator;
@@ -29,13 +29,13 @@ import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
 
-import com.norconex.collector.core.ref.IReference;
-import com.norconex.collector.core.ref.store.AbstractReferenceStore;
+import com.norconex.collector.core.doccrawl.IDocCrawl;
+import com.norconex.collector.core.doccrawl.store.AbstractDocCrawlStore;
 
-public class MapDBReferenceStore extends AbstractReferenceStore {
+public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
 
     private static final Logger LOG = 
-            LogManager.getLogger(MapDBReferenceStore.class);
+            LogManager.getLogger(MapDBDocCrawlStore.class);
 
     //TODO make configurable
     private static final int COMMIT_SIZE = 1000;
@@ -50,23 +50,23 @@ public class MapDBReferenceStore extends AbstractReferenceStore {
     //private final String crawlerId; 
     private final String path;
     private final DB db;
-    private Queue<IReference> queue;
-    private Map<String, IReference> active;
-    private Map<String, IReference> cache;
-    private Map<String, IReference> processedValid;
-    private Map<String, IReference> processedInvalid;
+    private Queue<IDocCrawl> queue;
+    private Map<String, IDocCrawl> active;
+    private Map<String, IDocCrawl> cache;
+    private Map<String, IDocCrawl> processedValid;
+    private Map<String, IDocCrawl> processedInvalid;
 //    private Set<String> sitemap;
     
     private long commitCounter;
     
-    private final Serializer<IReference> valueSerializer;
+    private final Serializer<IDocCrawl> valueSerializer;
     
     
-    public MapDBReferenceStore(String path, boolean resume) {
+    public MapDBDocCrawlStore(String path, boolean resume) {
         this(path, resume, null);
     }
-    public MapDBReferenceStore(String path, boolean resume,
-            Serializer<IReference> valueSerializer) {
+    public MapDBDocCrawlStore(String path, boolean resume,
+            Serializer<IDocCrawl> valueSerializer) {
         super();
         
         this.valueSerializer = valueSerializer;
@@ -88,8 +88,8 @@ public class MapDBReferenceStore extends AbstractReferenceStore {
         if (resume) {
             LOG.debug(path
                     + " Resuming: putting active URLs back in the queue...");
-            for (IReference reference : active.values()) {
-                queue.add(reference);
+            for (IDocCrawl docCrawl : active.values()) {
+                queue.add(docCrawl);
             }
             LOG.debug(path + ": Cleaning active database...");
             active.clear();
@@ -149,10 +149,10 @@ public class MapDBReferenceStore extends AbstractReferenceStore {
     }
     
     @Override
-    public void queue(IReference reference) {
+    public void queue(IDocCrawl docCrawl) {
         // Short of being immutable, make a defensive copy of crawl URL.
         //TODO why again?
-        IReference crawlUrlCopy = reference.safeClone();
+        IDocCrawl crawlUrlCopy = docCrawl.safeClone();
         queue.add(crawlUrlCopy);
     }
 
@@ -172,12 +172,12 @@ public class MapDBReferenceStore extends AbstractReferenceStore {
     }
 
     @Override
-    public synchronized IReference nextQueued() {
-        IReference reference = (IReference) queue.poll();
-        if (reference != null) {
-            active.put(reference.getReference(), reference);
+    public synchronized IDocCrawl nextQueued() {
+        IDocCrawl docCrawl = (IDocCrawl) queue.poll();
+        if (docCrawl != null) {
+            active.put(docCrawl.getReference(), docCrawl);
         }
-        return reference;
+        return docCrawl;
     }
 
     @Override
@@ -191,7 +191,7 @@ public class MapDBReferenceStore extends AbstractReferenceStore {
     }
 
     @Override
-    public IReference getCached(String cacheURL) {
+    public IDocCrawl getCached(String cacheURL) {
         return cache.get(cacheURL);
     }
 
@@ -201,12 +201,12 @@ public class MapDBReferenceStore extends AbstractReferenceStore {
     }
 
     @Override
-    public synchronized void processed(IReference reference) {
+    public synchronized void processed(IDocCrawl docCrawl) {
         // Short of being immutable, make a defensive copy of crawl URL.
 
         //TODO why clone here if we are only readonly?
-        IReference referenceCopy = (IReference) reference.safeClone();
-        if (referenceCopy.getState().isValid()) {
+        IDocCrawl referenceCopy = docCrawl.safeClone();
+        if (referenceCopy.getState().isGoodState()) {
 //        if (isValidStatus(referenceCopy)) {
             processedValid.put(referenceCopy.getReference(), referenceCopy);
         } else {
@@ -239,19 +239,19 @@ public class MapDBReferenceStore extends AbstractReferenceStore {
         return processedValid.size() + processedInvalid.size();
     }
 
-    public Iterator<IReference> getCacheIterator() {
+    public Iterator<IDocCrawl> getCacheIterator() {
         return cache.values().iterator();
     };
     
 //    @Override
-//    public boolean isVanished(IReference reference) {
-//        IReference cachedReference = getCached(reference.getReference());
+//    public boolean isVanished(IDocCrawlDetails reference) {
+//        IDocCrawlDetails cachedReference = getCached(reference.getReference());
 //        if (cachedReference == null) {
 //            return false;
 //        }
 ////        return isVanished(reference, cachedReference);
-//        ReferenceState current = reference.getState();
-//        ReferenceState last = cachedReference.getState();
+//        DocCrawlState current = reference.getState();
+//        DocCrawlState last = cachedReference.getState();
 //        return !current.isValid() && last.isValid();
 //    }
 
@@ -269,7 +269,7 @@ public class MapDBReferenceStore extends AbstractReferenceStore {
     
     
 //    protected abstract boolean isVanished(
-//            IReference currentReference, IReference cachedReference);
+//            IDocCrawlDetails currentReference, IDocCrawlDetails cachedReference);
     
 //    @Override
 //    public void sitemapResolved(String urlRoot) {
@@ -290,8 +290,8 @@ public class MapDBReferenceStore extends AbstractReferenceStore {
         }
     }
     
-//    protected abstract boolean isValid(IReference reference);
-////    private boolean isValidStatus(IReference reference) {
+//    protected abstract boolean isValid(IDocCrawlDetails reference);
+////    private boolean isValidStatus(IDocCrawlDetails reference) {
 ////        return reference.getStatus() == ReferenceStatus.OK
 ////                || reference.getStatus() == ReferenceStatus.UNMODIFIED;
 ////    }

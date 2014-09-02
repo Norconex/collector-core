@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.norconex.collector.core.ref;
+package com.norconex.collector.core.doccrawl;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -13,27 +13,27 @@ import org.apache.commons.lang3.ArrayUtils;
  * Reference processing status.
  * @author Pascal Essiembre
  */
-public class ReferenceState implements Serializable {
+public class DocCrawlState implements Serializable {
 
-    private static final Map<String, ReferenceState> STATUSES = 
+    private static final Map<String, DocCrawlState> STATUSES = 
             new HashMap<>();
     
     //TODO delete this after refactoring complete:
-    public static final ReferenceState OK = new ReferenceState("OK");
+//    public static final DocCrawlState OK = new DocCrawlState("OK");
 
     
     
     private static final long serialVersionUID = 6542269270632505768L;
-    public static final ReferenceState UNPROCESSED = 
-            new ReferenceState("UNPROCESSED");
-    public static final ReferenceState NEW = new ReferenceState("NEW");
-    public static final ReferenceState MODIFIED = 
-            new ReferenceState("MODIFIED");
-    public static final ReferenceState UNMODIFIED = 
-            new ReferenceState("UNMODIFIED");
-    public static final ReferenceState ERROR = new ReferenceState("ERROR");
-    public static final ReferenceState REJECTED = 
-            new ReferenceState("REJECTED");
+//    public static final DocCrawlState UNPROCESSED = 
+//            new DocCrawlState("UNPROCESSED");
+    public static final DocCrawlState NEW = new DocCrawlState("NEW");
+    public static final DocCrawlState MODIFIED = 
+            new DocCrawlState("MODIFIED");
+    public static final DocCrawlState UNMODIFIED = 
+            new DocCrawlState("UNMODIFIED");
+    public static final DocCrawlState ERROR = new DocCrawlState("ERROR");
+    public static final DocCrawlState REJECTED = 
+            new DocCrawlState("REJECTED");
     
     private final String state;
     
@@ -41,13 +41,13 @@ public class ReferenceState implements Serializable {
      * Constructor.
      * @param state state code
      */
-    protected ReferenceState(String state) {
+    protected DocCrawlState(String state) {
         this.state = state;
         STATUSES.put(state, this);
     }
 
     /**
-     * Returns whether a reference should be considered valid (the
+     * Returns whether a reference should be considered "good" (the
      * corresponding document is not in a "bad" state, such as being rejected
      * or produced an error.  
      * This implementation will consider valid these reference statuses:
@@ -56,26 +56,32 @@ public class ReferenceState implements Serializable {
      * reference.
      * @return <code>true</code> if status is valid.
      */
-    public boolean isValid() {
-        return isOneOf(OK, NEW, MODIFIED, UNMODIFIED);
+    public boolean isGoodState() {
+        //return isOneOf(OK, NEW, MODIFIED, UNMODIFIED);
+        return isOneOf(NEW, MODIFIED, UNMODIFIED);
     }
+
+    public boolean isCommittable() {
+        return isOneOf(NEW, MODIFIED);
+    }
+
     
-    public boolean isOneOf(ReferenceState... states) {
+    public boolean isOneOf(DocCrawlState... states) {
         if (ArrayUtils.isEmpty(states)) {
             return false;
         }
-        for (ReferenceState referenceState : states) {
-            if (equals(referenceState)) {
+        for (DocCrawlState docCrawlState : states) {
+            if (equals(docCrawlState)) {
                 return true;
             }
         }
         return false;
     }
     
-    public static synchronized ReferenceState valueOf(String state) {
-        ReferenceState refState = STATUSES.get(state);
+    public static synchronized DocCrawlState valueOf(String state) {
+        DocCrawlState refState = STATUSES.get(state);
         if (refState == null) {
-            refState = new ReferenceState(state);
+            refState = new DocCrawlState(state);
         }
         return refState;
     }
@@ -105,10 +111,10 @@ public class ReferenceState implements Serializable {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof ReferenceState)) {
+        if (!(obj instanceof DocCrawlState)) {
             return false;
         }
-        ReferenceState other = (ReferenceState) obj;
+        DocCrawlState other = (DocCrawlState) obj;
         if (state == null) {
             if (other.state != null) {
                 return false;

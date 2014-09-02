@@ -20,7 +20,7 @@ package com.norconex.collector.core.crawler;
 
 import org.apache.commons.lang3.time.StopWatch;
 
-import com.norconex.collector.core.ref.store.IReferenceStore;
+import com.norconex.collector.core.doccrawl.store.IDocCrawlStore;
 import com.norconex.jef4.job.AbstractResumableJob;
 import com.norconex.jef4.status.IJobStatus;
 import com.norconex.jef4.status.JobStatusUpdater;
@@ -77,7 +77,7 @@ public abstract class AbstractCrawler
     private void doExecute(JobStatusUpdater statusUpdater,
             JobSuite suite, boolean resume) {
         stopWatch.start();
-        IReferenceStore refStore = 
+        IDocCrawlStore refStore = 
                 config.getReferenceStoreFactory().createReferenceStore(
                         config, resume);
         try {
@@ -95,12 +95,12 @@ public abstract class AbstractCrawler
     
     protected abstract void prepareExecution(
             JobStatusUpdater statusUpdater, JobSuite suite, 
-            IReferenceStore refStore, boolean resume);
+            IDocCrawlStore refStore, boolean resume);
     protected abstract void execute(
             JobStatusUpdater statusUpdater,
             JobSuite suite,
-            IReferenceStore refStore);
+            IDocCrawlStore refStore);
     protected abstract void cleanupExecution(
             JobStatusUpdater statusUpdater, JobSuite suite, 
-            IReferenceStore refStore);
+            IDocCrawlStore refStore);
 }

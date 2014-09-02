@@ -29,8 +29,8 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.norconex.collector.core.ref.store.IReferenceStoreFactory;
-import com.norconex.collector.core.ref.store.impl.mapdb.MapDBReferenceStoreFactory;
+import com.norconex.collector.core.doccrawl.store.IDocCrawlStoreFactory;
+import com.norconex.collector.core.doccrawl.store.impl.mapdb.MapDBDocCrawlStoreFactory;
 import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
@@ -48,8 +48,8 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     
     private String id;
     private File workDir = new File("./work");
-    private IReferenceStoreFactory referenceStoreFactory = 
-            new MapDBReferenceStoreFactory();
+    private IDocCrawlStoreFactory docCrawlStoreFactory = 
+            new MapDBDocCrawlStoreFactory();
     
     
     /**
@@ -87,12 +87,12 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     }
 
     @Override
-    public IReferenceStoreFactory getReferenceStoreFactory() {
-        return referenceStoreFactory;
+    public IDocCrawlStoreFactory getReferenceStoreFactory() {
+        return docCrawlStoreFactory;
     }
     public void setReferenceStoreFactory(
-            IReferenceStoreFactory referenceStoreFactory) {
-        this.referenceStoreFactory = referenceStoreFactory;
+            IDocCrawlStoreFactory docCrawlStoreFactory) {
+        this.docCrawlStoreFactory = docCrawlStoreFactory;
     }
 
     @Override

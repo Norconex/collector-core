@@ -18,8 +18,8 @@
  */
 package com.norconex.collector.core;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import com.norconex.collector.core.crawler.ICrawler;
+import com.norconex.collector.core.crawler.ICrawlerConfig;
  
 /**
  * Main application class. In order to use it properly, you must first configure
@@ -37,11 +37,12 @@ import org.apache.log4j.Logger;
 @SuppressWarnings("nls")
 public abstract class AbstractCollector implements ICollector {
 
-	private static final Logger LOG = 
-	        LogManager.getLogger(AbstractCollector.class);
+//	private static final Logger LOG = 
+//	        LogManager.getLogger(AbstractCollector.class);
     private AbstractCollectorConfig collectorConfig;
-    
-    
+
+    private ICrawler[] crawlers;
+
     
 	/**
 	 * Creates and configure a Collector with the provided
@@ -49,14 +50,30 @@ public abstract class AbstractCollector implements ICollector {
 	 * @param collectorConfig Collector configuration
 	 */
     public AbstractCollector(AbstractCollectorConfig collectorConfig) {
+        //TODO clone config so modifications no longer apply.
         if (collectorConfig == null) {
             throw new IllegalArgumentException(
                     "Collector Configugation cannot be null.");
         }
         
         this.collectorConfig = collectorConfig;
+
+        ICrawlerConfig[] crawlerConfigs = 
+                this.collectorConfig.getCrawlerConfigs();
+        if (crawlerConfigs != null) {
+            ICrawler[] newCrawlers = new ICrawler[crawlerConfigs.length];
+            for (int i = 0; i < crawlerConfigs.length; i++) {
+                ICrawlerConfig crawlerConfig = crawlerConfigs[i];
+                newCrawlers[i] = createCrawler(crawlerConfig);
+            }
+            this.crawlers = newCrawlers;
+        } else {
+            this.crawlers = new ICrawler[]{};
+        }
     }
 
+    protected abstract ICrawler createCrawler(ICrawlerConfig config);
+    
     /**
      * Gets the collector configuration
      * @return the collectorConfig
@@ -71,27 +88,34 @@ public abstract class AbstractCollector implements ICollector {
         return collectorConfig.getId();
     }
     
-    /**
-     * Launched all crawlers defined in configuration.
-     * @param resumeNonCompleted whether to resume where previous crawler
-     *        aborted (if applicable) 
-     */
-    @Override
-    public void start(boolean resumeNonCompleted) {
-//        JobSuite suite = createJobSuite();
-//        JobRunner jobRunner = new JobRunner();
-//        jobRunner.runSuite(suite, resumeNonCompleted);
+    public void setCrawlers(ICrawler[] crawlers) {
+        this.crawlers = crawlers;
+    }
+    public ICrawler[] getCrawlers() {
+        return crawlers;
     }
 
-    /**
-     * Stops a running instance of this HTTP Collector.
-     */
-    @Override
-    public void stop() {
-//        JobSuite suite = createJobSuite();
-//        ((FileStopRequestHandler) 
-//                suite.getStopRequestHandler()).fireStopRequest();
-    }
+//    /**
+//     * Launched all crawlers defined in configuration.
+//     * @param resumeNonCompleted whether to resume where previous crawler
+//     *        aborted (if applicable) 
+//     */
+//    @Override
+//    public void start(boolean resumeNonCompleted) {
+////        JobSuite suite = createJobSuite();
+////        JobRunner jobRunner = new JobRunner();
+////        jobRunner.runSuite(suite, resumeNonCompleted);
+//    }
+//
+//    /**
+//     * Stops a running instance of this HTTP Collector.
+//     */
+//    @Override
+//    public void stop() {
+////        JobSuite suite = createJobSuite();
+////        ((FileStopRequestHandler) 
+////                suite.getStopRequestHandler()).fireStopRequest();
+//    }
 //    
 //    
 //    @Override

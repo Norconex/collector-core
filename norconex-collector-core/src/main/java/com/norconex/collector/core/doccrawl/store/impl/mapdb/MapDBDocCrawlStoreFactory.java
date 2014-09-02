@@ -16,52 +16,52 @@
  * along with Norconex Filesystem Collector. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.ref.store.impl.mapdb;
+package com.norconex.collector.core.doccrawl.store.impl.mapdb;
 
 import org.mapdb.Serializer;
 
 import com.norconex.collector.core.crawler.ICrawlerConfig;
-import com.norconex.collector.core.ref.IReference;
-import com.norconex.collector.core.ref.store.IReferenceStore;
-import com.norconex.collector.core.ref.store.IReferenceStoreFactory;
+import com.norconex.collector.core.doccrawl.IDocCrawl;
+import com.norconex.collector.core.doccrawl.store.IDocCrawlStore;
+import com.norconex.collector.core.doccrawl.store.IDocCrawlStoreFactory;
 
 /**
  * Default reference store factory.
  * 
  * @author Pascal Essiembre
  */
-public class MapDBReferenceStoreFactory 
-        implements IReferenceStoreFactory {
+public class MapDBDocCrawlStoreFactory 
+        implements IDocCrawlStoreFactory {
 
     private static final long serialVersionUID = 197714845943448133L;
     
-    private Serializer<IReference> valueSerializer;
+    private Serializer<IDocCrawl> valueSerializer;
     
-    public MapDBReferenceStoreFactory() {
+    public MapDBDocCrawlStoreFactory() {
         this(null);
     }
-    public MapDBReferenceStoreFactory(Serializer<IReference> valueSerializer) {
+    public MapDBDocCrawlStoreFactory(Serializer<IDocCrawl> valueSerializer) {
         super();
         this.valueSerializer = valueSerializer;
     }
 
-    public Serializer<IReference> getValueSerializer() {
+    public Serializer<IDocCrawl> getValueSerializer() {
         return valueSerializer;
     }
     /**
      * @param valueSerializer the valueSerializer to set
      */
-    public void setValueSerializer(Serializer<IReference> valueSerializer) {
+    public void setValueSerializer(Serializer<IDocCrawl> valueSerializer) {
         this.valueSerializer = valueSerializer;
     }
     
 
     @Override
-    public IReferenceStore createReferenceStore(
+    public IDocCrawlStore createReferenceStore(
             ICrawlerConfig config, boolean resume) {
         String storeDir = config.getWorkDir().getPath()
                 + "/refstore/" + config.getId() + "/";
-        return new MapDBReferenceStore(storeDir, resume, null);
+        return new MapDBDocCrawlStore(storeDir, resume, null);
     }
     
     //TODO implement IXMLConfigurable? To set a custom serializer?
