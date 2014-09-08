@@ -34,8 +34,7 @@ public interface IDocCrawl extends Serializable {
     String getReference();
     
     /**
-     * Gets this reference state. Default state should be 
-     *      {@link DocCrawlState#UNPROCESSED}
+     * Gets this reference state.
      * @return state
      */
     DocCrawlState getState();

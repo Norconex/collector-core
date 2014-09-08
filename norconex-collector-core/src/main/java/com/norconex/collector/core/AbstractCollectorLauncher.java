@@ -121,7 +121,8 @@ public abstract class AbstractCollectorLauncher {
         return cmd;
     }
     
-    protected abstract Class<? extends AbstractCollectorConfig> getCollectorConfigClass();
+    protected abstract Class<? extends AbstractCollectorConfig> 
+            getCollectorConfigClass();
     protected abstract ICollector createCollector(
             ICollectorConfig config);
 }
