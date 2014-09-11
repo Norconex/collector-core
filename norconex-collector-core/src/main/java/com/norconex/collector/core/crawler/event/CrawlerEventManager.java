@@ -66,7 +66,9 @@ public class CrawlerEventManager {
     public void logEvent(DocCrawlEvent event) {
         Logger log =  LogManager.getLogger(
                 DocCrawlEvent.class.getName() + "." + event.getEventType());
-        log.info(getLogMessage(event));
+        if (log.isDebugEnabled()) {
+            log.debug(getLogMessage(event));
+        }
     }
     
     protected String getLogMessage(DocCrawlEvent event) {
@@ -76,6 +78,7 @@ public class CrawlerEventManager {
         b.append(event.getDocCrawl().getReference());
         b.append(" (Subject: ");
         b.append(Objects.toString(event.getSubject(), "none"));
+        b.append(")");
         return b.toString();
     }
 
