@@ -45,7 +45,6 @@ public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
     private static final String STORE_CACHE = "cache";
     private static final String STORE_PROCESSED_VALID = "valid";
     private static final String STORE_PROCESSED_INVALID = "invalid";
-//    private static final String STORE_SITEMAP = "sitemap";
     
     //private final String crawlerId; 
     private final String path;
@@ -55,7 +54,6 @@ public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
     private Map<String, IDocCrawl> cache;
     private Map<String, IDocCrawl> processedValid;
     private Map<String, IDocCrawl> processedInvalid;
-//    private Set<String> sitemap;
     
     private long commitCounter;
     
@@ -100,8 +98,6 @@ public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
             active.clear();
             LOG.debug(path + ": Cleaning invalid URLs database...");
             processedInvalid.clear();
-//            LOG.debug(path + ": Cleaning sitemap database...");
-//            sitemap.clear();
             LOG.debug(path + ": Cleaning cache database...");
             db.delete(STORE_CACHE);
             LOG.debug(path 
@@ -145,7 +141,6 @@ public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
             processedValid = db.getHashMap(STORE_PROCESSED_VALID);
             processedInvalid = db.getHashMap(STORE_PROCESSED_INVALID);
         }
-//        sitemap = db.getHashSet(STORE_SITEMAP);
     }
     
     @Override
@@ -243,44 +238,6 @@ public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
         return cache.values().iterator();
     };
     
-//    @Override
-//    public boolean isVanished(IDocCrawlDetails reference) {
-//        IDocCrawlDetails cachedReference = getCached(reference.getReference());
-//        if (cachedReference == null) {
-//            return false;
-//        }
-////        return isVanished(reference, cachedReference);
-//        DocCrawlState current = reference.getState();
-//        DocCrawlState last = cachedReference.getState();
-//        return !current.isValid() && last.isValid();
-//    }
-
-//    @Override
-//    public boolean isVanished(CrawlURL crawlURL) {
-//        CrawlURL cachedURL = getCached(crawlURL.getUrl());
-//        if (cachedURL == null) {
-//            return false;
-//        }
-//        CrawlStatus cur = crawlURL.getStatus();
-//        CrawlStatus last = cachedURL.getStatus();
-//        return cur != CrawlStatus.OK && cur != CrawlStatus.UNMODIFIED
-//              && (last == CrawlStatus.OK ||  last == CrawlStatus.UNMODIFIED);
-//    }    
-    
-    
-//    protected abstract boolean isVanished(
-//            IDocCrawlDetails currentReference, IDocCrawlDetails cachedReference);
-    
-//    @Override
-//    public void sitemapResolved(String urlRoot) {
-//        sitemap.add(urlRoot);
-//    }
-//
-//    @Override
-//    public boolean isSitemapResolved(String urlRoot) {
-//        return sitemap.contains(urlRoot);
-//    }
-    
     @Override
     public synchronized void close() {
         if (!db.isClosed()) {
@@ -289,12 +246,6 @@ public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
             db.close();
         }
     }
-    
-//    protected abstract boolean isValid(IDocCrawlDetails reference);
-////    private boolean isValidStatus(IDocCrawlDetails reference) {
-////        return reference.getStatus() == ReferenceStatus.OK
-////                || reference.getStatus() == ReferenceStatus.UNMODIFIED;
-////    }
     
     @Override
     protected void finalize() throws Throwable {

@@ -70,16 +70,6 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         this.crawlerConfigClass = crawlerConfigClass;
     }
 
-//
-//    /**
-//     * Creates a new collector with the given unique id.  
-//     * @param id unique identifier
-//     */
-//	public AbstractCollectorConfig(String id) {
-//        super();
-//        this.id = id;
-//    }
-
 	/**
 	 * Gets this collector unique identifier.
 	 * @return unique identifier
@@ -179,7 +169,6 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
     
     @Override
     public final void loadFromXML(Reader in) throws IOException {
-//        XMLConfiguration.setDefaultListDelimiter('\0');
         XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
         String collectorId = xml.getString("[@id]", null);
         if (StringUtils.isBlank(collectorId)) {
