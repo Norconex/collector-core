@@ -18,6 +18,8 @@
  */
 package com.norconex.collector.core;
 
+import java.util.Arrays;
+
 import com.norconex.collector.core.crawler.ICrawler;
 import com.norconex.collector.core.crawler.ICrawlerConfig;
  
@@ -37,8 +39,6 @@ import com.norconex.collector.core.crawler.ICrawlerConfig;
 @SuppressWarnings("nls")
 public abstract class AbstractCollector implements ICollector {
 
-//	private static final Logger LOG = 
-//	        LogManager.getLogger(AbstractCollector.class);
     private AbstractCollectorConfig collectorConfig;
 
     private ICrawler[] crawlers;
@@ -89,74 +89,9 @@ public abstract class AbstractCollector implements ICollector {
     }
     
     public void setCrawlers(ICrawler[] crawlers) {
-        this.crawlers = crawlers;
+        this.crawlers = Arrays.copyOf(crawlers, crawlers.length);
     }
     public ICrawler[] getCrawlers() {
         return crawlers;
     }
-
-//    /**
-//     * Launched all crawlers defined in configuration.
-//     * @param resumeNonCompleted whether to resume where previous crawler
-//     *        aborted (if applicable) 
-//     */
-//    @Override
-//    public void start(boolean resumeNonCompleted) {
-////        JobSuite suite = createJobSuite();
-////        JobRunner jobRunner = new JobRunner();
-////        jobRunner.runSuite(suite, resumeNonCompleted);
-//    }
-//
-//    /**
-//     * Stops a running instance of this HTTP Collector.
-//     */
-//    @Override
-//    public void stop() {
-////        JobSuite suite = createJobSuite();
-////        ((FileStopRequestHandler) 
-////                suite.getStopRequestHandler()).fireStopRequest();
-//    }
-//    
-//    
-//    @Override
-//    public JobSuite createJobSuite() {
-//        if (abstractCollectorConfig == null) {
-//            try {
-//                abstractCollectorConfig = CollectorConfigLoader.loadCollectorConfig(
-//                        getConfigurationFile(), getVariablesFile());
-//            } catch (Exception e) {
-//                throw new CollectorException(e);
-//            }
-//        }
-//        if (abstractCollectorConfig == null) {
-//        	throw new CollectorException(
-//        			"Configuration file does not exists: "
-//        			+ getConfigurationFile());
-//        }
-//        HttpCrawlerConfig[] configs = abstractCollectorConfig.getCrawlerConfigs();
-//        crawlers = new HttpCrawler[configs.length];
-//        for (int i = 0; i < configs.length; i++) {
-//            HttpCrawlerConfig crawlerConfig = configs[i];
-//            crawlers[i] = new HttpCrawler(crawlerConfig);
-//        }
-//
-//        IJob rootJob = null;
-//        if (crawlers.length > 1) {
-//            rootJob = new AsyncJobGroup(
-//                    abstractCollectorConfig.getId(), crawlers
-//            );
-//        } else if (crawlers.length == 1) {
-//            rootJob = crawlers[0];
-//        }
-//        
-//        JobSuite suite = new JobSuite(
-//                rootJob, 
-//                new JobProgressPropertiesFileSerializer(
-//                        abstractCollectorConfig.getProgressDir()),
-//                new FileLogManager(abstractCollectorConfig.getLogsDir()),
-//                new FileStopRequestHandler(abstractCollectorConfig.getId(), 
-//                        abstractCollectorConfig.getProgressDir()));
-//        LOG.info("Suite of " + crawlers.length + " HTTP crawler jobs created.");
-//        return suite;
-//    }
 }

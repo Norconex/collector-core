@@ -46,7 +46,6 @@ public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
     private static final String STORE_PROCESSED_VALID = "valid";
     private static final String STORE_PROCESSED_INVALID = "invalid";
     
-    //private final String crawlerId; 
     private final String path;
     private final DB db;
     private Queue<IDocCrawl> queue;
@@ -70,10 +69,7 @@ public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
         this.valueSerializer = valueSerializer;
         this.path = path;
 
-        //this.crawlerId = crawlerId;
-        
         LOG.info("Initializing reference store " + path);
-        //String dbDir = path + "/store/" + crawlerId + "/";
         
         new File(path).mkdirs();
         File dbFile = new File(path + "/mapdb");
@@ -202,7 +198,6 @@ public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
         //TODO why clone here if we are only readonly?
         IDocCrawl referenceCopy = docCrawl.safeClone();
         if (referenceCopy.getState().isGoodState()) {
-//        if (isValidStatus(referenceCopy)) {
             processedValid.put(referenceCopy.getReference(), referenceCopy);
         } else {
             processedInvalid.put(referenceCopy.getReference(), referenceCopy);

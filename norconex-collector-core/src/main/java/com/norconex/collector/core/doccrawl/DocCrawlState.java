@@ -18,14 +18,7 @@ public class DocCrawlState implements Serializable {
     private static final Map<String, DocCrawlState> STATUSES = 
             new HashMap<>();
     
-    //TODO delete this after refactoring complete:
-//    public static final DocCrawlState OK = new DocCrawlState("OK");
-
-    
-    
     private static final long serialVersionUID = 6542269270632505768L;
-//    public static final DocCrawlState UNPROCESSED = 
-//            new DocCrawlState("UNPROCESSED");
     public static final DocCrawlState NEW = new DocCrawlState("NEW");
     public static final DocCrawlState MODIFIED = 
             new DocCrawlState("MODIFIED");
@@ -57,7 +50,6 @@ public class DocCrawlState implements Serializable {
      * @return <code>true</code> if status is valid.
      */
     public boolean isGoodState() {
-        //return isOneOf(OK, NEW, MODIFIED, UNMODIFIED);
         return isOneOf(NEW, MODIFIED, UNMODIFIED);
     }
 

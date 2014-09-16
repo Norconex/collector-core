@@ -18,6 +18,7 @@
  */
 package com.norconex.collector.core.crawler.event;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
@@ -27,19 +28,24 @@ import org.apache.log4j.Logger;
 import com.norconex.collector.core.crawler.ICrawler;
 
 /**
+ * Holds event listeners and allows to log events.  Events are also logged
+ * using Log4j.  Each events have their own appenders, following this pattern:
+ * <pre>
+ *    com.norconex.collector.core.crawler.event.DocCrawlEvent.<EVENT_ID>
+ * </pre>
  * @author Pascal Essiembre
- *
  */
 public class CrawlerEventManager {
 
     private final ICrawlerEventListener[] listeners;
     private final ICrawler crawler;
+    private static final int ID_PRINT_WIDTH = 20;
     
     public CrawlerEventManager(
             ICrawler crawler, ICrawlerEventListener[] listeners) {
         this.crawler = crawler;
         if (listeners != null) {
-            this.listeners = listeners;
+            this.listeners = Arrays.copyOf(listeners, listeners.length);
         } else {
             this.listeners = new ICrawlerEventListener[] {};
         }
@@ -73,7 +79,7 @@ public class CrawlerEventManager {
     
     protected String getLogMessage(DocCrawlEvent event) {
         StringBuilder b = new StringBuilder();
-        b.append(StringUtils.leftPad(event.getEventType(), 20));
+        b.append(StringUtils.leftPad(event.getEventType(), ID_PRINT_WIDTH));
         b.append(": ");
         b.append(event.getDocCrawl().getReference());
         b.append(" (Subject: ");

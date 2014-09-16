@@ -135,10 +135,6 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     public final void loadFromXML(Reader in) throws IOException {
         XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
         String crawlerId = xml.getString("[@id]", null);
-//        if (StringUtils.isBlank(collectorId)) {
-//            throw new CollectorException(
-//                    "Collector id attribute is mandatory.");
-//        }
         setId(crawlerId);
         
         setReferenceStoreFactory(ConfigurationUtil.newInstance(xml,

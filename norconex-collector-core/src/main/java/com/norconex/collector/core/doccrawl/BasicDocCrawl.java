@@ -23,6 +23,8 @@ import java.lang.reflect.InvocationTargetException;
 import org.apache.commons.beanutils.BeanUtils;
 
 import com.norconex.collector.core.CollectorException;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 
 /**
@@ -104,76 +106,6 @@ public class BasicDocCrawl implements IDocCrawl {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((contentChecksum == null) ? 0 : contentChecksum.hashCode());
-        result = prime * result + (isRootParentReference ? 1231 : 1237);
-        result = prime * result
-                + ((metaChecksum == null) ? 0 : metaChecksum.hashCode());
-        result = prime
-                * result
-                + ((parentRootReference == null) ? 0 : parentRootReference
-                        .hashCode());
-        result = prime * result
-                + ((reference == null) ? 0 : reference.hashCode());
-        result = prime * result + ((state == null) ? 0 : state.hashCode());
-        return result;
-    }
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof BasicDocCrawl)) {
-            return false;
-        }
-        BasicDocCrawl other = (BasicDocCrawl) obj;
-        if (contentChecksum == null) {
-            if (other.contentChecksum != null) {
-                return false;
-            }
-        } else if (!contentChecksum.equals(other.contentChecksum)) {
-            return false;
-        }
-        if (isRootParentReference != other.isRootParentReference) {
-            return false;
-        }
-        if (metaChecksum == null) {
-            if (other.metaChecksum != null) {
-                return false;
-            }
-        } else if (!metaChecksum.equals(other.metaChecksum)) {
-            return false;
-        }
-        if (parentRootReference == null) {
-            if (other.parentRootReference != null) {
-                return false;
-            }
-        } else if (!parentRootReference.equals(other.parentRootReference)) {
-            return false;
-        }
-        if (reference == null) {
-            if (other.reference != null) {
-                return false;
-            }
-        } else if (!reference.equals(other.reference)) {
-            return false;
-        }
-        if (state == null) {
-            if (other.state != null) {
-                return false;
-            }
-        } else if (!state.equals(other.state)) {
-            return false;
-        }
-        return true;
-    }
-    @Override
     public String toString() {
         return "BasicDocCrawlDetails [reference=" + reference
                 + ", parentRootReference=" + parentRootReference
@@ -181,6 +113,24 @@ public class BasicDocCrawl implements IDocCrawl {
                 + ", state=" + state + ", metaChecksum=" + metaChecksum
                 + ", contentChecksum=" + contentChecksum + "]";
     }
-    
-    
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof BasicDocCrawl)) {
+            return false;
+        }
+        BasicDocCrawl castOther = (BasicDocCrawl) other;
+        return new EqualsBuilder().append(reference, castOther.reference)
+                .append(parentRootReference, castOther.parentRootReference)
+                .append(isRootParentReference, castOther.isRootParentReference)
+                .append(state, castOther.state)
+                .append(metaChecksum, castOther.metaChecksum)
+                .append(contentChecksum, castOther.contentChecksum).isEquals();
+    }
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(reference)
+                .append(parentRootReference).append(isRootParentReference)
+                .append(state).append(metaChecksum).append(contentChecksum)
+                .toHashCode();
+    }
 }

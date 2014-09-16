@@ -20,6 +20,7 @@ package com.norconex.collector.core;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 
 import org.apache.commons.cli.CommandLine;
@@ -73,11 +74,12 @@ public abstract class AbstractCollectorLauncher {
                 collector.stop();
             }
         } catch (Exception e) {
+            PrintStream err = System.err;
             File errorFile = new File(
                     "./error-" + System.currentTimeMillis() + ".log");
-            System.err.println("\n\nAn ERROR occured:\n\n"
+            err.println("\n\nAn ERROR occured:\n\n"
                   + e.getLocalizedMessage());
-            System.err.println("\n\nDetails of the error has been stored at: "
+            err.println("\n\nDetails of the error has been stored at: "
                     + errorFile.getAbsolutePath() + "\n\n");
             try {
                 PrintWriter w = new PrintWriter(errorFile);
@@ -85,8 +87,8 @@ public abstract class AbstractCollectorLauncher {
                 w.flush();
                 w.close();
             } catch (FileNotFoundException e1) {
-                throw new CollectorException(
-                        "Cannot write error file.", e1);
+                err.println("\n\nCannot write error file. " 
+                        + e1.getLocalizedMessage());
             }
         }
     }
@@ -112,7 +114,8 @@ public abstract class AbstractCollectorLauncher {
                 System.exit(-1);
             }
         } catch (ParseException e) {
-            System.err.println("Could not parse arguments.");
+            PrintStream err = System.err;
+            err.println("Could not parse arguments.");
             e.printStackTrace(System.err);
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp( "collector-http[.bat|.sh]", options );

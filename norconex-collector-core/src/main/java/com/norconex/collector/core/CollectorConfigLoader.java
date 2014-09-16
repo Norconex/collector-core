@@ -28,9 +28,6 @@ import org.apache.log4j.Logger;
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.ConfigurationUtil;
 
-//TODO implement IXmlConfigurable on AbstractCollectorConfig instead?
-
-
 /**
  * HTTP Collector configuration loader.  Configuration options are defined
  * as part of general product documentation.
@@ -42,14 +39,11 @@ public class CollectorConfigLoader {
             CollectorConfigLoader.class);
 
     private final Class<? extends ICollectorConfig> collectorConfigClass;
-//    private final Class<? extends ICrawlerConfig> crawlerConfigClass;
     
     public CollectorConfigLoader(
             Class<? extends ICollectorConfig> collectorConfigClass) {
-//            , Class<? extends ICrawlerConfig> crawlerConfigClass) {
         super();
         this.collectorConfigClass = collectorConfigClass;
-//        this.crawlerConfigClass = crawlerConfigClass;
     }
     
     /**
@@ -94,28 +88,6 @@ public class CollectorConfigLoader {
                     "Cannot load configuration for class: " 
                             + collectorConfigClass, e);
         }
-
-        
-//
-//        String collectorID = xml.getString("[@id]");
-//        HttpCrawlerConfig[] crawlers = 
-//                HttpCrawlerConfigLoader.loadCrawlerConfigs(xml);
-//
-//        AbstractCollectorConfig config = new AbstractCollectorConfig(collectorID);
-//        config.setCrawlerConfigs(crawlers);
-//
-//        config.setLogsDir(xml.getString("logsDir", config.getLogsDir()));
-//        config.setProgressDir(
-//                xml.getString("progressDir", config.getProgressDir()));
-//
-//        if (LOG.isInfoEnabled()) {
-//            LOG.info("Configuration loaded: id=" + collectorID
-//                    + "; logsDir=" + config.getLogsDir()
-//                    + "; progressDir=" + config.getProgressDir());
-//        }
-//        return config;
-//        return null;
     }
 
-    
 }
