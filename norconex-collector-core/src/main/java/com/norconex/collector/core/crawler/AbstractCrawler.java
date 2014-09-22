@@ -18,9 +18,14 @@
  */
 package com.norconex.collector.core.crawler;
 
+import java.util.Locale;
+
 import org.apache.commons.lang3.time.StopWatch;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.norconex.collector.core.doccrawl.store.IDocCrawlStore;
+import com.norconex.commons.lang.time.DurationUtil;
 import com.norconex.jef4.job.AbstractResumableJob;
 import com.norconex.jef4.status.IJobStatus;
 import com.norconex.jef4.status.JobStatusUpdater;
@@ -33,8 +38,10 @@ import com.norconex.jef4.suite.JobSuite;
 public abstract class AbstractCrawler 
         extends AbstractResumableJob implements ICrawler {
 
+    private static final Logger LOG = 
+            LogManager.getLogger(AbstractCrawler.class);
+    
     private final ICrawlerConfig config;
-    private final StopWatch stopWatch = new StopWatch();;
     
     /**
      * Constructor.
@@ -76,6 +83,7 @@ public abstract class AbstractCrawler
 
     private void doExecute(JobStatusUpdater statusUpdater,
             JobSuite suite, boolean resume) {
+        StopWatch stopWatch = new StopWatch();;
         stopWatch.start();
         IDocCrawlStore refStore = 
                 config.getReferenceStoreFactory().createReferenceStore(
@@ -84,10 +92,12 @@ public abstract class AbstractCrawler
             prepareExecution(statusUpdater, suite, refStore, resume);
             execute(statusUpdater, suite, refStore);
         } finally {
+            stopWatch.stop();
+            LOG.info("Collector executed in " + DurationUtil.formatLong(
+                    Locale.ENGLISH, stopWatch.getTime()));
             try {
                 cleanupExecution(statusUpdater, suite, refStore);
             } finally {
-                stopWatch.stop();
                 refStore.close();
             }
         }
