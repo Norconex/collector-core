@@ -61,7 +61,7 @@ public class MapDBDocCrawlStoreFactory
             ICrawlerConfig config, boolean resume) {
         String storeDir = config.getWorkDir().getPath()
                 + "/refstore/" + config.getId() + "/";
-        return new MapDBDocCrawlStore(storeDir, resume, null);
+        return new MapDBDocCrawlStore(storeDir, resume, valueSerializer);
     }
     
     //TODO implement IXMLConfigurable? To set a custom serializer?

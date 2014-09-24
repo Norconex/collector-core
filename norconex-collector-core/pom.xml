@@ -104,6 +104,21 @@ along with Norconex Collector Core. If not, see <http://www.gnu.org/licenses/>.
       <artifactId>commons-beanutils</artifactId>
       <version>1.8.3</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.derby</groupId>
+      <artifactId>derby</artifactId>
+      <version>10.11.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-dbcp2</artifactId>
+      <version>2.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-dbutils</groupId>
+      <artifactId>commons-dbutils</artifactId>
+      <version>1.6</version>
+    </dependency>
   </dependencies>
   
   <build>
