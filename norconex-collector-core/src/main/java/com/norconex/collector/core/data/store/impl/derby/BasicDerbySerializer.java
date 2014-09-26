@@ -16,14 +16,14 @@
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.doccrawl.store.impl.derby;
+package com.norconex.collector.core.data.store.impl.derby;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import com.norconex.collector.core.doccrawl.BasicDocCrawl;
-import com.norconex.collector.core.doccrawl.DocCrawlState;
-import com.norconex.collector.core.doccrawl.IDocCrawl;
+import com.norconex.collector.core.data.BasicCrawlData;
+import com.norconex.collector.core.data.CrawlState;
+import com.norconex.collector.core.data.ICrawlData;
 
 /**
  * @author Pascal Essiembre
@@ -62,7 +62,7 @@ public class BasicDerbySerializer implements IDerbySerializer {
     public String getDeleteDocCrawlSQL(String table) {
         return "DELETE FROM " + table + " WHERE reference = ?";
     }
-    public Object[] getDeleteDocCrawlValues(String table, IDocCrawl crawlURL) {
+    public Object[] getDeleteDocCrawlValues(String table, ICrawlData crawlURL) {
         return new Object[] { crawlURL.getReference() };
     }
 
@@ -72,21 +72,21 @@ public class BasicDerbySerializer implements IDerbySerializer {
                 + ") values (?,?,?,?,?,?)";
     }
     @Override
-    public Object[] getInsertDocCrawlValues(String table, IDocCrawl docCrawl) {
+    public Object[] getInsertDocCrawlValues(String table, ICrawlData crawlData) {
         return new Object[] { 
-                docCrawl.getReference(),
-                docCrawl.getParentRootReference(),
-                docCrawl.isRootParentReference(),
-                docCrawl.getState().toString(),
-                docCrawl.getMetaChecksum(),
-                docCrawl.getContentChecksum()
+                crawlData.getReference(),
+                crawlData.getParentRootReference(),
+                crawlData.isRootParentReference(),
+                crawlData.getState().toString(),
+                crawlData.getMetaChecksum(),
+                crawlData.getContentChecksum()
         };
     }
 
     @Override
     public String getNextQueuedDocCrawlSQL() {
         return "SELECT " + ALL_FIELDS 
-                + "FROM " + DerbyDocCrawlStore.TABLE_QUEUE;
+                + "FROM " + DerbyCrawlDataStore.TABLE_QUEUE;
     }
     @Override
     public Object[] getNextQueuedDocCrawlValues() {
@@ -96,7 +96,7 @@ public class BasicDerbySerializer implements IDerbySerializer {
     @Override
     public String getCachedDocCrawlSQL() {
         return "SELECT " + ALL_FIELDS 
-                + "FROM " + DerbyDocCrawlStore.TABLE_CACHE
+                + "FROM " + DerbyCrawlDataStore.TABLE_CACHE
                 + " WHERE reference = ? ";
     }
     @Override
@@ -114,16 +114,16 @@ public class BasicDerbySerializer implements IDerbySerializer {
     }
 
     @Override
-    public IDocCrawl toDocCrawl(String table, ResultSet rs)
+    public ICrawlData toDocCrawl(String table, ResultSet rs)
             throws SQLException {
         if (rs == null) {
             return null;
         }
-        BasicDocCrawl data = new BasicDocCrawl();
+        BasicCrawlData data = new BasicCrawlData();
         data.setReference(rs.getString("reference"));
         data.setParentRootReference(rs.getString("parentRootReference"));
         data.setRootParentReference(rs.getBoolean("isRootParentReference"));
-        data.setState(DocCrawlState.valueOf(rs.getString("state")));
+        data.setState(CrawlState.valueOf(rs.getString("state")));
         data.setMetaChecksum(rs.getString("metaChecksum"));
         data.setContentChecksum(rs.getString("contentChecksum"));
         return data;

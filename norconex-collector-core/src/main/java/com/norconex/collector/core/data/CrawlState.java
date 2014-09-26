@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.norconex.collector.core.doccrawl;
+package com.norconex.collector.core.data;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -13,20 +13,20 @@ import org.apache.commons.lang3.ArrayUtils;
  * Reference processing status.
  * @author Pascal Essiembre
  */
-public class DocCrawlState implements Serializable {
+public class CrawlState implements Serializable {
 
-    private static final Map<String, DocCrawlState> STATUSES = 
+    private static final Map<String, CrawlState> STATUSES = 
             new HashMap<>();
     
     private static final long serialVersionUID = 6542269270632505768L;
-    public static final DocCrawlState NEW = new DocCrawlState("NEW");
-    public static final DocCrawlState MODIFIED = 
-            new DocCrawlState("MODIFIED");
-    public static final DocCrawlState UNMODIFIED = 
-            new DocCrawlState("UNMODIFIED");
-    public static final DocCrawlState ERROR = new DocCrawlState("ERROR");
-    public static final DocCrawlState REJECTED = 
-            new DocCrawlState("REJECTED");
+    public static final CrawlState NEW = new CrawlState("NEW");
+    public static final CrawlState MODIFIED = 
+            new CrawlState("MODIFIED");
+    public static final CrawlState UNMODIFIED = 
+            new CrawlState("UNMODIFIED");
+    public static final CrawlState ERROR = new CrawlState("ERROR");
+    public static final CrawlState REJECTED = 
+            new CrawlState("REJECTED");
     
     private final String state;
     
@@ -34,7 +34,7 @@ public class DocCrawlState implements Serializable {
      * Constructor.
      * @param state state code
      */
-    protected DocCrawlState(String state) {
+    protected CrawlState(String state) {
         this.state = state;
         STATUSES.put(state, this);
     }
@@ -58,22 +58,22 @@ public class DocCrawlState implements Serializable {
     }
 
     
-    public boolean isOneOf(DocCrawlState... states) {
+    public boolean isOneOf(CrawlState... states) {
         if (ArrayUtils.isEmpty(states)) {
             return false;
         }
-        for (DocCrawlState docCrawlState : states) {
-            if (equals(docCrawlState)) {
+        for (CrawlState crawlState : states) {
+            if (equals(crawlState)) {
                 return true;
             }
         }
         return false;
     }
     
-    public static synchronized DocCrawlState valueOf(String state) {
-        DocCrawlState refState = STATUSES.get(state);
+    public static synchronized CrawlState valueOf(String state) {
+        CrawlState refState = STATUSES.get(state);
         if (refState == null) {
-            refState = new DocCrawlState(state);
+            refState = new CrawlState(state);
         }
         return refState;
     }
@@ -103,10 +103,10 @@ public class DocCrawlState implements Serializable {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof DocCrawlState)) {
+        if (!(obj instanceof CrawlState)) {
             return false;
         }
-        DocCrawlState other = (DocCrawlState) obj;
+        CrawlState other = (CrawlState) obj;
         if (state == null) {
             if (other.state != null) {
                 return false;

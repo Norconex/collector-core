@@ -16,16 +16,16 @@
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.doccrawl.store;
+package com.norconex.collector.core.data.store;
 
 import java.io.Serializable;
 
 import com.norconex.collector.core.crawler.ICrawlerConfig;
 
-public interface IDocCrawlStoreFactory 
+public interface ICrawlDataStoreFactory 
         extends Serializable {
 
-    IDocCrawlStore createReferenceStore(
+    ICrawlDataStore createReferenceStore(
             ICrawlerConfig config, boolean resume);
     
 }

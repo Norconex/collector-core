@@ -5,7 +5,7 @@ package com.norconex.collector.core.crawler;
 
 import java.io.File;
 
-import com.norconex.collector.core.doccrawl.store.IDocCrawlStoreFactory;
+import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 
 /**
@@ -22,7 +22,7 @@ public interface ICrawlerConfig extends IXMLConfigurable {
 
     File getWorkDir();
 
-    IDocCrawlStoreFactory getReferenceStoreFactory();
+    ICrawlDataStoreFactory getReferenceStoreFactory();
 
     ICrawlerConfig safeClone();
 }

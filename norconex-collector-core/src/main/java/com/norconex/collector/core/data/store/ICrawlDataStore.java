@@ -16,11 +16,11 @@
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.doccrawl.store;
+package com.norconex.collector.core.data.store;
 
 import java.util.Iterator;
 
-import com.norconex.collector.core.doccrawl.IDocCrawl;
+import com.norconex.collector.core.data.ICrawlData;
 
 /**
  * Holds necessary information about all references (e.g. url, path, etc) 
@@ -37,14 +37,14 @@ import com.norconex.collector.core.doccrawl.IDocCrawl;
  * </ul>
  * @author Pascal Essiembre
  */
-public interface IDocCrawlStore {
+public interface ICrawlDataStore {
 
     /**
      * <p>
      * Queues a reference for future processing. 
-     * @param docCrawl  the reference to eventually be processed
+     * @param crawlData  the reference to eventually be processed
      */
-    void queue(IDocCrawl docCrawl);
+    void queue(ICrawlData crawlData);
 
     /**
      * Whether there are any references to process in the queue.
@@ -73,7 +73,7 @@ public interface IDocCrawlStore {
      * is effectively removed from the queue.
      * @return next reference 
      */
-    IDocCrawl nextQueued();
+    ICrawlData nextQueued();
     
     /**
      * Whether the given reference is currently being processed (i.e. active).
@@ -94,7 +94,7 @@ public interface IDocCrawlStore {
      * @param cacheReference reference cached from previous run
      * @return url
      */
-    IDocCrawl getCached(String cacheReference);
+    ICrawlData getCached(String cacheReference);
     
     /**
      * Whether there are any references the the cache from a previous crawler 
@@ -106,9 +106,9 @@ public interface IDocCrawlStore {
     /**
      * Marks this reference as processed.  Processed references will not be 
      * processed again in the same crawl run.
-     * @param docCrawl processed reference
+     * @param crawlData processed reference
      */
-    void processed(IDocCrawl docCrawl);
+    void processed(ICrawlData crawlData);
 
     /**
      * Whether the given reference has been processed.
@@ -127,16 +127,16 @@ public interface IDocCrawlStore {
      * Gets the cache iterator.
      * @return cache iterator
      */
-    Iterator<IDocCrawl> getCacheIterator();
+    Iterator<ICrawlData> getCacheIterator();
     
     /**
      * Whether a reference has been deleted.  To find this out, the reference 
      * has to be of an invalid state (e.g. NOT_FOUND) and must exists in the 
      * reference cache in a valid state.
-     * @param docCrawl the reference
+     * @param crawlData the reference
      * @return <code>true</code> if reference has been deleted on site
      */
-    boolean isVanished(IDocCrawl docCrawl);
+    boolean isVanished(ICrawlData crawlData);
     
     /**
      * Closes a database connection. This method gets called a the end

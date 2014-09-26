@@ -18,7 +18,7 @@
  */
 package com.norconex.collector.core.crawler.event;
 
-import com.norconex.collector.core.doccrawl.IDocCrawl;
+import com.norconex.collector.core.data.ICrawlData;
 
 /**
  * @author Pascal Essiembre
@@ -44,13 +44,13 @@ public class DocCrawlEvent {
     public static final String DOCUMENT_COMMITTED = "DOCUMENT_COMMITTED";
     public static final String DOCUMENT_IMPORTED = "DOCUMENT_IMPORTED";
     
-    private final IDocCrawl docCrawl;
+    private final ICrawlData crawlData;
     private final Object subject;
     private final String eventType;
 
-    public DocCrawlEvent(String eventType, IDocCrawl docCrawl, Object subject) {
+    public DocCrawlEvent(String eventType, ICrawlData crawlData, Object subject) {
         super();
-        this.docCrawl = docCrawl;
+        this.crawlData = crawlData;
         this.subject = subject;
         this.eventType = eventType;
     }
@@ -59,8 +59,8 @@ public class DocCrawlEvent {
         return subject;
     }
 
-    public IDocCrawl getDocCrawl() {
-        return docCrawl;
+    public ICrawlData getDocCrawl() {
+        return crawlData;
     }
 
     public String getEventType() {

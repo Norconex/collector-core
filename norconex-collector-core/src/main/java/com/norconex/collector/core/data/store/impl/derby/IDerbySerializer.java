@@ -16,12 +16,12 @@
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.doccrawl.store.impl.derby;
+package com.norconex.collector.core.data.store.impl.derby;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import com.norconex.collector.core.doccrawl.IDocCrawl;
+import com.norconex.collector.core.data.ICrawlData;
 
 /**
  * Serializer hoding necessary information to insert, load, delete and create
@@ -36,10 +36,10 @@ public interface IDerbySerializer {
     String getSelectDocCrawlSQL(String table);
     
     String getDeleteDocCrawlSQL(String table);
-    Object[] getDeleteDocCrawlValues(String table, IDocCrawl docCrawl);
+    Object[] getDeleteDocCrawlValues(String table, ICrawlData crawlData);
     
     String getInsertDocCrawlSQL(String table);
-    Object[] getInsertDocCrawlValues(String table, IDocCrawl docCrawl);
+    Object[] getInsertDocCrawlValues(String table, ICrawlData crawlData);
 
     String getNextQueuedDocCrawlSQL();
     Object[] getNextQueuedDocCrawlValues();
@@ -50,6 +50,6 @@ public interface IDerbySerializer {
     String getReferenceExistsSQL(String table);
     Object[] getReferenceExistsValues(String table, String reference);
     
-    IDocCrawl toDocCrawl(String table, ResultSet rs) throws SQLException;
+    ICrawlData toDocCrawl(String table, ResultSet rs) throws SQLException;
 
 }

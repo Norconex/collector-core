@@ -16,28 +16,28 @@
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.doccrawl.store;
+package com.norconex.collector.core.data.store;
 
 import com.norconex.collector.core.CollectorException;
 
-public class DocCrawlStoreException extends CollectorException {
+public class CrawlDataStoreException extends CollectorException {
 
     
     private static final long serialVersionUID = 5416591514078326431L;
 
-    public DocCrawlStoreException() {
+    public CrawlDataStoreException() {
         super();
     }
 
-    public DocCrawlStoreException(String message) {
+    public CrawlDataStoreException(String message) {
         super(message);
     }
 
-    public DocCrawlStoreException(Throwable cause) {
+    public CrawlDataStoreException(Throwable cause) {
         super(cause);
     }
 
-    public DocCrawlStoreException(String message, Throwable cause) {
+    public CrawlDataStoreException(String message, Throwable cause) {
         super(message, cause);
     }
 

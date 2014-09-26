@@ -16,7 +16,7 @@
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.doccrawl.store.impl.mapdb;
+package com.norconex.collector.core.data.store.impl.mapdb;
 
 import java.io.File;
 import java.util.Iterator;
@@ -29,13 +29,13 @@ import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
 
-import com.norconex.collector.core.doccrawl.IDocCrawl;
-import com.norconex.collector.core.doccrawl.store.AbstractDocCrawlStore;
+import com.norconex.collector.core.data.ICrawlData;
+import com.norconex.collector.core.data.store.AbstractCrawlDataStore;
 
-public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
+public class MapDBCrawlDataStore extends AbstractCrawlDataStore {
 
     private static final Logger LOG = 
-            LogManager.getLogger(MapDBDocCrawlStore.class);
+            LogManager.getLogger(MapDBCrawlDataStore.class);
 
     //TODO make configurable
     private static final int COMMIT_SIZE = 1000;
@@ -48,22 +48,22 @@ public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
     
     private final String path;
     private final DB db;
-    private Queue<IDocCrawl> queue;
-    private Map<String, IDocCrawl> active;
-    private Map<String, IDocCrawl> cache;
-    private Map<String, IDocCrawl> processedValid;
-    private Map<String, IDocCrawl> processedInvalid;
+    private Queue<ICrawlData> queue;
+    private Map<String, ICrawlData> active;
+    private Map<String, ICrawlData> cache;
+    private Map<String, ICrawlData> processedValid;
+    private Map<String, ICrawlData> processedInvalid;
     
     private long commitCounter;
     
-    private final Serializer<IDocCrawl> valueSerializer;
+    private final Serializer<ICrawlData> valueSerializer;
     
     
-    public MapDBDocCrawlStore(String path, boolean resume) {
+    public MapDBCrawlDataStore(String path, boolean resume) {
         this(path, resume, null);
     }
-    public MapDBDocCrawlStore(String path, boolean resume,
-            Serializer<IDocCrawl> valueSerializer) {
+    public MapDBCrawlDataStore(String path, boolean resume,
+            Serializer<ICrawlData> valueSerializer) {
         super();
         
         this.valueSerializer = valueSerializer;
@@ -82,8 +82,8 @@ public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
         if (resume) {
             LOG.debug(path
                     + " Resuming: putting active URLs back in the queue...");
-            for (IDocCrawl docCrawl : active.values()) {
-                queue.add(docCrawl);
+            for (ICrawlData crawlData : active.values()) {
+                queue.add(crawlData);
             }
             LOG.debug(path + ": Cleaning active database...");
             active.clear();
@@ -140,10 +140,10 @@ public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
     }
     
     @Override
-    public void queue(IDocCrawl docCrawl) {
+    public void queue(ICrawlData crawlData) {
         // Short of being immutable, make a defensive copy of crawl URL.
         //TODO why again?
-        IDocCrawl crawlUrlCopy = docCrawl.safeClone();
+        ICrawlData crawlUrlCopy = crawlData.safeClone();
         queue.add(crawlUrlCopy);
     }
 
@@ -163,12 +163,12 @@ public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
     }
 
     @Override
-    public synchronized IDocCrawl nextQueued() {
-        IDocCrawl docCrawl = (IDocCrawl) queue.poll();
-        if (docCrawl != null) {
-            active.put(docCrawl.getReference(), docCrawl);
+    public synchronized ICrawlData nextQueued() {
+        ICrawlData crawlData = (ICrawlData) queue.poll();
+        if (crawlData != null) {
+            active.put(crawlData.getReference(), crawlData);
         }
-        return docCrawl;
+        return crawlData;
     }
 
     @Override
@@ -182,7 +182,7 @@ public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
     }
 
     @Override
-    public IDocCrawl getCached(String cacheURL) {
+    public ICrawlData getCached(String cacheURL) {
         return cache.get(cacheURL);
     }
 
@@ -192,11 +192,11 @@ public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
     }
 
     @Override
-    public synchronized void processed(IDocCrawl docCrawl) {
+    public synchronized void processed(ICrawlData crawlData) {
         // Short of being immutable, make a defensive copy of crawl URL.
 
         //TODO why clone here if we are only readonly?
-        IDocCrawl referenceCopy = docCrawl.safeClone();
+        ICrawlData referenceCopy = crawlData.safeClone();
         if (referenceCopy.getState().isGoodState()) {
             processedValid.put(referenceCopy.getReference(), referenceCopy);
         } else {
@@ -229,7 +229,7 @@ public class MapDBDocCrawlStore extends AbstractDocCrawlStore {
         return processedValid.size() + processedInvalid.size();
     }
 
-    public Iterator<IDocCrawl> getCacheIterator() {
+    public Iterator<ICrawlData> getCacheIterator() {
         return cache.values().iterator();
     };
     

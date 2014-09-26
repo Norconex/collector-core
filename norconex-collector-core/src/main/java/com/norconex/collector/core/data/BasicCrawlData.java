@@ -16,7 +16,7 @@
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.doccrawl;
+package com.norconex.collector.core.data;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -28,26 +28,26 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 
 
 /**
- * Create a new {@link IDocCrawl} with a default state of NEW.
+ * Create a new {@link ICrawlData} with a default state of NEW.
  * @author Pascal Essiembre
  */
-public class BasicDocCrawl implements IDocCrawl {
+public class BasicCrawlData implements ICrawlData {
 
     private static final long serialVersionUID = 8711781555253202315L;
 
     private String reference;
     private String parentRootReference;
     private boolean isRootParentReference;
-    private DocCrawlState state;
+    private CrawlState state;
     private String metaChecksum;
     private String contentChecksum;
     
     /**
      * Constructor.
      */
-    public BasicDocCrawl() {
+    public BasicCrawlData() {
         super();
-        setState(DocCrawlState.NEW);
+        setState(CrawlState.NEW);
     }
     @Override
     public String getReference() {
@@ -74,10 +74,10 @@ public class BasicDocCrawl implements IDocCrawl {
     }
 
     @Override
-    public DocCrawlState getState() {
+    public CrawlState getState() {
         return state;
     }
-    public void setState(DocCrawlState state) {
+    public void setState(CrawlState state) {
         this.state = state;
     }
     
@@ -95,9 +95,9 @@ public class BasicDocCrawl implements IDocCrawl {
         this.contentChecksum = contentChecksum;
     }
     @Override
-    public IDocCrawl safeClone() {
+    public ICrawlData safeClone() {
         try {
-            return (IDocCrawl) BeanUtils.cloneBean(this);
+            return (ICrawlData) BeanUtils.cloneBean(this);
         } catch (IllegalAccessException | InstantiationException
                 | InvocationTargetException | NoSuchMethodException e) {
             throw new CollectorException(
@@ -115,10 +115,10 @@ public class BasicDocCrawl implements IDocCrawl {
     }
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof BasicDocCrawl)) {
+        if (!(other instanceof BasicCrawlData)) {
             return false;
         }
-        BasicDocCrawl castOther = (BasicDocCrawl) other;
+        BasicCrawlData castOther = (BasicCrawlData) other;
         return new EqualsBuilder().append(reference, castOther.reference)
                 .append(parentRootReference, castOther.parentRootReference)
                 .append(isRootParentReference, castOther.isRootParentReference)

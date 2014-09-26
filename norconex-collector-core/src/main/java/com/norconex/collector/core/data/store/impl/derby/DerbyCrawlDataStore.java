@@ -16,7 +16,7 @@
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.doccrawl.store.impl.derby;
+package com.norconex.collector.core.data.store.impl.derby;
 
 import java.io.File;
 import java.sql.Connection;
@@ -37,14 +37,14 @@ import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.norconex.collector.core.doccrawl.IDocCrawl;
-import com.norconex.collector.core.doccrawl.store.AbstractDocCrawlStore;
-import com.norconex.collector.core.doccrawl.store.DocCrawlStoreException;
+import com.norconex.collector.core.data.ICrawlData;
+import com.norconex.collector.core.data.store.AbstractCrawlDataStore;
+import com.norconex.collector.core.data.store.CrawlDataStoreException;
 
-public class DerbyDocCrawlStore extends AbstractDocCrawlStore {
+public class DerbyCrawlDataStore extends AbstractCrawlDataStore {
 
     private static final Logger LOG = 
-            LogManager.getLogger(DerbyDocCrawlStore.class);
+            LogManager.getLogger(DerbyCrawlDataStore.class);
     
     public static final String TABLE_QUEUE = "queue";
     public static final String TABLE_ACTIVE = "active";
@@ -58,7 +58,7 @@ public class DerbyDocCrawlStore extends AbstractDocCrawlStore {
     private final DataSource datasource;
     private final IDerbySerializer serializer;
     
-    public DerbyDocCrawlStore(String path, boolean resume,
+    public DerbyCrawlDataStore(String path, boolean resume,
             IDerbySerializer serializer) {
         super();
         
@@ -75,7 +75,7 @@ public class DerbyDocCrawlStore extends AbstractDocCrawlStore {
         try {
             incrementalRun = ensureTablesExist();
         } catch (SQLException e) {
-            throw new DocCrawlStoreException(
+            throw new CrawlDataStoreException(
                     "Problem creating crawl store.", e);
         }
         if (resume) {
@@ -102,13 +102,13 @@ public class DerbyDocCrawlStore extends AbstractDocCrawlStore {
     }
 
     @Override
-    public final synchronized void queue(IDocCrawl docCrawl) {
-        sqlInsertDocCrawl(TABLE_QUEUE, docCrawl);
+    public final synchronized void queue(ICrawlData crawlData) {
+        sqlInsertDocCrawl(TABLE_QUEUE, crawlData);
     }
 
     @Override
-    public final synchronized void processed(IDocCrawl docCrawl) {
-        IDocCrawl docCrawlCopy = docCrawl.safeClone();
+    public final synchronized void processed(ICrawlData crawlData) {
+        ICrawlData docCrawlCopy = crawlData.safeClone();
         
         String table;
         if (docCrawlCopy.getState().isGoodState()) {
@@ -137,15 +137,15 @@ public class DerbyDocCrawlStore extends AbstractDocCrawlStore {
     }
 
     @Override
-    public final synchronized IDocCrawl nextQueued() {
-        IDocCrawl docCrawl = sqlFindCrawlURL(TABLE_QUEUE, 
+    public final synchronized ICrawlData nextQueued() {
+        ICrawlData crawlData = sqlFindCrawlURL(TABLE_QUEUE, 
                 serializer.getNextQueuedDocCrawlSQL(),
                 serializer.getNextQueuedDocCrawlValues());
-        if (docCrawl != null) {
-            sqlInsertDocCrawl(TABLE_ACTIVE, docCrawl);
-            sqlDeleteCrawlURL(TABLE_QUEUE, docCrawl);
+        if (crawlData != null) {
+            sqlInsertDocCrawl(TABLE_ACTIVE, crawlData);
+            sqlDeleteCrawlURL(TABLE_QUEUE, crawlData);
         }
-        return docCrawl;
+        return crawlData;
     }
 
     @Override
@@ -159,11 +159,11 @@ public class DerbyDocCrawlStore extends AbstractDocCrawlStore {
     }
 
     @Override
-    public synchronized IDocCrawl getCached(String reference) {
-        IDocCrawl docCrawl = sqlFindCrawlURL(TABLE_CACHE, 
+    public synchronized ICrawlData getCached(String reference) {
+        ICrawlData crawlData = sqlFindCrawlURL(TABLE_CACHE, 
                 serializer.getCachedDocCrawlSQL(),
                 serializer.getCachedDocCrawlValues(reference));
-        return docCrawl;
+        return crawlData;
     }
 
     @Override
@@ -184,7 +184,7 @@ public class DerbyDocCrawlStore extends AbstractDocCrawlStore {
     }
 
     @Override
-    public Iterator<IDocCrawl> getCacheIterator() {
+    public Iterator<ICrawlData> getCacheIterator() {
         try {
             final Connection conn = datasource.getConnection(); 
             final Statement stmt = conn.createStatement(
@@ -199,7 +199,7 @@ public class DerbyDocCrawlStore extends AbstractDocCrawlStore {
             rs.beforeFirst();
             return new CrawlURLIterator(TABLE_CACHE, rs, conn, stmt);
         } catch (SQLException e) {
-            throw new DocCrawlStoreException(
+            throw new CrawlDataStoreException(
                     "Problem getting database cache iterator.", e);            
         }
     }
@@ -219,18 +219,18 @@ public class DerbyDocCrawlStore extends AbstractDocCrawlStore {
         sqlUpdate("DELETE FROM " + table);
     }
     
-    private void sqlDeleteCrawlURL(String table, IDocCrawl docCrawl) {
+    private void sqlDeleteCrawlURL(String table, ICrawlData crawlData) {
         sqlUpdate(serializer.getDeleteDocCrawlSQL(table),
-                serializer.getDeleteDocCrawlValues(table, docCrawl));
+                serializer.getDeleteDocCrawlValues(table, crawlData));
     }
     
     private int sqlRecordCount(String table) {
         return sqlQueryInteger("SELECT count(*) FROM " + table);
     }
 
-    private void sqlInsertDocCrawl(String table, IDocCrawl docCrawl) {
+    private void sqlInsertDocCrawl(String table, ICrawlData crawlData) {
         sqlUpdate(serializer.getInsertDocCrawlSQL(table),
-                serializer.getInsertDocCrawlValues(table, docCrawl));
+                serializer.getInsertDocCrawlValues(table, crawlData));
     }
     
     private void copyCrawlURLsToQueue(final String sourceTable) {
@@ -238,7 +238,7 @@ public class DerbyDocCrawlStore extends AbstractDocCrawlStore {
             @Override
             public Void handle(ResultSet rs) throws SQLException {
                 while(rs.next()) {
-                    IDocCrawl crawlURL = serializer.toDocCrawl(sourceTable, rs);
+                    ICrawlData crawlURL = serializer.toDocCrawl(sourceTable, rs);
                     //toCrawlURL(rs);
                     if (crawlURL != null) {
                         queue(crawlURL);
@@ -251,17 +251,17 @@ public class DerbyDocCrawlStore extends AbstractDocCrawlStore {
             new QueryRunner(datasource).query(
                     serializer.getSelectDocCrawlSQL(sourceTable), h);
         } catch (SQLException e) {
-            throw new DocCrawlStoreException(
+            throw new CrawlDataStoreException(
                     "Problem loading crawl URL from database.", e);            
         }
     }
 
-    private IDocCrawl sqlFindCrawlURL(
+    private ICrawlData sqlFindCrawlURL(
             final String table, String sql, Object... params) {
       try {
-          ResultSetHandler<IDocCrawl> h = new ResultSetHandler<IDocCrawl>() {
+          ResultSetHandler<ICrawlData> h = new ResultSetHandler<ICrawlData>() {
               @Override
-              public IDocCrawl handle(ResultSet rs) throws SQLException {
+              public ICrawlData handle(ResultSet rs) throws SQLException {
                   if (rs.next()) {
                       return serializer.toDocCrawl(table, rs);
                       //toCrawlURL(rs);
@@ -274,7 +274,7 @@ public class DerbyDocCrawlStore extends AbstractDocCrawlStore {
           }
           return new QueryRunner(datasource).query(sql, h, params);
       } catch (SQLException e) {
-          throw new DocCrawlStoreException(
+          throw new CrawlDataStoreException(
                   "Problem running database query.", e);            
       }
     }
@@ -291,7 +291,7 @@ public class DerbyDocCrawlStore extends AbstractDocCrawlStore {
             }
             return value;
         } catch (SQLException e) {
-            throw new DocCrawlStoreException(
+            throw new CrawlDataStoreException(
                     "Problem getting database scalar value.", e);            
         }
     }
@@ -306,7 +306,7 @@ public class DerbyDocCrawlStore extends AbstractDocCrawlStore {
                 LOG.debug("Already exists in table. SQL Error:" 
                         + e.getMessage());
             } else {
-                throw new DocCrawlStoreException(
+                throw new CrawlDataStoreException(
                         "Problem updating database.", e);            
             }
         }
@@ -347,7 +347,7 @@ public class DerbyDocCrawlStore extends AbstractDocCrawlStore {
         }
     }
     
-    private final class CrawlURLIterator implements Iterator<IDocCrawl> {
+    private final class CrawlURLIterator implements Iterator<ICrawlData> {
         private final ResultSet rs;
         private final Connection conn;
         private final Statement stmt;
@@ -381,7 +381,7 @@ public class DerbyDocCrawlStore extends AbstractDocCrawlStore {
         }
 
         @Override
-        public IDocCrawl next() {
+        public ICrawlData next() {
             try {
                 if (rs.next()) {
                     return serializer.toDocCrawl(tableName, rs);

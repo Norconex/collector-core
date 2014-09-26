@@ -24,7 +24,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.norconex.collector.core.doccrawl.store.IDocCrawlStore;
+import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.commons.lang.time.DurationUtil;
 import com.norconex.jef4.job.AbstractResumableJob;
 import com.norconex.jef4.status.IJobStatus;
@@ -85,7 +85,7 @@ public abstract class AbstractCrawler
             JobSuite suite, boolean resume) {
         StopWatch stopWatch = new StopWatch();;
         stopWatch.start();
-        IDocCrawlStore refStore = 
+        ICrawlDataStore refStore = 
                 config.getReferenceStoreFactory().createReferenceStore(
                         config, resume);
         try {
@@ -105,12 +105,12 @@ public abstract class AbstractCrawler
     
     protected abstract void prepareExecution(
             JobStatusUpdater statusUpdater, JobSuite suite, 
-            IDocCrawlStore refStore, boolean resume);
+            ICrawlDataStore refStore, boolean resume);
     protected abstract void execute(
             JobStatusUpdater statusUpdater,
             JobSuite suite,
-            IDocCrawlStore refStore);
+            ICrawlDataStore refStore);
     protected abstract void cleanupExecution(
             JobStatusUpdater statusUpdater, JobSuite suite, 
-            IDocCrawlStore refStore);
+            ICrawlDataStore refStore);
 }
