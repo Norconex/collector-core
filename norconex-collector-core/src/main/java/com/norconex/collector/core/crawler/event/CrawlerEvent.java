@@ -24,7 +24,11 @@ import com.norconex.collector.core.data.ICrawlData;
  * @author Pascal Essiembre
  *
  */
-public class DocCrawlEvent {
+public class CrawlerEvent {
+
+
+    public static final String CRAWLER_STARTED = "CRAWLER_STARTED";
+    public static final String CRAWLER_FINISHED = "CRAWLER_FINISHED";
 
     
     public static final String REJECTED_ROBOTS_TXT = 
@@ -48,7 +52,7 @@ public class DocCrawlEvent {
     private final Object subject;
     private final String eventType;
 
-    public DocCrawlEvent(String eventType, ICrawlData crawlData, Object subject) {
+    public CrawlerEvent(String eventType, ICrawlData crawlData, Object subject) {
         super();
         this.crawlData = crawlData;
         this.subject = subject;

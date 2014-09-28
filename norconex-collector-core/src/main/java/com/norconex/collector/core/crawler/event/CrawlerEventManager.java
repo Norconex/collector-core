@@ -31,7 +31,7 @@ import com.norconex.collector.core.crawler.ICrawler;
  * Holds event listeners and allows to log events.  Events are also logged
  * using Log4j.  Each events have their own appenders, following this pattern:
  * <pre>
- *    com.norconex.collector.core.crawler.event.DocCrawlEvent.<EVENT_ID>
+ *    com.norconex.collector.core.crawler.event.CrawlerEvent.<EVENT_ID>
  * </pre>
  * @author Pascal Essiembre
  */
@@ -51,33 +51,33 @@ public class CrawlerEventManager {
         }
     }
 
-    public void crawlerStarted() {
-        for (ICrawlerEventListener listener : listeners) {
-            listener.crawlerStarted(crawler);
-        }
-    }
-    public void crawlerFinished() {
-        for (ICrawlerEventListener listener : listeners) {
-            listener.crawlerFinished(crawler);
-        }
-    }
+//    public void crawlerStarted() {
+//        for (ICrawlerEventListener listener : listeners) {
+//            listener.crawlerStarted(crawler);
+//        }
+//    }
+//    public void crawlerFinished() {
+//        for (ICrawlerEventListener listener : listeners) {
+//            listener.crawlerFinished(crawler);
+//        }
+//    }
     
-    public void crawlerDocumentEvent(DocCrawlEvent event) {
+    public void fireCrawlerEvent(CrawlerEvent event) {
         logEvent(event);
         for (ICrawlerEventListener listener : listeners) {
-            listener.crawlerDocumentEvent(crawler, event);
+            listener.crawlerEvent(crawler, event);
         }
     }
     
-    public void logEvent(DocCrawlEvent event) {
+    private void logEvent(CrawlerEvent event) {
         Logger log =  LogManager.getLogger(
-                DocCrawlEvent.class.getName() + "." + event.getEventType());
+                CrawlerEvent.class.getName() + "." + event.getEventType());
         if (log.isDebugEnabled()) {
             log.debug(getLogMessage(event));
         }
     }
     
-    protected String getLogMessage(DocCrawlEvent event) {
+    protected String getLogMessage(CrawlerEvent event) {
         StringBuilder b = new StringBuilder();
         b.append(StringUtils.leftPad(event.getEventType(), ID_PRINT_WIDTH));
         b.append(": ");

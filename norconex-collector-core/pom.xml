@@ -119,6 +119,11 @@ along with Norconex Collector Core. If not, see <http://www.gnu.org/licenses/>.
       <artifactId>commons-dbutils</artifactId>
       <version>1.6</version>
     </dependency>
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongo-java-driver</artifactId>
+      <version>2.12.3</version>
+    </dependency>
   </dependencies>
   
   <build>

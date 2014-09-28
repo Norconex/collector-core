@@ -36,7 +36,7 @@ public interface ICrawlerEventListener {
     //TODO refactor even handling by having 1 method only accepting an 
     //event interface (or superclass).  More scalable that way.
     
-    void crawlerStarted(ICrawler crawler);
-    void crawlerDocumentEvent(ICrawler crawler, DocCrawlEvent event);
-    void crawlerFinished(ICrawler crawler);
+//    void crawlerStarted(ICrawler crawler);
+    void crawlerEvent(ICrawler crawler, CrawlerEvent event);
+//    void crawlerFinished(ICrawler crawler);
 }

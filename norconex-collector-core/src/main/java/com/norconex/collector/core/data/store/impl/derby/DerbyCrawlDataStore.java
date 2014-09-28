@@ -20,6 +20,7 @@ package com.norconex.collector.core.data.store.impl.derby;
 
 import java.io.File;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -52,11 +53,13 @@ public class DerbyCrawlDataStore extends AbstractCrawlDataStore {
     public static final String TABLE_PROCESSED_VALID = "valid";
     public static final String TABLE_PROCESSED_INVALID = "invalid";
     
-    private static final int NUMBER_OF_TABLES = 6;
+    private static final int NUMBER_OF_TABLES = 5;
     private static final int SQL_ERROR_ALREADY_EXISTS = 30000;
+    private static final String SQL_STATE_SHUTDOWN_SUCCESS = "08006";
     
     private final DataSource datasource;
     private final IDerbySerializer serializer;
+    private final String dbDir;
     
     public DerbyCrawlDataStore(String path, boolean resume,
             IDerbySerializer serializer) {
@@ -70,7 +73,8 @@ public class DerbyCrawlDataStore extends AbstractCrawlDataStore {
         new File(fullPath).mkdirs();
         System.setProperty("derby.system.home", fullPath + "/derby/log");
         
-        this.datasource = createDataSource(fullPath + "/derby/db");
+        this.dbDir = fullPath + "/derby/db";
+        this.datasource = createDataSource(dbDir);
         boolean incrementalRun;
         try {
             incrementalRun = ensureTablesExist();
@@ -207,7 +211,17 @@ public class DerbyCrawlDataStore extends AbstractCrawlDataStore {
     
     @Override
     public void close() {
-        //do nothing
+        try {
+            LOG.info("Closing Derby database...");
+            DriverManager.getConnection(
+                    "jdbc:derby:" + dbDir + ";shutdown=true");
+        } catch (SQLException e) {
+            if (!SQL_STATE_SHUTDOWN_SUCCESS.equals(e.getSQLState())) {
+                throw new CrawlDataStoreException(
+                        "Cannot shutdown Derby database.", e);
+            }
+            LOG.info("Derby database closed.");
+        }
     }
     
     private boolean sqlURLExists(String table, String reference) {

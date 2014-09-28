@@ -25,7 +25,7 @@ import com.norconex.collector.core.crawler.ICrawlerConfig;
 public interface ICrawlDataStoreFactory 
         extends Serializable {
 
-    ICrawlDataStore createReferenceStore(
+    ICrawlDataStore createCrawlDataStore(
             ICrawlerConfig config, boolean resume);
     
 }

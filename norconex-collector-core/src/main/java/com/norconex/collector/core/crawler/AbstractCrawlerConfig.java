@@ -104,7 +104,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
             writer.writeAttribute("id", getId());
             writer.flush();
 
-            writeObject(out, "referenceStoreFactory", 
+            writeObject(out, "crawlDataStoreFactory", 
                     getReferenceStoreFactory());
             saveCrawlerConfigToXML(out);
             
@@ -138,7 +138,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         setId(crawlerId);
         
         setReferenceStoreFactory(ConfigurationUtil.newInstance(xml,
-                "referenceStoreFactory", getReferenceStoreFactory()));
+                "crawlDataStoreFactory", getReferenceStoreFactory()));
 
         
         loadCrawlerConfigFromXML(xml);

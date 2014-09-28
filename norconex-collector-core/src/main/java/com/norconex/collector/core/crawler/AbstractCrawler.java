@@ -86,7 +86,7 @@ public abstract class AbstractCrawler
         StopWatch stopWatch = new StopWatch();;
         stopWatch.start();
         ICrawlDataStore refStore = 
-                config.getReferenceStoreFactory().createReferenceStore(
+                config.getReferenceStoreFactory().createCrawlDataStore(
                         config, resume);
         try {
             prepareExecution(statusUpdater, suite, refStore, resume);

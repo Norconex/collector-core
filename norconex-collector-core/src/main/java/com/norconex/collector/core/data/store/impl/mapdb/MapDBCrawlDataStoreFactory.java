@@ -57,7 +57,7 @@ public class MapDBCrawlDataStoreFactory
     
 
     @Override
-    public ICrawlDataStore createReferenceStore(
+    public ICrawlDataStore createCrawlDataStore(
             ICrawlerConfig config, boolean resume) {
         String storeDir = config.getWorkDir().getPath()
                 + "/refstore/" + config.getId() + "/";
