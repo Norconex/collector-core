@@ -1,0 +1,4 @@
+
+- Consider using Hibernate for the JDBC data store, for both embedded and
+  client-server databases.  Ship with no drivers
+  except maybe for testing (or 1 for convenience).

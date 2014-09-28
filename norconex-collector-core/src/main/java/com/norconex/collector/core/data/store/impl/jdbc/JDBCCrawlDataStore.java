@@ -16,7 +16,7 @@
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.data.store.impl.derby;
+package com.norconex.collector.core.data.store.impl.jdbc;
 
 import java.io.File;
 import java.sql.Connection;
@@ -42,10 +42,12 @@ import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.AbstractCrawlDataStore;
 import com.norconex.collector.core.data.store.CrawlDataStoreException;
 
-public class DerbyCrawlDataStore extends AbstractCrawlDataStore {
+public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
 
     private static final Logger LOG = 
-            LogManager.getLogger(DerbyCrawlDataStore.class);
+            LogManager.getLogger(JDBCCrawlDataStore.class);
+    
+    public static enum Database { DERBY, H2 };
     
     public static final String TABLE_QUEUE = "queue";
     public static final String TABLE_ACTIVE = "active";
@@ -54,26 +56,32 @@ public class DerbyCrawlDataStore extends AbstractCrawlDataStore {
     public static final String TABLE_PROCESSED_INVALID = "invalid";
     
     private static final int NUMBER_OF_TABLES = 5;
-    private static final int SQL_ERROR_ALREADY_EXISTS = 30000;
-    private static final String SQL_STATE_SHUTDOWN_SUCCESS = "08006";
-    
+    private static final int DERBY_ERROR_ALREADY_EXISTS = 30000;
+    private static final String DERBY_STATE_SHUTDOWN_SUCCESS = "08006";
+    private static final int H2_ERROR_ALREADY_EXISTS = 23505;
+
     private final DataSource datasource;
-    private final IDerbySerializer serializer;
+    private final IJDBCSerializer serializer;
     private final String dbDir;
+    private final Database database;
     
-    public DerbyCrawlDataStore(String path, boolean resume,
-            IDerbySerializer serializer) {
+    public JDBCCrawlDataStore(Database database, String path, boolean resume,
+            IJDBCSerializer serializer) {
         super();
         
+        this.database = database;
         this.serializer = serializer;
         String fullPath = new File(path).getAbsolutePath();
         
         LOG.info("Initializing crawl document reference store: " + fullPath);
 
         new File(fullPath).mkdirs();
-        System.setProperty("derby.system.home", fullPath + "/derby/log");
-        
-        this.dbDir = fullPath + "/derby/db";
+        if (database == Database.DERBY) {
+            System.setProperty("derby.system.home", fullPath + "/derby/log");
+            this.dbDir = fullPath + "/derby/db";
+        } else {
+            this.dbDir = fullPath + "/h2/db";
+        }
         this.datasource = createDataSource(dbDir);
         boolean incrementalRun;
         try {
@@ -91,8 +99,13 @@ public class DerbyCrawlDataStore extends AbstractCrawlDataStore {
             LOG.info("Caching processed URL from last run (if any)...");
             LOG.debug("Rename processed table to cache...");
             sqlUpdate("DROP TABLE " + TABLE_CACHE);
-            sqlUpdate("RENAME TABLE " + TABLE_PROCESSED_VALID 
-                    + " TO " + TABLE_CACHE);
+            if (database == Database.DERBY) {
+                sqlUpdate("RENAME TABLE " + TABLE_PROCESSED_VALID 
+                        + " TO " + TABLE_CACHE);
+            } else {
+                sqlUpdate("ALTER TABLE " + TABLE_PROCESSED_VALID 
+                        + " RENAME TO " + TABLE_CACHE);
+            }
             LOG.debug("Cleaning queue table...");
             sqlClearTable(TABLE_QUEUE);
             LOG.debug("Cleaning invalid URLS table...");
@@ -211,16 +224,18 @@ public class DerbyCrawlDataStore extends AbstractCrawlDataStore {
     
     @Override
     public void close() {
-        try {
-            LOG.info("Closing Derby database...");
-            DriverManager.getConnection(
-                    "jdbc:derby:" + dbDir + ";shutdown=true");
-        } catch (SQLException e) {
-            if (!SQL_STATE_SHUTDOWN_SUCCESS.equals(e.getSQLState())) {
-                throw new CrawlDataStoreException(
-                        "Cannot shutdown Derby database.", e);
+        if (database == Database.DERBY) {
+            try {
+                LOG.info("Closing Derby database...");
+                DriverManager.getConnection(
+                        "jdbc:derby:" + dbDir + ";shutdown=true");
+            } catch (SQLException e) {
+                if (!DERBY_STATE_SHUTDOWN_SUCCESS.equals(e.getSQLState())) {
+                    throw new CrawlDataStoreException(
+                            "Cannot shutdown Derby database.", e);
+                }
+                LOG.info("Derby database closed.");
             }
-            LOG.info("Derby database closed.");
         }
     }
     
@@ -298,12 +313,16 @@ public class DerbyCrawlDataStore extends AbstractCrawlDataStore {
             LOG.debug("SQL: " + sql);
         }
         try {
-            Integer value = new QueryRunner(datasource).query(
-                    sql, new ScalarHandler<Integer>(), params);
+            Object value = new QueryRunner(datasource).query(
+                    sql, new ScalarHandler<Object>(), params);
             if (value == null) {
                 return 0;
             }
-            return value;
+            if (value instanceof Long) {
+                return ((Long) value).intValue();
+            } else {
+                return (int) value;
+            }
         } catch (SQLException e) {
             throw new CrawlDataStoreException(
                     "Problem getting database scalar value.", e);            
@@ -316,7 +335,7 @@ public class DerbyCrawlDataStore extends AbstractCrawlDataStore {
         try {
             new QueryRunner(datasource).update(sql, params);
         } catch (SQLException e) {
-            if (e.getErrorCode() == SQL_ERROR_ALREADY_EXISTS) {
+            if (alreadyExists(e)) {
                 LOG.debug("Already exists in table. SQL Error:" 
                         + e.getMessage());
             } else {
@@ -326,10 +345,22 @@ public class DerbyCrawlDataStore extends AbstractCrawlDataStore {
         }
     }
 
+    private boolean alreadyExists(SQLException e) {
+        return (database == Database.DERBY 
+                && e.getErrorCode() == DERBY_ERROR_ALREADY_EXISTS)
+                || (database == Database.H2
+                        && e.getErrorCode() == H2_ERROR_ALREADY_EXISTS);
+    }
+    
     private DataSource createDataSource(String dbDir) {
         BasicDataSource ds = new BasicDataSource();
-        ds.setDriverClassName("org.apache.derby.jdbc.EmbeddedDriver");
-        ds.setUrl("jdbc:derby:" + dbDir + ";create=true");
+        if (database == Database.DERBY) {
+            ds.setDriverClassName("org.apache.derby.jdbc.EmbeddedDriver");
+            ds.setUrl("jdbc:derby:" + dbDir + ";create=true");
+        } else {
+            ds.setDriverClassName("org.h2.Driver");
+            ds.setUrl("jdbc:h2:" + dbDir);
+        }
         ds.setDefaultAutoCommit(true);
         return ds;
     }

@@ -16,7 +16,7 @@
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.data.store.impl.derby;
+package com.norconex.collector.core.data.store.impl.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,10 +25,10 @@ import com.norconex.collector.core.data.ICrawlData;
 
 /**
  * Serializer hoding necessary information to insert, load, delete and create
- * document reference information specific to each collector.
+ * document reference information specific to each database tables.
  * @author Pascal Essiembre
  */
-public interface IDerbySerializer {
+public interface IJDBCSerializer {
 
     
     String[] getCreateTableSQLs(String table);

@@ -16,7 +16,7 @@
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.collector.core.data.store.impl.derby;
+package com.norconex.collector.core.data.store.impl.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,7 +29,7 @@ import com.norconex.collector.core.data.ICrawlData;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public class BasicDerbySerializer implements IDerbySerializer {
+public class BasicJDBCSerializer implements IJDBCSerializer {
 
     protected static final String ALL_FIELDS = 
               "reference, "
@@ -86,7 +86,7 @@ public class BasicDerbySerializer implements IDerbySerializer {
     @Override
     public String getNextQueuedDocCrawlSQL() {
         return "SELECT " + ALL_FIELDS 
-                + "FROM " + DerbyCrawlDataStore.TABLE_QUEUE;
+                + "FROM " + JDBCCrawlDataStore.TABLE_QUEUE;
     }
     @Override
     public Object[] getNextQueuedDocCrawlValues() {
@@ -96,7 +96,7 @@ public class BasicDerbySerializer implements IDerbySerializer {
     @Override
     public String getCachedDocCrawlSQL() {
         return "SELECT " + ALL_FIELDS 
-                + "FROM " + DerbyCrawlDataStore.TABLE_CACHE
+                + "FROM " + JDBCCrawlDataStore.TABLE_CACHE
                 + " WHERE reference = ? ";
     }
     @Override
