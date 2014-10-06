@@ -27,6 +27,13 @@ import org.mapdb.DB;
 
 import com.norconex.collector.core.data.ICrawlData;
 
+/**
+ * A MapDB {@link Queue} implementation backed by a 
+ * MapDB {@link Map}.
+ * @author Pascal Essiembre
+ *
+ * @param <T> the type of {@link ICrawlData}
+ */
 public class MappedQueue<T extends ICrawlData> implements Queue<T> {
 
     private final Queue<String> queue;

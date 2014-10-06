@@ -22,10 +22,19 @@ import java.io.Serializable;
 
 import com.norconex.collector.core.crawler.ICrawlerConfig;
 
+/**
+ * Factory responsible for creating new crawl data stores.
+ * @author Pascal Essiembre
+ */
 public interface ICrawlDataStoreFactory 
         extends Serializable {
 
+    /**
+     * Creates a new crawl data store.
+     * @param config crawler configuration
+     * @param resume whether the crawler was started or resumed
+     * @return new crawl data store
+     */
     ICrawlDataStore createCrawlDataStore(
             ICrawlerConfig config, boolean resume);
-    
 }

@@ -26,8 +26,9 @@ import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.data.ICrawlData;
 
 /**
+ * Basic JDBC serializer for storing and retrieving {@link BaseCrawlData}
+ * instances.
  * @author Pascal Essiembre
- * @since 2.0.0
  */
 public class BasicJDBCSerializer implements IJDBCSerializer {
 

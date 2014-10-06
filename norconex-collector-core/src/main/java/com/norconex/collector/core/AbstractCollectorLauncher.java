@@ -33,8 +33,9 @@ import org.apache.commons.cli.PosixParser;
 import com.norconex.commons.lang.EqualsUtil;
 
 /**
+ * Encapsulates most of the logic for launching a collector implementation
+ * from its main method.
  * @author Pascal Essiembre
- *
  */
 public abstract class AbstractCollectorLauncher {
 

@@ -18,13 +18,17 @@
  */
 package com.norconex.collector.core.crawler;
 
+import com.norconex.collector.core.ICollector;
 import com.norconex.collector.core.crawler.event.CrawlerEventManager;
 import com.norconex.importer.Importer;
 import com.norconex.jef4.job.IJob;
 
 /**
+ * A document crawler.  Crawlers are part of a {@link ICollector} and 
+ * are responsible for fetching, parsing, manipulating and sending data
+ * to a target repository.  It typically does so with the help of 
+ * Norconex Importer and Norconex Committer.  
  * @author Pascal Essiembre
- *
  */
 public interface ICrawler extends IJob {
 
@@ -34,8 +38,16 @@ public interface ICrawler extends IJob {
      */
     ICrawlerConfig getCrawlerConfig();
     
+    /**
+     * Gets the crawler events manager.
+     * @return the events manager
+     */
     CrawlerEventManager getCrawlerEventManager();
     
+    /**
+     * Gets the crawler Importer module.
+     * @return the Importer
+     */
     Importer getImporter();
 
 }

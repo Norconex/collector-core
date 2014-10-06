@@ -19,13 +19,16 @@
 package com.norconex.collector.core.crawler.event;
 
 import com.norconex.collector.core.data.ICrawlData;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
+ * A crawler event.
  * @author Pascal Essiembre
- *
+ * @see ICrawlerEventListener
  */
 public class CrawlerEvent {
-
 
     public static final String CRAWLER_STARTED = "CRAWLER_STARTED";
     public static final String CRAWLER_RESUMED = "CRAWLER_RESUMED";
@@ -38,13 +41,15 @@ public class CrawlerEvent {
     public static final String REJECTED_IMPORT = "REJECTED_IMPORT";
     public static final String REJECTED_ERROR = "REJECTED_ERROR";
     
-//    public static final String HEADERS_FETCHED = "HEADERS_FETCHED";
-
     public static final String DOCUMENT_PREIMPORTED = "DOCUMENT_PREIMPORTED";
     public static final String DOCUMENT_POSTIMPORTED = "DOCUMENT_POSTIMPORTED";
-    public static final String DOCUMENT_COMMITTED = "DOCUMENT_COMMITTED";
+    public static final String DOCUMENT_COMMITTED_ADD = 
+            "DOCUMENT_COMMITTED_ADD";
+    public static final String DOCUMENT_COMMITTED_REMOVE = 
+            "DOCUMENT_COMMITTED_REMOV";
     public static final String DOCUMENT_IMPORTED = "DOCUMENT_IMPORTED";
-    public static final String DOCUMENT_META_FETCHED = "DOCUMENT_META_FETCHED";
+    public static final String DOCUMENT_METADATA_FETCHED = 
+            "DOCUMENT_METADATA_FETCHED";
     public static final String DOCUMENT_FETCHED = "DOCUMENT_FETCHED";
     public static final String DOCUMENT_SAVED = "DOCUMENT_SAVED";
 
@@ -60,16 +65,63 @@ public class CrawlerEvent {
         this.eventType = eventType;
     }
     
+    /**
+     * Gets the subject of this event.  A subject is typically the class
+     * or a string representing the source or cause if the event.
+     * @return the subject
+     */
     public Object getSubject() {
         return subject;
     }
 
+    /**
+     * Gets the crawl data holding contextual information about the 
+     * crawled reference.  CRAWLER_* events will return a <code>null</code>
+     * crawl data.
+     * @return crawl data
+     */
     public ICrawlData getCrawlData() {
         return crawlData;
     }
 
+    /**
+     * Gets the event type.
+     * @return the event type
+     */
     public String getEventType() {
         return eventType;
     }
 
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof CrawlerEvent))
+            return false;
+        CrawlerEvent castOther = (CrawlerEvent) other;
+        return new EqualsBuilder().append(crawlData, castOther.crawlData)
+                .append(subject, castOther.subject)
+                .append(eventType, castOther.eventType).isEquals();
+    }
+
+    private transient int hashCode;
+
+    @Override
+    public int hashCode() {
+        if (hashCode == 0) {
+            hashCode = new HashCodeBuilder().append(crawlData).append(subject)
+                    .append(eventType).toHashCode();
+        }
+        return hashCode;
+    }
+
+    private transient String toString;
+
+    @Override
+    public String toString() {
+        if (toString == null) {
+            toString = new ToStringBuilder(this).appendSuper(super.toString())
+                    .append("crawlData", crawlData).append("subject", subject)
+                    .append("eventType", eventType).toString();
+        }
+        return toString;
+    }
 }

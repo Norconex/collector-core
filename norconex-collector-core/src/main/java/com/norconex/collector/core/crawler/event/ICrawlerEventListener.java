@@ -28,15 +28,11 @@ import com.norconex.collector.core.crawler.ICrawler;
  * @author Pascal Essiembre
  */
 public interface ICrawlerEventListener {
-    
-	//TODO add two new methods for headers and document checksum 
-	//(i.e. modified vs not-modified.   Or rely on rejected flag?
-	//TODO add documentDeleted
-	//TODO add urlProcessed with CrawlStatus to help with reporting
-    //TODO refactor even handling by having 1 method only accepting an 
-    //event interface (or superclass).  More scalable that way.
-    
-//    void crawlerStarted(ICrawler crawler);
+
+    /**
+     * Fired when a crawler event occurs.
+     * @param crawler the crawler that fired the event
+     * @param event the event
+     */
     void crawlerEvent(ICrawler crawler, CrawlerEvent event);
-//    void crawlerFinished(ICrawler crawler);
 }

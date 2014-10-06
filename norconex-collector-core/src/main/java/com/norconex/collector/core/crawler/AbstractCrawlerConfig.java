@@ -50,6 +50,9 @@ import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterConfigLoader;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * Base Collector configuration.
@@ -78,8 +81,6 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
 
     private IDocumentChecksummer documentChecksummer =
             new MD5DocumentChecksummer();
-//    private boolean keepDocumentChecksum;
-//    private String keepDocumentChecksumField;
         
     /**
      * Creates a new crawler configuration.
@@ -177,19 +178,6 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
             IDocumentChecksummer documentChecksummer) {
         this.documentChecksummer = documentChecksummer;
     }
-//    public boolean isKeepDocumentChecksum() {
-//        return keepDocumentChecksum;
-//    }
-//    public void setKeepDocumentChecksum(boolean keepDocumentChecksum) {
-//        this.keepDocumentChecksum = keepDocumentChecksum;
-//    }
-//    public String getKeepDocumentChecksumField() {
-//        return keepDocumentChecksumField;
-//    }
-//    public void setKeepDocumentChecksumField(
-//            String keepDocumentChecksumField) {
-//        this.keepDocumentChecksumField = keepDocumentChecksumField;
-//    }
 
     public ImporterConfig getImporterConfig() {
         return importerConfig;
@@ -237,15 +225,6 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
             writeObject(out, "importer", getImporterConfig());
             writeObject(out, "committer", getCommitter());
             writeObject(out, "documentChecksummer", getDocumentChecksummer());
-            
-//            setDocumentChecksummer(ConfigurationUtil.newInstance(xml,
-//                    "documentChecksummer", getDocumentChecksummer()));
-//            setKeepDocumentChecksum(xml.getBoolean("documentChecksummer[@keep]",
-//                    isKeepDocumentChecksum()));
-//            setKeepDocumentChecksumField(xml.getString(
-//                    "documentChecksummer[@keepField]",
-//                    getKeepDocumentChecksumField()));
-            
             
             saveCrawlerConfigToXML(out);
             
@@ -308,11 +287,6 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         //--- Document Checksummer ----------------------------------------
         setDocumentChecksummer(ConfigurationUtil.newInstance(xml,
                 "documentChecksummer", getDocumentChecksummer()));
-//        setKeepDocumentChecksum(xml.getBoolean("documentChecksummer[@keep]",
-//                isKeepDocumentChecksum()));
-//        setKeepDocumentChecksumField(xml.getString(
-//                "documentChecksummer[@keepField]",
-//                getKeepDocumentChecksumField()));
         
         loadCrawlerConfigFromXML(xml);
 
@@ -405,11 +379,53 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         out.flush();
     }
     
-    // TODO consider moving to Norconex Commons Lang
     protected <T> T[] defaultIfEmpty(T[] array, T[] defaultArray) {
         if (ArrayUtils.isEmpty(array)) {
             return defaultArray;
         }
         return array;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof AbstractCrawlerConfig))
+            return false;
+        AbstractCrawlerConfig castOther = (AbstractCrawlerConfig) other;
+        return new EqualsBuilder().append(id, castOther.id)
+                .append(numThreads, castOther.numThreads)
+                .append(workDir, castOther.workDir)
+                .append(maxDocuments, castOther.maxDocuments)
+                .append(deleteOrphans, castOther.deleteOrphans)
+                .append(crawlDataStoreFactory, castOther.crawlDataStoreFactory)
+                .append(referenceFilters, castOther.referenceFilters)
+                .append(crawlerListeners, castOther.crawlerListeners)
+                .append(importerConfig, castOther.importerConfig)
+                .append(committer, castOther.committer)
+                .append(documentChecksummer, castOther.documentChecksummer)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(id).append(numThreads)
+                .append(workDir).append(maxDocuments).append(deleteOrphans)
+                .append(crawlDataStoreFactory).append(referenceFilters)
+                .append(crawlerListeners).append(importerConfig)
+                .append(committer).append(documentChecksummer).toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this).appendSuper(super.toString())
+                .append("id", id).append("numThreads", numThreads)
+                .append("workDir", workDir)
+                .append("maxDocuments", maxDocuments)
+                .append("deleteOrphans", deleteOrphans)
+                .append("crawlDataStoreFactory", crawlDataStoreFactory)
+                .append("referenceFilters", referenceFilters)
+                .append("crawlerListeners", crawlerListeners)
+                .append("importerConfig", importerConfig)
+                .append("committer", committer)
+                .append("documentChecksummer", documentChecksummer).toString();
     }
 }

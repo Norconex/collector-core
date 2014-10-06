@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2014 Norconex Inc.
  * 
  * This file is part of Norconex Collector Core.
  * 
@@ -35,16 +35,13 @@ import com.norconex.jef4.suite.JobSuite;
 import com.norconex.jef4.suite.JobSuiteConfig;
  
 /**
- * Main application class. In order to use it properly, you must first configure
- * it, either by providing a populated instance of
- * {@link AbstractCollectorConfig},
- * or by XML configuration, loaded using {@link CollectorConfigLoader}.
+ * Base implementation of a Collector. 
  * Instances of this class can hold several crawler, running at once.
  * This is convenient when there are configuration setting to be shared amongst
  * crawlers.  When you have many crawler jobs defined that have nothing
  * in common, it may be best to configure and run them separately, to facilitate
- * troubleshooting.  There is no fair rule for this, experimenting with your
- * target sites will help you.
+ * troubleshooting.  There is no best rule for this, experimentation 
+ * will help you.
  * @author Pascal Essiembre
  */
 @SuppressWarnings("nls")
@@ -174,6 +171,11 @@ public abstract class AbstractCollector implements ICollector {
         return suite;
     }
     
+    /**
+     * Creates a new crawler instance.
+     * @param config crawler configuration
+     * @return new crawler
+     */
     protected abstract ICrawler createCrawler(ICrawlerConfig config);
     
     /**
@@ -190,9 +192,17 @@ public abstract class AbstractCollector implements ICollector {
         return collectorConfig.getId();
     }
     
+    /**
+     * Add the provided crawlers to this collector.
+     * @param crawlers crawlers to add
+     */
     public void setCrawlers(ICrawler[] crawlers) {
         this.crawlers = Arrays.copyOf(crawlers, crawlers.length);
     }
+    /**
+     * Gets all crawler instances in this collector.
+     * @return crawlers
+     */
     public ICrawler[] getCrawlers() {
         return crawlers;
     }

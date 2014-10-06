@@ -31,7 +31,12 @@ import org.mapdb.Serializer;
 
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.AbstractCrawlDataStore;
+import com.norconex.collector.core.data.store.ICrawlDataStore;
 
+/**
+ * MapDB implementation of {@link ICrawlDataStore}.
+ * @author Pascal Essiembre
+ */
 public class MapDBCrawlDataStore extends AbstractCrawlDataStore {
 
     private static final Logger LOG = 
@@ -116,7 +121,6 @@ public class MapDBCrawlDataStore extends AbstractCrawlDataStore {
                 .closeOnJvmShutdown()
                 .make();
     }
-    
     
     private void initDB(boolean create) {
         queue = new MappedQueue<>(db, STORE_QUEUE, create);

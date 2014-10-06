@@ -29,19 +29,31 @@ import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.importer.ImporterConfig;
 
 /**
+ * Crawler configuration.  Crawlers usually read this configuration just before 
+ * they start their execution.  Once execution has started, it is not
+ * recommended to change it.
  * @author Pascal Essiembre
- *
  */
 public interface ICrawlerConfig extends IXMLConfigurable, Cloneable {
 
     /**
-     * Gets this crawler unique identifier.
+     * Gets this crawler unique identifier.  Using usual names is
+     * perfectly fine (non-alphanumeric characters are OK).
      * @return unique identifier
      */
     String getId();
 
+    /**
+     * Gets the crawler working directory where many files created at 
+     * execution time are stored.
+     * @return working directory
+     */
     File getWorkDir();
 
+    /**
+     * Gets the number of threads (maximum) a crawler should use.
+     * @return number of threads
+     */
     int getNumThreads();
 
     /**
@@ -50,19 +62,52 @@ public interface ICrawlerConfig extends IXMLConfigurable, Cloneable {
      */
     int getMaxDocuments();
     
+    /**
+     * Whether orphan files from a previous run (files previously crawled
+     * but no longer reachable) should be deleted.
+     * @return <code>true</code> if orphans should be deleted
+     */
     boolean isDeleteOrphans();
     
+    /**
+     * Gets the crawl data store factory a crawler should use.
+     * @return crawl data store factory.
+     */
     ICrawlDataStoreFactory getCrawlDataStoreFactory();
     
+    /**
+     * Gets crawler event listeners.
+     * @return crawler evetn listeners
+     */
     ICrawlerEventListener[] getCrawlerListeners();
 
+    /**
+     * Gets the Importer module configuration.
+     * @return Importer module configuration
+     */
     ImporterConfig getImporterConfig();
     
+    /**
+     * Gets the Committer module configuration.
+     * @return Committer module configuration
+     */
     ICommitter getCommitter();
 
+    /**
+     * Clone this configuration.
+     * @return new configuration
+     */
     ICrawlerConfig clone();
     
+    /**
+     * Gets the reference filters.
+     * @return reference filters
+     */
     IReferenceFilter[] getReferenceFilters();
     
+    /**
+     * Gets the document checksummer.
+     * @return document checksummer
+     */
     IDocumentChecksummer getDocumentChecksummer();
 }

@@ -65,7 +65,6 @@ public class CollectorConfigLoader {
      */
     public ICollectorConfig loadCollectorConfig(
             File configFile, File configVariables) throws IOException {
-
         
         if (LOG.isDebugEnabled()) {
             LOG.debug("Loading configuration file: " + configFile);
@@ -77,7 +76,6 @@ public class CollectorConfigLoader {
         ConfigurationLoader configLoader = new ConfigurationLoader();
         XMLConfiguration xml = configLoader.loadXML(
                 configFile, configVariables);
-        
         try {
             ICollectorConfig collectorConfig = 
                     collectorConfigClass.newInstance();
@@ -89,5 +87,4 @@ public class CollectorConfigLoader {
                             + collectorConfigClass, e);
         }
     }
-
 }

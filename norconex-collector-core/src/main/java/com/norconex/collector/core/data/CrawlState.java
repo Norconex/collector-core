@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 /**
  * Reference processing status.
@@ -81,42 +84,28 @@ public class CrawlState implements Serializable {
         return refState;
     }
     
-    /**
-     * Returns the status code.
-     * @return status code
-     */
     @Override
     public String toString() {
-        return state;
+        ToStringBuilder builder = new ToStringBuilder(this);
+        builder.append("state", state);
+        return builder.toString();
     }
 
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof CrawlState))
+            return false;
+        CrawlState castOther = (CrawlState) other;
+        return new EqualsBuilder().append(state, castOther.state).isEquals();
+    }
+
+    private transient int hashCode;
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((state == null) ? 0 : state.hashCode());
-        return result;
+        if (hashCode == 0) {
+            hashCode = new HashCodeBuilder().append(state).toHashCode();
+        }
+        return hashCode;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof CrawlState)) {
-            return false;
-        }
-        CrawlState other = (CrawlState) obj;
-        if (state == null) {
-            if (other.state != null) {
-                return false;
-            }
-        } else if (!state.equals(other.state)) {
-            return false;
-        }
-        return true;
-    }
+    
 }

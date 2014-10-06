@@ -24,8 +24,8 @@ import com.mongodb.DBObject;
 import com.norconex.collector.core.data.ICrawlData;
 
 /**
+ * Mongo serializer.
  * @author Pascal Essiembre
- *
  */
 public interface IMongoSerializer {
 
@@ -44,12 +44,33 @@ public interface IMongoSerializer {
     public static final String FIELD_IS_VALID = "isValid";
     public static final String FIELD_STAGE = "stage";
     
+    /**
+     * Converts a {@link ICrawlData} to a Mongo {@link BasicDBObject}.
+     * @param stage the Mongo serializer stage
+     * @param crawlData the data to serialize
+     * @return Mongo Basic DB object
+     */
     BasicDBObject toDBObject(Stage stage, ICrawlData crawlData);
     
+    /**
+     * Converts a Mongo {@link DBObject} to an {@link ICrawlData}.
+     * @param dbObject Mongo db object
+     * @return crawl data
+     */
     ICrawlData fromDBObject(DBObject dbObject);
-    
+
+    /**
+     * Gets the next queued DB object from the given collection.
+     * @param referenceCollection the collection to get the next DB object from
+     * @return Mongo DB object
+     */
     DBObject getNextQueued(DBCollection referenceCollection);
     
+    /**
+     * Creates Mongo indices for the given collections.
+     * @param referenceCollection the collection holding crawl references
+     * @param cachedCollection the collection holding cached crawl references
+     */
     void createIndices(
             DBCollection referenceCollection, DBCollection cachedCollection);
 }

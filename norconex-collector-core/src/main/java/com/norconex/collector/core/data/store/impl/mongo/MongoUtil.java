@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Utility method for Mongo operations.
  * @author Pascal Dimassimo
- * @since 1.2
  */
 public final class MongoUtil {
 

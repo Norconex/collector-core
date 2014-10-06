@@ -34,6 +34,9 @@ import com.norconex.collector.core.crawler.CrawlerConfigLoader;
 import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * Base Collector configuration.
@@ -188,4 +191,33 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         }
     }
     protected abstract void loadCollectorConfigFromXML(XMLConfiguration xml);
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof AbstractCollectorConfig))
+            return false;
+        AbstractCollectorConfig castOther = (AbstractCollectorConfig) other;
+        return new EqualsBuilder()
+                .append(crawlerConfigClass, castOther.crawlerConfigClass)
+                .append(id, castOther.id)
+                .append(crawlerConfigs, castOther.crawlerConfigs)
+                .append(progressDir, castOther.progressDir)
+                .append(logsDir, castOther.logsDir).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(crawlerConfigClass).append(id)
+                .append(crawlerConfigs).append(progressDir).append(logsDir)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this).appendSuper(super.toString())
+                .append("crawlerConfigClass", crawlerConfigClass)
+                .append("id", id).append("crawlerConfigs", crawlerConfigs)
+                .append("progressDir", progressDir).append("logsDir", logsDir)
+                .toString();
+    }
 }

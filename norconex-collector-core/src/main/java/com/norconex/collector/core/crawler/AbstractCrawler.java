@@ -55,8 +55,9 @@ import com.norconex.jef4.status.JobStatusUpdater;
 import com.norconex.jef4.suite.JobSuite;
 
 /**
+ * Abstract crawler implementation providing a common base to building
+ * crawlers.
  * @author Pascal Essiembre
- *
  */
 public abstract class AbstractCrawler 
         extends AbstractResumableJob implements ICrawler {
@@ -81,7 +82,6 @@ public abstract class AbstractCrawler
     // progress change.,
     private int processedCount;
     private long lastStatusLoggingTime;
-//    private double lastPercent;
     
     /**
      * Constructor.
@@ -283,16 +283,16 @@ public abstract class AbstractCrawler
     protected abstract void executeQueuePipeline(
             ICrawlData crawlData, ICrawlDataStore crawlDataStore);
     
-    protected void deleteCacheOrphans(
-            ICrawlDataStore refStore, JobStatusUpdater statusUpdater, JobSuite suite) {
+    protected void deleteCacheOrphans(ICrawlDataStore crawlDataStore, 
+            JobStatusUpdater statusUpdater, JobSuite suite) {
         long count = 0;
-        Iterator<ICrawlData> it = refStore.getCacheIterator();
+        Iterator<ICrawlData> it = crawlDataStore.getCacheIterator();
         if (it != null && it.hasNext()) {
             while (it.hasNext()) {
-                refStore.queue(it.next());
+                crawlDataStore.queue(it.next());
                 count++;
             }
-            processURLs(refStore, statusUpdater, suite, true);
+            processURLs(crawlDataStore, statusUpdater, suite, true);
         }
         LOG.info(getId() + ": Deleted " + count + " orphan URLs...");
     }
@@ -324,7 +324,7 @@ public abstract class AbstractCrawler
         }
     }
  
-    // @return <code>true</code> if more urls to process
+    // return <code>true</code> if more urls to process
     protected boolean processNextReference(
             final ICrawlDataStore crawlDataStore,
             final JobStatusUpdater statusUpdater, 
@@ -475,17 +475,17 @@ public abstract class AbstractCrawler
     }
     
     private void finalizeURLProcessing(BaseCrawlData crawlData,
-            ICrawlDataStore refStore,/* String url, File outputFile,*/
-            ImporterDocument doc) {
+            ICrawlDataStore refStore, ImporterDocument doc) {
         //--- Flag URL for deletion --------------------------------------------
         try {
             ICommitter committer = getCrawlerConfig().getCommitter();
             if (refStore.isVanished(crawlData)) {
-                crawlData.setState(
-                        CrawlState.DELETED);
+                crawlData.setState(CrawlState.DELETED);
                 if (committer != null) {
                     committer.remove(
                             crawlData.getReference(), doc.getMetadata());
+                    fireCrawlerEvent(CrawlerEvent.DOCUMENT_COMMITTED_REMOVE, 
+                            crawlData, doc);
                 }
             }
         } catch (Exception e) {
@@ -543,6 +543,8 @@ public abstract class AbstractCrawler
         if (committer != null) {
             committer.remove(crawlData.getReference(), doc.getMetadata());
         }
+        fireCrawlerEvent(
+                CrawlerEvent.DOCUMENT_COMMITTED_REMOVE, crawlData, doc);
     }
     
     private final class ProcessURLsRunnable implements Runnable {

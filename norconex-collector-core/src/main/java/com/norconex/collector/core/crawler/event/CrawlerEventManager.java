@@ -28,11 +28,13 @@ import org.apache.log4j.Logger;
 import com.norconex.collector.core.crawler.ICrawler;
 
 /**
- * Holds event listeners and allows to log events.  Events are also logged
- * using Log4j.  Each events have their own appenders, following this pattern:
+ * Manage event listeners and log events.  Events are logged
+ * using Log4j with the INFO level.  
+ * Each events have their own Log4j appenders, following this pattern:
  * <pre>
- *    com.norconex.collector.core.crawler.event.CrawlerEvent.<EVENT_ID>
+ *    CrawlerEvent.<EVENT_ID>
  * </pre>
+ * 
  * @author Pascal Essiembre
  */
 public class CrawlerEventManager {
@@ -63,10 +65,10 @@ public class CrawlerEventManager {
     }
     
     private void logEvent(CrawlerEvent event) {
-        Logger log =  LogManager.getLogger(
-                CrawlerEvent.class.getName() + "." + event.getEventType());
-        if (log.isDebugEnabled()) {
-            log.debug(getLogMessage(event));
+        Logger log =  LogManager.getLogger(CrawlerEvent.class.getSimpleName() 
+                + "." + event.getEventType());
+        if (log.isInfoEnabled()) {
+            log.info(getLogMessage(event));
         }
     }
     

@@ -20,6 +20,10 @@ package com.norconex.collector.core.data.store;
 
 import com.norconex.collector.core.CollectorException;
 
+/**
+ * Crawl data store runtime exception.
+ * @author Pascal Essiembre
+ */
 public class CrawlDataStoreException extends CollectorException {
 
     
