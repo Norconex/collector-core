@@ -8,9 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Reference processing status.
@@ -86,15 +85,14 @@ public class CrawlState implements Serializable {
     
     @Override
     public String toString() {
-        ToStringBuilder builder = new ToStringBuilder(this);
-        builder.append("state", state);
-        return builder.toString();
+        return state;
     }
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof CrawlState))
+        if (!(other instanceof CrawlState)) {
             return false;
+        }
         CrawlState castOther = (CrawlState) other;
         return new EqualsBuilder().append(state, castOther.state).isEquals();
     }

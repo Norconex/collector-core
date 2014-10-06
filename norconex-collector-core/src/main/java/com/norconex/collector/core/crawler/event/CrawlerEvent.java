@@ -102,15 +102,10 @@ public class CrawlerEvent {
                 .append(eventType, castOther.eventType).isEquals();
     }
 
-    private transient int hashCode;
-
     @Override
     public int hashCode() {
-        if (hashCode == 0) {
-            hashCode = new HashCodeBuilder().append(crawlData).append(subject)
-                    .append(eventType).toHashCode();
-        }
-        return hashCode;
+        return new HashCodeBuilder().append(crawlData).append(subject)
+                .append(eventType).toHashCode();
     }
 
     private transient String toString;
