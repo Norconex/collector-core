@@ -27,8 +27,11 @@ public class CrawlState implements Serializable {
     public static final CrawlState ERROR = new CrawlState("ERROR");
     public static final CrawlState REJECTED = 
             new CrawlState("REJECTED");
+    public static final CrawlState BAD_STATUS = new CrawlState("BAD_STATUS");
+    public static final CrawlState DELETED = new CrawlState("DELETED");
     
     private final String state;
+
     
     /**
      * Constructor.

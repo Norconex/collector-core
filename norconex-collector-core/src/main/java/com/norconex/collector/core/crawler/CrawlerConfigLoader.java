@@ -80,8 +80,9 @@ public class CrawlerConfigLoader {
                     xml.configurationsAt("crawlers.crawler");
             List<ICrawlerConfig> configs = new ArrayList<>();
             for (HierarchicalConfiguration node : nodes) {
-                ICrawlerConfig config = defaultConfig.safeClone();
-                loadCrawlerConfig(config, new XMLConfiguration(node));
+                ICrawlerConfig config = defaultConfig.clone();
+                loadCrawlerConfig(config, 
+                        ConfigurationUtil.newXMLConfiguration(node));
                 configs.add(config);
             }
             return configs.toArray(new ICrawlerConfig[]{});

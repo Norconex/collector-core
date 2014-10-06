@@ -4,6 +4,7 @@
 package com.norconex.collector.core;
 
 import com.norconex.jef4.suite.IJobSuiteFactory;
+import com.norconex.jef4.suite.JobSuite;
 
 /**
  * @author Pascal Essiembre
@@ -18,6 +19,8 @@ public interface ICollector extends IJobSuiteFactory {
     ICollectorConfig getCollectorConfig();
 
     String getId();
+    
+    JobSuite getJobSuite();
 
     /**
      * Launched all crawlers defined in configuration.

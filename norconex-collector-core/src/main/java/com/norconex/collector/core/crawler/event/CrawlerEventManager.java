@@ -51,18 +51,11 @@ public class CrawlerEventManager {
         }
     }
 
-//    public void crawlerStarted() {
-//        for (ICrawlerEventListener listener : listeners) {
-//            listener.crawlerStarted(crawler);
-//        }
-//    }
-//    public void crawlerFinished() {
-//        for (ICrawlerEventListener listener : listeners) {
-//            listener.crawlerFinished(crawler);
-//        }
-//    }
-    
     public void fireCrawlerEvent(CrawlerEvent event) {
+        if (event == null) {
+            throw new IllegalArgumentException(
+                    "Cannot fire a null CrawlerEvent.");
+        }
         logEvent(event);
         for (ICrawlerEventListener listener : listeners) {
             listener.crawlerEvent(crawler, event);
@@ -80,8 +73,10 @@ public class CrawlerEventManager {
     protected String getLogMessage(CrawlerEvent event) {
         StringBuilder b = new StringBuilder();
         b.append(StringUtils.leftPad(event.getEventType(), ID_PRINT_WIDTH));
-        b.append(": ");
-        b.append(event.getDocCrawl().getReference());
+        if (event.getCrawlData() != null) {
+            b.append(": ");
+            b.append(event.getCrawlData().getReference());
+        }
         b.append(" (Subject: ");
         b.append(Objects.toString(event.getSubject(), "none"));
         b.append(")");

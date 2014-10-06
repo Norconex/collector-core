@@ -91,12 +91,13 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
                     "Problem creating crawl store.", e);
         }
         if (resume) {
-            LOG.debug("Resuming: putting active URLs back in the queue...");
-            copyCrawlURLsToQueue(TABLE_ACTIVE);
+            LOG.debug(
+                    "Resuming: putting active references back in the queue...");
+            copyCrawlDatasToQueue(TABLE_ACTIVE);
             LOG.debug("Cleaning active database...");
             sqlClearTable(TABLE_ACTIVE);
         } else if (incrementalRun) {
-            LOG.info("Caching processed URL from last run (if any)...");
+            LOG.info("Caching processed reference from last run (if any)...");
             LOG.debug("Rename processed table to cache...");
             sqlUpdate("DROP TABLE " + TABLE_CACHE);
             if (database == Database.DERBY) {
@@ -108,7 +109,7 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
             }
             LOG.debug("Cleaning queue table...");
             sqlClearTable(TABLE_QUEUE);
-            LOG.debug("Cleaning invalid URLS table...");
+            LOG.debug("Cleaning invalid references table...");
             sqlClearTable(TABLE_PROCESSED_INVALID);
             LOG.debug("Cleaning active table...");
             sqlClearTable(TABLE_ACTIVE);
@@ -120,22 +121,22 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
 
     @Override
     public final synchronized void queue(ICrawlData crawlData) {
-        sqlInsertDocCrawl(TABLE_QUEUE, crawlData);
+        sqlInsertCrawlData(TABLE_QUEUE, crawlData);
     }
 
     @Override
     public final synchronized void processed(ICrawlData crawlData) {
-        ICrawlData docCrawlCopy = crawlData.safeClone();
+        ICrawlData crawlDataCopy = crawlData.clone();
         
         String table;
-        if (docCrawlCopy.getState().isGoodState()) {
+        if (crawlDataCopy.getState().isGoodState()) {
             table = TABLE_PROCESSED_VALID;
         } else {
             table = TABLE_PROCESSED_INVALID;
         }
-        sqlInsertDocCrawl(table, docCrawlCopy);
-        sqlDeleteCrawlURL(TABLE_ACTIVE, docCrawlCopy);
-        sqlDeleteCrawlURL(TABLE_CACHE, docCrawlCopy);
+        sqlInsertCrawlData(table, crawlDataCopy);
+        sqlDeleteCrawlData(TABLE_ACTIVE, crawlDataCopy);
+        sqlDeleteCrawlData(TABLE_CACHE, crawlDataCopy);
     }
 
     @Override
@@ -149,25 +150,25 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
     }
 
     @Override
-    public final synchronized boolean isQueued(String url) {
-        return sqlURLExists(TABLE_QUEUE, url);
+    public final synchronized boolean isQueued(String reference) {
+        return sqlReferenceExists(TABLE_QUEUE, reference);
     }
 
     @Override
     public final synchronized ICrawlData nextQueued() {
-        ICrawlData crawlData = sqlFindCrawlURL(TABLE_QUEUE, 
-                serializer.getNextQueuedDocCrawlSQL(),
-                serializer.getNextQueuedDocCrawlValues());
+        ICrawlData crawlData = sqlFindCrawlData(TABLE_QUEUE, 
+                serializer.getNextQueuedCrawlDataSQL(),
+                serializer.getNextQueuedCrawlDataValues());
         if (crawlData != null) {
-            sqlInsertDocCrawl(TABLE_ACTIVE, crawlData);
-            sqlDeleteCrawlURL(TABLE_QUEUE, crawlData);
+            sqlInsertCrawlData(TABLE_ACTIVE, crawlData);
+            sqlDeleteCrawlData(TABLE_QUEUE, crawlData);
         }
         return crawlData;
     }
 
     @Override
-    public final synchronized boolean isActive(String url) {
-        return sqlURLExists(TABLE_ACTIVE, url);
+    public final synchronized boolean isActive(String reference) {
+        return sqlReferenceExists(TABLE_ACTIVE, reference);
     }
     
     @Override
@@ -177,9 +178,9 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
 
     @Override
     public synchronized ICrawlData getCached(String reference) {
-        ICrawlData crawlData = sqlFindCrawlURL(TABLE_CACHE, 
-                serializer.getCachedDocCrawlSQL(),
-                serializer.getCachedDocCrawlValues(reference));
+        ICrawlData crawlData = sqlFindCrawlData(TABLE_CACHE, 
+                serializer.getCachedCrawlDataSQL(),
+                serializer.getCachedCrawlDataValues(reference));
         return crawlData;
     }
 
@@ -189,9 +190,9 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
     }
     
     @Override
-    public final synchronized boolean isProcessed(String url) {
-        return sqlURLExists(TABLE_PROCESSED_VALID, url)
-                || sqlURLExists(TABLE_PROCESSED_INVALID, url);
+    public final synchronized boolean isProcessed(String reference) {
+        return sqlReferenceExists(TABLE_PROCESSED_VALID, reference)
+                || sqlReferenceExists(TABLE_PROCESSED_INVALID, reference);
     }
 
     @Override
@@ -208,13 +209,13 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
                     ResultSet.TYPE_SCROLL_INSENSITIVE,
                     ResultSet.CONCUR_READ_ONLY);
             final ResultSet rs = stmt.executeQuery(
-                    serializer.getSelectDocCrawlSQL(TABLE_CACHE));
+                    serializer.getSelectCrawlDataSQL(TABLE_CACHE));
             
             if (rs == null || !rs.first()) {
                 return null;
             }
             rs.beforeFirst();
-            return new CrawlURLIterator(TABLE_CACHE, rs, conn, stmt);
+            return new CrawlDataIterator(TABLE_CACHE, rs, conn, stmt);
         } catch (SQLException e) {
             throw new CrawlDataStoreException(
                     "Problem getting database cache iterator.", e);            
@@ -239,7 +240,7 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
         }
     }
     
-    private boolean sqlURLExists(String table, String reference) {
+    private boolean sqlReferenceExists(String table, String reference) {
         return sqlQueryInteger(serializer.getReferenceExistsSQL(table),
                 serializer.getReferenceExistsValues(table, reference)) > 0;
     }
@@ -248,29 +249,29 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
         sqlUpdate("DELETE FROM " + table);
     }
     
-    private void sqlDeleteCrawlURL(String table, ICrawlData crawlData) {
-        sqlUpdate(serializer.getDeleteDocCrawlSQL(table),
-                serializer.getDeleteDocCrawlValues(table, crawlData));
+    private void sqlDeleteCrawlData(String table, ICrawlData crawlData) {
+        sqlUpdate(serializer.getDeleteCrawlDataSQL(table),
+                serializer.getDeleteCrawlDataValues(table, crawlData));
     }
     
     private int sqlRecordCount(String table) {
         return sqlQueryInteger("SELECT count(*) FROM " + table);
     }
 
-    private void sqlInsertDocCrawl(String table, ICrawlData crawlData) {
-        sqlUpdate(serializer.getInsertDocCrawlSQL(table),
-                serializer.getInsertDocCrawlValues(table, crawlData));
+    private void sqlInsertCrawlData(String table, ICrawlData crawlData) {
+        sqlUpdate(serializer.getInsertCrawlDataSQL(table),
+                serializer.getInsertCrawlDataValues(table, crawlData));
     }
     
-    private void copyCrawlURLsToQueue(final String sourceTable) {
+    private void copyCrawlDatasToQueue(final String sourceTable) {
         ResultSetHandler<Void> h = new ResultSetHandler<Void>() {
             @Override
             public Void handle(ResultSet rs) throws SQLException {
                 while(rs.next()) {
-                    ICrawlData crawlURL = serializer.toDocCrawl(sourceTable, rs);
-                    //toCrawlURL(rs);
-                    if (crawlURL != null) {
-                        queue(crawlURL);
+                    ICrawlData crawlData = 
+                            serializer.toCrawlData(sourceTable, rs);
+                    if (crawlData != null) {
+                        queue(crawlData);
                     }
                 }
                 return null;
@@ -278,22 +279,21 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
         };
         try {
             new QueryRunner(datasource).query(
-                    serializer.getSelectDocCrawlSQL(sourceTable), h);
+                    serializer.getSelectCrawlDataSQL(sourceTable), h);
         } catch (SQLException e) {
             throw new CrawlDataStoreException(
-                    "Problem loading crawl URL from database.", e);            
+                    "Problem loading crawl data from database.", e);            
         }
     }
 
-    private ICrawlData sqlFindCrawlURL(
+    private ICrawlData sqlFindCrawlData(
             final String table, String sql, Object... params) {
       try {
           ResultSetHandler<ICrawlData> h = new ResultSetHandler<ICrawlData>() {
               @Override
               public ICrawlData handle(ResultSet rs) throws SQLException {
                   if (rs.next()) {
-                      return serializer.toDocCrawl(table, rs);
-                      //toCrawlURL(rs);
+                      return serializer.toCrawlData(table, rs);
                   }
                   return null;
               }
@@ -392,13 +392,13 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
         }
     }
     
-    private final class CrawlURLIterator implements Iterator<ICrawlData> {
+    private final class CrawlDataIterator implements Iterator<ICrawlData> {
         private final ResultSet rs;
         private final Connection conn;
         private final Statement stmt;
         private final String tableName;
 
-        private CrawlURLIterator(
+        private CrawlDataIterator(
                 String tableName,
                 ResultSet rs, Connection conn, Statement stmt) {
             this.tableName = tableName;
@@ -429,7 +429,7 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
         public ICrawlData next() {
             try {
                 if (rs.next()) {
-                    return serializer.toDocCrawl(tableName, rs);
+                    return serializer.toCrawlData(tableName, rs);
                 }
             } catch (SQLException e) {
                 LOG.error("Database problem.", e);

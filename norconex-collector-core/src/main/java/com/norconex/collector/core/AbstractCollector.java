@@ -18,10 +18,21 @@
  */
 package com.norconex.collector.core;
 
+import java.io.IOException;
 import java.util.Arrays;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.norconex.collector.core.crawler.ICrawler;
 import com.norconex.collector.core.crawler.ICrawlerConfig;
+import com.norconex.jef4.job.IJob;
+import com.norconex.jef4.job.group.AsyncJobGroup;
+import com.norconex.jef4.log.FileLogManager;
+import com.norconex.jef4.status.FileJobStatusStore;
+import com.norconex.jef4.suite.JobSuite;
+import com.norconex.jef4.suite.JobSuiteConfig;
  
 /**
  * Main application class. In order to use it properly, you must first configure
@@ -39,10 +50,13 @@ import com.norconex.collector.core.crawler.ICrawlerConfig;
 @SuppressWarnings("nls")
 public abstract class AbstractCollector implements ICollector {
 
+    private static final Logger LOG = 
+            LogManager.getLogger(AbstractCollector.class);
+    
     private AbstractCollectorConfig collectorConfig;
 
     private ICrawler[] crawlers;
-
+    private JobSuite jobSuite;
     
 	/**
 	 * Creates and configure a Collector with the provided
@@ -72,6 +86,94 @@ public abstract class AbstractCollector implements ICollector {
         }
     }
 
+    /**
+     * Gets the job suite.
+     * @return the jobSuite
+     */
+    @Override
+    public JobSuite getJobSuite() {
+        return jobSuite;
+    }
+    
+    /**
+     * Start all crawlers defined in configuration.
+     * @param resumeNonCompleted whether to resume where previous crawler
+     *        aborted (if applicable) 
+     */
+    @Override
+    public void start(boolean resumeNonCompleted) {
+        
+        //TODO move this code to a config validator class?
+        //TODO move this code to base class?
+        if (StringUtils.isBlank(getCollectorConfig().getId())) {
+            throw new CollectorException("Collector must be given "
+                    + "a unique identifier (id).");
+        }
+        
+        if (jobSuite != null) {
+            throw new CollectorException(
+                    "Collector is already running. Wait for it to complete "
+                  + "before starting the same instance again, or stop "
+                  + "the currently running instance first.");
+        }
+        jobSuite = createJobSuite();
+        try {
+            jobSuite.execute(resumeNonCompleted);
+        } finally {
+            jobSuite = null;
+        }
+    }
+
+    /**
+     * Stops a running instance of this HTTP Collector.
+     */
+    @Override
+    public void stop() {
+        if (jobSuite == null) {
+            throw new CollectorException(
+                    "This collector cannot be stopped since it is NOT "
+                  + "running.");
+        }
+        try {
+            jobSuite.stop();
+            //TODO wait for stop confirmation before setting to null?
+            jobSuite = null;
+        } catch (IOException e) {
+            throw new CollectorException(
+                    "Could not stop collector: " + getId(), e);
+        }
+    }
+    
+    @Override
+    public JobSuite createJobSuite() {
+        ICrawler[] crawlers = getCrawlers();
+        
+        IJob rootJob = null;
+        if (crawlers.length > 1) {
+            rootJob = new AsyncJobGroup(
+                    getId(), crawlers
+            );
+        } else if (crawlers.length == 1) {
+            rootJob = crawlers[0];
+        }
+        
+        JobSuiteConfig suiteConfig = new JobSuiteConfig();
+
+        
+        //TODO have a base workdir, which is used to figure out where to put
+        // everything (log, progress), and make log and progress overwritable.
+
+        ICollectorConfig collectorConfig = getCollectorConfig();
+        suiteConfig.setLogManager(
+                new FileLogManager(collectorConfig.getLogsDir()));
+        suiteConfig.setJobStatusStore(
+                new FileJobStatusStore(collectorConfig.getProgressDir()));
+        suiteConfig.setWorkdir(collectorConfig.getProgressDir()); 
+        JobSuite suite = new JobSuite(rootJob, suiteConfig);
+        LOG.info("Suite of " + crawlers.length + " crawler jobs created.");
+        return suite;
+    }
+    
     protected abstract ICrawler createCrawler(ICrawlerConfig config);
     
     /**

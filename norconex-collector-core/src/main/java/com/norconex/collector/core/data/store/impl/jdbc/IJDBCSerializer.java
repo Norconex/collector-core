@@ -33,23 +33,23 @@ public interface IJDBCSerializer {
     
     String[] getCreateTableSQLs(String table);
     
-    String getSelectDocCrawlSQL(String table);
+    String getSelectCrawlDataSQL(String table);
     
-    String getDeleteDocCrawlSQL(String table);
-    Object[] getDeleteDocCrawlValues(String table, ICrawlData crawlData);
+    String getDeleteCrawlDataSQL(String table);
+    Object[] getDeleteCrawlDataValues(String table, ICrawlData crawlData);
     
-    String getInsertDocCrawlSQL(String table);
-    Object[] getInsertDocCrawlValues(String table, ICrawlData crawlData);
+    String getInsertCrawlDataSQL(String table);
+    Object[] getInsertCrawlDataValues(String table, ICrawlData crawlData);
 
-    String getNextQueuedDocCrawlSQL();
-    Object[] getNextQueuedDocCrawlValues();
+    String getNextQueuedCrawlDataSQL();
+    Object[] getNextQueuedCrawlDataValues();
 
-    String getCachedDocCrawlSQL();
-    Object[] getCachedDocCrawlValues(String reference);
+    String getCachedCrawlDataSQL();
+    Object[] getCachedCrawlDataValues(String reference);
     
     String getReferenceExistsSQL(String table);
     Object[] getReferenceExistsValues(String table, String reference);
     
-    ICrawlData toDocCrawl(String table, ResultSet rs) throws SQLException;
+    ICrawlData toCrawlData(String table, ResultSet rs) throws SQLException;
 
 }

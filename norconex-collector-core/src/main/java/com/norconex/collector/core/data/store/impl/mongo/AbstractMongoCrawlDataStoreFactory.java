@@ -29,8 +29,6 @@ import org.apache.commons.configuration.XMLConfiguration;
 import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
-import com.norconex.collector.core.data.store.impl.mongo.MongoConnectionDetails;
-import com.norconex.collector.core.data.store.impl.mongo.MongoCrawlDataStore;
 import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;

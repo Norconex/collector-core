@@ -28,10 +28,10 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 
 
 /**
- * Create a new {@link ICrawlData} with a default state of NEW.
+ * A based implementation of {@link ICrawlData} with a default state of NEW.
  * @author Pascal Essiembre
  */
-public class BasicCrawlData implements ICrawlData {
+public class BaseCrawlData implements ICrawlData {
 
     private static final long serialVersionUID = 8711781555253202315L;
 
@@ -45,10 +45,16 @@ public class BasicCrawlData implements ICrawlData {
     /**
      * Constructor.
      */
-    public BasicCrawlData() {
+    public BaseCrawlData() {
         super();
         setState(CrawlState.NEW);
     }
+    
+    public BaseCrawlData(String reference) {
+        this();
+        this.reference = reference;
+    }
+    
     @Override
     public String getReference() {
         return reference;
@@ -91,11 +97,11 @@ public class BasicCrawlData implements ICrawlData {
     public String getContentChecksum() {
         return contentChecksum;
     }
-    public void setContentChecksum(String contentChecksum) {
+    public void setDocumentChecksum(String contentChecksum) {
         this.contentChecksum = contentChecksum;
     }
     @Override
-    public ICrawlData safeClone() {
+    public ICrawlData clone() {
         try {
             return (ICrawlData) BeanUtils.cloneBean(this);
         } catch (IllegalAccessException | InstantiationException
@@ -115,10 +121,10 @@ public class BasicCrawlData implements ICrawlData {
     }
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof BasicCrawlData)) {
+        if (!(other instanceof BaseCrawlData)) {
             return false;
         }
-        BasicCrawlData castOther = (BasicCrawlData) other;
+        BaseCrawlData castOther = (BaseCrawlData) other;
         return new EqualsBuilder().append(reference, castOther.reference)
                 .append(parentRootReference, castOther.parentRootReference)
                 .append(isRootParentReference, castOther.isRootParentReference)

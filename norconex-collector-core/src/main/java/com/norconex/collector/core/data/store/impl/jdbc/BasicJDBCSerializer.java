@@ -21,7 +21,7 @@ package com.norconex.collector.core.data.store.impl.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import com.norconex.collector.core.data.BasicCrawlData;
+import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.data.ICrawlData;
 
@@ -54,25 +54,25 @@ public class BasicJDBCSerializer implements IJDBCSerializer {
 
     
     @Override
-    public String getSelectDocCrawlSQL(String table) {
+    public String getSelectCrawlDataSQL(String table) {
         return "SELECT " + ALL_FIELDS + "FROM " + table;
     }
 
     @Override
-    public String getDeleteDocCrawlSQL(String table) {
+    public String getDeleteCrawlDataSQL(String table) {
         return "DELETE FROM " + table + " WHERE reference = ?";
     }
-    public Object[] getDeleteDocCrawlValues(String table, ICrawlData crawlURL) {
+    public Object[] getDeleteCrawlDataValues(String table, ICrawlData crawlURL) {
         return new Object[] { crawlURL.getReference() };
     }
 
     @Override
-    public String getInsertDocCrawlSQL(String table) {
+    public String getInsertCrawlDataSQL(String table) {
         return "INSERT INTO " + table + "(" + ALL_FIELDS 
                 + ") values (?,?,?,?,?,?)";
     }
     @Override
-    public Object[] getInsertDocCrawlValues(String table, ICrawlData crawlData) {
+    public Object[] getInsertCrawlDataValues(String table, ICrawlData crawlData) {
         return new Object[] { 
                 crawlData.getReference(),
                 crawlData.getParentRootReference(),
@@ -84,23 +84,23 @@ public class BasicJDBCSerializer implements IJDBCSerializer {
     }
 
     @Override
-    public String getNextQueuedDocCrawlSQL() {
+    public String getNextQueuedCrawlDataSQL() {
         return "SELECT " + ALL_FIELDS 
                 + "FROM " + JDBCCrawlDataStore.TABLE_QUEUE;
     }
     @Override
-    public Object[] getNextQueuedDocCrawlValues() {
+    public Object[] getNextQueuedCrawlDataValues() {
         return null;
     }
 
     @Override
-    public String getCachedDocCrawlSQL() {
+    public String getCachedCrawlDataSQL() {
         return "SELECT " + ALL_FIELDS 
                 + "FROM " + JDBCCrawlDataStore.TABLE_CACHE
                 + " WHERE reference = ? ";
     }
     @Override
-    public Object[] getCachedDocCrawlValues(String reference) {
+    public Object[] getCachedCrawlDataValues(String reference) {
         return new Object[] { reference };
     }
 
@@ -114,18 +114,18 @@ public class BasicJDBCSerializer implements IJDBCSerializer {
     }
 
     @Override
-    public ICrawlData toDocCrawl(String table, ResultSet rs)
+    public ICrawlData toCrawlData(String table, ResultSet rs)
             throws SQLException {
         if (rs == null) {
             return null;
         }
-        BasicCrawlData data = new BasicCrawlData();
+        BaseCrawlData data = new BaseCrawlData();
         data.setReference(rs.getString("reference"));
         data.setParentRootReference(rs.getString("parentRootReference"));
         data.setRootParentReference(rs.getBoolean("isRootParentReference"));
         data.setState(CrawlState.valueOf(rs.getString("state")));
         data.setMetaChecksum(rs.getString("metaChecksum"));
-        data.setContentChecksum(rs.getString("contentChecksum"));
+        data.setDocumentChecksum(rs.getString("contentChecksum"));
         return data;
     }
 }

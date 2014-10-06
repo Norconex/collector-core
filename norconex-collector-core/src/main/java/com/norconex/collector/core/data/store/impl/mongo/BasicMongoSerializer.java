@@ -3,7 +3,7 @@ package com.norconex.collector.core.data.store.impl.mongo;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import com.norconex.collector.core.data.BasicCrawlData;
+import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.data.ICrawlData;
 
@@ -36,7 +36,7 @@ public class BasicMongoSerializer implements IMongoSerializer {
         if (dbObject == null) {
             return null;
         }
-        BasicCrawlData data = new BasicCrawlData();
+        BaseCrawlData data = new BaseCrawlData();
       
         data.setReference((String) dbObject.get(FIELD_REFERENCE));
         data.setParentRootReference(
@@ -48,7 +48,7 @@ public class BasicMongoSerializer implements IMongoSerializer {
             data.setState(CrawlState.valueOf(crawlState));
         }
         data.setMetaChecksum((String) dbObject.get(FIELD_META_CHECKSUM));
-        data.setContentChecksum((String) dbObject.get(FIELD_CONTENT_CHECKSUM));
+        data.setDocumentChecksum((String) dbObject.get(FIELD_CONTENT_CHECKSUM));
         return data;
     }
 

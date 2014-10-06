@@ -24,6 +24,7 @@ import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
+import com.norconex.commons.lang.file.FileUtil;
 
 /**
  * Default reference store factory.
@@ -60,7 +61,8 @@ public class MapDBCrawlDataStoreFactory
     public ICrawlDataStore createCrawlDataStore(
             ICrawlerConfig config, boolean resume) {
         String storeDir = config.getWorkDir().getPath()
-                + "/refstore/" + config.getId() + "/";
+                + "/crawlstore/mapdb/" 
+                + FileUtil.toSafeFileName(config.getId()) + "/";
         return new MapDBCrawlDataStore(storeDir, resume, valueSerializer);
     }
     

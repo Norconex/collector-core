@@ -21,6 +21,7 @@ package com.norconex.collector.core.data.store.impl.jdbc;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Objects;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -33,6 +34,7 @@ import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
 import com.norconex.collector.core.data.store.impl.jdbc.JDBCCrawlDataStore.Database;
 import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 
 /**
@@ -70,13 +72,13 @@ public abstract class AbstractJDBCDataStoreFactory
     @Override
     public ICrawlDataStore createCrawlDataStore(
             ICrawlerConfig config, boolean resume) {
-        String storeDir = config.getWorkDir().getPath()
-                + "/refstore/" + config.getId() + "/";
-        
         Database db = database;
         if (db == null) {
             db = DEFAULT_DATABASE;
         }
+        String storeDir = config.getWorkDir().getPath() + "/crawlstore/" 
+                + Objects.toString(database.toString()).toLowerCase() + "/" 
+                + FileUtil.toSafeFileName(config.getId()) + "/";
         return new JDBCCrawlDataStore(
                 db, storeDir, resume, createJDBCSerializer());
     }

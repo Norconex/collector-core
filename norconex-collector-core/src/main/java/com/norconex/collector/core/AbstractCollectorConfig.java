@@ -74,7 +74,6 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
 	 * Gets this collector unique identifier.
 	 * @return unique identifier
 	 */
-	@Override
     public String getId() {
         return id;
     }
@@ -109,7 +108,6 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
      * are stored.
      * @return progress directory path
      */
-    @Override
     public String getProgressDir() {
         return progressDir;
     }
@@ -126,7 +124,6 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
      * Gets the directory location of generated log files.
      * @return logs directory path
      */
-    @Override
     public String getLogsDir() {
         return logsDir;
     }
@@ -138,7 +135,6 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         this.logsDir = logsDir;
     }
     
-    @Override
     public void saveToXML(Writer out) throws IOException {
         try {
             EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);

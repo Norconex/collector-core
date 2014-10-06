@@ -143,7 +143,7 @@ public class MapDBCrawlDataStore extends AbstractCrawlDataStore {
     public void queue(ICrawlData crawlData) {
         // Short of being immutable, make a defensive copy of crawl URL.
         //TODO why again?
-        ICrawlData crawlUrlCopy = crawlData.safeClone();
+        ICrawlData crawlUrlCopy = crawlData.clone();
         queue.add(crawlUrlCopy);
     }
 
@@ -196,7 +196,7 @@ public class MapDBCrawlDataStore extends AbstractCrawlDataStore {
         // Short of being immutable, make a defensive copy of crawl URL.
 
         //TODO why clone here if we are only readonly?
-        ICrawlData referenceCopy = crawlData.safeClone();
+        ICrawlData referenceCopy = crawlData.clone();
         if (referenceCopy.getState().isGoodState()) {
             processedValid.put(referenceCopy.getReference(), referenceCopy);
         } else {

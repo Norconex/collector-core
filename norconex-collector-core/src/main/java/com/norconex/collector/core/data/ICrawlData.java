@@ -22,10 +22,13 @@ import java.io.Serializable;
 
 /**
  * A pointer that uniquely identifies a resource being processed (e.g. a 
- * URL, a file path, etc).
+ * URL, a file path, etc).  Implementors are strongly encourage to subclass
+ * {@link BaseCrawlData} since some features of Norocnex Collector Core 
+ * references it.
  * @author Pascal Essiembre
+ * @see BaseCrawlData
  */
-public interface ICrawlData extends Serializable {
+public interface ICrawlData extends Cloneable, Serializable {
 
     /**
      * Gets the unique identifier of this reference (e.g. URL, path, etc).
@@ -43,7 +46,7 @@ public interface ICrawlData extends Serializable {
      * Clones this reference.
      * @return a copy of this instance
      */
-    ICrawlData safeClone();
+    ICrawlData clone();
     
     
     boolean isRootParentReference();
