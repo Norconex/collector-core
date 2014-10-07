@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -29,6 +30,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.apache.commons.lang3.CharEncoding;
 
 import com.norconex.commons.lang.EqualsUtil;
 
@@ -83,11 +85,11 @@ public abstract class AbstractCollectorLauncher {
             err.println("\n\nDetails of the error has been stored at: "
                     + errorFile.getAbsolutePath() + "\n\n");
             try {
-                PrintWriter w = new PrintWriter(errorFile);
+                PrintWriter w = new PrintWriter(errorFile, CharEncoding.UTF_8);
                 e.printStackTrace(w);
                 w.flush();
                 w.close();
-            } catch (FileNotFoundException e1) {
+            } catch (FileNotFoundException | UnsupportedEncodingException e1) {
                 err.println("\n\nCannot write error file. " 
                         + e1.getLocalizedMessage());
             }

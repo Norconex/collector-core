@@ -19,6 +19,7 @@
 package com.norconex.collector.core.crawler;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
@@ -29,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.LogManager;
@@ -65,6 +67,8 @@ public abstract class AbstractCrawler
     private static final Logger LOG = 
             LogManager.getLogger(AbstractCrawler.class);
 
+    private static final int DOUBLE_PROGRESS_SCALE = 4;
+    private static final int DOUBLE_PERCENT_SCALE = -2;
     private static final String PROP_PROCESSED_COUNT = "processedCount";
     private static final int MINIMUM_DELAY = 1;
     private static final long STATUS_LOGGING_INTERVAL = 
@@ -89,7 +93,12 @@ public abstract class AbstractCrawler
      */
     public AbstractCrawler(ICrawlerConfig config) {
         this.config = config;
-        config.getWorkDir().mkdirs();
+        try {
+            FileUtils.forceMkdir(config.getWorkDir());
+        } catch (IOException e) {
+            throw new CollectorException("Cannot create working directory: "
+                    + config.getWorkDir(), e);
+        }
     }
 
     @Override
@@ -386,7 +395,8 @@ public abstract class AbstractCrawler
         
         if (total != 0) {
             progress = BigDecimal.valueOf(processed)
-                    .divide(BigDecimal.valueOf(total), 4, RoundingMode.DOWN)
+                    .divide(BigDecimal.valueOf(total), 
+                            DOUBLE_PROGRESS_SCALE, RoundingMode.DOWN)
                     .doubleValue();
         }
         statusUpdater.setProgress(progress);
@@ -400,10 +410,10 @@ public abstract class AbstractCrawler
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastStatusLoggingTime > STATUS_LOGGING_INTERVAL) {
                 lastStatusLoggingTime = currentTime;
-                LOG.info(getId() + ": " + BigDecimal.valueOf(
-                        progress).movePointLeft(-2).intValue() + "% completed (" 
-                                + processed + " processed/" 
-                                + total + " total)");
+                int percent = BigDecimal.valueOf(progress).movePointLeft(
+                        DOUBLE_PERCENT_SCALE).intValue();
+                LOG.info(getId() + ": " + percent + "% completed (" 
+                        + processed + " processed/" + total + " total)");
             }
         }
     }

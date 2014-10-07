@@ -18,16 +18,13 @@
  */
 package com.norconex.collector.core.data.store;
 
-import java.io.Serializable;
-
 import com.norconex.collector.core.crawler.ICrawlerConfig;
 
 /**
  * Factory responsible for creating new crawl data stores.
  * @author Pascal Essiembre
  */
-public interface ICrawlDataStoreFactory 
-        extends Serializable {
+public interface ICrawlDataStoreFactory {
 
     /**
      * Creates a new crawl data store.

@@ -33,16 +33,14 @@ public interface IMongoSerializer {
         QUEUED, ACTIVE, PROCESSED;
     }
 
-    public static final String FIELD_REFERENCE = "reference";
-    public static final String FIELD_PARENT_ROOT_REFERENCE = 
-            "parentRootReference";
-    public static final String FIELD_IS_ROOT_PARENT_REFERENCE = 
-            "isRootParentReference";
-    public static final String FIELD_CRAWL_STATE = "crawlState";
-    public static final String FIELD_META_CHECKSUM = "metaChecksum";
-    public static final String FIELD_CONTENT_CHECKSUM = "contentChecksum";
-    public static final String FIELD_IS_VALID = "isValid";
-    public static final String FIELD_STAGE = "stage";
+    String FIELD_REFERENCE = "reference";
+    String FIELD_PARENT_ROOT_REFERENCE = "parentRootReference";
+    String FIELD_IS_ROOT_PARENT_REFERENCE = "isRootParentReference";
+    String FIELD_CRAWL_STATE = "crawlState";
+    String FIELD_META_CHECKSUM = "metaChecksum";
+    String FIELD_CONTENT_CHECKSUM = "contentChecksum";
+    String FIELD_IS_VALID = "isValid";
+    String FIELD_STAGE = "stage";
     
     /**
      * Converts a {@link ICrawlData} to a Mongo {@link BasicDBObject}.

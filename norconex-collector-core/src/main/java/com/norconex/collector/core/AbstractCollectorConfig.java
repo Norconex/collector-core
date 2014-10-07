@@ -96,7 +96,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
      * @return crawler configurations
      */
     public ICrawlerConfig[] getCrawlerConfigs() {
-        return crawlerConfigs;
+        return ArrayUtils.clone(crawlerConfigs);
     }
     /**
      * Sets crawler configurations.

@@ -19,10 +19,12 @@
 package com.norconex.collector.core.data.store.impl.mapdb;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.mapdb.DB;
@@ -31,6 +33,7 @@ import org.mapdb.Serializer;
 
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.AbstractCrawlDataStore;
+import com.norconex.collector.core.data.store.CrawlDataStoreException;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 
 /**
@@ -76,7 +79,12 @@ public class MapDBCrawlDataStore extends AbstractCrawlDataStore {
 
         LOG.info("Initializing reference store " + path);
         
-        new File(path).mkdirs();
+        try {
+            FileUtils.forceMkdir(new File(path));
+        } catch (IOException e) {
+            throw new CrawlDataStoreException(
+                    "Cannot create crawl data store directory: " + path, e);
+        }
         File dbFile = new File(path + "/mapdb");
         boolean create = !dbFile.exists() || !dbFile.isFile();
         

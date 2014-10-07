@@ -204,6 +204,6 @@ public abstract class AbstractCollector implements ICollector {
      * @return crawlers
      */
     public ICrawler[] getCrawlers() {
-        return crawlers;
+        return Arrays.copyOf(crawlers, crawlers.length);
     }
 }

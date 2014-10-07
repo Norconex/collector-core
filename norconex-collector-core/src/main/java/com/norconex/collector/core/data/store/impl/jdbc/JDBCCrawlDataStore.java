@@ -19,6 +19,7 @@
 package com.norconex.collector.core.data.store.impl.jdbc;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -35,6 +36,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ArrayListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -75,7 +77,12 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
         
         LOG.info("Initializing crawl document reference store: " + fullPath);
 
-        new File(fullPath).mkdirs();
+        try {
+            FileUtils.forceMkdir(new File(fullPath));
+        } catch (IOException e) {
+            throw new CrawlDataStoreException(
+                    "Cannot create crawl store directory: " + fullPath, e);
+        }
         if (database == Database.DERBY) {
             System.setProperty("derby.system.home", fullPath + "/derby/log");
             this.dbDir = fullPath + "/derby/db";
@@ -210,7 +217,6 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
                     ResultSet.CONCUR_READ_ONLY);
             final ResultSet rs = stmt.executeQuery(
                     serializer.getSelectCrawlDataSQL(TABLE_CACHE));
-            
             if (rs == null || !rs.first()) {
                 return null;
             }
@@ -226,9 +232,10 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
     @Override
     public void close() {
         if (database == Database.DERBY) {
+            Connection conn = null;
             try {
                 LOG.info("Closing Derby database...");
-                DriverManager.getConnection(
+                conn = DriverManager.getConnection(
                         "jdbc:derby:" + dbDir + ";shutdown=true");
             } catch (SQLException e) {
                 if (!DERBY_STATE_SHUTDOWN_SUCCESS.equals(e.getSQLState())) {
@@ -236,6 +243,15 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
                             "Cannot shutdown Derby database.", e);
                 }
                 LOG.info("Derby database closed.");
+            } finally {
+                if (conn != null) {
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        LOG.info(
+                                "Problem closing database shutdown connection.", e);
+                    }
+                }
             }
         }
     }
@@ -367,14 +383,18 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
 
     private boolean ensureTablesExist() throws SQLException {
         ArrayListHandler arrayListHandler = new ArrayListHandler();
-        Connection conn = datasource.getConnection();
-        List<Object[]> tables = arrayListHandler.handle(
-                conn.getMetaData().getTables(
-                        null, null, null, new String[]{"TABLE"}));
-        conn.close();
-        if (tables.size() == NUMBER_OF_TABLES) {
-            LOG.debug("    Re-using existing tables.");
-            return true;
+        Connection conn = null;
+        try {                
+            conn = datasource.getConnection();
+            List<Object[]> tables = arrayListHandler.handle(
+                    conn.getMetaData().getTables(
+                            null, null, null, new String[]{"TABLE"}));
+            if (tables.size() == NUMBER_OF_TABLES) {
+                LOG.debug("    Re-using existing tables.");
+                return true;
+            }
+        } finally {
+            DbUtils.closeQuietly(conn);
         }
         LOG.debug("    Creating new crawl tables...");
         sqlCreateTable(TABLE_QUEUE);

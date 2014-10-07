@@ -34,6 +34,9 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -50,9 +53,6 @@ import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterConfigLoader;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * Base Collector configuration.
@@ -149,7 +149,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     }
 
     public ICrawlerEventListener[] getCrawlerListeners() {
-        return crawlerListeners;
+        return ArrayUtils.clone(crawlerListeners);
     }
     public void setCrawlerListeners(
             ICrawlerEventListener[] crawlerListeners) {
@@ -161,7 +161,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
      * @return the referenceFilters
      */
     public IReferenceFilter[] getReferenceFilters() {
-        return referenceFilters;
+        return ArrayUtils.clone(referenceFilters);
     }
     /**
      * Sets the reference filters.

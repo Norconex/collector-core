@@ -31,11 +31,8 @@ import com.norconex.commons.lang.file.FileUtil;
  * 
  * @author Pascal Essiembre
  */
-public class MapDBCrawlDataStoreFactory 
-        implements ICrawlDataStoreFactory {
+public class MapDBCrawlDataStoreFactory implements ICrawlDataStoreFactory {
 
-    private static final long serialVersionUID = 197714845943448133L;
-    
     private Serializer<ICrawlData> valueSerializer;
     
     public MapDBCrawlDataStoreFactory() {

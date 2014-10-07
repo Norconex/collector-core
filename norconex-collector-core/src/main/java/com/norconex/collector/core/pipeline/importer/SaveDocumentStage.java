@@ -50,7 +50,12 @@ public class SaveDocumentStage
         File workdir = ctx.getConfig().getWorkDir();
         File downloadDir = new File(workdir, "/downloads");
         if (!downloadDir.exists()) {
-            downloadDir.mkdirs();
+            try {
+                FileUtils.forceMkdir(downloadDir);
+            } catch (IOException e) {
+                throw new CollectorException(
+                        "Cannot create download directory: " + downloadDir, e);
+            }
         }
         File downloadFile = new File(downloadDir, 
                 urlToPath(ctx.getCrawlData().getReference()));
