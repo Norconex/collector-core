@@ -62,8 +62,6 @@ import com.norconex.importer.doc.ImporterDocument;
  */
 public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
 
-	private static final long serialVersionUID = 3795335571186097378L;
-
 	private static final Logger LOG = LogManager.getLogger(
 			MD5DocumentChecksummer.class);
     

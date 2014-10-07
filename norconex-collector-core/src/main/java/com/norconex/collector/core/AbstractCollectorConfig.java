@@ -27,6 +27,9 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -34,18 +37,12 @@ import com.norconex.collector.core.crawler.CrawlerConfigLoader;
 import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * Base Collector configuration.
  * @author Pascal Essiembre
  */
 public abstract class AbstractCollectorConfig implements ICollectorConfig {
-
-    private static final long serialVersionUID = -7163342161041144485L;
-
 
     private static final Logger LOG = LogManager.getLogger(
             AbstractCollectorConfig.class);

@@ -60,8 +60,6 @@ import com.norconex.importer.doc.ImporterDocument;
 public abstract class AbstractDocumentChecksummer 
         implements IDocumentChecksummer, IXMLConfigurable {
 
-    private static final long serialVersionUID = 8408362043876531915L;
-
     private static final Logger LOG = LogManager.getLogger(
 			AbstractDocumentChecksummer.class);
     

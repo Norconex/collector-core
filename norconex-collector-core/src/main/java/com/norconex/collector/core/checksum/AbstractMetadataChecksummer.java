@@ -59,8 +59,6 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 public abstract class AbstractMetadataChecksummer 
         implements IMetadataChecksummer, IXMLConfigurable {
 
-    private static final long serialVersionUID = -3821511734751759664L;
-
     private static final Logger LOG = LogManager.getLogger(
 			AbstractMetadataChecksummer.class);
     

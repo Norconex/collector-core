@@ -66,8 +66,6 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 public abstract class AbstractMongoCrawlDataStoreFactory 
         implements ICrawlDataStoreFactory, IXMLConfigurable {
 
-    private static final long serialVersionUID = -919499699528485232L;
-
     private final MongoConnectionDetails connDetails = 
             new MongoConnectionDetails();
     

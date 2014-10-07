@@ -18,8 +18,6 @@
  */
 package com.norconex.collector.core.checksum;
 
-import java.io.Serializable;
-
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.importer.doc.ImporterDocument;
 
@@ -50,7 +48,7 @@ import com.norconex.importer.doc.ImporterDocument;
  * @author Pascal Essiembre
  * @see AbstractDocumentChecksummer
  */
-public interface IDocumentChecksummer extends Serializable {
+public interface IDocumentChecksummer {
 
     /**
      * Creates a document checksum.

@@ -18,7 +18,6 @@
  */
 package com.norconex.collector.core.filter;
 
-import java.io.Serializable;
 
 /**
  * Filter a document based on its reference, before its properties or content
@@ -34,7 +33,7 @@ import java.io.Serializable;
  * <code>filter</code> to ensure it gets loaded properly.</p>
  * @author Pascal Essiembre
  */
-public interface IReferenceFilter extends Serializable {
+public interface IReferenceFilter {
 
     /**
      * Whether to accept this reference.  

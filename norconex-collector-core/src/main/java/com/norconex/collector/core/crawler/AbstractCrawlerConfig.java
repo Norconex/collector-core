@@ -60,8 +60,6 @@ import com.norconex.importer.ImporterConfigLoader;
  */
 public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
 
-    private static final long serialVersionUID = -6935734360988586588L;
-
     private static final Logger LOG = LogManager.getLogger(
             AbstractCrawlerConfig.class);
     

@@ -55,8 +55,6 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 public abstract class AbstractJDBCDataStoreFactory 
         implements ICrawlDataStoreFactory, IXMLConfigurable {
 
-    private static final long serialVersionUID = 6751191940364554397L;
-
     public static final Database DEFAULT_DATABASE = Database.H2;
     
     private Database database;
