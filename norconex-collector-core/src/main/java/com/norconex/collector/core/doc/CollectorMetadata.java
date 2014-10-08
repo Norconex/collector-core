@@ -36,7 +36,7 @@ public class CollectorMetadata extends ImporterMetadata {
             COLLECTOR_PREFIX + "content-encoding";
     public static final String COLLECTOR_CONTENT_TYPE = 
             COLLECTOR_PREFIX + "content-type";
-    public static final String COLLECTOR_CHECKSUM_META = 
+    public static final String COLLECTOR_CHECKSUM_METADATA = 
             COLLECTOR_PREFIX + "checksum-metadata";
     public static final String COLLECTOR_CHECKSUM_DOC = 
             COLLECTOR_PREFIX + "checksum-doc";

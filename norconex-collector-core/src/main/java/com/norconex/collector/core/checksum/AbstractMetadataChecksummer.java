@@ -40,7 +40,7 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  * to keep the generated checksum.  The checksum can be stored
  * in a target field name specified.  If no target field name is specified,
  * it stores it under the 
- * metadata field name {@link CollectorMetadata#COLLECTOR_CHECKSUM_META}. 
+ * metadata field name {@link CollectorMetadata#COLLECTOR_CHECKSUM_METADATA}. 
  * <p/>
  * <b>Implementors do not need to store the checksum themselves, this abstract
  * class does it.</b>
@@ -63,7 +63,7 @@ public abstract class AbstractMetadataChecksummer
 			AbstractMetadataChecksummer.class);
     
 	private boolean keep;
-    private String targetField = CollectorMetadata.COLLECTOR_CHECKSUM_META;
+    private String targetField = CollectorMetadata.COLLECTOR_CHECKSUM_METADATA;
 	
     @Override
     public final String createMetadataChecksum(Properties metadata) {
@@ -71,7 +71,7 @@ public abstract class AbstractMetadataChecksummer
         if (isKeep()) {
             String field = targetField;
             if (StringUtils.isBlank(field)) {
-                field = CollectorMetadata.COLLECTOR_CHECKSUM_META;
+                field = CollectorMetadata.COLLECTOR_CHECKSUM_METADATA;
             }
             metadata.addString(getTargetField(), checksum);
             if (LOG.isDebugEnabled()) {
@@ -100,7 +100,7 @@ public abstract class AbstractMetadataChecksummer
 
     /**
      * Gets the metadata field to use to store the checksum value.
-     * Defaults to {@link CollectorMetadata#COLLECTOR_CHECKSUM_META}.  
+     * Defaults to {@link CollectorMetadata#COLLECTOR_CHECKSUM_METADATA}.  
      * Only applicable if {@link #isKeep()} returns {@code true}
      * @return metadata field name
      */
