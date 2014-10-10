@@ -1,4 +1,4 @@
-package com.norconex.collector.core.mbean;
+package com.norconex.collector.core.jmx;
 
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 
