@@ -122,7 +122,7 @@ public abstract class AbstractCollector implements ICollector {
     }
 
     /**
-     * Stops a running instance of this HTTP Collector.
+     * Stops a running instance of this Collector.
      */
     @Override
     public void stop() {

@@ -29,7 +29,7 @@ import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.ConfigurationUtil;
 
 /**
- * HTTP Collector configuration loader.  Configuration options are defined
+ * Collector configuration loader.  Configuration options are defined
  * as part of general product documentation.
  * @author Pascal Essiembre
  */

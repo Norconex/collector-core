@@ -99,7 +99,7 @@ public abstract class AbstractCollectorLauncher {
     protected CommandLine parseCommandLineArguments(String[] args) {
         Options options = new Options();
         options.addOption("c", ARG_CONFIG, true, 
-                "Required: HTTP Collector configuration file.");
+                "Required: Collector configuration file.");
         options.addOption("v", ARG_VARIABLES, true, 
                 "Optional: variable file.");
         options.addOption("a", ARG_ACTION, true, 

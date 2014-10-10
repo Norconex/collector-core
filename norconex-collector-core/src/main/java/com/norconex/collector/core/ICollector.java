@@ -45,7 +45,7 @@ public interface ICollector extends IJobSuiteFactory {
     void start(boolean resumeNonCompleted);
 
     /**
-     * Stops a running instance of this HTTP Collector.
+     * Stops a running instance of this Collector.
      */
     void stop();
 }
