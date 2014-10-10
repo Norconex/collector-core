@@ -23,6 +23,8 @@ import java.io.File;
 import com.norconex.collector.core.checksum.IDocumentChecksummer;
 import com.norconex.collector.core.crawler.event.ICrawlerEventListener;
 import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
+import com.norconex.collector.core.filter.IDocumentFilter;
+import com.norconex.collector.core.filter.IMetadataFilter;
 import com.norconex.collector.core.filter.IReferenceFilter;
 import com.norconex.committer.ICommitter;
 import com.norconex.commons.lang.config.IXMLConfigurable;
@@ -104,6 +106,19 @@ public interface ICrawlerConfig extends IXMLConfigurable, Cloneable {
      * @return reference filters
      */
     IReferenceFilter[] getReferenceFilters();
+
+    /**
+     * Gets the document filters.
+     * @return document filters
+     */
+    IDocumentFilter[] getDocumentFilters();
+
+    /**
+     * Gets the metadata filters.
+     * @return metadata filters
+     */
+    IMetadataFilter[] getMetadataFilters();
+
     
     /**
      * Gets the document checksummer.

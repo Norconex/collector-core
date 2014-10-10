@@ -46,6 +46,8 @@ import com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer;
 import com.norconex.collector.core.crawler.event.ICrawlerEventListener;
 import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
 import com.norconex.collector.core.data.store.impl.mapdb.MapDBCrawlDataStoreFactory;
+import com.norconex.collector.core.filter.IDocumentFilter;
+import com.norconex.collector.core.filter.IMetadataFilter;
 import com.norconex.collector.core.filter.IReferenceFilter;
 import com.norconex.committer.ICommitter;
 import com.norconex.commons.lang.config.ConfigurationUtil;
@@ -73,6 +75,9 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
             new MapDBCrawlDataStoreFactory();
 
     private IReferenceFilter[] referenceFilters;
+    private IMetadataFilter[] metadataFilters;
+    private IDocumentFilter[] documentFilters;
+    
     private ICrawlerEventListener[] crawlerListeners;
     private ImporterConfig importerConfig = new ImporterConfig();
     private ICommitter committer;
@@ -168,7 +173,19 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     public void setReferenceFilters(IReferenceFilter[] referenceFilters) {
         this.referenceFilters = ArrayUtils.clone(referenceFilters);
     }
-    
+    public IDocumentFilter[] getDocumentFilters() {
+        return ArrayUtils.clone(documentFilters);
+    }
+    public void setDocumentFilters(IDocumentFilter[] documentfilters) {
+        this.documentFilters = ArrayUtils.clone(documentfilters);
+    }
+    public IMetadataFilter[] getMetadataFilters() {
+        return ArrayUtils.clone(metadataFilters);
+    }
+    public void setMetadataFilters(IMetadataFilter[] metadataFilters) {
+        this.metadataFilters = ArrayUtils.clone(metadataFilters);
+    }
+
     public IDocumentChecksummer getDocumentChecksummer() {
         return documentChecksummer;
     }
@@ -218,6 +235,8 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
                     getCrawlDataStoreFactory());
             writeArray(out, "referenceFilters", 
                     "filter", getReferenceFilters());
+            writeArray(out, "metadataFilters", "filter", getMetadataFilters());
+            writeArray(out, "documentFilters", "filter", getDocumentFilters());
             writeArray(out, "crawlerListeners", "listener", 
                     getCrawlerListeners());
             writeObject(out, "importer", getImporterConfig());
@@ -256,19 +275,31 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         setMaxDocuments(xml.getInt("maxDocuments", getMaxDocuments()));
 
         //--- Reference Filters ------------------------------------------------
-        IReferenceFilter[] urlFilters = 
+        IReferenceFilter[] referenceFilters = 
                 loadReferenceFilters(xml, "referenceFilters.filter");
-        setReferenceFilters(defaultIfEmpty(urlFilters, getReferenceFilters()));
+        setReferenceFilters(defaultIfEmpty(
+                referenceFilters, getReferenceFilters()));
+        
+        //--- Metadata Filters ---------------------------------------------
+        IMetadataFilter[] metadataFilters = 
+                loadMetadataFilters(xml, "metadataFilters.filter");
+        setMetadataFilters(defaultIfEmpty(
+                metadataFilters, getMetadataFilters()));
+        
+        //--- Document Filters -------------------------------------------------
+        IDocumentFilter[] docFilters = 
+                loadDocumentFilters(xml, "documentFilters.filter");
+        setDocumentFilters(defaultIfEmpty(docFilters, getDocumentFilters()));
         
         //--- Crawler Listeners ------------------------------------------------
-        ICrawlerEventListener[] crawlerListeners = loadListeners(xml,
-                "crawlerListeners.listener");
+        ICrawlerEventListener[] crawlerListeners = 
+                loadListeners(xml, "crawlerListeners.listener");
         setCrawlerListeners(defaultIfEmpty(crawlerListeners,
                 getCrawlerListeners()));
 
         //--- IMPORTER ---------------------------------------------------------
-        XMLConfiguration importerNode = ConfigurationUtil.getXmlAt(xml,
-                "importer");
+        XMLConfiguration importerNode = 
+                ConfigurationUtil.getXmlAt(xml, "importer");
         ImporterConfig importerConfig = ImporterConfigLoader
                 .loadImporterConfig(importerNode);
         setImporterConfig(ObjectUtils.defaultIfNull(importerConfig,
@@ -279,12 +310,12 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
                 "crawlDataStoreFactory", getCrawlDataStoreFactory()));
 
         //--- Document Committers ----------------------------------------------
-        setCommitter(ConfigurationUtil.newInstance(xml, "committer",
-                getCommitter()));
+        setCommitter(ConfigurationUtil.newInstance(
+                xml, "committer", getCommitter()));
         
         //--- Document Checksummer ----------------------------------------
-        setDocumentChecksummer(ConfigurationUtil.newInstance(xml,
-                "documentChecksummer", getDocumentChecksummer()));
+        setDocumentChecksummer(ConfigurationUtil.newInstance(
+                xml, "documentChecksummer", getDocumentChecksummer()));
         
         loadCrawlerConfigFromXML(xml);
 
@@ -327,6 +358,32 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
             }
         }
         return refFilters.toArray(new IReferenceFilter[] {});
+    }
+    
+    private IMetadataFilter[] loadMetadataFilters(XMLConfiguration xml,
+            String xmlPath) {
+        List<IMetadataFilter> filters = new ArrayList<>();
+        List<HierarchicalConfiguration> filterNodes = xml
+                .configurationsAt(xmlPath);
+        for (HierarchicalConfiguration filterNode : filterNodes) {
+            IMetadataFilter filter = ConfigurationUtil.newInstance(filterNode);
+            filters.add(filter);
+            LOG.info("Matadata filter loaded: " + filter);
+        }
+        return filters.toArray(new IMetadataFilter[] {});
+    }
+    
+    private IDocumentFilter[] loadDocumentFilters(
+            XMLConfiguration xml, String xmlPath) {
+        List<IDocumentFilter> filters = new ArrayList<>();
+        List<HierarchicalConfiguration> filterNodes = 
+                xml.configurationsAt(xmlPath);
+        for (HierarchicalConfiguration filterNode : filterNodes) {
+            IDocumentFilter filter = ConfigurationUtil.newInstance(filterNode);
+            filters.add(filter);
+            LOG.info("Document filter loaded: " + filter);
+        }
+        return filters.toArray(new IDocumentFilter[] {});
     }
     
     protected void writeObject(
@@ -396,6 +453,8 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
                 .append(deleteOrphans, castOther.deleteOrphans)
                 .append(crawlDataStoreFactory, castOther.crawlDataStoreFactory)
                 .append(referenceFilters, castOther.referenceFilters)
+                .append(metadataFilters, castOther.metadataFilters)
+                .append(documentFilters, castOther.documentFilters)
                 .append(crawlerListeners, castOther.crawlerListeners)
                 .append(importerConfig, castOther.importerConfig)
                 .append(committer, castOther.committer)
@@ -408,6 +467,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         return new HashCodeBuilder().append(id).append(numThreads)
                 .append(workDir).append(maxDocuments).append(deleteOrphans)
                 .append(crawlDataStoreFactory).append(referenceFilters)
+                .append(metadataFilters).append(documentFilters)
                 .append(crawlerListeners).append(importerConfig)
                 .append(committer).append(documentChecksummer).toHashCode();
     }
@@ -421,9 +481,13 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
                 .append("deleteOrphans", deleteOrphans)
                 .append("crawlDataStoreFactory", crawlDataStoreFactory)
                 .append("referenceFilters", referenceFilters)
+                .append("metadataFilters", metadataFilters)
+                .append("documentFilters", documentFilters)
                 .append("crawlerListeners", crawlerListeners)
                 .append("importerConfig", importerConfig)
                 .append("committer", committer)
                 .append("documentChecksummer", documentChecksummer).toString();
     }
+
+
 }

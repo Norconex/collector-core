@@ -38,7 +38,7 @@ import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 
 /**
- * JDBC implementation of {@link ICrawlDataStore}.  Defaults to H2 
+ * JDBC implementation of {@link ICrawlDataStore}.  Defaults to Derby 
  * database.
  * <p />
  * Implementing classes should contain the following XML configuration usage:
@@ -55,7 +55,7 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 public abstract class AbstractJDBCDataStoreFactory 
         implements ICrawlDataStoreFactory, IXMLConfigurable {
 
-    public static final Database DEFAULT_DATABASE = Database.H2;
+    public static final Database DEFAULT_DATABASE = Database.DERBY;
     
     private Database database;
     

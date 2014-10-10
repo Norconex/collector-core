@@ -20,6 +20,7 @@ package com.norconex.collector.core.crawler;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
@@ -29,6 +30,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +51,7 @@ import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
+import com.norconex.collector.core.mbean.Monitoring;
 import com.norconex.committer.ICommitter;
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.file.FileUtil;
@@ -173,7 +182,7 @@ public abstract class AbstractCrawler
             JobSuite suite, boolean resume) {
         StopWatch stopWatch = new StopWatch();;
         stopWatch.start();
-        ICrawlDataStore refStore = 
+        ICrawlDataStore crawlDataStore = 
                 config.getCrawlDataStoreFactory().createCrawlDataStore(
                         config, resume);
         
@@ -181,10 +190,12 @@ public abstract class AbstractCrawler
                 this, getCrawlerConfig().getCrawlerListeners());
         importer = new Importer(getCrawlerConfig().getImporterConfig());
         streamFactory = importer.getStreamFactory();
-        processedCount = statusUpdater.getProperties().getInt(PROP_PROCESSED_COUNT, 0);
-
+        processedCount = statusUpdater.getProperties().getInt(
+                PROP_PROCESSED_COUNT, 0);
+        registerMonitoringMbean(crawlDataStore);
+        
         try {
-            prepareExecution(statusUpdater, suite, refStore, resume);
+            prepareExecution(statusUpdater, suite, crawlDataStore, resume);
             //TODO move this code to a config validator class?
             if (StringUtils.isBlank(getCrawlerConfig().getId())) {
                 throw new CollectorException("Crawler must be given "
@@ -196,16 +207,16 @@ public abstract class AbstractCrawler
                 fireCrawlerEvent(CrawlerEvent.CRAWLER_STARTED, null, this);
             }
             lastStatusLoggingTime = System.currentTimeMillis();
-            execute(statusUpdater, suite, refStore);
+            execute(statusUpdater, suite, crawlDataStore);
         } finally {
             stopWatch.stop();
             LOG.info(getId() + ": Crawler executed in "
                     + DurationUtil.formatLong(
                             Locale.ENGLISH, stopWatch.getTime()) + ".");
             try {
-                cleanupExecution(statusUpdater, suite, refStore);
+                cleanupExecution(statusUpdater, suite, crawlDataStore);
             } finally {
-                refStore.close();
+                crawlDataStore.close();
             }
         }
     }
@@ -383,6 +394,22 @@ public abstract class AbstractCrawler
             Sleeper.sleepMillis(MINIMUM_DELAY);
         }
         return true;
+    }
+    
+    private void registerMonitoringMbean(ICrawlDataStore crawlDataStore) {
+        try {
+            MBeanServer mbs = ManagementFactory.getPlatformMBeanServer(); 
+            ObjectName name = 
+                    new ObjectName("com.norconex.collector.http.crawler:type=" + 
+                            getCrawlerConfig().getId()); 
+            Monitoring mbean = new Monitoring(crawlDataStore); 
+            mbs.registerMBean(mbean, name);
+        } catch (MalformedObjectNameException | 
+                 InstanceAlreadyExistsException | 
+                 MBeanRegistrationException | 
+                 NotCompliantMBeanException e) {
+            throw new CollectorException(e);
+        }
     }
     
     private void setProgress(

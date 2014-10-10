@@ -30,19 +30,19 @@ import com.norconex.importer.response.ImporterResponse;
 public class ImportModuleStage
             implements IPipelineStage<ImporterPipelineContext> {
         
-        @Override
-        public boolean execute(ImporterPipelineContext ctx) {
-            Importer importer = ctx.getCrawler().getImporter();
-                
-            ImporterDocument doc = ctx.getDocument();
+    @Override
+    public boolean execute(ImporterPipelineContext ctx) {
+        Importer importer = ctx.getCrawler().getImporter();
             
-            ImporterResponse response = importer.importDocument(
-                    doc.getContent(),
-                    doc.getContentType(),
-                    doc.getContentEncoding(),
-                    doc.getMetadata(),
-                    doc.getReference());
-            ctx.setImporterResponse(response);
-            return true;
-        }
+        ImporterDocument doc = ctx.getDocument();
+        
+        ImporterResponse response = importer.importDocument(
+                doc.getContent(),
+                doc.getContentType(),
+                doc.getContentEncoding(),
+                doc.getMetadata(),
+                doc.getReference());
+        ctx.setImporterResponse(response);
+        return true;
     }
+}
