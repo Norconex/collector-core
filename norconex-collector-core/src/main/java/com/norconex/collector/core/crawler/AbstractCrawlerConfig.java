@@ -69,7 +69,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     private int numThreads = 2;
     private File workDir = new File("./work");
     private int maxDocuments = -1;
-    private boolean deleteOrphans;
+    private OrphansStrategy orphansStrategy = OrphansStrategy.DELETE;
     
     private ICrawlDataStoreFactory crawlDataStoreFactory = 
             new MapDBCrawlDataStoreFactory();
@@ -134,14 +134,13 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         this.maxDocuments = maxDocuments;
     }
 
-    @Override
-    public boolean isDeleteOrphans() {
-        return deleteOrphans;
+    public OrphansStrategy getOrphansStrategy() {
+        return orphansStrategy;
     }
-    public void setDeleteOrphans(boolean deleteOrphans) {
-        this.deleteOrphans = deleteOrphans;
+    public void setOrphansStrategy(OrphansStrategy orphansStrategy) {
+        this.orphansStrategy = orphansStrategy;
     }
-    
+
     @Override
     public ICrawlDataStoreFactory getCrawlDataStoreFactory() {
         return crawlDataStoreFactory;
@@ -229,7 +228,12 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
             writer.writeElementInteger("numThreads", getNumThreads());
             writer.writeElementString("workDir", getWorkDir().toString()); 
             writer.writeElementInteger("maxDocuments", getMaxDocuments());
-            writer.writeElementBoolean("deleteOrphans", isDeleteOrphans());
+            
+            OrphansStrategy strategy = getOrphansStrategy();
+            if (strategy != null) {
+                writer.writeElementString(
+                        "orphansStrategy", strategy.toString());
+            }
             
             writeObject(out, "crawlDataStoreFactory", 
                     getCrawlDataStoreFactory());
@@ -263,8 +267,13 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         String crawlerId = xml.getString("[@id]", null);
         setId(crawlerId);
         setNumThreads(xml.getInt("numThreads", getNumThreads()));
-        setDeleteOrphans(xml.getBoolean("deleteOrphans", isDeleteOrphans()));
-
+        OrphansStrategy strategy = getOrphansStrategy();
+        String strategyStr = xml.getString("orphansStrategy", null);
+        if (StringUtils.isNotBlank(strategyStr)) {
+            strategy = OrphansStrategy.valueOf(strategyStr.toUpperCase());
+        }
+        setOrphansStrategy(strategy);
+        
         // Work directory
         File dir = workDir;
         String dirStr = xml.getString("workDir", null);
@@ -450,7 +459,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
                 .append(numThreads, castOther.numThreads)
                 .append(workDir, castOther.workDir)
                 .append(maxDocuments, castOther.maxDocuments)
-                .append(deleteOrphans, castOther.deleteOrphans)
+                .append(orphansStrategy, castOther.orphansStrategy)
                 .append(crawlDataStoreFactory, castOther.crawlDataStoreFactory)
                 .append(referenceFilters, castOther.referenceFilters)
                 .append(metadataFilters, castOther.metadataFilters)
@@ -465,7 +474,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     @Override
     public int hashCode() {
         return new HashCodeBuilder().append(id).append(numThreads)
-                .append(workDir).append(maxDocuments).append(deleteOrphans)
+                .append(workDir).append(maxDocuments).append(orphansStrategy)
                 .append(crawlDataStoreFactory).append(referenceFilters)
                 .append(metadataFilters).append(documentFilters)
                 .append(crawlerListeners).append(importerConfig)
@@ -478,7 +487,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
                 .append("id", id).append("numThreads", numThreads)
                 .append("workDir", workDir)
                 .append("maxDocuments", maxDocuments)
-                .append("deleteOrphans", deleteOrphans)
+                .append("orphansStrategy", orphansStrategy)
                 .append("crawlDataStoreFactory", crawlDataStoreFactory)
                 .append("referenceFilters", referenceFilters)
                 .append("metadataFilters", metadataFilters)

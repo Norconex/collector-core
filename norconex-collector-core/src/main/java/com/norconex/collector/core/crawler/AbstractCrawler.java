@@ -45,6 +45,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.collector.core.CollectorException;
+import com.norconex.collector.core.crawler.ICrawlerConfig.OrphansStrategy;
 import com.norconex.collector.core.crawler.event.CrawlerEvent;
 import com.norconex.collector.core.crawler.event.CrawlerEventManager;
 import com.norconex.collector.core.data.BaseCrawlData;
@@ -263,10 +264,16 @@ public abstract class AbstractCrawler
     
     protected void handleOrphans(ICrawlDataStore refStore,
             JobStatusUpdater statusUpdater, JobSuite suite) {
-        if (getCrawlerConfig().isDeleteOrphans()) {
+        OrphansStrategy strategy = config.getOrphansStrategy();
+        if (strategy == null) {
+            // null is same as ignore, so we end here
+            return;
+        }
+        
+        if (strategy == OrphansStrategy.DELETE) {
             LOG.info(getId() + ": Deleting orphan references (if any)...");
             deleteCacheOrphans(refStore, statusUpdater, suite);
-        } else {
+        } else if (strategy == OrphansStrategy.PROCESS) {
             if (!isMaxDocuments()) {
                 LOG.info(getId() 
                         + ": Re-processing orphan references (if any)...");
@@ -277,6 +284,7 @@ public abstract class AbstractCrawler
                     + ": Deleting remaining orphan references (if any)...");
             deleteCacheOrphans(refStore, statusUpdater, suite);
         }
+        // else, ignore (i.e. don't do anything)
     }
     
     protected boolean isMaxDocuments() {

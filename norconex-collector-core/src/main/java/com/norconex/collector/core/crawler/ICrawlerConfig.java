@@ -38,6 +38,24 @@ import com.norconex.importer.ImporterConfig;
  */
 public interface ICrawlerConfig extends IXMLConfigurable, Cloneable {
 
+    enum OrphansStrategy { 
+        /**
+         * Deleting orphans sends them to the Committer for deletions and 
+         * they are removed from the internal reference cache.
+         */
+        DELETE,
+        /**
+         * Processing orphans tries to obtain and process them again, 
+         * normally.
+         */
+        PROCESS,
+        /**
+         * Ignoring orphans effectively does nothing with them
+         * (not deleted, not processed).
+         */
+        IGNORE
+    }
+    
     /**
      * Gets this crawler unique identifier.  Using usual names is
      * perfectly fine (non-alphanumeric characters are OK).
@@ -65,11 +83,17 @@ public interface ICrawlerConfig extends IXMLConfigurable, Cloneable {
     int getMaxDocuments();
     
     /**
-     * Whether orphan files from a previous run (files previously crawled
-     * but no longer reachable) should be deleted.
-     * @return <code>true</code> if orphans should be deleted
+     * Gets the strategy to adopt when there are orphans.  Orphans are
+     * references that were processed in a previous run, but were not in the
+     * current run.  In other words, they are leftovers from a previous run
+     * that were not re-encountered in the current.
+     * <p/>
+     * Unless explicitly stated otherwise by an implementing class, the default
+     * strategy is to DELETE orphans.  Setting a <code>null</code> value is
+     * the same as setting IGNORE.
+     * @return orphans strategy
      */
-    boolean isDeleteOrphans();
+    OrphansStrategy getOrphansStrategy();
     
     /**
      * Gets the crawl data store factory a crawler should use.
