@@ -36,10 +36,12 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.collector.core.filter.IDocumentFilter;
 import com.norconex.collector.core.filter.IMetadataFilter;
 import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.handler.filter.AbstractOnMatchFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 /**
@@ -59,7 +61,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  * @author Pascal Essiembre
  */
 public class RegexMetadataFilter extends AbstractOnMatchFilter
-        implements IMetadataFilter, IXMLConfigurable {
+        implements IMetadataFilter, IDocumentFilter, IXMLConfigurable {
 
     //TODO use Importer RegexMetadataFilter here?  Catching import exception
 
@@ -130,6 +132,14 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
         return getOnMatch() == OnMatch.EXCLUDE;
     }
 
+    @Override
+    public boolean acceptDocument(ImporterDocument document) {
+        if (document == null) {
+            return getOnMatch() == OnMatch.INCLUDE;
+        }
+        return acceptMetadata(document.getReference(), document.getMetadata());
+    }
+    
     @Override
     public void loadFromXML(Reader in) {
         XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);

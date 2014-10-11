@@ -15,7 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Collector Core. If not, 
  * see <http://www.gnu.org/licenses/>.
- */package com.norconex.collector.core.checksum.impl;
+ */
+package com.norconex.collector.core.checksum.impl;
 
 import java.io.IOException;
 import java.io.InputStream;

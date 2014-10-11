@@ -78,12 +78,19 @@ along with Norconex Collector Core. If not, see <http://www.gnu.org/licenses/>.
     </repository>
   </repositories>
 
-  <dependencies>    
+  <dependencies> 
+    <!-- This MapDB version is unreliable, use an safer/older version:
     <dependency>
         <groupId>org.mapdb</groupId>
         <artifactId>mapdb</artifactId>
         <version>1.0.6</version>
     </dependency>
+     -->   
+    <dependency>
+        <groupId>org.mapdb</groupId>
+        <artifactId>mapdb</artifactId>
+        <version>0.9.10</version>
+    </dependency>    
     <dependency>
       <groupId>com.norconex.commons</groupId>
       <artifactId>norconex-commons-lang</artifactId>

@@ -69,7 +69,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     private int numThreads = 2;
     private File workDir = new File("./work");
     private int maxDocuments = -1;
-    private OrphansStrategy orphansStrategy = OrphansStrategy.DELETE;
+    private OrphansStrategy orphansStrategy = OrphansStrategy.IGNORE;
     
     private ICrawlDataStoreFactory crawlDataStoreFactory = 
             new MapDBCrawlDataStoreFactory();
@@ -327,10 +327,6 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
                 xml, "documentChecksummer", getDocumentChecksummer()));
         
         loadCrawlerConfigFromXML(xml);
-
-        if (LOG.isInfoEnabled()) {
-            LOG.info("Crawler loaded: id=" + crawlerId);
-        }
     }
     protected abstract void loadCrawlerConfigFromXML(XMLConfiguration xml)
             throws IOException;

@@ -74,6 +74,9 @@ public class CrawlerConfigLoader {
 
             if (defaults != null) {
                 loadCrawlerConfig(defaultConfig, defaults);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Crawler defaults loaded.");
+                }
             }
             
             List<HierarchicalConfiguration> nodes = 
@@ -84,6 +87,10 @@ public class CrawlerConfigLoader {
                 loadCrawlerConfig(config, 
                         ConfigurationUtil.newXMLConfiguration(node));
                 configs.add(config);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Crawler configuration loaded: "
+                            + config.getId());
+                }
             }
             return configs.toArray(new ICrawlerConfig[]{});
         } catch (Exception e) {
