@@ -27,7 +27,15 @@ import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
 import com.norconex.commons.lang.file.FileUtil;
 
 /**
- * MapDB crawl data store factory.
+ * MapDB crawl data store factory 
+ * (<a href="http://www.mapdb.org/">http://www.mapdb.org/</a>).
+ * 
+ * XML Configuration Usage: 
+ * 
+ * <pre>
+ *  &lt;crawlDataStoreFactory 
+ *          class="com.norconex.collector.core.data.store.impl.mapdb.MapDBCrawlDataStoreFactory" /&gt;
+ * </pre>
  * 
  * @author Pascal Essiembre
  */

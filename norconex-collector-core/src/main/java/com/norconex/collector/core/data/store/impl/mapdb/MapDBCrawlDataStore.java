@@ -155,8 +155,8 @@ public class MapDBCrawlDataStore extends AbstractCrawlDataStore {
     public void queue(ICrawlData crawlData) {
         // Short of being immutable, make a defensive copy of crawl URL.
         //TODO why again?
-        ICrawlData crawlUrlCopy = crawlData.clone();
-        queue.add(crawlUrlCopy);
+        ICrawlData crawlDataCopy = crawlData.clone();
+        queue.add(crawlDataCopy);
     }
 
     @Override
@@ -170,8 +170,8 @@ public class MapDBCrawlDataStore extends AbstractCrawlDataStore {
     }
 
     @Override
-    public boolean isQueued(String url) {
-        return queue.contains(url);
+    public boolean isQueued(String reference) {
+        return queue.contains(reference);
     }
 
     @Override
@@ -184,8 +184,8 @@ public class MapDBCrawlDataStore extends AbstractCrawlDataStore {
     }
 
     @Override
-    public boolean isActive(String url) {
-        return active.containsKey(url);
+    public boolean isActive(String reference) {
+        return active.containsKey(reference);
     }
 
     @Override
@@ -194,8 +194,8 @@ public class MapDBCrawlDataStore extends AbstractCrawlDataStore {
     }
 
     @Override
-    public ICrawlData getCached(String cacheURL) {
-        return cache.get(cacheURL);
+    public ICrawlData getCached(String cacheReference) {
+        return cache.get(cacheReference);
     }
 
     @Override
