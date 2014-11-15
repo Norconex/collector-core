@@ -27,7 +27,7 @@ along with Norconex Collector Core. If not, see <http://www.gnu.org/licenses/>.
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <site.baseurl/>  
+    <site.baseurl/>
   </properties>
   <inceptionYear>2014</inceptionYear>
 
@@ -198,7 +198,7 @@ along with Norconex Collector Core. If not, see <http://www.gnu.org/licenses/>.
                 <dependency>
                   <groupId>org.apache.maven.doxia</groupId>
                   <artifactId>doxia-module-markdown</artifactId>
-                  <version>1.3</version>
+                  <version>1.4</version>
                 </dependency>
 
               </dependencies>
