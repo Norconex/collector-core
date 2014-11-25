@@ -35,36 +35,6 @@
     </license>
   </licenses>
 
-  <repositories>
-    <repository>
-      <id>norconex-release-repo</id>
-      <url>http://norconex.s3.amazonaws.com/repo/release</url>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>norconex-snapshot-repo</id>
-      <url>http://norconex.s3.amazonaws.com/repo/snapshot</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>sonatype-snapshots</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </repository>
-  </repositories>
-
   <dependencies> 
     <!-- This MapDB version is unreliable, use an safer/older version:
     <dependency>
@@ -81,12 +51,12 @@
     <dependency>
       <groupId>com.norconex.commons</groupId>
       <artifactId>norconex-commons-lang</artifactId>
-      <version>1.5.0-SNAPSHOT</version>
+      <version>1.5.0</version>
     </dependency>
     <dependency>
       <groupId>com.norconex.jef</groupId>
       <artifactId>norconex-jef</artifactId>
-      <version>4.0.0-SNAPSHOT</version>
+      <version>4.0.0</version>
     </dependency>
     <dependency>
       <groupId>com.norconex.collectors</groupId>
