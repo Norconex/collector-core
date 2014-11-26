@@ -45,7 +45,7 @@ import com.norconex.collector.core.data.store.impl.mapdb.MapDBCrawlDataStoreFact
 import com.norconex.collector.core.filter.IDocumentFilter;
 import com.norconex.collector.core.filter.IMetadataFilter;
 import com.norconex.collector.core.filter.IReferenceFilter;
-import com.norconex.committer.ICommitter;
+import com.norconex.committer.core.ICommitter;
 import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;

@@ -16,7 +16,7 @@ package com.norconex.collector.core.pipeline.committer;
 
 import com.norconex.collector.core.crawler.event.CrawlerEvent;
 import com.norconex.collector.core.pipeline.DocumentPipelineContext;
-import com.norconex.committer.ICommitter;
+import com.norconex.committer.core.ICommitter;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 import com.norconex.importer.doc.ImporterDocument;
 
