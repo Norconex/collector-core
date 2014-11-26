@@ -24,16 +24,16 @@ import com.norconex.importer.doc.ImporterDocument;
  * values form an HTTP HEAD call, file properties, etc.). 
  * Checksums are used to quickly filter out documents that have already been 
  * processed or that have changed since a previous run.
- * <p/>  
+ * <br><br>  
  * Two or more {@link ImporterDocument} can hold different values, but 
  * be deemed logically the same.
  * Such documents do not have to be <em>equal</em>, but they should return the 
  * same checksum.  An example of
  * this can be two different URLs pointing to the same document, where only a 
  * single instance should be kept. 
- * <p/>
+ * <br><br>
  * There are no strict rules that define what is equivalent or not.  
- * <p/>
+ * <br><br>
  * Classes implementing {@link IXMLConfigurable} should offer the following
  * XML configuration usage:
  * <pre>

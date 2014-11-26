@@ -37,10 +37,10 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  * in a target field name specified.  If no target field name is specified,
  * it stores it under the 
  * metadata field name {@link CollectorMetadata#COLLECTOR_CHECKSUM_METADATA}. 
- * <p/>
+ * <br><br>
  * <b>Implementors do not need to store the checksum themselves, this abstract
  * class does it.</b>
- * <p/>
+ * <br><br>
  * Implementors should offer this XML configuration usage:
  * <pre>
  *  &lt;metadataChecksummer 

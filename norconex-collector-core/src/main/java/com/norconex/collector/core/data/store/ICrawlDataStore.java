@@ -21,6 +21,7 @@ import com.norconex.collector.core.data.ICrawlData;
 /**
  * Holds necessary information about all references (e.g. url, path, etc) 
  * crawling activities.  
+ * <p>
  * The few stages a reference should have in most implementations are:</p>
  * <ul>
  *   <li><b>Queued:</b> URLs extracted from documents are first queued for 

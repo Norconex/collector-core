@@ -122,7 +122,7 @@ public interface IJDBCSerializer {
      * @param table table name
      * @param rs SQL result set
      * @return the crawl data
-     * @throws SQLException
+     * @throws SQLException SQL error
      */
     ICrawlData toCrawlData(String table, ResultSet rs) throws SQLException;
 

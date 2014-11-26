@@ -28,7 +28,7 @@ import com.norconex.collector.core.crawler.ICrawler;
  * using Log4j with the INFO level.  
  * Each events have their own Log4j appenders, following this pattern:
  * <pre>
- *    CrawlerEvent.<EVENT_ID>
+ *    CrawlerEvent.&lt;EVENT_ID&gt;
  * </pre>
  * 
  * @author Pascal Essiembre

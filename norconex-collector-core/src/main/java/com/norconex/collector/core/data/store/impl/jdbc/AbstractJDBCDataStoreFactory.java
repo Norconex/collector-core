@@ -36,9 +36,9 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 /**
  * JDBC implementation of {@link ICrawlDataStore}.  Defaults to Derby 
  * database.
- * <p />
+ * <br><br>
  * Implementing classes should contain the following XML configuration usage:
- * <p />
+ * <br><br>
  * <pre>
  *  &lt;crawlDataStoreFactory class="(class name)"&gt;
  *      &lt;database&gt;[h2|derby]&lt;/database&gt;

@@ -83,7 +83,7 @@ public interface ICrawlerConfig extends IXMLConfigurable, Cloneable {
      * references that were processed in a previous run, but were not in the
      * current run.  In other words, they are leftovers from a previous run
      * that were not re-encountered in the current.
-     * <p/>
+     * <br><br>
      * Unless explicitly stated otherwise by an implementing class, the default
      * strategy is to DELETE orphans.  Setting a <code>null</code> value is
      * the same as setting IGNORE.

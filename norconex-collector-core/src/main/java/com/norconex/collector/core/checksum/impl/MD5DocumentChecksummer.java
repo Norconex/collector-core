@@ -38,7 +38,7 @@ import com.norconex.importer.doc.ImporterDocument;
  * a given field is specified.  If a field is specified, the MD5 checksum
  * value is constructed from that field.  This checksum is normally 
  * performed right after the document has been imported.
- * <p/>
+ * <br><br>
  * You can optionally have the checksum value stored with the
  * document under the field name 
  * {@link CollectorMetadata#COLLECTOR_CHECKSUM_DOC}
