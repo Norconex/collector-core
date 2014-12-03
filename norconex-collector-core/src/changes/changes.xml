@@ -8,7 +8,7 @@
   <body>
 
     <release version="1.0.1-SNAPSHOT" date="2014-??-??" description="Bug fix release">
-      <action dev="essiembre" type="fix" issue="44">
+      <action dev="essiembre" type="fix">
         When keepDownloads is true, saved files and directories are now 
         prefixed with "f." and "d." respectively to avoid collisions.
       </action>
