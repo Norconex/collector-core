@@ -53,8 +53,12 @@ public class SaveDocumentStage
                         "Cannot create download directory: " + downloadDir, e);
             }
         }
-        File downloadFile = new File(downloadDir, 
-                urlToPath(ctx.getCrawlData().getReference()));
+        String path = urlToPath(ctx.getCrawlData().getReference());
+        
+        File downloadFile = new File(downloadDir, path);
+        
+        
+System.out.println("DOWNLOAD FILE:" + downloadFile);
         try {
             OutputStream out = FileUtils.openOutputStream(downloadFile);
             IOUtils.copy(ctx.getDocument().getContent(), out);
@@ -85,17 +89,39 @@ public class SaveDocumentStage
         
         String[] segments = path.split("[\\/]");
         StringBuilder b = new StringBuilder();
-        for (String segment : segments) {
+        for (int i = 0; i < segments.length; i++) {
+            String segment = segments[i];
             if (StringUtils.isNotBlank(segment)) {
+                boolean lastSegment = (i + 1) == segments.length;
                 String[] segParts = splitLargeSegment(segment);
-                for (String segPart : segParts) {
+                for (int j = 0; j < segParts.length; j++) {
+                    String segPart = segParts[j];
                     if (b.length() > 0) {
                         b.append(File.separatorChar);
+                    }
+                    // Prefixes directories or files with different letter
+                    // to ensure directory and files can't have the same 
+                    // names (github #44).
+                    if (lastSegment && (j + 1) == segParts.length) {
+                        b.append("f.");
+                    } else {
+                        b.append("d.");
                     }
                     b.append(FileUtil.toSafeFileName(segPart));
                 }
             }
         }
+//        for (String segment : segments) {
+//            if (StringUtils.isNotBlank(segment)) {
+//                String[] segParts = splitLargeSegment(segment);
+//                for (String segPart : segParts) {
+//                    if (b.length() > 0) {
+//                        b.append(File.separatorChar);
+//                    }
+//                    b.append(FileUtil.toSafeFileName(segPart));
+//                }
+//            }
+//        }
         return domain + File.separatorChar + b.toString();
     }
     
