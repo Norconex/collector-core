@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="1.0.1-SNAPSHOT" date="2014-??-??" description="Bug fix release">
+    <release version="1.0.1" date="2014-12-03" description="Bug fix release">
       <action dev="essiembre" type="fix">
         When keepDownloads is true, saved files and directories are now 
         prefixed with "f." and "d." respectively to avoid collisions.
@@ -15,6 +15,9 @@
       <action dev="essiembre" type="update">
         Crawler id is now set on JEF JobSuite when a new thread starts
         to improve logging.
+      </action>
+      <action dev="essiembre" type="update">
+        Upgraded norconex-jef to 4.0.1.
       </action>
     </release>
 
