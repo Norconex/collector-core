@@ -12,6 +12,10 @@
         When keepDownloads is true, saved files and directories are now 
         prefixed with "f." and "d." respectively to avoid collisions.
       </action>
+      <action dev="essiembre" type="update">
+        Crawler id is now set on JEF JobSuite when a new thread starts
+        to improve logging.
+      </action>
     </release>
 
     <release version="1.0.0" date="2014-11-26" description="Initial release">

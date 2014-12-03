@@ -608,6 +608,7 @@ public abstract class AbstractCrawler
 
         @Override
         public void run() {
+            JobSuite.setCurrentJobId(statusUpdater.getJobId());
             try {
                 while (!isStopped()) {
                     try {
