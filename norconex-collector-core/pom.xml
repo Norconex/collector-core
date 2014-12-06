@@ -303,7 +303,7 @@
 	<distributionManagement>
 		<site>
 			<id>norconex-site-deployment</id>
-			<url>${site.baseurl}/collector-core/latest</url>
+			<url>${site.baseurl}/collectors/collector-core/latest</url>
 		</site>
         <snapshotRepository>
           <id>ossrh</id>
