@@ -341,7 +341,7 @@
 					<header><![CDATA[
             <style>div.aboutLanguage .siteLink {font-size: 2em;}</style>
             <span class="siteLink">
-              <a href="http://www.norconex.com/product/collector-core">Norconex Collector Core</a>
+              <a href="http://www.norconex.com/collectors/collector-core">Norconex Collector Core</a>
             </span>
             ]]>
 					</header>
@@ -388,7 +388,7 @@
 		<name>Norconex Inc.</name>
 		<url>http://www.norconex.com</url>
 	</organization>
-	<url>http://www.norconex.com/product/collector-core</url>
+	<url>http://www.norconex.com/collectors/collector-core</url>
 	<description>Norconex Collector Core contains core functionalities shared between collectors.</description>
 	<issueManagement>
 		<system>GitHub</system>
