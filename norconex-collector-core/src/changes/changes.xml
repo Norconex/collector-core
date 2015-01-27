@@ -8,9 +8,9 @@
   <body>
 
     <release version="1.0.2-SNAPSHOT" date="2015-??-??" description="Initial release">
-      <action dev="essiembre" type="fix" issue="49">
+      <action dev="essiembre" type="fix">
         Fixed invalid detection of crawler execution state, affecting
-        ability to stop a collector (github #49).  
+        ability to stop a collector.  
       </action>
       <action dev="essiembre" type="fix">
         Crawl data is no longer added to document metadata after the 
