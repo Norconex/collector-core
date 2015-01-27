@@ -449,14 +449,21 @@ public abstract class AbstractCrawler
         }
     }
     
+    //TODO given latest changes in implementing methods, shall we only consider
+    //using generics instead of having this wrapping method?
     protected abstract ImporterDocument wrapDocument(
             ICrawlData crawlData, ImporterDocument document);
+    protected void applyCrawlData(
+            ICrawlData crawlData, ImporterDocument document) {
+        // default does nothing 
+    }
     
     private void processNextQueuedCrawlData(BaseCrawlData crawlData, 
             ICrawlDataStore crawlDataStore, boolean delete) {
         String url = crawlData.getReference();
         ImporterDocument doc = wrapDocument(crawlData, new ImporterDocument(
                 crawlData.getReference(), getStreamFactory().newInputStream()));
+        applyCrawlData(crawlData, doc);
         
         try {
             if (delete) {

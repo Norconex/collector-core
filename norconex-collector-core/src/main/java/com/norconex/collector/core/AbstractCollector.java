@@ -27,6 +27,8 @@ import com.norconex.jef4.job.IJob;
 import com.norconex.jef4.job.group.AsyncJobGroup;
 import com.norconex.jef4.log.FileLogManager;
 import com.norconex.jef4.status.FileJobStatusStore;
+import com.norconex.jef4.status.IJobStatus;
+import com.norconex.jef4.status.JobState;
 import com.norconex.jef4.suite.JobSuite;
 import com.norconex.jef4.suite.JobSuiteConfig;
  
@@ -123,12 +125,29 @@ public abstract class AbstractCollector implements ICollector {
     @Override
     public void stop() {
         if (jobSuite == null) {
+            jobSuite = createJobSuite();
+        }
+
+        IJobStatus status = jobSuite.getStatus();
+        if (status == null 
+                || !status.isState(JobState.RUNNING, JobState.UNKNOWN)) {
             throw new CollectorException(
                     "This collector cannot be stopped since it is NOT "
-                  + "running.");
+                  + "running. Current state: " 
+                  + jobSuite.getStatus().getState());
+        } else if (LOG.isDebugEnabled()) {
+            LOG.debug("Suite state: " + status.getState());        
         }
+        
         try {
+            LOG.info("Making a stop request...");
             jobSuite.stop();
+            LOG.info("Stop request made.");
+            LOG.info("PLEASE NOTE: To ensure a clean stop, "
+                    + "crawlers may wait until they are done with documents "
+                    + "currently being processed. If an urgent stop is "
+                    + "required or you do not want to wait, manually kill "
+                    + "the process.");
             //TODO wait for stop confirmation before setting to null?
             jobSuite = null;
         } catch (IOException e) {

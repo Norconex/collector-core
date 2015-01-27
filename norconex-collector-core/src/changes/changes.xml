@@ -7,6 +7,18 @@
   </properties>
   <body>
 
+    <release version="1.0.2-SNAPSHOT" date="2015-??-??" description="Initial release">
+      <action dev="essiembre" type="fix" issue="49">
+        Fixed invalid detection of crawler execution state, affecting
+        ability to stop a collector (github #49).  
+      </action>
+      <action dev="essiembre" type="fix">
+        Crawl data is no longer added to document metadata after the 
+        import phase (which could conflict with some handlers, like
+        KeepOnlyTagger).
+      </action>
+    </release>
+
     <release version="1.0.1" date="2014-12-03" description="Bug fix release">
       <action dev="essiembre" type="fix">
         When keepDownloads is true, saved files and directories are now 
