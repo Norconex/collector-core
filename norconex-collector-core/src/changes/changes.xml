@@ -9,6 +9,19 @@
 
     <release version="1.0.2-SNAPSHOT" date="2015-??-??" description="Initial release">
       <action dev="essiembre" type="fix">
+        When splitting documents, crawlers will now trigger individual
+        processing/deletion of children/embedded documents that no longer exists 
+        on incremental runs (based on your "orphansStrategy" configuration).
+        When deleting orphans, deletion of a parent document will also trigger
+        deletion requests to its children/embedded documents.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed an infinite loop that sometime occurred when dealing with multiple
+        threads and the configured maxDocument is reached 
+        (and greater than zero). This could prevent a collector from ever
+        stopping.
+      </action>
+      <action dev="essiembre" type="fix">
         Fixed invalid detection of crawler execution state, affecting
         ability to stop a collector.  
       </action>
@@ -16,6 +29,9 @@
         Crawl data is no longer added to document metadata after the 
         import phase (which could conflict with some handlers, like
         KeepOnlyTagger).
+      </action>
+      <action dev="essiembre" type="update">
+        Default logging of Crawler events is now better aligned.
       </action>
     </release>
 

@@ -37,7 +37,7 @@ public class CrawlerEventManager {
 
     private final ICrawlerEventListener[] listeners;
     private final ICrawler crawler;
-    private static final int ID_PRINT_WIDTH = 20;
+    private static final int ID_PRINT_WIDTH = 25;
     
     public CrawlerEventManager(
             ICrawler crawler, ICrawlerEventListener[] listeners) {

@@ -353,18 +353,19 @@ public abstract class AbstractCrawler
             final ICrawlDataStore crawlDataStore,
             final JobStatusUpdater statusUpdater, 
             final boolean delete) {
+        if (!delete && isMaxDocuments()) {
+            LOG.info(getId() + ": Maximum documents reached: " 
+                    + getCrawlerConfig().getMaxDocuments());
+            return false;
+        }
         BaseCrawlData queuedCrawlData = 
                 (BaseCrawlData) crawlDataStore.nextQueued();
+        
         if (LOG.isDebugEnabled()) {
             LOG.debug(getId() + " Processing next reference from Queue: " 
                     + queuedCrawlData);
         }
         if (queuedCrawlData != null) {
-            if (isMaxDocuments()) {
-                LOG.info(getId() + ": Maximum documents reached: " 
-                        + getCrawlerConfig().getMaxDocuments());
-                return false;
-            }
             StopWatch watch = null;
             if (LOG.isDebugEnabled()) {
                 watch = new StopWatch();
@@ -468,6 +469,7 @@ public abstract class AbstractCrawler
         try {
             if (delete) {
                 deleteURL(crawlData, doc);
+                finalizeDocumentProcessing(crawlData, crawlDataStore, doc);
                 return;
             } else if (LOG.isDebugEnabled()) {
                 LOG.debug(getId() + ": Processing URL: " + url);
@@ -480,8 +482,10 @@ public abstract class AbstractCrawler
             if (response != null) {
                 processImportResponse(response, crawlDataStore, crawlData);
             } else {
+                crawlData.setState(CrawlState.REJECTED);
                 fireCrawlerEvent(
                         CrawlerEvent.REJECTED_IMPORT, crawlData, response);
+                finalizeDocumentProcessing(crawlData, crawlDataStore, doc);
             }
         } catch (Exception e) {
             //TODO do we really want to catch anything other than 
@@ -490,8 +494,7 @@ public abstract class AbstractCrawler
             crawlData.setState(CrawlState.ERROR);
             LOG.error(getId() + ": Could not process document: " + url
                     + " (" + e.getMessage() + ")", e);
-        } finally {
-            finalizeURLProcessing(crawlData, crawlDataStore, doc);
+            finalizeDocumentProcessing(crawlData, crawlDataStore, doc);
         }
     }
 
@@ -499,20 +502,23 @@ public abstract class AbstractCrawler
             ImporterResponse response, 
             ICrawlDataStore crawlDataStore,
             BaseCrawlData crawlData) {
+        
+        ImporterDocument doc = response.getDocument();
         if (response.isSuccess()) {
             fireCrawlerEvent(
                     CrawlerEvent.DOCUMENT_IMPORTED, crawlData, response);
-            ImporterDocument doc = 
-                    wrapDocument(crawlData, response.getDocument());
+            ImporterDocument wrappedDoc = wrapDocument(crawlData, doc);
             executeCommitterPipeline(
-                    this, doc, crawlDataStore, crawlData);
+                    this, wrappedDoc, crawlDataStore, crawlData);
         } else {
+            crawlData.setState(CrawlState.REJECTED);
             fireCrawlerEvent(
                     CrawlerEvent.REJECTED_IMPORT, crawlData, response);
             LOG.debug(getId() + ": Importing unsuccessful for \"" 
                     + crawlData.getReference() + "\": "
                     + response.getImporterStatus().getDescription());
         }
+        finalizeDocumentProcessing(crawlData, crawlDataStore, doc);
         ImporterResponse[] children = response.getNestedResponses();
         for (ImporterResponse child : children) {
             BaseCrawlData embeddedCrawlData = createEmbeddedCrawlData(
@@ -522,12 +528,12 @@ public abstract class AbstractCrawler
         }
     }
     
-    private void finalizeURLProcessing(BaseCrawlData crawlData,
-            ICrawlDataStore refStore, ImporterDocument doc) {
+    private void finalizeDocumentProcessing(BaseCrawlData crawlData,
+            ICrawlDataStore store, ImporterDocument doc) {
         //--- Flag URL for deletion --------------------------------------------
         try {
             ICommitter committer = getCrawlerConfig().getCommitter();
-            if (refStore.isVanished(crawlData)) {
+            if (store.isVanished(crawlData)) {
                 crawlData.setState(CrawlState.DELETED);
                 if (committer != null) {
                     committer.remove(
@@ -550,8 +556,8 @@ public abstract class AbstractCrawler
                         + crawlData.getReference());
                 crawlData.setState(CrawlState.BAD_STATUS);
             }
-            refStore.processed(crawlData);
-            markReferenceVariationsAsProcessed(crawlData, refStore);
+            store.processed(crawlData);
+            markReferenceVariationsAsProcessed(crawlData, store);
         } catch (Exception e) {
             LOG.error(getId() + ": Could not mark URL as processed: " 
                     + crawlData.getReference()

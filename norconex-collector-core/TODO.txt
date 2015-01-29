@@ -2,3 +2,5 @@
 - Consider using Hibernate for the JDBC data store, for both embedded and
   client-server databases.  Ship with no drivers
   except maybe for testing (or 1 for convenience, like H2).
+- Consider changing default base directory for logs and progress 
+  (to avoid logs and progress appearing twice in path by default).
