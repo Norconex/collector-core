@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="1.0.2-SNAPSHOT" date="2015-??-??" description="Initial release">
+    <release version="1.0.2" date="2015-02-04" description="Bug fix release">
       <action dev="essiembre" type="fix">
         When splitting documents, crawlers will now trigger individual
         processing/deletion of children/embedded documents that no longer exists 
@@ -32,6 +32,12 @@
       </action>
       <action dev="essiembre" type="update">
         Default logging of Crawler events is now better aligned.
+      </action>
+      <action dev="essiembre" type="update">
+        Updated JEF API to version 4.0.2.
+      </action>
+      <action dev="essiembre" type="update">
+        Javadoc corrections.
       </action>
     </release>
 

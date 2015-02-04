@@ -45,7 +45,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  * XML configuration usage:
  * </p>
  * <pre>
- *  &lt;filter class="com.norconex.collector.core.filter.impl.RegexURLFilter"
+ *  &lt;filter class="com.norconex.collector.core.filter.impl.RegexReferenceFilter"
  *          onMatch="[include|exclude]" 
  *          caseSensitive="[false|true]" &gt;
  *      (regular expression)
