@@ -7,6 +7,13 @@
   </properties>
   <body>
 
+    <release version="1.0.3-SNAPSHOT" date="2015-??-??" description="Bug fix release">
+      <action dev="essiembre" type="fix">
+        Fixed NullPointerException when running an incremental crawl over
+        one that previously failed due to invalid configuration.
+      </action>
+    </release>
+
     <release version="1.0.2" date="2015-02-04" description="Bug fix release">
       <action dev="essiembre" type="fix">
         When splitting documents, crawlers will now trigger individual

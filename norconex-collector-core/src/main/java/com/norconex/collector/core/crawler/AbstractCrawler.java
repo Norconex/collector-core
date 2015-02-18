@@ -56,6 +56,7 @@ import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.time.DurationUtil;
 import com.norconex.importer.Importer;
 import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.response.ImporterResponse;
 import com.norconex.jef4.job.AbstractResumableJob;
 import com.norconex.jef4.status.IJobStatus;
@@ -537,7 +538,7 @@ public abstract class AbstractCrawler
                 crawlData.setState(CrawlState.DELETED);
                 if (committer != null) {
                     committer.remove(
-                            crawlData.getReference(), doc.getMetadata());
+                            crawlData.getReference(), getNullSafeMetadata(doc));
                     fireCrawlerEvent(CrawlerEvent.DOCUMENT_COMMITTED_REMOVE, 
                             crawlData, doc);
                 }
@@ -588,6 +589,13 @@ public abstract class AbstractCrawler
     protected abstract void executeCommitterPipeline(
             ICrawler crawler, ImporterDocument doc,
             ICrawlDataStore crawlDataStore, BaseCrawlData crawlData);
+
+    private ImporterMetadata getNullSafeMetadata(ImporterDocument doc) {
+        if (doc == null) {
+            return new ImporterMetadata();
+        }
+        return doc.getMetadata();
+    }
     
     private void deleteURL(
             BaseCrawlData crawlData, ImporterDocument doc) {
@@ -595,7 +603,8 @@ public abstract class AbstractCrawler
         ICommitter committer = getCrawlerConfig().getCommitter();
         crawlData.setState(CrawlState.DELETED);
         if (committer != null) {
-            committer.remove(crawlData.getReference(), doc.getMetadata());
+            committer.remove(
+                    crawlData.getReference(), getNullSafeMetadata(doc));
         }
         fireCrawlerEvent(
                 CrawlerEvent.DOCUMENT_COMMITTED_REMOVE, crawlData, doc);
