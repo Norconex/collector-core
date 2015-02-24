@@ -7,10 +7,20 @@
   </properties>
   <body>
 
-    <release version="1.0.3-SNAPSHOT" date="2015-??-??" description="Bug fix release">
+    <release version="1.1.0-SNAPSHOT" date="2015-??-??" description="Bug fix release">
       <action dev="essiembre" type="fix">
         Fixed NullPointerException when running an incremental crawl over
         one that previously failed due to invalid configuration.
+      </action>
+      <action dev="essiembre" type="update">
+        Upgraded Norconex Committer Core to 2.0.1.
+      </action>
+      <action dev="essiembre" type="update">
+        Added Sonatype repository to pom.xml for snapshot releases.
+      </action>
+      <action dev="essiembre" type="update">
+        Removed pom.xml dependency on Norconex Commons Lang, which is 
+        already provided by other dependencies.
       </action>
     </release>
 
