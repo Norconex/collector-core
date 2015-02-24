@@ -13,8 +13,9 @@
         one that previously failed due to invalid configuration.
       </action>
       <action dev="essiembre" type="update">
-        Upgraded Norconex Committer Core to 2.0.1 and 
-        Norconex Importer to 2.1.0.
+        Upgraded Norconex Committer Core to 2.0.1, 
+        Norconex Importer to 2.1.0, and
+        Norconex JEF to 4.0.3.
       </action>
       <action dev="essiembre" type="update">
         Added Sonatype repository to pom.xml for snapshot releases.
