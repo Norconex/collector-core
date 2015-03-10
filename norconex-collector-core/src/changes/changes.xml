@@ -8,10 +8,6 @@
   <body>
 
     <release version="1.1.0-SNAPSHOT" date="2015-??-??" description="Bug fix release">
-      <action dev="essiembre" type="fix">
-        Fixed NullPointerException when running an incremental crawl over
-        one that previously failed due to invalid configuration.
-      </action>
       <action dev="essiembre" type="update">
         Upgraded Norconex Committer Core to 2.0.1, 
         Norconex Importer to 2.1.0, and
@@ -23,6 +19,14 @@
       <action dev="essiembre" type="update">
         Removed pom.xml dependency on Norconex Commons Lang, which is 
         already provided by other dependencies.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed NullPointerException when running an incremental crawl over
+        one that previously failed due to invalid configuration.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed incremental run not always handling non-modified documents
+        properly (sometimes deleting, sometimes re-adding).
       </action>
     </release>
 
