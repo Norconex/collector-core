@@ -9,12 +9,16 @@
 
     <release version="1.1.0-SNAPSHOT" date="2015-??-??" description="Bug fix release">
       <action dev="essiembre" type="update">
-        Upgraded Norconex Committer Core to 2.0.1, 
-        Norconex Importer to 2.1.0, and
-        Norconex JEF to 4.0.3.
+        Library updates: Norconex Committer Core 2.0.1, 
+        Norconex Importer 2.1.0, Norconex JEF 4.0.3, MapDB 1.0.7,
+        Apache Commons BeanUtils 1.9.2, Apache Commons DBCP2 2.1,
+        Mongo Java Driver 2.13.0, H2 1.4.186.
       </action>
       <action dev="essiembre" type="update">
         Added Sonatype repository to pom.xml for snapshot releases.
+      </action>
+      <action dev="essiembre" type="update">
+        Updated several maven plugins and added SonarQube maven plugin.
       </action>
       <action dev="essiembre" type="update">
         Removed pom.xml dependency on Norconex Commons Lang, which is 
