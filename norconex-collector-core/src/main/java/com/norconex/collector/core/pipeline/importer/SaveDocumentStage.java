@@ -111,17 +111,6 @@ System.out.println("DOWNLOAD FILE:" + downloadFile);
                 }
             }
         }
-//        for (String segment : segments) {
-//            if (StringUtils.isNotBlank(segment)) {
-//                String[] segParts = splitLargeSegment(segment);
-//                for (String segPart : segParts) {
-//                    if (b.length() > 0) {
-//                        b.append(File.separatorChar);
-//                    }
-//                    b.append(FileUtil.toSafeFileName(segPart));
-//                }
-//            }
-//        }
         return domain + File.separatorChar + b.toString();
     }
     
