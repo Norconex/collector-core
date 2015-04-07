@@ -33,7 +33,7 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterDocument;
 
 /**
- * Implementation of {@link IDocumentChecksummer} which 
+ * <p>Implementation of {@link IDocumentChecksummer} which 
  * returns a MD5 checksum value of the extracted document content unless
  * a given field is specified.  If a field is specified, the MD5 checksum
  * value is constructed from that field.  This checksum is normally 
@@ -43,18 +43,25 @@ import com.norconex.importer.doc.ImporterDocument;
  * document under the field name 
  * {@link CollectorMetadata#COLLECTOR_CHECKSUM_DOC}
  * or one you specify.
- * <p>
- * XML configuration usage:
  * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;documentChecksummer 
- *      class="com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer"&gt;
+ *      class="com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer"
+ *      disabled="[false|true]"
  *      sourceField="(optional field used to create checksum)"
  *      keep="[false|true]"
  *      targetField="(optional metadata field to store the checksum)" /&gt;
  * </pre>
+ * <p>
  * <code>targetField</code> is ignored unless the <code>keep</code> 
  * attribute is set to <code>true</code>.
+ * </p>
+ * <p>
+ * Since 1.1.0, this implementation can be disabled in your 
+ * configuration by specifying <code>disabled="true"</code>. When disabled,
+ * the checksum returned is always <code>null</code>.  
+ * </p>
  * @author Pascal Essiembre
  */
 public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
@@ -63,9 +70,13 @@ public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
 			MD5DocumentChecksummer.class);
     
 	private String sourceField = null;
+	private boolean disabled;
 	
     @Override
     public String doCreateDocumentChecksum(ImporterDocument document) {
+        if (disabled) {
+            return null;
+        }
 		// If field is not specified, perform checksum on whole text file.
 		if (StringUtils.isNotBlank(sourceField)) {
     		String value = document.getMetadata().getString(sourceField);
@@ -108,14 +119,32 @@ public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
 		this.sourceField = field;
 	}
 
-	@Override
+	/**
+	 * Whether this checksummer is disabled or not. When disabled, not
+	 * checksum will be created (the checksum will be <code>null</code>).
+	 * @return <code>true</code> if disabled
+	 */
+	public boolean isDisabled() {
+        return disabled;
+    }
+	/**
+	 * Sets whether this checksummer is disabled or not. When disabled, not
+     * checksum will be created (the checksum will be <code>null</code>).
+	 * @param disabled <code>true</code> if disabled
+	 */
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
+
+    @Override
 	protected void loadChecksummerFromXML(XMLConfiguration xml) {
         setSourceField(xml.getString("[@sourceField]", sourceField));
+        setDisabled(xml.getBoolean("[@disabled]", disabled));
     }
 	@Override
 	protected void saveChecksummerToXML(EnhancedXMLStreamWriter writer)
 	        throws XMLStreamException {
         writer.writeAttribute("sourceField", getSourceField());
+        writer.writeAttributeBoolean("disabled", isDisabled());
     }
-
 }

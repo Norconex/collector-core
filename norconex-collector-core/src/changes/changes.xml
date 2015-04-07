@@ -7,7 +7,11 @@
   </properties>
   <body>
 
-    <release version="1.1.0-SNAPSHOT" date="2015-??-??" description="Bug fix release">
+    <release version="1.1.0-SNAPSHOT" date="2015-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        New methods and configuration attribute to disable 
+        checksum creation in MD5DocumentChecksummer.
+      </action>
       <action dev="essiembre" type="update">
         Library updates: Norconex Committer Core 2.0.1, 
         Norconex Importer 2.1.0, Norconex JEF 4.0.3, MapDB 1.0.7,
