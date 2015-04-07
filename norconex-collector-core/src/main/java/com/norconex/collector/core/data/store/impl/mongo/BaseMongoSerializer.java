@@ -66,7 +66,7 @@ public class BaseMongoSerializer implements IMongoSerializer {
             data.setState(CrawlState.valueOf(crawlState));
         }
         data.setMetaChecksum((String) dbObject.get(FIELD_META_CHECKSUM));
-        data.setDocumentChecksum((String) dbObject.get(FIELD_CONTENT_CHECKSUM));
+        data.setContentChecksum((String) dbObject.get(FIELD_CONTENT_CHECKSUM));
         return data;
     }
 

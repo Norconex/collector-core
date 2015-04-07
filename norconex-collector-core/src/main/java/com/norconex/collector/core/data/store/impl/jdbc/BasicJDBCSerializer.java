@@ -122,7 +122,7 @@ public class BasicJDBCSerializer implements IJDBCSerializer {
         data.setRootParentReference(rs.getBoolean("isRootParentReference"));
         data.setState(CrawlState.valueOf(rs.getString("state")));
         data.setMetaChecksum(rs.getString("metaChecksum"));
-        data.setDocumentChecksum(rs.getString("contentChecksum"));
+        data.setContentChecksum(rs.getString("contentChecksum"));
         return data;
     }
 }
