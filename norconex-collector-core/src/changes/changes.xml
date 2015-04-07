@@ -39,6 +39,11 @@
         H2 database now has a write delay of zero to ensure durability on
         JVM crash.
       </action>
+      <action dev="essiembre" type="update">
+        MapDB and MVStore implementation of ICrawlDataStore now forces a commit
+        on every addition a the expense of performance to ensure 
+        durability on JVM/OS/System crash.
+      </action>
       <action dev="essiembre" type="fix">
         BaseCrawlData#setDocumentChecksum(String) is now deprecated in favor
         of BaseCrawlData#setContentChecksum(String) to fix content checksum 

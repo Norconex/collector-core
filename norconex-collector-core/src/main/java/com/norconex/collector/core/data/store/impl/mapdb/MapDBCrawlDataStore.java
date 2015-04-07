@@ -41,9 +41,6 @@ public class MapDBCrawlDataStore extends AbstractCrawlDataStore {
     private static final Logger LOG = 
             LogManager.getLogger(MapDBCrawlDataStore.class);
 
-    //TODO make configurable
-    private static final int COMMIT_SIZE = 1000;
-
     private static final String STORE_QUEUE = "queue";
     private static final String STORE_ACTIVE = "active";
     private static final String STORE_CACHE = "cache";
@@ -57,8 +54,6 @@ public class MapDBCrawlDataStore extends AbstractCrawlDataStore {
     private Map<String, ICrawlData> cache;
     private Map<String, ICrawlData> processedValid;
     private Map<String, ICrawlData> processedInvalid;
-    
-    private long commitCounter;
     
     private final Serializer<ICrawlData> valueSerializer;
     
@@ -89,8 +84,14 @@ public class MapDBCrawlDataStore extends AbstractCrawlDataStore {
     
         initDB(create);
         if (resume) {
-            LOG.debug(path
-                    + " Resuming: putting active URLs back in the queue...");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Active count: " + active.size());
+                LOG.debug("Cache count: " + cache.size());
+                LOG.debug("Processed valid count: " + processedValid.size());
+                LOG.debug("Processed invalid count: "
+                        + processedInvalid.size());
+                LOG.debug(path + " Putting active URLs back in the queue...");
+            }
             for (ICrawlData crawlData : active.values()) {
                 queue.add(crawlData);
             }
@@ -120,8 +121,8 @@ public class MapDBCrawlDataStore extends AbstractCrawlDataStore {
     
     private DB createDB(File dbFile) {
         return DBMaker.newFileDB(dbFile)
-                .asyncWriteEnable()
-                .cacheSoftRefEnable()
+                //.asyncWriteEnable()
+                //.cacheSoftRefEnable()
                 .closeOnJvmShutdown()
                 .make();
     }
@@ -175,6 +176,11 @@ public class MapDBCrawlDataStore extends AbstractCrawlDataStore {
         ICrawlData crawlData = (ICrawlData) queue.poll();
         if (crawlData != null) {
             active.put(crawlData.getReference(), crawlData);
+            // Commit on every put() is required if we want to guarantee
+            // recovery on a cold JVM/OS/System crash.
+            //TODO if performance is too impacted, make it a configurable
+            //option to offer guarantee or not?
+            db.commit();        
         }
         return crawlData;
     }
@@ -216,11 +222,11 @@ public class MapDBCrawlDataStore extends AbstractCrawlDataStore {
         if (!cache.isEmpty()) {
             cache.remove(referenceCopy.getReference());
         }
-        commitCounter++;
-        if (commitCounter % COMMIT_SIZE == 0) {
-            LOG.debug("Committing reference store to disk: " + path);
-            db.commit();
-        }
+        // Commit on every put() is required if we want to guarantee
+        // recovery on a cold JVM/OS/System crash.
+        //TODO if performance is too impacted, make it a configurable
+        //option to offer guarantee or not?
+        db.commit();        
         //TODO Compact database and LOG the event once MapDB fixed issue #160
         //TODO call db.compact(); when commit counter modulus commit size
         //     10 is encountered.

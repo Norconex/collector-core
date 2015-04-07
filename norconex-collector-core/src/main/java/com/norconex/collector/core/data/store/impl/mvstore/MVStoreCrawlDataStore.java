@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 
@@ -32,6 +34,9 @@ import com.norconex.collector.core.data.store.ICrawlDataStore;
  * @author Pascal Dimassimo
  */
 public class MVStoreCrawlDataStore extends AbstractCrawlDataStore {
+    
+    private static final Logger LOG = 
+            LogManager.getLogger(MVStoreCrawlDataStore.class);
     
     private final MVStore store;
     
@@ -58,13 +63,20 @@ public class MVStoreCrawlDataStore extends AbstractCrawlDataStore {
         mapCached = store.openMap("cached");
         
         if (resume) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Active count: " + mapActive.size());
+                LOG.debug("Cache count: " + mapCached.size());
+                LOG.debug("Processed valid count: " + mapProcessedValid.size());
+                LOG.debug("Processed invalid count: "
+                        + mapProcessedInvalid.size());
+                LOG.debug(path + " Putting active URLs back in the queue...");
+            }
             // Active -> Queued
             for (String key : mapActive.keySet()) {
                 mapQueued.put(key, mapActive.remove(key));
             }
             
         } else {
-            
             mapCached.clear();
             mapActive.clear();
             mapQueued.clear();
@@ -78,6 +90,7 @@ public class MVStoreCrawlDataStore extends AbstractCrawlDataStore {
                 }
             }
         }
+        store.commit();
     }
 
     @Override
@@ -109,6 +122,11 @@ public class MVStoreCrawlDataStore extends AbstractCrawlDataStore {
         }
         ICrawlData data = mapQueued.remove(key);
         mapActive.put(key, data);
+        // Commit on every put() is required if we want to guarantee
+        // recovery on a cold JVM/OS/System crash.
+        //TODO if performance is too impacted, make it a configurable
+        //option to offer guarantee or not?
+        store.commit();
         return data;
     }
 
@@ -143,6 +161,11 @@ public class MVStoreCrawlDataStore extends AbstractCrawlDataStore {
         }
         mapActive.remove(ref);
         mapCached.remove(ref);
+        // Commit on every put() is required if we want to guarantee
+        // recovery on a cold JVM/OS/System crash.
+        //TODO if performance is too impacted, make it a configurable
+        //option to offer guarantee or not?
+        store.commit();
     }
 
     @Override
