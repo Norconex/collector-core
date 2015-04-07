@@ -71,7 +71,7 @@ public abstract class AbstractJDBCDataStoreFactory
             db = DEFAULT_DATABASE;
         }
         String storeDir = config.getWorkDir().getPath() + "/crawlstore/" 
-                + Objects.toString(database.toString()).toLowerCase() + "/" 
+                + Objects.toString(db).toLowerCase() + "/" 
                 + FileUtil.toSafeFileName(config.getId()) + "/";
         return new JDBCCrawlDataStore(
                 db, storeDir, resume, createJDBCSerializer());
@@ -91,7 +91,7 @@ public abstract class AbstractJDBCDataStoreFactory
         XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
         String dbStr = xml.getString("database");
         if (StringUtils.isNotBlank(dbStr)) {
-            database = Database.valueOf(dbStr);
+            database = Database.valueOf(dbStr.toUpperCase());
         }
     }
 

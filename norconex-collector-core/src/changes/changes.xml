@@ -31,6 +31,10 @@
       <action dev="essiembre" type="update">
         Subject in event logging is now only shown on DEBUG log level.
       </action>
+      <action dev="essiembre" type="update">
+        The database XML configuration in AbstractJDBCDataStoreFactory
+        is now case-insensitive.
+      </action>
       <action dev="essiembre" type="fix">
         BaseCrawlData#setDocumentChecksum(String) is now deprecated in favor
         of BaseCrawlData#setContentChecksum(String) to fix content checksum 
@@ -43,6 +47,10 @@
       <action dev="essiembre" type="fix">
         Fixed incremental run not always handling non-modified documents
         properly (sometimes deleting, sometimes re-adding).
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed NPE in AbstractJDBCDataStoreFactory#createCrawlDataStore(...)
+        when database is null.
       </action>
     </release>
 
