@@ -76,7 +76,6 @@ public abstract class AbstractCrawler
 
     private static final int DOUBLE_PROGRESS_SCALE = 4;
     private static final int DOUBLE_PERCENT_SCALE = -2;
-    private static final String PROP_PROCESSED_COUNT = "processedCount";
     private static final int MINIMUM_DELAY = 1;
     private static final long STATUS_LOGGING_INTERVAL = 
             TimeUnit.SECONDS.toMillis(5);
@@ -188,8 +187,7 @@ public abstract class AbstractCrawler
                 this, getCrawlerConfig().getCrawlerListeners());
         importer = new Importer(getCrawlerConfig().getImporterConfig());
         streamFactory = importer.getStreamFactory();
-        processedCount = statusUpdater.getProperties().getInt(
-                PROP_PROCESSED_COUNT, 0);
+        processedCount = crawlDataStore.getProcessedCount();
         registerMonitoringMbean(crawlDataStore);
         
         try {
@@ -372,12 +370,7 @@ public abstract class AbstractCrawler
                 watch = new StopWatch();
                 watch.start();
             }
-            int preProcessDocCount = processedCount;
             processNextQueuedCrawlData(queuedCrawlData, crawlDataStore, delete);
-            if (preProcessDocCount != processedCount) {
-                statusUpdater.getProperties().setInt(
-                        PROP_PROCESSED_COUNT, processedCount);
-            }
             setProgress(statusUpdater, crawlDataStore);
             if (LOG.isDebugEnabled()) {
                 watch.stop();

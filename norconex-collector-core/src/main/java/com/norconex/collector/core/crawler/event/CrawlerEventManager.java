@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,20 +64,22 @@ public class CrawlerEventManager {
         Logger log =  LogManager.getLogger(CrawlerEvent.class.getSimpleName() 
                 + "." + event.getEventType());
         if (log.isInfoEnabled()) {
-            log.info(getLogMessage(event));
+            log.info(getLogMessage(event, log.isDebugEnabled()));
         }
     }
     
-    protected String getLogMessage(CrawlerEvent event) {
+    private String getLogMessage(CrawlerEvent event, boolean includeSubject) {
         StringBuilder b = new StringBuilder();
         b.append(StringUtils.leftPad(event.getEventType(), ID_PRINT_WIDTH));
         if (event.getCrawlData() != null) {
             b.append(": ");
             b.append(event.getCrawlData().getReference());
         }
-        b.append(" (Subject: ");
-        b.append(Objects.toString(event.getSubject(), "none"));
-        b.append(")");
+        if (includeSubject) {
+            b.append(" (Subject: ");
+            b.append(Objects.toString(event.getSubject(), "none"));
+            b.append(")");
+        }
         return b.toString();
     }
 
