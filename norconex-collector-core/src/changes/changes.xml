@@ -35,6 +35,10 @@
         The database XML configuration in AbstractJDBCDataStoreFactory
         is now case-insensitive.
       </action>
+      <action dev="essiembre" type="update">
+        H2 database now has a write delay of zero to ensure durability on
+        JVM crash.
+      </action>
       <action dev="essiembre" type="fix">
         BaseCrawlData#setDocumentChecksum(String) is now deprecated in favor
         of BaseCrawlData#setContentChecksum(String) to fix content checksum 

@@ -94,8 +94,11 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
                     "Problem creating crawl store.", e);
         }
         if (resume) {
-            LOG.debug(
-                    "Resuming: putting active references back in the queue...");
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Active count: " + getActiveCount());
+                LOG.debug("Processed count: " + getProcessedCount());
+                LOG.debug("Putting active references back in the queue...");
+            }
             copyCrawlDatasToQueue(TABLE_ACTIVE);
             LOG.debug("Cleaning active database...");
             sqlClearTable(TABLE_ACTIVE);
@@ -130,7 +133,6 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
     @Override
     public final synchronized void processed(ICrawlData crawlData) {
         ICrawlData crawlDataCopy = crawlData.clone();
-        
         String table;
         if (crawlDataCopy.getState().isGoodState()) {
             table = TABLE_PROCESSED_VALID;
@@ -244,8 +246,8 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
                     try {
                         conn.close();
                     } catch (SQLException e) {
-                        LOG.info(
-                                "Problem closing database shutdown connection.", e);
+                        LOG.info("Problem closing database "
+                                + "shutdown connection.", e);
                     }
                 }
             }
@@ -371,7 +373,7 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
             ds.setUrl("jdbc:derby:" + dbDir + ";create=true");
         } else {
             ds.setDriverClassName("org.h2.Driver");
-            ds.setUrl("jdbc:h2:" + dbDir);
+            ds.setUrl("jdbc:h2:" + dbDir + ";WRITE_DELAY=0;AUTOCOMMIT=ON");
         }
         ds.setDefaultAutoCommit(true);
         return ds;
@@ -458,6 +460,4 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
             throw new UnsupportedOperationException();
         }
     }
-
-
 }
