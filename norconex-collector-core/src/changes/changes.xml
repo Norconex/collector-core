@@ -7,6 +7,15 @@
   </properties>
   <body>
 
+    <release version="1.1.1-SNAPSHOT" date="2015-??-??" description="Bug fix release">
+      <action dev="essiembre" type="fix">
+        Stopping a job that has been resumed now works as expected.
+      </action>
+      <action dev="essiembre" type="update">
+        Library updates: Norconex JEF 4.0.5. 
+      </action>
+    </release>
+
     <release version="1.1.0" date="2015-04-08" description="Feature release">
       <action dev="essiembre" type="add">
         New methods and configuration attribute to disable 
