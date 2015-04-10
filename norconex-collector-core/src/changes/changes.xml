@@ -12,7 +12,7 @@
         Stopping a job that has been resumed now works as expected.
       </action>
       <action dev="essiembre" type="update">
-        Library updates: Norconex JEF 4.0.5. 
+        Library updates: Norconex JEF 4.0.5, Norconex Importer 2.2.0. 
       </action>
     </release>
 
