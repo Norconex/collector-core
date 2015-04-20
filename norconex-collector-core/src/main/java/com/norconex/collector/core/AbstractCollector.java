@@ -31,43 +31,44 @@ import com.norconex.jef4.status.IJobStatus;
 import com.norconex.jef4.status.JobState;
 import com.norconex.jef4.suite.JobSuite;
 import com.norconex.jef4.suite.JobSuiteConfig;
- 
+
 /**
- * Base implementation of a Collector. 
- * Instances of this class can hold several crawler, running at once.
- * This is convenient when there are configuration setting to be shared amongst
- * crawlers.  When you have many crawler jobs defined that have nothing
- * in common, it may be best to configure and run them separately, to facilitate
- * troubleshooting.  There is no best rule for this, experimentation 
- * will help you.
+ * Base implementation of a Collector. Instances of this class can hold several
+ * crawler, running at once. This is convenient when there are configuration
+ * setting to be shared amongst crawlers. When you have many crawler jobs
+ * defined that have nothing in common, it may be best to configure and run them
+ * separately, to facilitate troubleshooting. There is no best rule for this,
+ * experimentation will help you.
+ * 
  * @author Pascal Essiembre
  */
 @SuppressWarnings("nls")
 public abstract class AbstractCollector implements ICollector {
 
-    private static final Logger LOG = 
+    private static final Logger LOG =
             LogManager.getLogger(AbstractCollector.class);
-    
+
     private AbstractCollectorConfig collectorConfig;
 
     private ICrawler[] crawlers;
     private JobSuite jobSuite;
-    
-	/**
-	 * Creates and configure a Collector with the provided
-	 * configuration.
-	 * @param collectorConfig Collector configuration
-	 */
+
+    /**
+     * Creates and configure a Collector with the provided configuration.
+     * 
+     * @param collectorConfig
+     *            Collector configuration
+     */
     public AbstractCollector(AbstractCollectorConfig collectorConfig) {
-        //TODO clone config so modifications no longer apply.
+        // TODO clone config so modifications no longer apply.
         if (collectorConfig == null) {
             throw new IllegalArgumentException(
-                    "Collector Configugation cannot be null.");
+                    "Collector Configuration cannot be null.");
         }
-        
+
         this.collectorConfig = collectorConfig;
 
-        ICrawlerConfig[] crawlerConfigs = 
+        ICrawlerConfig[] crawlerConfigs =
                 this.collectorConfig.getCrawlerConfigs();
         if (crawlerConfigs != null) {
             ICrawler[] newCrawlers = new ICrawler[crawlerConfigs.length];
@@ -77,39 +78,42 @@ public abstract class AbstractCollector implements ICollector {
             }
             this.crawlers = newCrawlers;
         } else {
-            this.crawlers = new ICrawler[]{};
+            this.crawlers = new ICrawler[] {};
         }
     }
 
     /**
      * Gets the job suite.
+     * 
      * @return the jobSuite
      */
     @Override
     public JobSuite getJobSuite() {
         return jobSuite;
     }
-    
+
     /**
      * Start all crawlers defined in configuration.
-     * @param resumeNonCompleted whether to resume where previous crawler
-     *        aborted (if applicable) 
+     * 
+     * @param resumeNonCompleted
+     *            whether to resume where previous crawler aborted (if
+     *            applicable)
      */
     @Override
     public void start(boolean resumeNonCompleted) {
-        
-        //TODO move this code to a config validator class?
-        //TODO move this code to base class?
+
+        // TODO move this code to a config validator class?
+        // TODO move this code to base class?
         if (StringUtils.isBlank(getCollectorConfig().getId())) {
             throw new CollectorException("Collector must be given "
                     + "a unique identifier (id).");
         }
-        
+
         if (jobSuite != null) {
             throw new CollectorException(
                     "Collector is already running. Wait for it to complete "
-                  + "before starting the same instance again, or stop "
-                  + "the currently running instance first.");
+                            + "before starting the same instance again, or stop "
+                            + "the currently running instance first.");
         }
         jobSuite = createJobSuite();
         try {
@@ -129,16 +133,16 @@ public abstract class AbstractCollector implements ICollector {
         }
 
         IJobStatus status = jobSuite.getStatus();
-        if (status == null 
+        if (status == null
                 || !status.isState(JobState.RUNNING, JobState.UNKNOWN)) {
             throw new CollectorException(
                     "This collector cannot be stopped since it is NOT "
-                  + "running. Current state: " 
-                  + jobSuite.getStatus().getState());
+                            + "running. Current state: "
+                            + jobSuite.getStatus().getState());
         } else if (LOG.isDebugEnabled()) {
-            LOG.debug("Suite state: " + status.getState());        
+            LOG.debug("Suite state: " + status.getState());
         }
-        
+
         try {
             LOG.info("Making a stop request...");
             jobSuite.stop();
@@ -148,31 +152,30 @@ public abstract class AbstractCollector implements ICollector {
                     + "currently being processed. If an urgent stop is "
                     + "required or you do not want to wait, manually kill "
                     + "the process.");
-            //TODO wait for stop confirmation before setting to null?
+            // TODO wait for stop confirmation before setting to null?
             jobSuite = null;
         } catch (IOException e) {
             throw new CollectorException(
                     "Could not stop collector: " + getId(), e);
         }
     }
-    
+
     @Override
     public JobSuite createJobSuite() {
         ICrawler[] crawlers = getCrawlers();
-        
+
         IJob rootJob = null;
         if (crawlers.length > 1) {
             rootJob = new AsyncJobGroup(
                     getId(), crawlers
-            );
+                    );
         } else if (crawlers.length == 1) {
             rootJob = crawlers[0];
         }
-        
+
         JobSuiteConfig suiteConfig = new JobSuiteConfig();
 
-        
-        //TODO have a base workdir, which is used to figure out where to put
+        // TODO have a base workdir, which is used to figure out where to put
         // everything (log, progress), and make log and progress overwritable.
 
         ICollectorConfig collectorConfig = getCollectorConfig();
@@ -180,42 +183,49 @@ public abstract class AbstractCollector implements ICollector {
                 new FileLogManager(collectorConfig.getLogsDir()));
         suiteConfig.setJobStatusStore(
                 new FileJobStatusStore(collectorConfig.getProgressDir()));
-        suiteConfig.setWorkdir(collectorConfig.getProgressDir()); 
+        suiteConfig.setWorkdir(collectorConfig.getProgressDir());
         JobSuite suite = new JobSuite(rootJob, suiteConfig);
         LOG.info("Suite of " + crawlers.length + " crawler jobs created.");
         return suite;
     }
-    
+
     /**
      * Creates a new crawler instance.
-     * @param config crawler configuration
+     * 
+     * @param config
+     *            crawler configuration
      * @return new crawler
      */
     protected abstract ICrawler createCrawler(ICrawlerConfig config);
-    
+
     /**
      * Gets the collector configuration
+     * 
      * @return the collectorConfig
      */
     @Override
     public AbstractCollectorConfig getCollectorConfig() {
         return collectorConfig;
     }
-    
+
     @Override
     public String getId() {
         return collectorConfig.getId();
     }
-    
+
     /**
      * Add the provided crawlers to this collector.
-     * @param crawlers crawlers to add
+     * 
+     * @param crawlers
+     *            crawlers to add
      */
     public void setCrawlers(ICrawler[] crawlers) {
         this.crawlers = Arrays.copyOf(crawlers, crawlers.length);
     }
+
     /**
      * Gets all crawler instances in this collector.
+     * 
      * @return crawlers
      */
     public ICrawler[] getCrawlers() {
