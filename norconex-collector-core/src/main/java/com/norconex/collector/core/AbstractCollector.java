@@ -62,7 +62,7 @@ public abstract class AbstractCollector implements ICollector {
         //TODO clone config so modifications no longer apply.
         if (collectorConfig == null) {
             throw new IllegalArgumentException(
-                    "Collector Configugation cannot be null.");
+                    "Collector Configuration cannot be null.");
         }
         
         this.collectorConfig = collectorConfig;
