@@ -14,6 +14,10 @@
       <action dev="essiembre" type="update">
         Library updates: Norconex JEF 4.0.5, Norconex Importer 2.2.0. 
       </action>
+      <action dev="essiembre" type="update">
+        When the saving of documents is enabled, each saved documents is no
+        longer printed to STDOUT but logged as a Log4j debug statement instead. 
+      </action>
     </release>
 
     <release version="1.1.0" date="2015-04-08" description="Feature release">

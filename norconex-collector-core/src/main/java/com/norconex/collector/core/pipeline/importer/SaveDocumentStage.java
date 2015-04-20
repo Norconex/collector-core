@@ -24,6 +24,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.norconex.collector.core.CollectorException;
 import com.norconex.collector.core.crawler.event.CrawlerEvent;
@@ -37,6 +39,9 @@ import com.norconex.commons.lang.pipeline.IPipelineStage;
 public class SaveDocumentStage
         implements IPipelineStage<ImporterPipelineContext> {
 
+    private static final Logger LOG = 
+            LogManager.getLogger(SaveDocumentStage.class);
+    
     private static final int MAX_SEGMENT_LENGTH = 25;
     
     @Override
@@ -57,8 +62,9 @@ public class SaveDocumentStage
         
         File downloadFile = new File(downloadDir, path);
         
-        
-System.out.println("DOWNLOAD FILE:" + downloadFile);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Saved file: " + downloadFile);
+        }
         try {
             OutputStream out = FileUtils.openOutputStream(downloadFile);
             IOUtils.copy(ctx.getDocument().getContent(), out);
@@ -68,7 +74,7 @@ System.out.println("DOWNLOAD FILE:" + downloadFile);
                     CrawlerEvent.DOCUMENT_SAVED, ctx.getCrawlData(), 
                     downloadFile);
         } catch (IOException e) {
-            throw new CollectorException("Cannot create RobotsMeta for : " 
+            throw new CollectorException("Cannot save document: " 
                             + ctx.getCrawlData().getReference(), e);
         }            
         return true;
