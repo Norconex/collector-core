@@ -46,7 +46,7 @@ import com.norconex.jef4.suite.JobSuiteConfig;
 public abstract class AbstractCollector implements ICollector {
 
     private static final Logger LOG = 
-            LogManager.getLogger(CopyOfAbstractCollector.class);
+            LogManager.getLogger(AbstractCollector.class);
     
     private AbstractCollectorConfig collectorConfig;
 
