@@ -109,9 +109,15 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
         String dbName = MongoUtil.getDbNameOrGenerate(
                 connDetails.getDatabaseName(),
                 crawlerId);
+        
+        int port = connDetails.getPort();
+        if (port <= 0) {
+        	port = ServerAddress.defaultPort();
+        }
+        
         try {
             ServerAddress server = new ServerAddress(
-                    connDetails.getHost(), connDetails.getPort());
+                    connDetails.getHost(), port);
             List<MongoCredential> credentialsList = 
                     new ArrayList<MongoCredential>();
             if (StringUtils.isNoneBlank(connDetails.getUsername())) {

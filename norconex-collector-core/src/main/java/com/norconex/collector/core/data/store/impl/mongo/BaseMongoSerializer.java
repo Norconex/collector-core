@@ -87,13 +87,12 @@ public class BaseMongoSerializer implements IMongoSerializer {
         ensureIndex(cachedCollection, true, FIELD_REFERENCE);
     }
 
-    @SuppressWarnings("deprecation")
     protected final void ensureIndex(DBCollection coll, boolean unique,
             String... fields) {
         BasicDBObject fieldsObject = new BasicDBObject();
         for (String field : fields) {
             fieldsObject.append(field, 1);
         }
-        coll.ensureIndex(fieldsObject, null, unique);
+        coll.createIndex(fieldsObject, null, unique);
     }
 }
