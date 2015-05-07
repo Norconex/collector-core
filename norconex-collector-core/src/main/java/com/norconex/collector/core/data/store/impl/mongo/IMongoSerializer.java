@@ -37,6 +37,7 @@ public interface IMongoSerializer {
     String FIELD_CONTENT_CHECKSUM = "contentChecksum";
     String FIELD_IS_VALID = "isValid";
     String FIELD_STAGE = "stage";
+    String FIELD_DEPTH = "depth";
     
     /**
      * Converts a {@link ICrawlData} to a Mongo {@link BasicDBObject}.
