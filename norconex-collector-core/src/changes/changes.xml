@@ -12,7 +12,12 @@
         Stopping a job that has been resumed now works as expected.
       </action>
       <action dev="essiembre" type="update">
-        Library updates: Norconex JEF 4.0.5, Norconex Importer 2.2.0. 
+        Library updates: Norconex JEF 4.0.5, Norconex Importer 2.2.0,
+        Mongo Java Driver 2.13.1.
+      </action>
+      <action dev="pascaldimassimo" type="update">
+        Uses default port when no Mongo port is specified when using Mongo
+        data store.
       </action>
       <action dev="essiembre" type="update">
         When the saving of documents is enabled, each saved documents is no
