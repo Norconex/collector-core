@@ -103,11 +103,11 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
     public final void setRegex(String regex) {
         this.regex = regex;
         if (regex != null) {
-            if (caseSensitive) {
-                this.pattern = Pattern.compile(regex);
-            } else {
-                this.pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+            int flags = Pattern.DOTALL;
+            if (!caseSensitive) {
+                flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
             }
+            this.pattern = Pattern.compile(regex, flags);            
         } else {
             this.pattern = Pattern.compile(".*");
         }

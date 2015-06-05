@@ -23,6 +23,12 @@
         When the saving of documents is enabled, each saved documents is no
         longer printed to STDOUT but logged as a Log4j debug statement instead. 
       </action>
+      <action dev="essiembre" type="update">
+        Regular expressions in RegexMetadataFilter and RegexReferenceFilter 
+        now always have the Pattern.DOTALL flag enabled and when case
+        sensitivity is enabled for regex, Pattern.UNICODE_CASE is now always
+        used.
+      </action>      
     </release>
 
     <release version="1.1.0" date="2015-04-08" description="Feature release">
