@@ -83,8 +83,11 @@ public class BaseMongoSerializer implements IMongoSerializer {
     public void createIndices(
             DBCollection referenceCollection, DBCollection cachedCollection) {
         ensureIndex(referenceCollection, true, FIELD_REFERENCE);
-        ensureIndex(referenceCollection, false, FIELD_CRAWL_STATE);
         ensureIndex(cachedCollection, true, FIELD_REFERENCE);
+        ensureIndex(referenceCollection, false, FIELD_IS_VALID);
+        ensureIndex(referenceCollection, false, FIELD_STAGE);
+        ensureIndex(referenceCollection, false, 
+        		FIELD_STAGE, FIELD_DEPTH);
     }
 
     protected final void ensureIndex(DBCollection coll, boolean unique,
