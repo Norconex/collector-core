@@ -8,13 +8,6 @@
   <body>
 
     <release version="1.2.0-SNAPSHOT" date="2015-??-??" description="Bug fix release">
-      <action dev="essiembre" type="fix">
-        Stopping a job that has been resumed now works as expected.
-      </action>
-      <action dev="essiembre" type="update">
-        Library updates: Norconex JEF 4.0.5, Norconex Importer 2.2.0,
-        Mongo Java Driver 2.13.1.
-      </action>
       <action dev="pascaldimassimo" type="update">
         Uses default port when no Mongo port is specified when using Mongo
         data store.
@@ -29,6 +22,17 @@
         sensitivity is enabled for regex, Pattern.UNICODE_CASE is now always
         used.
       </action>      
+      <action dev="pascaldimassimo" type="fix">
+        Updated Mongo indexes to use stage instead of state.
+        (Github collector-http#97).
+      </action>
+      <action dev="essiembre" type="fix">
+        Stopping a job that has been resumed now works as expected.
+      </action>
+      <action dev="essiembre" type="update">
+        Library updates: Norconex JEF 4.0.5, Norconex Importer 2.2.0,
+        Mongo Java Driver 2.13.1.
+      </action>
     </release>
 
     <release version="1.1.0" date="2015-04-08" description="Feature release">
