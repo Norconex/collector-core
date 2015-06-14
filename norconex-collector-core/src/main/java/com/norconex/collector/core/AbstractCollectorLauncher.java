@@ -22,10 +22,10 @@ import java.io.UnsupportedEncodingException;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.apache.commons.lang3.CharEncoding;
 
 import com.norconex.commons.lang.EqualsUtil;
@@ -101,7 +101,7 @@ public abstract class AbstractCollectorLauncher {
         options.addOption("a", ARG_ACTION, true, 
                 "Required: one of start|resume|stop");
         
-        CommandLineParser parser = new PosixParser();
+        CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
         try {
             cmd = parser.parse( options, args);
