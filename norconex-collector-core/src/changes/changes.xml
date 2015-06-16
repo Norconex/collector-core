@@ -31,7 +31,7 @@
       </action>
       <action dev="essiembre" type="update">
         Library updates: Norconex JEF 4.0.5, Norconex Importer 2.2.0,
-        Mongo Java Driver 2.13.1.
+        Mongo Java Driver 2.13.2, H2 database 1.4.187.
       </action>
     </release>
 
