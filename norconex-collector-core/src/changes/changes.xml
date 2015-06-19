@@ -7,7 +7,15 @@
   </properties>
   <body>
 
-    <release version="1.2.0-SNAPSHOT" date="2015-??-??" description="Bug fix release">
+    <release version="1.2.0-SNAPSHOT" date="2015-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        New GenericMetadataChecksummer for choosing one or many metadata fields
+        and their values to create a checksum.
+      </action>
+      <action dev="essiembre" type="update">
+        MD5DocumentChecksummer#setField(String) has been deprecated in favor
+        of MD5DocumentChecksummer#setFields(String...).
+      </action>
       <action dev="pascaldimassimo" type="update">
         Uses default port when no Mongo port is specified when using Mongo
         data store.
@@ -32,6 +40,7 @@
       <action dev="essiembre" type="update">
         Library updates: Norconex JEF 4.0.5, Norconex Importer 2.2.0,
         Mongo Java Driver 2.13.2, H2 database 1.4.187.
+        New dependency: JUnit 4.12 (test scope).
       </action>
     </release>
 
