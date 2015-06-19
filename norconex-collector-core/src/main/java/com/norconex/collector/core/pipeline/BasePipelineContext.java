@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.norconex.collector.core.pipeline;
 import com.norconex.collector.core.crawler.ICrawler;
 import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.collector.core.crawler.event.CrawlerEvent;
+import com.norconex.collector.core.crawler.event.CrawlerEventManager;
 import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
@@ -59,7 +60,10 @@ public class BasePipelineContext {
     
     public void fireCrawlerEvent(
             String event, ICrawlData crawlData, Object subject) {
-        crawler.getCrawlerEventManager().fireCrawlerEvent(new CrawlerEvent(
-                event, crawlData, subject));
+        CrawlerEventManager eventManager = crawler.getCrawlerEventManager();
+        if (eventManager != null) {
+            crawler.getCrawlerEventManager().fireCrawlerEvent(new CrawlerEvent(
+                    event, crawlData, subject));
+        }
     }
 }
