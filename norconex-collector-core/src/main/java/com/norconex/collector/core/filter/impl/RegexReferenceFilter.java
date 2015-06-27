@@ -52,6 +52,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  *  &lt;/filter&gt;
  * </pre>
  * @author Pascal Essiembre
+ * @see Pattern
  */
 @SuppressWarnings("nls")
 public class RegexReferenceFilter extends AbstractOnMatchFilter implements 

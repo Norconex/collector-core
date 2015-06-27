@@ -49,6 +49,8 @@ import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.jmx.Monitoring;
+import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
+import com.norconex.collector.core.spoil.SpoiledReferenceStrategy;
 import com.norconex.committer.core.ICommitter;
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.file.FileUtil;
@@ -86,10 +88,10 @@ public abstract class AbstractCrawler
     private CachedStreamFactory streamFactory;
     
     private boolean stopped;
-    // This processedCount does not take into account alternate URLs such as 
-    // redirects.  It is a cleaner representation for end-users and speed things
-    // a bit bit not having to obtain that value from the database at every
-    // progress change.,
+    // This processedCount does not take into account alternate references such
+    // as redirects. It is a cleaner representation for end-users and speed 
+    // things a bit bit not having to obtain that value from the database at 
+    // every progress change.,
     private int processedCount;
     private long lastStatusLoggingTime;
     
@@ -229,9 +231,9 @@ public abstract class AbstractCrawler
     protected void execute(JobStatusUpdater statusUpdater,
             JobSuite suite, ICrawlDataStore refStore) {
 
-        //--- Process start/queued URLS ----------------------------------------
+        //--- Process start/queued references ----------------------------------
         LOG.info(getId() + ": Crawling references...");
-        processURLs(refStore, statusUpdater, suite, false);
+        processReferences(refStore, statusUpdater, suite, false);
 
         if (!isStopped()) {
             handleOrphans(refStore, statusUpdater, suite);
@@ -298,9 +300,9 @@ public abstract class AbstractCrawler
                 executeQueuePipeline(crawlData, crawlDataStore);
                 count++;
             }
-            processURLs(crawlDataStore, statusUpdater, suite, false);
+            processReferences(crawlDataStore, statusUpdater, suite, false);
         }
-        LOG.info(getId() + ": Reprocessed " + count + " orphan URLs...");
+        LOG.info(getId() + ": Reprocessed " + count + " orphan references...");
     }
     
     protected abstract void executeQueuePipeline(
@@ -315,13 +317,13 @@ public abstract class AbstractCrawler
                 crawlDataStore.queue(it.next());
                 count++;
             }
-            processURLs(crawlDataStore, statusUpdater, suite, true);
+            processReferences(crawlDataStore, statusUpdater, suite, true);
         }
-        LOG.info(getId() + ": Deleted " + count + " orphan URLs...");
+        LOG.info(getId() + ": Deleted " + count + " orphan references...");
     }
     
     
-    protected void processURLs(
+    protected void processReferences(
             final ICrawlDataStore refStore,
             final JobStatusUpdater statusUpdater, 
             final JobSuite suite,
@@ -335,7 +337,7 @@ public abstract class AbstractCrawler
             final int threadIndex = i + 1;
             LOG.debug(getId() 
                     + ": Crawler thread #" + threadIndex + " started.");
-            pool.execute(new ProcessURLsRunnable(
+            pool.execute(new ProcessReferencesRunnable(
                     suite, statusUpdater, refStore, delete, latch));
         }
 
@@ -347,7 +349,7 @@ public abstract class AbstractCrawler
         }
     }
  
-    // return <code>true</code> if more urls to process
+    // return <code>true</code> if more references to process
     protected boolean processNextReference(
             final ICrawlDataStore crawlDataStore,
             final JobStatusUpdater statusUpdater, 
@@ -429,7 +431,7 @@ public abstract class AbstractCrawler
 
         statusUpdater.setNote(
                 NumberFormat.getIntegerInstance().format(processed)
-                + " urls processed out of "
+                + " references processed out of "
                 + NumberFormat.getIntegerInstance().format(total));
         
         if (LOG.isInfoEnabled()) {
@@ -455,18 +457,18 @@ public abstract class AbstractCrawler
     
     private void processNextQueuedCrawlData(BaseCrawlData crawlData, 
             ICrawlDataStore crawlDataStore, boolean delete) {
-        String url = crawlData.getReference();
+        String reference = crawlData.getReference();
         ImporterDocument doc = wrapDocument(crawlData, new ImporterDocument(
                 crawlData.getReference(), getStreamFactory().newInputStream()));
         applyCrawlData(crawlData, doc);
         
         try {
             if (delete) {
-                deleteURL(crawlData, doc);
+                deleteReference(crawlData, doc);
                 finalizeDocumentProcessing(crawlData, crawlDataStore, doc);
                 return;
             } else if (LOG.isDebugEnabled()) {
-                LOG.debug(getId() + ": Processing URL: " + url);
+                LOG.debug(getId() + ": Processing reference: " + reference);
             }
             
             
@@ -476,10 +478,19 @@ public abstract class AbstractCrawler
             if (response != null) {
                 processImportResponse(response, crawlDataStore, crawlData);
             } else {
-                if (!CrawlState.UNMODIFIED.equals(crawlData.getState())) {
+                if (crawlData.getState().isNewOrModified()) {
                     crawlData.setState(CrawlState.REJECTED);
                 }
-                fireCrawlerEvent(CrawlerEvent.REJECTED_IMPORT, crawlData, doc);
+                //TODO Fire an event here? If we get here, the importer did 
+                //not kick in,
+                //so do not fire REJECTED_IMPORT (like it used to). 
+                //Errors should have fired
+                //something already so do not fire two REJECTED... but 
+                //what if a previous issue did not fire a REJECTED_*?
+                //This should not happen, but keep an eye on that.
+                //OR do we want to always fire REJECTED_IMPORT on import failure
+                //(in addition to whatever) and maybe a new REJECTED_COLLECTOR
+                //when it did not reach the importer module?
                 finalizeDocumentProcessing(crawlData, crawlDataStore, doc);
             }
         } catch (Exception e) {
@@ -487,7 +498,7 @@ public abstract class AbstractCrawler
             // HTTPFetchException?  In case we want special treatment to the 
             // class?
             crawlData.setState(CrawlState.ERROR);
-            LOG.error(getId() + ": Could not process document: " + url
+            LOG.error(getId() + ": Could not process document: " + reference
                     + " (" + e.getMessage() + ")", e);
             finalizeDocumentProcessing(crawlData, crawlDataStore, doc);
         }
@@ -525,36 +536,66 @@ public abstract class AbstractCrawler
     
     private void finalizeDocumentProcessing(BaseCrawlData crawlData,
             ICrawlDataStore store, ImporterDocument doc) {
-        //--- Flag URL for deletion --------------------------------------------
+
+        //--- Ensure we have a state -------------------------------------------
+        if (crawlData.getState() == null) {
+            LOG.warn(getId() + ": reference status is unknown for \"" 
+                    + crawlData.getReference() + "\". This should not "
+                    + "happen. Assuming bad status.");
+            crawlData.setState(CrawlState.BAD_STATUS);
+        }
+        
+        //--- Deal with bad states (if not already deleted) --------------------
         try {
-            ICommitter committer = getCrawlerConfig().getCommitter();
-            if (store.isVanished(crawlData)) {
-                crawlData.setState(CrawlState.DELETED);
-                if (committer != null) {
-                    committer.remove(
-                            crawlData.getReference(), getNullSafeMetadata(doc));
-                    fireCrawlerEvent(CrawlerEvent.DOCUMENT_COMMITTED_REMOVE, 
-                            crawlData, doc);
+            if (!crawlData.getState().isGoodState()
+                    && !crawlData.getState().isOneOf(CrawlState.DELETED)) {
+                SpoiledReferenceStrategy strategy = 
+                        getSpoiledStateStrategy(crawlData);
+
+                if (strategy == SpoiledReferenceStrategy.IGNORE) {
+                    LOG.debug(getId() + ": ignoring spoiled reference: "
+                            + crawlData.getReference());
+                } else if (strategy == SpoiledReferenceStrategy.DELETE) {
+                    // Delete if previous state exists and is not already 
+                    // marked as deleted.
+                    ICrawlData cached = 
+                            store.getCached(crawlData.getReference());
+                    if (cached != null 
+                            && !cached.getState().isOneOf(CrawlState.DELETED)) {
+                        deleteReference(crawlData, doc);
+                    }
+                } else {
+                    // GRACE_ONCE:
+                    // Delete if previous state exists and is a bad state, 
+                    // but not already marked as deleted.
+                    ICrawlData cached = 
+                            store.getCached(crawlData.getReference());
+                    if (cached != null 
+                            && !cached.getState().isOneOf(CrawlState.DELETED)) {
+                        if (!cached.getState().isGoodState()) {
+                            deleteReference(crawlData, doc);
+                        } else {
+                            LOG.debug(getId() + ": this spoiled reference is "
+                                    + "being graced once (will be deleted "
+                                    + "next time if still spoiled): "
+                                    + crawlData.getReference());
+                        }
+                    }
                 }
             }
         } catch (Exception e) {
-            LOG.error(getId() + ": Could not flag URL for deletion: "
+            LOG.error(getId() + ": Could not resolve reference bad status: "
                     + crawlData.getReference()
                     + " (" + e.getMessage() + ")", e);
         }
         
-        //--- Mark URL as Processed --------------------------------------------
+        //--- Mark reference as Processed --------------------------------------
         try {
             processedCount++;
-            if (crawlData.getState() == null) {
-                LOG.warn(getId() + ": URL status is unknown: " 
-                        + crawlData.getReference());
-                crawlData.setState(CrawlState.BAD_STATUS);
-            }
             store.processed(crawlData);
             markReferenceVariationsAsProcessed(crawlData, store);
         } catch (Exception e) {
-            LOG.error(getId() + ": Could not mark URL as processed: " 
+            LOG.error(getId() + ": Could not mark reference as processed: " 
                     + crawlData.getReference()
                     + " (" + e.getMessage() + ")", e);
         }
@@ -591,9 +632,23 @@ public abstract class AbstractCrawler
         return doc.getMetadata();
     }
     
-    private void deleteURL(
+    private SpoiledReferenceStrategy getSpoiledStateStrategy(
+            BaseCrawlData crawlData) {
+        ISpoiledReferenceStrategizer strategyResolver = 
+                config.getSpoiledReferenceStrategizer();
+        SpoiledReferenceStrategy strategy = 
+                strategyResolver.resolveSpoiledReferenceStrategy(
+                        crawlData.getReference(), crawlData.getState());
+        if (strategy == null) {
+            strategy = SpoiledReferenceStrategy.DELETE;
+        }
+        return strategy;
+    }
+    
+    private void deleteReference(
             BaseCrawlData crawlData, ImporterDocument doc) {
-        LOG.debug(getId() + ": Deleting URL: " + crawlData.getReference());
+        LOG.debug(getId() + ": Deleting reference: " 
+                + crawlData.getReference());
         ICommitter committer = getCrawlerConfig().getCommitter();
         crawlData.setState(CrawlState.DELETED);
         if (committer != null) {
@@ -604,14 +659,14 @@ public abstract class AbstractCrawler
                 CrawlerEvent.DOCUMENT_COMMITTED_REMOVE, crawlData, doc);
     }
     
-    private final class ProcessURLsRunnable implements Runnable {
+    private final class ProcessReferencesRunnable implements Runnable {
         private final JobSuite suite;
         private final JobStatusUpdater statusUpdater;
         private final ICrawlDataStore crawlStore;
         private final boolean delete;
         private final CountDownLatch latch;
 
-        private ProcessURLsRunnable(JobSuite suite, 
+        private ProcessReferencesRunnable(JobSuite suite, 
                 JobStatusUpdater statusUpdater,
                 ICrawlDataStore refStore, boolean delete,
                 CountDownLatch latch) {

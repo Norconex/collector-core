@@ -16,6 +16,8 @@ package com.norconex.collector.core;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
@@ -23,6 +25,8 @@ import org.apache.log4j.Logger;
 
 import com.norconex.collector.core.crawler.ICrawler;
 import com.norconex.collector.core.crawler.ICrawlerConfig;
+import com.norconex.committer.core.ICommitter;
+import com.norconex.importer.Importer;
 import com.norconex.jef4.job.IJob;
 import com.norconex.jef4.job.group.AsyncJobGroup;
 import com.norconex.jef4.log.FileLogManager;
@@ -97,9 +101,10 @@ public abstract class AbstractCollector implements ICollector {
      */
     @Override
     public void start(boolean resumeNonCompleted) {
+
+        printReleaseVersion();
         
         //TODO move this code to a config validator class?
-        //TODO move this code to base class?
         if (StringUtils.isBlank(getCollectorConfig().getId())) {
             throw new CollectorException("Collector must be given "
                     + "a unique identifier (id).");
@@ -221,4 +226,42 @@ public abstract class AbstractCollector implements ICollector {
     public ICrawler[] getCrawlers() {
         return Arrays.copyOf(crawlers, crawlers.length);
     }
+    
+    private void printReleaseVersion() {
+        printReleaseVersion("Collector", getClass().getPackage());
+        printReleaseVersion("Collector Core", 
+                AbstractCollector.class.getPackage());
+        printReleaseVersion("Importer", Importer.class.getPackage());
+        
+        //--- Committers ---
+        printReleaseVersion("Committer Core", ICommitter.class.getPackage());
+        Set<ICommitter> committers = new HashSet<>();
+        for (ICrawler crawler : getCrawlers()) {
+            ICommitter committer = crawler.getCrawlerConfig().getCommitter();
+            Package committerPackage = committer.getClass().getPackage();
+            if (!committerPackage.getName().startsWith(
+                    "com.norconex.committer.core")) {
+                committers.add(committer);
+            }
+        }
+        for (ICommitter c : committers) {
+            printReleaseVersion(
+                    c.getClass().getSimpleName(), c.getClass().getPackage());
+        }
+    }
+    private void printReleaseVersion(String moduleName, Package p) {
+        String version = p.getImplementationVersion();
+        if (StringUtils.isBlank(version)) {
+            LOG.info("VERSION: \"" + moduleName
+                    + "\" version cannot be established. "
+                    + "This is likely due to using an unpacked or modified "
+                    + "jar, or the jar not being packaged with version "
+                    + "information.");
+            return;
+        }
+        LOG.info("VERSION: " + p.getImplementationTitle() + " " 
+                + p.getImplementationVersion()
+                + " (" + p.getImplementationVendor() + ")");
+    }
+
 }

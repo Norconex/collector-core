@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,15 @@ import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.data.ICrawlData;
 
 /**
- * Abstract crawl data store.
+ * <p>Abstract crawl data store.</p>
+ * <p>As of 1.2.0, this class does not implement any non-deprecated methods 
+ * from {@link ICrawlDataStore}.</p>
  * @author Pascal Essiembre
  */
 public abstract class AbstractCrawlDataStore implements ICrawlDataStore {
 
     @Override
+    @Deprecated
     public final boolean isVanished(ICrawlData crawlData) {
         ICrawlData cachedReference = getCached(crawlData.getReference());
         if (cachedReference == null) {

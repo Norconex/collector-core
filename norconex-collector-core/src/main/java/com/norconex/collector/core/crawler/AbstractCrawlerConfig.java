@@ -45,6 +45,8 @@ import com.norconex.collector.core.data.store.impl.mapdb.MapDBCrawlDataStoreFact
 import com.norconex.collector.core.filter.IDocumentFilter;
 import com.norconex.collector.core.filter.IMetadataFilter;
 import com.norconex.collector.core.filter.IReferenceFilter;
+import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
+import com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer;
 import com.norconex.committer.core.ICommitter;
 import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
@@ -80,6 +82,9 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
 
     private IDocumentChecksummer documentChecksummer =
             new MD5DocumentChecksummer();
+    
+    private ISpoiledReferenceStrategizer spoiledReferenceStrategizer = 
+            new GenericSpoiledReferenceStrategizer();
         
     /**
      * Creates a new crawler configuration.
@@ -107,6 +112,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         this.id = id;
     }
 
+    @Override
     public int getNumThreads() {
         return numThreads;
     }
@@ -146,18 +152,30 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         this.crawlDataStoreFactory = crawlDataStoreFactory;
     }
 
+    @Override
     public ICrawlerEventListener[] getCrawlerListeners() {
         return ArrayUtils.clone(crawlerListeners);
     }
     public void setCrawlerListeners(
-            ICrawlerEventListener[] crawlerListeners) {
+            ICrawlerEventListener... crawlerListeners) {
         this.crawlerListeners = ArrayUtils.clone(crawlerListeners);
     }
     
+    
+    @Override
+    public ISpoiledReferenceStrategizer getSpoiledReferenceStrategizer() {
+        return spoiledReferenceStrategizer;
+    }
+    public void setSpoiledReferenceStrategizer(
+            ISpoiledReferenceStrategizer spoiledReferenceStrategizer) {
+        this.spoiledReferenceStrategizer = spoiledReferenceStrategizer;
+    }
+
     /**
      * Gets the reference filters
      * @return the referenceFilters
      */
+    @Override
     public IReferenceFilter[] getReferenceFilters() {
         return ArrayUtils.clone(referenceFilters);
     }
@@ -165,22 +183,26 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
      * Sets the reference filters.
      * @param referenceFilters the referenceFilters to set
      */
-    public void setReferenceFilters(IReferenceFilter[] referenceFilters) {
+    public void setReferenceFilters(IReferenceFilter... referenceFilters) {
         this.referenceFilters = ArrayUtils.clone(referenceFilters);
     }
+    @Override
     public IDocumentFilter[] getDocumentFilters() {
         return ArrayUtils.clone(documentFilters);
     }
-    public void setDocumentFilters(IDocumentFilter[] documentfilters) {
+    public void setDocumentFilters(IDocumentFilter... documentfilters) {
         this.documentFilters = ArrayUtils.clone(documentfilters);
     }
+
+    @Override
     public IMetadataFilter[] getMetadataFilters() {
         return ArrayUtils.clone(metadataFilters);
     }
-    public void setMetadataFilters(IMetadataFilter[] metadataFilters) {
+    public void setMetadataFilters(IMetadataFilter... metadataFilters) {
         this.metadataFilters = ArrayUtils.clone(metadataFilters);
     }
 
+    @Override
     public IDocumentChecksummer getDocumentChecksummer() {
         return documentChecksummer;
     }
@@ -189,6 +211,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         this.documentChecksummer = documentChecksummer;
     }
 
+    @Override
     public ImporterConfig getImporterConfig() {
         return importerConfig;
     }
@@ -196,6 +219,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         this.importerConfig = importerConfig;
     }
     
+    @Override
     public ICommitter getCommitter() {
         return committer;
     }
@@ -242,6 +266,8 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
             writeObject(out, "importer", getImporterConfig());
             writeObject(out, "committer", getCommitter());
             writeObject(out, "documentChecksummer", getDocumentChecksummer());
+            writeObject(out, "spoiledReferenceStrategizer", 
+                    getSpoiledReferenceStrategizer());
             
             saveCrawlerConfigToXML(out);
             
@@ -314,13 +340,18 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         setCrawlDataStoreFactory(ConfigurationUtil.newInstance(xml,
                 "crawlDataStoreFactory", getCrawlDataStoreFactory()));
 
-        //--- Document Committers ----------------------------------------------
+        //--- Document Committer -----------------------------------------------
         setCommitter(ConfigurationUtil.newInstance(
                 xml, "committer", getCommitter()));
         
-        //--- Document Checksummer ----------------------------------------
+        //--- Document Checksummer ---------------------------------------------
         setDocumentChecksummer(ConfigurationUtil.newInstance(
                 xml, "documentChecksummer", getDocumentChecksummer()));
+
+        //--- Spoiled State Strategy Resolver ----------------------------------
+        setSpoiledReferenceStrategizer(ConfigurationUtil.newInstance(
+                xml, "spoiledReferenceStrategizer", 
+                        getSpoiledReferenceStrategizer()));
         
         loadCrawlerConfigFromXML(xml);
     }
@@ -460,6 +491,8 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
                 .append(importerConfig, castOther.importerConfig)
                 .append(committer, castOther.committer)
                 .append(documentChecksummer, castOther.documentChecksummer)
+                .append(spoiledReferenceStrategizer, 
+                        castOther.spoiledReferenceStrategizer)
                 .isEquals();
     }
 
@@ -470,7 +503,9 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
                 .append(crawlDataStoreFactory).append(referenceFilters)
                 .append(metadataFilters).append(documentFilters)
                 .append(crawlerListeners).append(importerConfig)
-                .append(committer).append(documentChecksummer).toHashCode();
+                .append(committer).append(documentChecksummer)
+                .append(spoiledReferenceStrategizer)
+                .toHashCode();
     }
 
     @Override
@@ -487,7 +522,10 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
                 .append("crawlerListeners", crawlerListeners)
                 .append("importerConfig", importerConfig)
                 .append("committer", committer)
-                .append("documentChecksummer", documentChecksummer).toString();
+                .append("documentChecksummer", documentChecksummer)
+                .append("spoiledReferenceStrategizer", 
+                        spoiledReferenceStrategizer)
+                .toString();
     }
 
 

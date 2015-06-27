@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ import java.util.Iterator;
 import com.norconex.collector.core.data.ICrawlData;
 
 /**
- * Holds necessary information about all references (e.g. url, path, etc) 
- * crawling activities.  
+ * <p>Holds necessary information about all references (e.g. url, path, etc) 
+ * crawling activities.
+ * </p>
  * <p>
  * The few stages a reference should have in most implementations are:</p>
  * <ul>
@@ -132,7 +133,9 @@ public interface ICrawlDataStore {
      * reference cache in a valid state.
      * @param crawlData the reference
      * @return <code>true</code> if reference has been deleted on site
+     * @deprecated Since 1.2.0, this method is no longer used.
      */
+    @Deprecated
     boolean isVanished(ICrawlData crawlData);
     
     /**

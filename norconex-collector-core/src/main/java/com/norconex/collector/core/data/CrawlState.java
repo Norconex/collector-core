@@ -42,6 +42,7 @@ public class CrawlState implements Serializable {
             new CrawlState("REJECTED");
     public static final CrawlState BAD_STATUS = new CrawlState("BAD_STATUS");
     public static final CrawlState DELETED = new CrawlState("DELETED");
+    public static final CrawlState NOT_FOUND = new CrawlState("NOT_FOUND");
     
     private final String state;
 
@@ -69,7 +70,20 @@ public class CrawlState implements Serializable {
         return isOneOf(NEW, MODIFIED, UNMODIFIED);
     }
 
+    /**
+     * Returns whether a state indicates new or modified.
+     * @return <code>true</code> if new or modified
+     * @deprecated Since 1.2.0, use {@link #isNewOrModified()}
+     */
+    @Deprecated
     public boolean isCommittable() {
+        return isOneOf(NEW, MODIFIED);
+    }
+    /**
+     * Returns whether a state indicates new or modified.
+     * @return <code>true</code> if new or modified
+     */
+    public boolean isNewOrModified() {
         return isOneOf(NEW, MODIFIED);
     }
 

@@ -22,6 +22,7 @@ import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
 import com.norconex.collector.core.filter.IDocumentFilter;
 import com.norconex.collector.core.filter.IMetadataFilter;
 import com.norconex.collector.core.filter.IReferenceFilter;
+import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
 import com.norconex.committer.core.ICommitter;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.importer.ImporterConfig;
@@ -139,10 +140,17 @@ public interface ICrawlerConfig extends IXMLConfigurable, Cloneable {
      */
     IMetadataFilter[] getMetadataFilters();
 
-    
     /**
      * Gets the document checksummer.
      * @return document checksummer
      */
     IDocumentChecksummer getDocumentChecksummer();
+    
+    /**
+     * Gets the spoiled state strategy resolver.
+     * @return spoiled state strategy resolver
+     * @since 1.2.0
+     */
+    ISpoiledReferenceStrategizer getSpoiledReferenceStrategizer();
+
 }

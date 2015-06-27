@@ -9,12 +9,39 @@
 
     <release version="1.2.0-SNAPSHOT" date="2015-??-??" description="Feature release">
       <action dev="essiembre" type="add">
+        New configurable option: ISpoiledStateStategyResolver. It allows one
+        to customize what strategy to adopt when a reference is in a bad
+        crawl state (ignore, delete, or grace once). A default implementation
+        is provided: GenericSpoiledStateStrategyResolver.
+      </action>
+      <action dev="essiembre" type="add">
         New GenericMetadataChecksummer for choosing one or many metadata fields
         and their values to create a checksum.
+      </action>
+      <action dev="essiembre" type="add">
+        Now printing release versions of Norconex libraries used when a 
+        collector is launched.
+      </action>
+      <action dev="essiembre" type="add">
+        New NOT_FOUND state constant added to CrawlState (migrated from
+        the HTTP Collector).
+      </action>
+      <action dev="essiembre" type="update">
+        Documents with a bad crawl state other than "NOT_FOUND" are now
+        given once chance to recover before a deletion request gets sent.
+        This can be overwritten.
       </action>
       <action dev="essiembre" type="update">
         MD5DocumentChecksummer#setField(String) has been deprecated in favor
         of MD5DocumentChecksummer#setFields(String...).
+      </action>
+      <action dev="essiembre" type="update">
+        CrawlState#isCommittable() has been deprecated in favor of
+        CrawlState#isNewOrModified().
+      </action>
+      <action dev="essiembre" type="update">
+        Setter methods signatures accepting an array in AbstractCrawlerConfig
+        were updated to accept "varargs" instead (variable arguments).
       </action>
       <action dev="pascaldimassimo" type="update">
         Uses default port when no Mongo port is specified when using Mongo
@@ -29,6 +56,19 @@
         now always have the Pattern.DOTALL flag enabled and when case
         sensitivity is enabled for regex, Pattern.UNICODE_CASE is now always
         used.
+      </action>
+      <action dev="essiembre" type="update">
+        Library updates: Norconex JEF 4.0.5, Norconex Importer 2.3.0,
+        Norconex Commons Lang 1.6.2, Mongo Java Driver 2.13.2, 
+        H2 database 1.4.187.
+        New dependency: JUnit 4.12 (test scope).
+      </action>
+      <action dev="essiembre" type="update">
+        Jar manifest now includes implementation entries and 
+        specifications entries (matching Maven pom.xml).
+      </action>
+      <action dev="essiembre" type="update">
+        Javadoc fixes and updates.
       </action>      
       <action dev="pascaldimassimo" type="fix">
         Updated Mongo indexes to use stage instead of state.
@@ -37,10 +77,11 @@
       <action dev="essiembre" type="fix">
         Stopping a job that has been resumed now works as expected.
       </action>
-      <action dev="essiembre" type="update">
-        Library updates: Norconex JEF 4.0.5, Norconex Importer 2.2.0,
-        Mongo Java Driver 2.13.2, H2 database 1.4.187.
-        New dependency: JUnit 4.12 (test scope).
+      <action dev="essiembre" type="fix">
+        Stopping a job that has been resumed now works as expected.
+      </action>
+      <action dev="essiembre" type="remove">
+        ICrawlDataStore#isVanished(ICrawlData) has been deprecated.
       </action>
     </release>
 
