@@ -17,7 +17,6 @@ package com.norconex.collector.core.data.store.impl.jdbc;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -33,6 +32,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ArrayListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.commons.io.FileUtils;
+import org.apache.derby.jdbc.EmbeddedDriver;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -233,8 +233,8 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
             Connection conn = null;
             try {
                 LOG.info("Closing Derby database...");
-                conn = DriverManager.getConnection(
-                        "jdbc:derby:" + dbDir + ";shutdown=true");
+                conn = new EmbeddedDriver().connect(
+                        "jdbc:derby:" + dbDir + ";shutdown=true", null);
             } catch (SQLException e) {
                 if (!DERBY_STATE_SHUTDOWN_SUCCESS.equals(e.getSQLState())) {
                     throw new CrawlDataStoreException(
