@@ -64,7 +64,7 @@
     <dependency>
       <groupId>com.norconex.jef</groupId>
       <artifactId>norconex-jef</artifactId>
-      <version>4.0.5</version>
+      <version>4.0.6-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.norconex.collectors</groupId>

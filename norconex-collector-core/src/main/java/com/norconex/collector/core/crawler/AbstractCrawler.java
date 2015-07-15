@@ -498,6 +498,7 @@ public abstract class AbstractCrawler
             // HTTPFetchException?  In case we want special treatment to the 
             // class?
             crawlData.setState(CrawlState.ERROR);
+            fireCrawlerEvent(CrawlerEvent.REJECTED_ERROR, crawlData, e);
             LOG.error(getId() + ": Could not process document: " + reference
                     + " (" + e.getMessage() + ")", e);
             finalizeDocumentProcessing(crawlData, crawlDataStore, doc);

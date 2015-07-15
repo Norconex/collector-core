@@ -238,10 +238,13 @@ public abstract class AbstractCollector implements ICollector {
         Set<ICommitter> committers = new HashSet<>();
         for (ICrawler crawler : getCrawlers()) {
             ICommitter committer = crawler.getCrawlerConfig().getCommitter();
-            Package committerPackage = committer.getClass().getPackage();
-            if (!committerPackage.getName().startsWith(
-                    "com.norconex.committer.core")) {
-                committers.add(committer);
+            if (committer != null) {
+                Package committerPackage = committer.getClass().getPackage();
+                if (committerPackage != null 
+                        && !committerPackage.getName().startsWith(
+                                "com.norconex.committer.core")) {
+                    committers.add(committer);
+                }
             }
         }
         for (ICommitter c : committers) {
@@ -252,14 +255,14 @@ public abstract class AbstractCollector implements ICollector {
     private void printReleaseVersion(String moduleName, Package p) {
         String version = p.getImplementationVersion();
         if (StringUtils.isBlank(version)) {
-            LOG.info("VERSION: \"" + moduleName
+            LOG.info("Version: \"" + moduleName
                     + "\" version cannot be established. "
                     + "This is likely due to using an unpacked or modified "
                     + "jar, or the jar not being packaged with version "
                     + "information.");
             return;
         }
-        LOG.info("VERSION: " + p.getImplementationTitle() + " " 
+        LOG.info("Version: " + p.getImplementationTitle() + " " 
                 + p.getImplementationVersion()
                 + " (" + p.getImplementationVendor() + ")");
     }

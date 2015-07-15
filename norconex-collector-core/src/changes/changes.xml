@@ -27,6 +27,10 @@
         the HTTP Collector).
       </action>
       <action dev="essiembre" type="update">
+        AbstractCrawler is now firing REJECTED_ERROR events when an exception
+        prevented proper processing of a reference.
+      </action>
+      <action dev="essiembre" type="update">
         Documents with a bad crawl state other than "NOT_FOUND" are now
         given once chance to recover before a deletion request gets sent.
         This can be overwritten.
@@ -58,7 +62,7 @@
         used.
       </action>
       <action dev="essiembre" type="update">
-        Library updates: Norconex JEF 4.0.5, Norconex Importer 2.3.0,
+        Library updates: Norconex JEF 4.0.6, Norconex Importer 2.3.0,
         Norconex Commons Lang 1.6.2, Mongo Java Driver 2.13.2, 
         H2 database 1.4.187.
         New dependency: JUnit 4.12 (test scope).
