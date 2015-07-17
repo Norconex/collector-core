@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,14 +80,28 @@ public interface ICrawlerConfig extends IXMLConfigurable, Cloneable {
     int getMaxDocuments();
     
     /**
-     * Gets the strategy to adopt when there are orphans.  Orphans are
+     * <p>Gets the strategy to adopt when there are orphans.  Orphans are
      * references that were processed in a previous run, but were not in the
      * current run.  In other words, they are leftovers from a previous run
      * that were not re-encountered in the current.
-     * <br><br>
+     * </p><p>
      * Unless explicitly stated otherwise by an implementing class, the default
-     * strategy is to DELETE orphans.  Setting a <code>null</code> value is
-     * the same as setting IGNORE.
+     * strategy is to <code>PROCESS</code> orphans. 
+     * Setting a <code>null</code> value is the same as setting 
+     * <code>IGNORE</code>.
+     * </p><p>
+     * Since 1.2.0, unless otherwise stated in implementing classes, 
+     * the default orphan strategy is now <code>PROCESS</code>.
+     * </p><p>
+     * <b>Be careful:</b> Setting the orphan strategy to <code>DELETE</code>
+     * is NOT recommended in most cases. With some collectors, a temporary
+     * failure such as a network outage or a web page timing out, may cause
+     * some documents not to be crawled. When this happens, unreachable
+     * documents would be considered "orphans" and be deleted while under 
+     * normal circumstances, they should be kept.  Re-processing them
+     * (default), is usually the safest approach to confirm they still
+     * exist before deleting or updating them.
+     * </p>
      * @return orphans strategy
      */
     OrphansStrategy getOrphansStrategy();

@@ -36,6 +36,12 @@
         This can be overwritten.
       </action>
       <action dev="essiembre" type="update">
+        The OrphansStrategy default in crawler config is now PROCESS
+        to get around cases where temporary conditions prevent accessing
+        some documents that normally should (and should not avoid re-processing
+        on incremental crawls).  
+      </action>
+      <action dev="essiembre" type="update">
         MD5DocumentChecksummer#setField(String) has been deprecated in favor
         of MD5DocumentChecksummer#setFields(String...).
       </action>

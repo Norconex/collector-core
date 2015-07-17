@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     private int numThreads = 2;
     private File workDir = new File("./work");
     private int maxDocuments = -1;
-    private OrphansStrategy orphansStrategy = OrphansStrategy.IGNORE;
+    private OrphansStrategy orphansStrategy = OrphansStrategy.PROCESS;
     
     private ICrawlDataStoreFactory crawlDataStoreFactory = 
             new MapDBCrawlDataStoreFactory();
