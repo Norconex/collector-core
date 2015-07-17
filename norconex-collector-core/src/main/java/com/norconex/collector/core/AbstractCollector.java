@@ -27,6 +27,7 @@ import com.norconex.collector.core.crawler.ICrawler;
 import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.committer.core.ICommitter;
 import com.norconex.importer.Importer;
+import com.norconex.jef4.JEFUtil;
 import com.norconex.jef4.job.IJob;
 import com.norconex.jef4.job.group.AsyncJobGroup;
 import com.norconex.jef4.log.FileLogManager;
@@ -232,6 +233,7 @@ public abstract class AbstractCollector implements ICollector {
         printReleaseVersion("Collector Core", 
                 AbstractCollector.class.getPackage());
         printReleaseVersion("Importer", Importer.class.getPackage());
+        printReleaseVersion("JEF", IJob.class.getPackage());
         
         //--- Committers ---
         printReleaseVersion("Committer Core", ICommitter.class.getPackage());
