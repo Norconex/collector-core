@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="1.2.0-SNAPSHOT" date="2015-??-??" description="Feature release">
+    <release version="1.2.0" date="2015-07-22" description="Feature release">
       <action dev="essiembre" type="add">
         New configurable option: ISpoiledStateStategyResolver. It allows one
         to customize what strategy to adopt when a reference is in a bad
