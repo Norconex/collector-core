@@ -51,6 +51,7 @@ import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.jmx.Monitoring;
 import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
 import com.norconex.collector.core.spoil.SpoiledReferenceStrategy;
+import com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer;
 import com.norconex.committer.core.ICommitter;
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.file.FileUtil;
@@ -275,11 +276,11 @@ public abstract class AbstractCrawler
                 LOG.info(getId() 
                         + ": Re-processing orphan references (if any)...");
                 reprocessCacheOrphans(refStore, statusUpdater, suite);
+            } else {
+                LOG.info(getId() 
+                        + ": Max documents reached. Not reprocessing orphans "
+                        + "(if any).");
             }
-            // In case any item remains after we are done re-processing:
-            LOG.info(getId() 
-                    + ": Deleting remaining orphan references (if any)...");
-            deleteCacheOrphans(refStore, statusUpdater, suite);
         }
         // else, ignore (i.e. don't do anything)
     }
@@ -362,8 +363,8 @@ public abstract class AbstractCrawler
         BaseCrawlData queuedCrawlData = 
                 (BaseCrawlData) crawlDataStore.nextQueued();
         
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(getId() + " Processing next reference from Queue: " 
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(getId() + " Processing next reference from Queue: " 
                     + queuedCrawlData);
         }
         if (queuedCrawlData != null) {
@@ -382,12 +383,11 @@ public abstract class AbstractCrawler
         } else {
             int activeCount = crawlDataStore.getActiveCount();
             boolean queueEmpty = crawlDataStore.isQueueEmpty();
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(getId() 
+            if (LOG.isTraceEnabled()) {
+                LOG.trace(getId() 
                         + " Number of references currently being processed: "
                         + activeCount);
-                LOG.debug(getId() 
-                        + " Is reference queue empty? " + queueEmpty);
+                LOG.trace(getId() + " Is reference queue empty? " + queueEmpty);
             }
             if (activeCount == 0 && queueEmpty) {
                 return false;
@@ -641,7 +641,9 @@ public abstract class AbstractCrawler
                 strategyResolver.resolveSpoiledReferenceStrategy(
                         crawlData.getReference(), crawlData.getState());
         if (strategy == null) {
-            strategy = SpoiledReferenceStrategy.DELETE;
+            // Assume the generic default (DELETE)
+            strategy =  GenericSpoiledReferenceStrategizer
+                    .DEFAULT_FALLBACK_STRATEGY;
         }
         return strategy;
     }

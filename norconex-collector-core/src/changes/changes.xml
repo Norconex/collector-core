@@ -7,6 +7,20 @@
   </properties>
   <body>
 
+    <release version="1.2.1-SNAPSHOT" date="2015-??-?" description="Maintenance release">
+      <action dev="essiembre" type="update">
+        AbstractCrawler is no longer deleting remaining orphans after they have
+        been processed (when orphan strategy is PROCESS).
+      </action>
+      <action dev="essiembre" type="update">
+        Verbose logging in AbstractCrawler#processNextReference(...) has 
+        been changed from loglevel DEBUG to TRACE.
+      </action>
+      <action dev="essiembre" type="update">
+        Library updates: Norconex Importer 2.3.1.
+      </action>      
+    </release>
+    
     <release version="1.2.0" date="2015-07-22" description="Feature release">
       <action dev="essiembre" type="add">
         New configurable option: ISpoiledStateStategyResolver. It allows one
