@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="1.2.1-SNAPSHOT" date="2015-??-?" description="Maintenance release">
+    <release version="1.2.1" date="2015-08-07" description="Maintenance release">
       <action dev="essiembre" type="update">
         AbstractCrawler is no longer deleting remaining orphans after they have
         been processed (when orphan strategy is PROCESS).
@@ -17,7 +17,8 @@
         been changed from loglevel DEBUG to TRACE.
       </action>
       <action dev="essiembre" type="update">
-        Library updates: Norconex Importer 2.3.1.
+        Maven dependency updates: Norconex Importer 2.3.1 and 
+        Norconex Committer Core 2.0.2.
       </action>      
     </release>
     
