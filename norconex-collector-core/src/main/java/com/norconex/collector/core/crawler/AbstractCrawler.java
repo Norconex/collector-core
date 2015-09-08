@@ -549,7 +549,21 @@ public abstract class AbstractCrawler
         //--- Deal with bad states (if not already deleted) --------------------
         try {
             if (!crawlData.getState().isGoodState()
-                    && !crawlData.getState().isOneOf(CrawlState.DELETED)) {
+                    && !crawlData.getState().isOneOf(
+                            CrawlState.DELETED, CrawlState.DUPLICATE)) {
+
+                //TODO If duplicate, consider it as spoiled if a cache version
+                // exists in a good state.
+                // This involves elaborating the concept of duplicate
+                // or "reference change" in this core project. Otherwise there
+                // is the slim possibility right now that a Collector 
+                // implementation marking references as duplicate may 
+                // generate orphans (which may be caught later based
+                // on how orphans are handled, but they should not be ever
+                // considered orphans in the first place).
+                // This could remove the need for the 
+                // markReferenceVariationsAsProcessed(...) method
+                
                 SpoiledReferenceStrategy strategy = 
                         getSpoiledStateStrategy(crawlData);
 

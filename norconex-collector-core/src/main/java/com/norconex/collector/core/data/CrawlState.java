@@ -32,17 +32,16 @@ public class CrawlState implements Serializable {
             new HashMap<>();
     
     private static final long serialVersionUID = 6542269270632505768L;
-    public static final CrawlState NEW = new CrawlState("NEW");
-    public static final CrawlState MODIFIED = 
-            new CrawlState("MODIFIED");
-    public static final CrawlState UNMODIFIED = 
-            new CrawlState("UNMODIFIED");
-    public static final CrawlState ERROR = new CrawlState("ERROR");
-    public static final CrawlState REJECTED = 
-            new CrawlState("REJECTED");
+    public static final CrawlState NEW        = new CrawlState("NEW");
+    public static final CrawlState MODIFIED   = new CrawlState("MODIFIED");
+    public static final CrawlState UNMODIFIED = new CrawlState("UNMODIFIED");
+    public static final CrawlState ERROR      = new CrawlState("ERROR");
+    public static final CrawlState REJECTED   = new CrawlState("REJECTED");
     public static final CrawlState BAD_STATUS = new CrawlState("BAD_STATUS");
-    public static final CrawlState DELETED = new CrawlState("DELETED");
-    public static final CrawlState NOT_FOUND = new CrawlState("NOT_FOUND");
+    public static final CrawlState DELETED    = new CrawlState("DELETED");
+    public static final CrawlState NOT_FOUND  = new CrawlState("NOT_FOUND");
+    /** @since 1.3.0 */
+    public static final CrawlState DUPLICATE  = new CrawlState("DUPLICATE");
     
     private final String state;
 
