@@ -12,6 +12,10 @@
         New CrawlState: DUPLICATE.
       </action>
       <action dev="essiembre" type="update">
+        Specifying an invalid path on the command-line for the config file or 
+        variable file now returns a meaningful message.
+      </action>
+      <action dev="essiembre" type="update">
         Maven dependency updates: Norconex Importer 2.4.0.
       </action>
     </release>

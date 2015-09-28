@@ -61,6 +61,17 @@ public abstract class AbstractCollectorLauncher {
         }
         
         try {
+            if (!configFile.isFile()) {
+                System.err.println("Invalid configuration file path: "
+                        + configFile.getAbsolutePath());
+                System.exit(-1);
+            }
+            if (varFile != null && !varFile.isFile()) {
+                System.err.println("Invalid variable file path: "
+                        + configFile.getAbsolutePath());
+                System.exit(-1);
+            }
+            
             ICollectorConfig config = new CollectorConfigLoader(
                     getCollectorConfigClass()).loadCollectorConfig(
                             configFile, varFile);
@@ -89,6 +100,7 @@ public abstract class AbstractCollectorLauncher {
                 err.println("\n\nCannot write error file. " 
                         + e1.getLocalizedMessage());
             }
+            System.exit(-1);
         }
     }
     
