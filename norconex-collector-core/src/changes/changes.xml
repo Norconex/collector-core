@@ -18,6 +18,11 @@
       <action dev="essiembre" type="update">
         Maven dependency updates: Norconex Importer 2.4.0.
       </action>
+      <action dev="essiembre" type="fix">
+        Fixed IOException when "keepDownloads" is true. This was occurring for
+        URLs with no path (just the host name). Now prefixes created domain 
+        directory domain file with "d." and "f." respectively.
+      </action>
     </release>
 
     <release version="1.2.1" date="2015-08-07" description="Maintenance release">

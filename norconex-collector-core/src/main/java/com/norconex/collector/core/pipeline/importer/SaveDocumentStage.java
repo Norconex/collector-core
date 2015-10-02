@@ -117,7 +117,10 @@ public class SaveDocumentStage
                 }
             }
         }
-        return domain + File.separatorChar + b.toString();
+        if (b.length() > 0) {
+            return "d." + domain + File.separatorChar + b.toString();
+        }
+        return "f." + domain;
     }
     
     private static String[] splitLargeSegment(String segment) {
