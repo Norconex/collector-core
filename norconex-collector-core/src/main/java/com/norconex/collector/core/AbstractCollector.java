@@ -256,11 +256,11 @@ public abstract class AbstractCollector implements ICollector {
     private void printReleaseVersion(String moduleName, Package p) {
         String version = p.getImplementationVersion();
         if (StringUtils.isBlank(version)) {
+            // No version is likely due to using an unpacked or modified 
+            // jar, or the jar not being packaged with version 
+            // information.
             LOG.info("Version: \"" + moduleName
-                    + "\" version cannot be established. "
-                    + "This is likely due to using an unpacked or modified "
-                    + "jar, or the jar not being packaged with version "
-                    + "information.");
+                    + "\" version is undefined.");
             return;
         }
         LOG.info("Version: " + p.getImplementationTitle() + " " 

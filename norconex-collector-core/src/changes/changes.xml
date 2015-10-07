@@ -18,6 +18,10 @@
       <action dev="essiembre" type="update">
         Maven dependency updates: Norconex Importer 2.4.0.
       </action>
+      <action dev="essiembre" type="update">
+        Now logs (leve INFO) a less alarming message when a module version 
+        cannot be found.
+      </action>
       <action dev="essiembre" type="fix">
         Fixed IOException when "keepDownloads" is true. This was occurring for
         URLs with no path (just the host name). Now prefixes created domain 
