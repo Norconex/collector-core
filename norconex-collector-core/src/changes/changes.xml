@@ -16,7 +16,8 @@
         variable file now returns a meaningful message.
       </action>
       <action dev="essiembre" type="update">
-        Maven dependency updates: Norconex Importer 2.4.0.
+        Maven direct dependency updates: Norconex Importer 2.4.0, 
+        Norconex JEF 4.0.7, Mongo Java Driver 2.13.3.
       </action>
       <action dev="essiembre" type="update">
         Now logs (leve INFO) a less alarming message when a module version 
