@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import com.norconex.importer.doc.ImporterMetadata;
 
 /**
  * Collector metadata with constants for common metadata field
- * names.
+ * names. Keys are case insensitive.
  * @author Pascal Essiembre
  */
 public class CollectorMetadata extends ImporterMetadata {
@@ -38,9 +38,9 @@ public class CollectorMetadata extends ImporterMetadata {
             COLLECTOR_PREFIX + "checksum-doc";
     
     public CollectorMetadata() {
-        super(false);
+        super(true);
     }
     public CollectorMetadata(Properties metadata) {
-        super(metadata, false);
+        super(metadata, true);
     }
 }
