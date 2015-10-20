@@ -23,6 +23,16 @@
         Now logs (leve INFO) a less alarming message when a module version 
         cannot be found.
       </action>
+      <action dev="essiembre" type="update">
+        A new metadata boolean field called "collector.is-crawl-new" 
+        is now added before document importing. It indicates whether
+        the document is already known from the crawler, from a previous 
+        run.
+      </action>
+      <action dev="essiembre" type="update">
+        Cached instance of a reference data is now passed around as opposed
+        to being obtained form the reference cache each time it is needed.
+      </action>
       <action dev="essiembre" type="fix">
         Fixed IOException when "keepDownloads" is true. This was occurring for
         URLs with no path (just the host name). Now prefixes created domain 

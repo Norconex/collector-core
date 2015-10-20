@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public class DocumentChecksumStage
         //TODO only if an INCREMENTAL run... else skip.
         IDocumentChecksummer check = 
                 ctx.getConfig().getDocumentChecksummer();
-        if (check == null) {
+        if (check == null && !ctx.getCrawlData().getState().isNewOrModified()) {
             // NEW is default state (?)
             ctx.getCrawlData().setState(CrawlState.NEW);
             return true;

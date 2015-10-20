@@ -1,3 +1,13 @@
+
+Version: 1.4.0
+==============
+- Refactor the whole approach of passing if new or modified to simplify it.
+- Introduce full/incremental as part of collector framework
+- Have document default value other than NEW (e.g. UNKNOWN, UNPROCESSED, etc) 
+
+
+Version: Any
+==============
 - Consider using Hibernate for the JDBC data store, for both embedded and
   client-server databases.  Ship with no drivers
   except maybe for testing (or 1 for convenience, like H2).

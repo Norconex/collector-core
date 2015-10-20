@@ -35,8 +35,9 @@ public class ImporterPipelineContext extends DocumentPipelineContext {
     
     public ImporterPipelineContext(
             ICrawler crawler, ICrawlDataStore crawlDataStore, 
-            BaseCrawlData crawlData, ImporterDocument document) {
-        super(crawler, crawlDataStore, crawlData, document);
+            BaseCrawlData crawlData, BaseCrawlData cachedCrawlData, 
+            ImporterDocument document) {
+        super(crawler, crawlDataStore, crawlData, cachedCrawlData, document);
     }
 
     public ImporterResponse getImporterResponse() {

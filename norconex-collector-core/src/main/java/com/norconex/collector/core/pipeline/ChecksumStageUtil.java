@@ -52,7 +52,7 @@ public final class ChecksumStageUtil {
     private static boolean resolveChecksum(boolean isMeta, String newChecksum, 
             BasePipelineContext ctx, Object subject) {
         BaseCrawlData crawlData = ctx.getCrawlData();
-        
+
         // Set new checksum on crawlData + metadata
         String type;
         if (isMeta) {
@@ -64,8 +64,7 @@ public final class ChecksumStageUtil {
         }
 
         // Get old checksum from cache
-        BaseCrawlData cachedCrawlData = (BaseCrawlData) 
-                ctx.getCrawlDataStore().getCached(crawlData.getReference());
+        BaseCrawlData cachedCrawlData = ctx.getCachedCrawlData();
         String oldChecksum = null;
         if (cachedCrawlData != null) {
             if (isMeta) {
@@ -92,9 +91,10 @@ public final class ChecksumStageUtil {
                     ctx.getCrawlData(), subject);
             return false;
         }
+        
+        crawlData.setState(CrawlState.MODIFIED);
         LOG.debug("ACCEPTED " + type + " checksum (modified): Reference=" 
                 + crawlData.getReference());
         return true;
     }
-    
 }

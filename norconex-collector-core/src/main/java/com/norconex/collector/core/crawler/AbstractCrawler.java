@@ -48,6 +48,7 @@ import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
+import com.norconex.collector.core.doc.CollectorMetadata;
 import com.norconex.collector.core.jmx.Monitoring;
 import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
 import com.norconex.collector.core.spoil.SpoiledReferenceStrategy;
@@ -462,21 +463,33 @@ public abstract class AbstractCrawler
                 crawlData.getReference(), getStreamFactory().newInputStream()));
         applyCrawlData(crawlData, doc);
         
+        
+        //TODO create a composite object that has crawler, crawlData,
+        // cachedCrawlData, ... To reduce the number of arguments passed around.
+        // It could potentially be a base class for pipeline contexts too.
+        BaseCrawlData cachedCrawlData = 
+                (BaseCrawlData) crawlDataStore.getCached(reference);
+        doc.getMetadata().setBoolean(
+                CollectorMetadata.COLLECTOR_IS_CRAWL_NEW, 
+                cachedCrawlData == null);
         try {
             if (delete) {
                 deleteReference(crawlData, doc);
-                finalizeDocumentProcessing(crawlData, crawlDataStore, doc);
+                finalizeDocumentProcessing(
+                        crawlData, crawlDataStore, doc, cachedCrawlData);
                 return;
-            } else if (LOG.isDebugEnabled()) {
+            }
+            if (LOG.isDebugEnabled()) {
                 LOG.debug(getId() + ": Processing reference: " + reference);
             }
             
             
             ImporterResponse response = executeImporterPipeline(
-                    this, doc, crawlDataStore, crawlData);
+                    this, doc, crawlDataStore, crawlData, cachedCrawlData);
             
             if (response != null) {
-                processImportResponse(response, crawlDataStore, crawlData);
+                processImportResponse(
+                        response, crawlDataStore, crawlData, cachedCrawlData);
             } else {
                 if (crawlData.getState().isNewOrModified()) {
                     crawlData.setState(CrawlState.REJECTED);
@@ -491,7 +504,8 @@ public abstract class AbstractCrawler
                 //OR do we want to always fire REJECTED_IMPORT on import failure
                 //(in addition to whatever) and maybe a new REJECTED_COLLECTOR
                 //when it did not reach the importer module?
-                finalizeDocumentProcessing(crawlData, crawlDataStore, doc);
+                finalizeDocumentProcessing(
+                        crawlData, crawlDataStore, doc, cachedCrawlData);
             }
         } catch (Exception e) {
             //TODO do we really want to catch anything other than 
@@ -501,22 +515,24 @@ public abstract class AbstractCrawler
             fireCrawlerEvent(CrawlerEvent.REJECTED_ERROR, crawlData, e);
             LOG.error(getId() + ": Could not process document: " + reference
                     + " (" + e.getMessage() + ")", e);
-            finalizeDocumentProcessing(crawlData, crawlDataStore, doc);
+            finalizeDocumentProcessing(
+                    crawlData, crawlDataStore, doc, cachedCrawlData);
         }
     }
 
     private void processImportResponse(
             ImporterResponse response, 
             ICrawlDataStore crawlDataStore,
-            BaseCrawlData crawlData) {
+            BaseCrawlData crawlData,
+            BaseCrawlData cachedCrawlData) {
         
         ImporterDocument doc = response.getDocument();
         if (response.isSuccess()) {
             fireCrawlerEvent(
                     CrawlerEvent.DOCUMENT_IMPORTED, crawlData, response);
             ImporterDocument wrappedDoc = wrapDocument(crawlData, doc);
-            executeCommitterPipeline(
-                    this, wrappedDoc, crawlDataStore, crawlData);
+            executeCommitterPipeline(this, wrappedDoc, 
+                    crawlDataStore, crawlData, cachedCrawlData);
         } else {
             crawlData.setState(CrawlState.REJECTED);
             fireCrawlerEvent(
@@ -525,18 +541,20 @@ public abstract class AbstractCrawler
                     + crawlData.getReference() + "\": "
                     + response.getImporterStatus().getDescription());
         }
-        finalizeDocumentProcessing(crawlData, crawlDataStore, doc);
+        finalizeDocumentProcessing(
+                crawlData, crawlDataStore, doc, cachedCrawlData);
         ImporterResponse[] children = response.getNestedResponses();
         for (ImporterResponse child : children) {
             BaseCrawlData embeddedCrawlData = createEmbeddedCrawlData(
                     child.getReference(), crawlData);
             processImportResponse(
-                    child, crawlDataStore, embeddedCrawlData);
+                    child, crawlDataStore, embeddedCrawlData, cachedCrawlData);
         }
     }
     
     private void finalizeDocumentProcessing(BaseCrawlData crawlData,
-            ICrawlDataStore store, ImporterDocument doc) {
+            ICrawlDataStore store, ImporterDocument doc,
+            ICrawlData cached) {
 
         //--- Ensure we have a state -------------------------------------------
         if (crawlData.getState() == null) {
@@ -573,8 +591,6 @@ public abstract class AbstractCrawler
                 } else if (strategy == SpoiledReferenceStrategy.DELETE) {
                     // Delete if previous state exists and is not already 
                     // marked as deleted.
-                    ICrawlData cached = 
-                            store.getCached(crawlData.getReference());
                     if (cached != null 
                             && !cached.getState().isOneOf(CrawlState.DELETED)) {
                         deleteReference(crawlData, doc);
@@ -583,8 +599,6 @@ public abstract class AbstractCrawler
                     // GRACE_ONCE:
                     // Delete if previous state exists and is a bad state, 
                     // but not already marked as deleted.
-                    ICrawlData cached = 
-                            store.getCached(crawlData.getReference());
                     if (cached != null 
                             && !cached.getState().isOneOf(CrawlState.DELETED)) {
                         if (!cached.getState().isGoodState()) {
@@ -633,12 +647,18 @@ public abstract class AbstractCrawler
     
     //TODO replace args by Core DocumentPipelineContext?
     protected abstract ImporterResponse executeImporterPipeline(
-            ICrawler crawler, ImporterDocument doc,
-            ICrawlDataStore crawlDataStore, BaseCrawlData crawlData);
+            ICrawler crawler,
+            ImporterDocument doc,
+            ICrawlDataStore crawlDataStore, 
+            BaseCrawlData crawlData,
+            BaseCrawlData cachedCrawlData);
     
     protected abstract void executeCommitterPipeline(
-            ICrawler crawler, ImporterDocument doc,
-            ICrawlDataStore crawlDataStore, BaseCrawlData crawlData);
+            ICrawler crawler,
+            ImporterDocument doc,
+            ICrawlDataStore crawlDataStore,
+            BaseCrawlData crawlData,
+            BaseCrawlData cachedCrawlData);
 
     private ImporterMetadata getNullSafeMetadata(ImporterDocument doc) {
         if (doc == null) {

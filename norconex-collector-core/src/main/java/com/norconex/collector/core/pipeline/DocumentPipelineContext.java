@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,8 +41,10 @@ public class DocumentPipelineContext extends BasePipelineContext {
     
     public DocumentPipelineContext(
             ICrawler crawler, ICrawlDataStore crawlDataStore, 
-            BaseCrawlData crawlData, ImporterDocument document) {
-        super(crawler, crawlDataStore, crawlData);
+            BaseCrawlData crawlData,
+            BaseCrawlData cachedCrawlData,
+            ImporterDocument document) {
+        super(crawler, crawlDataStore, crawlData, cachedCrawlData);
         this.document = document;
     }
 

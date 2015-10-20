@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,12 @@ public class CrawlState implements Serializable {
     private static final Map<String, CrawlState> STATUSES = 
             new HashMap<>();
     
+    //TODO make default state UNKNOWN/UNPROCESSED, or equivalent that means
+    // TBD/IN_PROGRESS????
+    // Because NEW is misleading in the case where it exists in the cache but 
+    // no checksum defined... then it is nether new nor modified.
     private static final long serialVersionUID = 6542269270632505768L;
+
     public static final CrawlState NEW        = new CrawlState("NEW");
     public static final CrawlState MODIFIED   = new CrawlState("MODIFIED");
     public static final CrawlState UNMODIFIED = new CrawlState("UNMODIFIED");

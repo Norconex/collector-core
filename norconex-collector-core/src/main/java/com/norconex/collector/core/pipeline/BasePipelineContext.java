@@ -33,13 +33,29 @@ public class BasePipelineContext {
     private final ICrawler crawler;
     private final ICrawlDataStore crawlDataStore;
     private final BaseCrawlData crawlData;
+    //TODO move this one to DocumentPipelineContext?
+    private final BaseCrawlData cachedCrawlData;
 
     public BasePipelineContext(
             ICrawler crawler, ICrawlDataStore crawlDataStore, 
             BaseCrawlData crawlData) {
+        this(crawler, crawlDataStore, crawlData, null);
+    }
+    /**
+     * Constructor.
+     * @param crawler the crawler
+     * @param crawlDataStore crawl data store
+     * @param crawlData current crawl data
+     * @param cachedCrawlData crawl data from previous run, if any
+     * @since 1.3.0
+     */
+    public BasePipelineContext(
+            ICrawler crawler, ICrawlDataStore crawlDataStore, 
+            BaseCrawlData crawlData, BaseCrawlData cachedCrawlData) {
         this.crawler = crawler;
         this.crawlDataStore = crawlDataStore;
         this.crawlData = crawlData;
+        this.cachedCrawlData = cachedCrawlData;
     }
 
     public ICrawler getCrawler() {
@@ -52,6 +68,14 @@ public class BasePipelineContext {
     
     public BaseCrawlData getCrawlData() {
         return crawlData;
+    }
+    /**
+     * Gets the crawl data from previous run, if any.
+     * @return cached crawl data
+     * @since 1.3.0
+     */
+    public BaseCrawlData getCachedCrawlData() {
+        return cachedCrawlData;
     }
 
     public ICrawlDataStore getCrawlDataStore() {
