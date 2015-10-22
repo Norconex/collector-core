@@ -24,6 +24,9 @@
         cannot be found.
       </action>
       <action dev="essiembre" type="update">
+        Now logs module version information in file.
+      </action>
+      <action dev="essiembre" type="update">
         A new metadata boolean field called "collector.is-crawl-new" 
         is now added before document importing. It indicates whether
         the document is already known from the crawler, from a previous 

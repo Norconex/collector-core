@@ -33,6 +33,7 @@ import com.norconex.jef4.log.FileLogManager;
 import com.norconex.jef4.status.FileJobStatusStore;
 import com.norconex.jef4.status.IJobStatus;
 import com.norconex.jef4.status.JobState;
+import com.norconex.jef4.suite.AbstractSuiteLifeCycleListener;
 import com.norconex.jef4.suite.JobSuite;
 import com.norconex.jef4.suite.JobSuiteConfig;
  
@@ -102,8 +103,6 @@ public abstract class AbstractCollector implements ICollector {
     @Override
     public void start(boolean resumeNonCompleted) {
 
-        printReleaseVersion();
-        
         //TODO move this code to a config validator class?
         if (StringUtils.isBlank(getCollectorConfig().getId())) {
             throw new CollectorException("Collector must be given "
@@ -186,6 +185,13 @@ public abstract class AbstractCollector implements ICollector {
         suiteConfig.setJobStatusStore(
                 new FileJobStatusStore(collectorConfig.getProgressDir()));
         suiteConfig.setWorkdir(collectorConfig.getProgressDir()); 
+        suiteConfig.setSuiteLifeCycleListeners(
+                new AbstractSuiteLifeCycleListener() {
+            @Override
+            public void suiteStarted(JobSuite suite) {
+                printReleaseVersion();
+            }
+        });
         JobSuite suite = new JobSuite(rootJob, suiteConfig);
         LOG.info("Suite of " + crawlers.length + " crawler jobs created.");
         return suite;
