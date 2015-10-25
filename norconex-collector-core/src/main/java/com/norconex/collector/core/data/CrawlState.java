@@ -45,8 +45,6 @@ public class CrawlState implements Serializable {
     public static final CrawlState BAD_STATUS = new CrawlState("BAD_STATUS");
     public static final CrawlState DELETED    = new CrawlState("DELETED");
     public static final CrawlState NOT_FOUND  = new CrawlState("NOT_FOUND");
-    /** @since 1.3.0 */
-    public static final CrawlState DUPLICATE  = new CrawlState("DUPLICATE");
     
     private final String state;
 

@@ -19,8 +19,11 @@ import java.lang.reflect.InvocationTargetException;
 import org.apache.commons.beanutils.BeanUtils;
 
 import com.norconex.collector.core.CollectorException;
+
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 
 /**
@@ -126,11 +129,14 @@ public class BaseCrawlData implements ICrawlData {
 
     @Override
     public String toString() {
-        return "BasicDocCrawlDetails [reference=" + reference
-                + ", parentRootReference=" + parentRootReference
-                + ", isRootParentReference=" + isRootParentReference
-                + ", state=" + state + ", metaChecksum=" + metaChecksum
-                + ", contentChecksum=" + contentChecksum + "]";
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("reference", reference)
+                .append("parentRootReference", parentRootReference)
+                .append("isRootParentReference", isRootParentReference)
+                .append("state", state)
+                .append("metaChecksum", metaChecksum)
+                .append("contentChecksum", contentChecksum)
+                .toString();
     }
     @Override
     public boolean equals(final Object other) {
@@ -143,13 +149,18 @@ public class BaseCrawlData implements ICrawlData {
                 .append(isRootParentReference, castOther.isRootParentReference)
                 .append(state, castOther.state)
                 .append(metaChecksum, castOther.metaChecksum)
-                .append(contentChecksum, castOther.contentChecksum).isEquals();
+                .append(contentChecksum, castOther.contentChecksum)
+                .isEquals();
     }
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(reference)
-                .append(parentRootReference).append(isRootParentReference)
-                .append(state).append(metaChecksum).append(contentChecksum)
+        return new HashCodeBuilder()
+                .append(reference)
+                .append(parentRootReference)
+                .append(isRootParentReference)
+                .append(state)
+                .append(metaChecksum)
+                .append(contentChecksum)
                 .toHashCode();
     }
 }

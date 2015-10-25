@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,10 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
@@ -109,6 +113,31 @@ public abstract class AbstractJDBCDataStoreFactory
         } catch (XMLStreamException e) {
             throw new IOException("Cannot save as XML.", e);
         }
-        
     }
+    
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof AbstractJDBCDataStoreFactory)) {
+            return false;
+        }
+        AbstractJDBCDataStoreFactory castOther = 
+                (AbstractJDBCDataStoreFactory) other;
+        return new EqualsBuilder()
+                .append(database, castOther.database)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(database)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("database", database)
+                .toString();
+    }    
 }

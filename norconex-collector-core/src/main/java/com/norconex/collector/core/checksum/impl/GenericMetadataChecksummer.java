@@ -24,6 +24,10 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -149,5 +153,37 @@ public class GenericMetadataChecksummer extends AbstractMetadataChecksummer {
         writer.writeAttributeBoolean("disabled", isDisabled());
         writer.writeElementString(
                 "sourceFields", StringUtils.join(sourceFields, ','));
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof GenericMetadataChecksummer)) {
+            return false;
+        }
+        GenericMetadataChecksummer castOther = 
+                (GenericMetadataChecksummer) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(disabled, castOther.disabled)
+                .append(sourceFields, castOther.sourceFields)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(disabled)
+                .append(sourceFields)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("disabled", disabled)
+                .append("sourceFields", sourceFields)
+                .toString();
     }
 }

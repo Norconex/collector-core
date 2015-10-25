@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,10 @@ import java.io.Writer;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
@@ -114,5 +118,29 @@ public abstract class AbstractMongoCrawlDataStoreFactory
             throw new IOException("Cannot save as XML.", e);
         }
         
+    }
+    
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof AbstractMongoCrawlDataStoreFactory)) {
+            return false;
+        }
+        AbstractMongoCrawlDataStoreFactory castOther = 
+                (AbstractMongoCrawlDataStoreFactory) other;
+        return new EqualsBuilder()
+                .append(connDetails, castOther.connDetails)
+                .isEquals();
+    }
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(connDetails)
+                .toHashCode();
+    }
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("connDetails", connDetails)
+                .toString();
     }
 }

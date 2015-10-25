@@ -568,7 +568,7 @@ public abstract class AbstractCrawler
         try {
             if (!crawlData.getState().isGoodState()
                     && !crawlData.getState().isOneOf(
-                            CrawlState.DELETED, CrawlState.DUPLICATE)) {
+                            CrawlState.DELETED)) {
 
                 //TODO If duplicate, consider it as spoiled if a cache version
                 // exists in a good state.

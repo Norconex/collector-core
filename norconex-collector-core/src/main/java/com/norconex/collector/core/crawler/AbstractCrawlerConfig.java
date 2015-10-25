@@ -33,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -240,6 +241,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     @Override
     public void saveToXML(Writer out) throws IOException {
         try {
+            out.flush();
             EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
             writer.writeStartElement("crawler");
             writer.writeAttributeClass("class", getClass());
@@ -254,6 +256,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
                 writer.writeElementString(
                         "orphansStrategy", strategy.toString());
             }
+            writer.flush();
             
             writeObject(out, "crawlDataStoreFactory", 
                     getCrawlDataStoreFactory());
@@ -272,6 +275,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
             saveCrawlerConfigToXML(out);
             
             writer.writeEndElement();
+            writer.flush();
             
         } catch (XMLStreamException e) {
             throw new IOException("Cannot save as XML.", e);
@@ -475,10 +479,12 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof AbstractCrawlerConfig))
+        if (!(other instanceof AbstractCrawlerConfig)) {
             return false;
+        }
         AbstractCrawlerConfig castOther = (AbstractCrawlerConfig) other;
-        return new EqualsBuilder().append(id, castOther.id)
+        return new EqualsBuilder()
+                .append(id, castOther.id)
                 .append(numThreads, castOther.numThreads)
                 .append(workDir, castOther.workDir)
                 .append(maxDocuments, castOther.maxDocuments)
@@ -498,20 +504,29 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(id).append(numThreads)
-                .append(workDir).append(maxDocuments).append(orphansStrategy)
-                .append(crawlDataStoreFactory).append(referenceFilters)
-                .append(metadataFilters).append(documentFilters)
-                .append(crawlerListeners).append(importerConfig)
-                .append(committer).append(documentChecksummer)
+        return new HashCodeBuilder()
+                .append(id)
+                .append(numThreads)
+                .append(workDir)
+                .append(maxDocuments)
+                .append(orphansStrategy)
+                .append(crawlDataStoreFactory)
+                .append(referenceFilters)
+                .append(metadataFilters)
+                .append(documentFilters)
+                .append(crawlerListeners)
+                .append(importerConfig)
+                .append(committer)
+                .append(documentChecksummer)
                 .append(spoiledReferenceStrategizer)
                 .toHashCode();
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this).appendSuper(super.toString())
-                .append("id", id).append("numThreads", numThreads)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("id", id)
+                .append("numThreads", numThreads)
                 .append("workDir", workDir)
                 .append("maxDocuments", maxDocuments)
                 .append("orphansStrategy", orphansStrategy)
@@ -527,6 +542,4 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
                         spoiledReferenceStrategizer)
                 .toString();
     }
-
-
 }

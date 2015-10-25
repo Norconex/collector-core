@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,10 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -141,4 +145,32 @@ public abstract class AbstractMetadataChecksummer
     protected abstract void saveChecksummerToXML(
             EnhancedXMLStreamWriter writer) throws XMLStreamException;
 
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof AbstractMetadataChecksummer)) {
+            return false;
+        }
+        AbstractMetadataChecksummer castOther = 
+                (AbstractMetadataChecksummer) other;
+        return new EqualsBuilder()
+                .append(keep, castOther.keep)
+                .append(targetField, castOther.targetField)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(keep)
+                .append(targetField)
+                .toHashCode();
+    }
+    
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("keep", keep)
+                .append("targetField", targetField)
+                .toString();
+    }
 }

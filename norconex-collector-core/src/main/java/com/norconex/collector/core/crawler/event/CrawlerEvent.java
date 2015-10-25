@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
 package com.norconex.collector.core.crawler.event;
 
 import com.norconex.collector.core.data.ICrawlData;
+
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * A crawler event.
@@ -93,25 +95,32 @@ public class CrawlerEvent {
         if (!(other instanceof CrawlerEvent))
             return false;
         CrawlerEvent castOther = (CrawlerEvent) other;
-        return new EqualsBuilder().append(crawlData, castOther.crawlData)
+        return new EqualsBuilder()
+                .append(crawlData, castOther.crawlData)
                 .append(subject, castOther.subject)
-                .append(eventType, castOther.eventType).isEquals();
+                .append(eventType, castOther.eventType)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(crawlData).append(subject)
-                .append(eventType).toHashCode();
+        return new HashCodeBuilder()
+                .append(crawlData)
+                .append(subject)
+                .append(eventType)
+                .toHashCode();
     }
 
     private transient String toString;
-
     @Override
     public String toString() {
         if (toString == null) {
-            toString = new ToStringBuilder(this).appendSuper(super.toString())
-                    .append("crawlData", crawlData).append("subject", subject)
-                    .append("eventType", eventType).toString();
+            toString = new ToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE)
+                    .append("crawlData", crawlData)
+                    .append("subject", subject)
+                    .append("eventType", eventType)
+                    .toString();
         }
         return toString;
     }

@@ -28,6 +28,10 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
@@ -78,13 +82,15 @@ public class GenericSpoiledReferenceStrategizer implements
     
     private final Map<CrawlState, SpoiledReferenceStrategy> mappings = 
             new HashMap<>();
-    private SpoiledReferenceStrategy fallbackStrategy = DEFAULT_FALLBACK_STRATEGY;
+    private SpoiledReferenceStrategy fallbackStrategy = 
+            DEFAULT_FALLBACK_STRATEGY;
     
     public GenericSpoiledReferenceStrategizer() {
         super();
         // store default mappings
         mappings.put(CrawlState.NOT_FOUND, SpoiledReferenceStrategy.DELETE);
-        mappings.put(CrawlState.BAD_STATUS, SpoiledReferenceStrategy.GRACE_ONCE);
+        mappings.put(CrawlState.BAD_STATUS, 
+                SpoiledReferenceStrategy.GRACE_ONCE);
         mappings.put(CrawlState.ERROR, SpoiledReferenceStrategy.GRACE_ONCE);
     }
 
@@ -109,7 +115,8 @@ public class GenericSpoiledReferenceStrategizer implements
         this.fallbackStrategy = fallbackStrategy;
     }
 
-    public void addMapping(CrawlState state, SpoiledReferenceStrategy strategy) {
+    public void addMapping(
+            CrawlState state, SpoiledReferenceStrategy strategy) {
         mappings.put(state, strategy);
     }
 
@@ -170,47 +177,33 @@ public class GenericSpoiledReferenceStrategizer implements
         }
     }
 
+    
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime
-                * result
-                + ((fallbackStrategy == null) ? 0 : fallbackStrategy.hashCode());
-        result = prime * result
-                + ((mappings == null) ? 0 : mappings.hashCode());
-        return result;
+    public boolean equals(final Object other) {
+        if (!(other instanceof GenericSpoiledReferenceStrategizer)) {
+            return false;
+        }
+        GenericSpoiledReferenceStrategizer castOther = 
+                (GenericSpoiledReferenceStrategizer) other;
+        return new EqualsBuilder()
+                .append(fallbackStrategy, castOther.fallbackStrategy)
+                .append(mappings, castOther.mappings)
+                .isEquals();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof GenericSpoiledReferenceStrategizer)) {
-            return false;
-        }
-        GenericSpoiledReferenceStrategizer other = 
-                (GenericSpoiledReferenceStrategizer) obj;
-        if (fallbackStrategy != other.fallbackStrategy) {
-            return false;
-        }
-        if (mappings == null) {
-            if (other.mappings != null) {
-                return false;
-            }
-        } else if (!mappings.equals(other.mappings)) {
-            return false;
-        }
-        return true;
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(fallbackStrategy)
+                .append(mappings)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return "GenericSpoiledReferenceStrategizer [mappings=" + mappings
-                + ", fallbackStrategy=" + fallbackStrategy + "]";
-    }
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("fallbackStrategy", fallbackStrategy)
+                .append("mappings", mappings)
+                .toString();
+    }    
 }

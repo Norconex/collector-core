@@ -154,10 +154,9 @@ public class RegexReferenceFilter extends AbstractOnMatchFilter implements
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.DEFAULT_STYLE)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
             .appendSuper(super.toString())
             .append("caseSensitive", caseSensitive)
-            .append("pattern", pattern)
             .append("regex", regex)
             .toString();
     }
@@ -167,7 +166,6 @@ public class RegexReferenceFilter extends AbstractOnMatchFilter implements
         return new HashCodeBuilder()
             .appendSuper(super.hashCode())
             .append(caseSensitive)
-            .append(pattern)
             .append(regex)
             .toHashCode();
     }
@@ -187,7 +185,6 @@ public class RegexReferenceFilter extends AbstractOnMatchFilter implements
         return new EqualsBuilder()
             .appendSuper(super.equals(obj))
             .append(caseSensitive, other.caseSensitive)
-            .append(pattern, other.pattern)
             .append(regex, other.regex)
             .isEquals();
     }

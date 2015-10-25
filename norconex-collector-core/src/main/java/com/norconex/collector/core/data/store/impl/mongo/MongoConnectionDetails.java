@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
 package com.norconex.collector.core.data.store.impl.mongo;
 
 import java.io.Serializable;
+
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * Hold Mongo connection details.
@@ -65,29 +67,36 @@ public class MongoConnectionDetails implements Serializable {
     }
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof MongoConnectionDetails))
+        if (!(other instanceof MongoConnectionDetails)) {
             return false;
+        }
         MongoConnectionDetails castOther = (MongoConnectionDetails) other;
-        return new EqualsBuilder().append(port, castOther.port)
+        return new EqualsBuilder()
+                .append(port, castOther.port)
                 .append(host, castOther.host)
                 .append(databaseName, castOther.databaseName)
                 .append(username, castOther.username)
-                .append(password, castOther.password).isEquals();
+                .append(password, castOther.password)
+                .isEquals();
     }
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(port).append(host)
-                .append(databaseName).append(username).append(password)
+        return new HashCodeBuilder()
+                .append(port)
+                .append(host)
+                .append(databaseName)
+                .append(username)
+                .append(password)
                 .toHashCode();
     }
     @Override
     public String toString() {
-        return new ToStringBuilder(this).appendSuper(super.toString())
-                .append("port", port).append("host", host)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("port", port)
+                .append("host", host)
                 .append("databaseName", databaseName)
-                .append("username", username).append("password", password)
+                .append("username", username)
+                .append("password", password)
                 .toString();
     }
-    
-    
 }

@@ -8,9 +8,6 @@
   <body>
 
     <release version="1.3.0-SNAPSHOT" date="2015-??-??" description="Maintenance release">
-      <action dev="essiembre" type="add">
-        New CrawlState: DUPLICATE.
-      </action>
       <action dev="essiembre" type="update">
         Specifying an invalid path on the command-line for the config file or 
         variable file now returns a meaningful message.
@@ -35,6 +32,15 @@
       <action dev="essiembre" type="update">
         Cached instance of a reference data is now passed around as opposed
         to being obtained form the reference cache each time it is needed.
+      </action>
+      <action dev="essiembre" type="update">
+        Saved and loaded configuration-related classes are now equal.
+        Methods equals/hashCode/toString for those classes are now implemented
+        uniformly and where added where missing.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed some configuration classes not always being saved to XML 
+        properly or giving errors.
       </action>
       <action dev="essiembre" type="fix">
         Fixed IOException when "keepDownloads" is true. This was occurring for

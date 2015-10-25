@@ -155,6 +155,7 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
             super.saveToXML(writer);
             writer.writeAttribute("caseSensitive", 
                     Boolean.toString(caseSensitive));
+            writer.writeAttribute("field", field); 
             writer.writeCharacters(regex == null ? "" : regex);
             writer.writeEndElement();
             writer.flush();
@@ -167,7 +168,7 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.DEFAULT_STYLE)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
             .appendSuper(super.toString())
             .append("caseSensitive", caseSensitive)
             .append("field", field)

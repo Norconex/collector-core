@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -133,6 +134,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
     
     public void saveToXML(Writer out) throws IOException {
         try {
+            out.flush();
             EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
             writer.writeStartElement("collector");
             writer.writeAttributeClass("class", getClass());
@@ -140,18 +142,23 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
             
             writer.writeElementString("logsDir", getLogsDir());
             writer.writeElementString("progressDir", getProgressDir());
-            
             writer.flush();
+
+            out.write("<crawlers>");
+            out.flush();
             if (crawlerConfigs != null) {
                 for (ICrawlerConfig crawlerConfig : crawlerConfigs) {
                     crawlerConfig.saveToXML(out);
+                    out.flush();
                 }
             }
+            out.write("</crawlers>");
+            out.flush();
             
             saveCollectorConfigToXML(out);
             
             writer.writeEndElement();
-            
+            writer.flush();
         } catch (XMLStreamException e) {
             throw new IOException("Cannot save as XML.", e);
         }   
@@ -187,30 +194,38 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof AbstractCollectorConfig))
+        if (!(other instanceof AbstractCollectorConfig)) {
             return false;
+        }
         AbstractCollectorConfig castOther = (AbstractCollectorConfig) other;
         return new EqualsBuilder()
                 .append(crawlerConfigClass, castOther.crawlerConfigClass)
                 .append(id, castOther.id)
                 .append(crawlerConfigs, castOther.crawlerConfigs)
                 .append(progressDir, castOther.progressDir)
-                .append(logsDir, castOther.logsDir).isEquals();
+                .append(logsDir, castOther.logsDir)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(crawlerConfigClass).append(id)
-                .append(crawlerConfigs).append(progressDir).append(logsDir)
+        return new HashCodeBuilder()
+                .append(crawlerConfigClass)
+                .append(id)
+                .append(crawlerConfigs)
+                .append(progressDir)
+                .append(logsDir)
                 .toHashCode();
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this).appendSuper(super.toString())
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("crawlerConfigClass", crawlerConfigClass)
-                .append("id", id).append("crawlerConfigs", crawlerConfigs)
-                .append("progressDir", progressDir).append("logsDir", logsDir)
+                .append("id", id)
+                .append("crawlerConfigs", crawlerConfigs)
+                .append("progressDir", progressDir)
+                .append("logsDir", logsDir)
                 .toString();
     }
 }

@@ -156,7 +156,7 @@ public class ExtensionReferenceFilter extends AbstractOnMatchFilter implements
     
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.DEFAULT_STYLE)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
             .appendSuper(super.toString())
             .append("extensions", extensions)
             .append("caseSensitive", caseSensitive)
