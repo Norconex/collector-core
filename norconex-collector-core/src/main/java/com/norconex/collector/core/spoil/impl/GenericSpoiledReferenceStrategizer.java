@@ -52,8 +52,7 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  * The mappings defined by default are as follow:
  * </p>
  * 
- * <table border="1" style="width:300px;">
- *   <caption></caption>
+ * <table border="1" style="width:300px;" summary="Default mappings">
  *   <tr><td><b>Crawl state</b></td><td><b>Strategy</b></td></tr>
  *   <tr><td>NOT_FOUND</td><td>DELETE</td></tr>
  *   <tr><td>BAD_STATUS</td><td>GRACE_ONCE</td></tr>
