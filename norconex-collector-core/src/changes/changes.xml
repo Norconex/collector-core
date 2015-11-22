@@ -7,7 +7,10 @@
   </properties>
   <body>
 
-    <release version="1.3.0" date="2015-11-06" description="Maintenance release">
+    <release version="1.4.0-SNAPSHOT" date="201?-??-??" description="Maintenance release">
+    </release>
+
+    <release version="1.3.0" date="2015-11-06" description="Feature release">
       <action dev="essiembre" type="update">
         Specifying an invalid path on the command-line for the config file or 
         variable file now returns a meaningful message.

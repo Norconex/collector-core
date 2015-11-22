@@ -122,7 +122,7 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
             LOG.debug("Re-creating processed table...");
             sqlCreateTable(TABLE_PROCESSED_VALID);
         }
-        LOG.info("Done crawl document reference store.");
+        LOG.info("Done initializing crawl document reference store.");
     }
 
     @Override
