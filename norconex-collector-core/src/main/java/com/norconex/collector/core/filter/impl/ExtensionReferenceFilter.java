@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014,2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,8 @@ package com.norconex.collector.core.filter.impl;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-
 import java.net.MalformedURLException;
 import java.net.URL;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,6 +64,8 @@ import com.norconex.importer.handler.filter.OnMatch;
 public class ExtensionReferenceFilter extends AbstractOnMatchFilter implements 
         IReferenceFilter, IDocumentFilter, IMetadataFilter, IXMLConfigurable {
 
+    private static final Pattern REF_EXTENSION_PATTERN = 
+            Pattern.compile("\\.([a-z0-9.]+)\\z", Pattern.CASE_INSENSITIVE);
     private boolean caseSensitive;
     private String extensions;
     private String[] extensionParts;
@@ -92,17 +92,17 @@ public class ExtensionReferenceFilter extends AbstractOnMatchFilter implements
         if (StringUtils.isBlank(extensions)) {
             return getOnMatch() == OnMatch.INCLUDE;
         }
-
         String referencePath;
         try {
             URL referenceUrl = new URL(reference);
             referencePath = referenceUrl.getPath();
         } catch (MalformedURLException ex) {
-            referencePath = "";
+            referencePath = reference;
         }
 
-        Pattern refExtensionPattern = Pattern.compile("\\.([a-z0-9.]+)\\z", Pattern.CASE_INSENSITIVE);
-        Matcher refExtensionMatcher = refExtensionPattern.matcher(referencePath);
+        
+        Matcher refExtensionMatcher = 
+                REF_EXTENSION_PATTERN.matcher(referencePath);
         String refExtension;
         if (refExtensionMatcher.find()) {
             refExtension = refExtensionMatcher.group(1);
