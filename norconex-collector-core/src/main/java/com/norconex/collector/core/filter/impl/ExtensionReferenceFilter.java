@@ -18,6 +18,12 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -86,9 +92,25 @@ public class ExtensionReferenceFilter extends AbstractOnMatchFilter implements
         if (StringUtils.isBlank(extensions)) {
             return getOnMatch() == OnMatch.INCLUDE;
         }
-        String refExtension = reference.replaceFirst("(.*\\.)(.*?)", "$2");
-        for (int i = 0; i < extensionParts.length; i++) {
-            String ext = extensionParts[i];
+
+        String referencePath;
+        try {
+            URL referenceUrl = new URL(reference);
+            referencePath = referenceUrl.getPath();
+        } catch (MalformedURLException ex) {
+            referencePath = "";
+        }
+
+        Pattern refExtensionPattern = Pattern.compile("\\.([a-z0-9.]+)\\z", Pattern.CASE_INSENSITIVE);
+        Matcher refExtensionMatcher = refExtensionPattern.matcher(referencePath);
+        String refExtension;
+        if (refExtensionMatcher.find()) {
+            refExtension = refExtensionMatcher.group(1);
+        } else {
+            refExtension = "";
+        }
+
+        for (String ext : extensionParts) {
             if (!isCaseSensitive() && ext.equalsIgnoreCase(refExtension)) {
                 return getOnMatch() == OnMatch.INCLUDE;
             } else if (isCaseSensitive() && ext.equals(refExtension)) {
