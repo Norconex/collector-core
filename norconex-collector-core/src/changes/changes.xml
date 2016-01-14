@@ -14,6 +14,10 @@
       <action dev="niels" type="update" issue="2">
         ExtensionReferenceFilter is now smarter at detecting extension.
       </action>    
+      <action dev="niels" type="update">
+        ExtensionReferenceFilter now allows white spaces around extensions
+        in XML config.
+      </action>    
       
     </release>
 

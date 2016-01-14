@@ -20,6 +20,22 @@ import org.junit.Test;
 public class ExtensionReferenceFilterTest {
 
     @Test
+    public void testExtensionSplitting() {
+        ExtensionReferenceFilter filter = initFilter(
+                "html,htm,\n"
+              + "  xhtml , dhtml \n\n");
+
+        Assert.assertArrayEquals(
+                new String[] {
+                    "html",
+                    "htm",
+                    "xhtml",
+                    "dhtml"
+                },
+                filter.getExtensionParts());
+    }
+
+    @Test
     public void testOnlyDetectExtensionsInLastPathSegment() {
         ExtensionReferenceFilter filter = initFilter("com,subtype.xml");
 

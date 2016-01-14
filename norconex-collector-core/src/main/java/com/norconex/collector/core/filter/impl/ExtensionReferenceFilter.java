@@ -127,6 +127,9 @@ public class ExtensionReferenceFilter extends AbstractOnMatchFilter implements
     public String getExtensions() {
         return extensions;
     }
+    public String[] getExtensionParts() {
+        return extensionParts;
+    }
     public boolean isCaseSensitive() {
         return caseSensitive;
     }
@@ -136,7 +139,9 @@ public class ExtensionReferenceFilter extends AbstractOnMatchFilter implements
     public final void setExtensions(String extensions) {
         this.extensions = extensions;
         if (extensions != null) {
-            this.extensionParts = extensions.split(",");
+            this.extensionParts = extensions.split("\\s*,\\s*");
+            for (int i = 0; i < this.extensionParts.length; i++)
+                this.extensionParts[i] = this.extensionParts[i].trim();
         } else {
             this.extensionParts = ArrayUtils.EMPTY_STRING_ARRAY;
         }
