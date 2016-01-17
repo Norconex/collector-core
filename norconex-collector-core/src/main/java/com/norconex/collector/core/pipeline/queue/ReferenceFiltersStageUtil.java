@@ -37,7 +37,7 @@ public final class ReferenceFiltersStageUtil {
         super();
     }
 
-    // return false if reference is rejected
+    // return true if reference is rejected
     public static boolean resolveReferenceFilters(
             IReferenceFilter[] filters, BasePipelineContext ctx, String type) {
         if (filters == null) {
