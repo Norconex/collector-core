@@ -19,14 +19,13 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -64,8 +63,6 @@ import com.norconex.importer.handler.filter.OnMatch;
 public class ExtensionReferenceFilter extends AbstractOnMatchFilter implements 
         IReferenceFilter, IDocumentFilter, IMetadataFilter, IXMLConfigurable {
 
-    private static final Pattern REF_EXTENSION_PATTERN = 
-            Pattern.compile("\\.([a-z0-9.]+)\\z", Pattern.CASE_INSENSITIVE);
     private boolean caseSensitive;
     private String extensions;
     private String[] extensionParts;
@@ -100,15 +97,7 @@ public class ExtensionReferenceFilter extends AbstractOnMatchFilter implements
             referencePath = reference;
         }
 
-        
-        Matcher refExtensionMatcher = 
-                REF_EXTENSION_PATTERN.matcher(referencePath);
-        String refExtension;
-        if (refExtensionMatcher.find()) {
-            refExtension = refExtensionMatcher.group(1);
-        } else {
-            refExtension = "";
-        }
+        String refExtension = FilenameUtils.getExtension(referencePath);
 
         for (String ext : extensionParts) {
             if (!isCaseSensitive() && ext.equalsIgnoreCase(refExtension)) {

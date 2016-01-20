@@ -37,7 +37,7 @@ public class ExtensionReferenceFilterTest {
 
     @Test
     public void testOnlyDetectExtensionsInLastPathSegment() {
-        ExtensionReferenceFilter filter = initFilter("com,subtype.xml");
+        ExtensionReferenceFilter filter = initFilter("com,xml");
 
         Assert.assertFalse(
                 filter.acceptReference("http://example.com"));
@@ -54,7 +54,7 @@ public class ExtensionReferenceFilterTest {
         Assert.assertTrue(
                 filter.acceptReference("http://example.de/file.com"));
 
-        Assert.assertFalse(
+        Assert.assertTrue(
                 filter.acceptReference("http://example.com/file.xml"));
 
         Assert.assertTrue(
