@@ -44,7 +44,7 @@ import com.norconex.importer.handler.filter.AbstractOnMatchFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 
 /**
- * Filters a reference based on a coma-separated list of extensions.
+ * Filters a reference based on a comma-separated list of extensions.
  * Extensions are typically the last characters of a file name, after the 
  * last dot.
  * <p>
