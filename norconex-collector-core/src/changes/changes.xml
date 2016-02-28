@@ -7,9 +7,9 @@
   </properties>
   <body>
 
-    <release version="1.4.0-SNAPSHOT" date="2016-??-??" description="Maintenance release">
+    <release version="1.4.0" date="2016-02-28" description="Maintenance release">
       <action dev="essiembre" type="update">
-        Maven direct dependency updates: Norconex Importer 2.5.0. 
+        Maven dependency updates: Norconex Importer 2.5.0. 
       </action>
       <action dev="niels" type="update" issue="2">
         ExtensionReferenceFilter is now smarter at detecting extension.
