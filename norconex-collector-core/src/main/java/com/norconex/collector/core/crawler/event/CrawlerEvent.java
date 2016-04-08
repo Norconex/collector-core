@@ -34,6 +34,13 @@ public class CrawlerEvent {
 
     public static final String REJECTED_FILTER = "REJECTED_FILTER";
     public static final String REJECTED_UNMODIFIED = "REJECTED_UNMODIFIED";
+    /**
+     * A document could not be re-crawled because it is not yet ready to be 
+     * re-crawled.
+     * @since 1.5.0.
+     */
+    public static final String REJECTED_PREMATURE = "REJECTED_PREMATURE";
+    
     public static final String REJECTED_NOTFOUND = "REJECTED_NOTFOUND";
     public static final String REJECTED_BAD_STATUS = "REJECTED_BAD_STATUS";
     public static final String REJECTED_IMPORT = "REJECTED_IMPORT";
@@ -44,7 +51,7 @@ public class CrawlerEvent {
     public static final String DOCUMENT_COMMITTED_ADD = 
             "DOCUMENT_COMMITTED_ADD";
     public static final String DOCUMENT_COMMITTED_REMOVE = 
-            "DOCUMENT_COMMITTED_REMOV";
+            "DOCUMENT_COMMITTED_REMOVE";
     public static final String DOCUMENT_IMPORTED = "DOCUMENT_IMPORTED";
     public static final String DOCUMENT_METADATA_FETCHED = 
             "DOCUMENT_METADATA_FETCHED";

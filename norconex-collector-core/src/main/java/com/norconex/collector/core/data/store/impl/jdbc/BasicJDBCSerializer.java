@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,14 @@ package com.norconex.collector.core.data.store.impl.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.data.ICrawlData;
+import com.norconex.commons.lang.file.ContentType;
 
 /**
  * Basic JDBC serializer for storing and retrieving {@link BaseCrawlData}
@@ -34,7 +38,9 @@ public class BasicJDBCSerializer implements IJDBCSerializer {
             + "isRootParentReference, "
             + "state, "
             + "metaChecksum, "
-            + "contentChecksum ";
+            + "contentChecksum, "
+            + "contentType, "
+            + "crawlDate ";
     
     @Override
     public String[] getCreateTableSQLs(String table) {
@@ -45,6 +51,8 @@ public class BasicJDBCSerializer implements IJDBCSerializer {
                 + "state VARCHAR(256), "
                 + "metaChecksum VARCHAR(32672), "
                 + "contentChecksum VARCHAR(32672), "
+                + "contentType VARCHAR(256), "
+                + "crawlDate BIGINT, "
                 + "PRIMARY KEY (reference))";
         return new String[] { sql };
     }
@@ -59,24 +67,36 @@ public class BasicJDBCSerializer implements IJDBCSerializer {
     public String getDeleteCrawlDataSQL(String table) {
         return "DELETE FROM " + table + " WHERE reference = ?";
     }
-    public Object[] getDeleteCrawlDataValues(String table, ICrawlData crawlURL) {
+    public Object[] getDeleteCrawlDataValues(
+            String table, ICrawlData crawlURL) {
         return new Object[] { crawlURL.getReference() };
     }
 
     @Override
     public String getInsertCrawlDataSQL(String table) {
         return "INSERT INTO " + table + "(" + ALL_FIELDS 
-                + ") values (?,?,?,?,?,?)";
+                + ") values (?,?,?,?,?,?,?,?)";
     }
     @Override
-    public Object[] getInsertCrawlDataValues(String table, ICrawlData crawlData) {
+    public Object[] getInsertCrawlDataValues(
+            String table, ICrawlData crawlData) {
+        String contentType = null;
+        if (crawlData.getContentType() != null) {
+            contentType = crawlData.getContentType().toString();
+        }
+        long crawlDate = 0;
+        if (crawlData.getCrawlDate() != null) {
+            crawlDate = crawlData.getCrawlDate().getTime();
+        }
         return new Object[] { 
                 crawlData.getReference(),
                 crawlData.getParentRootReference(),
                 crawlData.isRootParentReference(),
                 crawlData.getState().toString(),
                 crawlData.getMetaChecksum(),
-                crawlData.getContentChecksum()
+                crawlData.getContentChecksum(),
+                contentType,
+                crawlDate
         };
     }
 
@@ -123,6 +143,14 @@ public class BasicJDBCSerializer implements IJDBCSerializer {
         data.setState(CrawlState.valueOf(rs.getString("state")));
         data.setMetaChecksum(rs.getString("metaChecksum"));
         data.setContentChecksum(rs.getString("contentChecksum"));
+        String contentType = rs.getString("contentType");
+        if (StringUtils.isNoneBlank(contentType)) {
+            data.setContentType(ContentType.valueOf(contentType));
+        }
+        long crawlDate = rs.getLong("crawlDate");
+        if (crawlDate > 0) {
+            data.setCrawlDate(new Date(crawlDate));
+        }
         return data;
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ public class ImportModuleStage
             
         ImporterDocument doc = ctx.getDocument();
         
+        boolean isContentTypeSet = doc.getContentType() != null;
+        
         ImporterResponse response = importer.importDocument(
                 doc.getContent(),
                 doc.getContentType(),
@@ -39,6 +41,15 @@ public class ImportModuleStage
                 doc.getMetadata(),
                 doc.getReference());
         ctx.setImporterResponse(response);
+
+        //TODO is it possible for content type not to be set here??
+        // We make sure to set it to save it to store so IRecrawlableResolver
+        // has one to deal with
+        if (!isContentTypeSet && response.getDocument() != null) {
+            ctx.getCrawlData().setContentType(
+                    response.getDocument().getContentType());
+        }
+        
         return true;
     }
 }

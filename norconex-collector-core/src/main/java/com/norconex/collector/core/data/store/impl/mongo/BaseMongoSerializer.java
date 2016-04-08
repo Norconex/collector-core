@@ -14,12 +14,15 @@
  */
 package com.norconex.collector.core.data.store.impl.mongo;
 
+import java.util.Date;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.data.ICrawlData;
+import com.norconex.commons.lang.file.ContentType;
 
 /**
  * Basic Mongo serializer for {@link BaseCrawlData} instances.
@@ -32,20 +35,18 @@ public class BaseMongoSerializer implements IMongoSerializer {
             Stage stage, ICrawlData crawlData) {
  
         BasicDBObject doc = new BasicDBObject();
-        doc.put(IMongoSerializer.FIELD_REFERENCE, crawlData.getReference());
-        doc.put(IMongoSerializer.FIELD_PARENT_ROOT_REFERENCE, 
+        doc.put(FIELD_REFERENCE, crawlData.getReference());
+        doc.put(FIELD_PARENT_ROOT_REFERENCE, 
                 crawlData.getParentRootReference());
-        doc.put(IMongoSerializer.FIELD_IS_ROOT_PARENT_REFERENCE, 
+        doc.put(FIELD_IS_ROOT_PARENT_REFERENCE, 
                 crawlData.isRootParentReference());
-        doc.put(IMongoSerializer.FIELD_CRAWL_STATE, 
-                crawlData.getState().toString());
-        doc.put(IMongoSerializer.FIELD_META_CHECKSUM, 
-                crawlData.getMetaChecksum());
-        doc.put(IMongoSerializer.FIELD_CONTENT_CHECKSUM, 
-                crawlData.getContentChecksum());
-        doc.put(IMongoSerializer.FIELD_IS_VALID, 
-                crawlData.getState().isGoodState());
-        doc.put(IMongoSerializer.FIELD_STAGE, stage.toString());
+        doc.put(FIELD_CRAWL_STATE, crawlData.getState().toString());
+        doc.put(FIELD_META_CHECKSUM, crawlData.getMetaChecksum());
+        doc.put(FIELD_CONTENT_CHECKSUM, crawlData.getContentChecksum());
+        doc.put(FIELD_IS_VALID, crawlData.getState().isGoodState());
+        doc.put(FIELD_STAGE, stage.toString());
+        doc.put(FIELD_CONTENT_TYPE, crawlData.getContentType());
+        doc.put(FIELD_CRAWL_DATE, crawlData.getCrawlDate());
         return doc;
     }
 
@@ -67,6 +68,8 @@ public class BaseMongoSerializer implements IMongoSerializer {
         }
         data.setMetaChecksum((String) dbObject.get(FIELD_META_CHECKSUM));
         data.setContentChecksum((String) dbObject.get(FIELD_CONTENT_CHECKSUM));
+        data.setContentType((ContentType) dbObject.get(FIELD_CONTENT_TYPE));
+        data.setCrawlDate((Date) dbObject.get(FIELD_CRAWL_DATE));
         return data;
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
 package com.norconex.collector.core.data;
 
 import java.io.Serializable;
+import java.util.Date;
+
+import com.norconex.commons.lang.file.ContentType;
 
 /**
  * A pointer that uniquely identifies a resource being processed (e.g. a 
@@ -54,4 +57,17 @@ public interface ICrawlData extends Cloneable, Serializable {
 
     String getContentChecksum();
 
+    /**
+     * Gets the content type.
+     * @return content type
+     * @since 1.5.0
+     */
+    ContentType getContentType();
+
+    /**
+     * Gets the crawl date.
+     * @return crawl date
+     * @since 1.5.0
+     */
+    Date getCrawlDate();
 }

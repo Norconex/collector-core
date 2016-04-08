@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,10 @@ public interface IMongoSerializer {
     String FIELD_IS_VALID = "isValid";
     String FIELD_STAGE = "stage";
     String FIELD_DEPTH = "depth";
+    /** @since 1.5.0 */
+    String FIELD_CONTENT_TYPE = "contentType";
+    /** @since 1.5.0 */
+    String FIELD_CRAWL_DATE = "crawlDate";
     
     /**
      * Converts a {@link ICrawlData} to a Mongo {@link BasicDBObject}.

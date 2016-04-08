@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,16 @@
 package com.norconex.collector.core.data;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Date;
 
 import org.apache.commons.beanutils.BeanUtils;
-
-import com.norconex.collector.core.CollectorException;
-
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+
+import com.norconex.collector.core.CollectorException;
+import com.norconex.commons.lang.file.ContentType;
 
 
 /**
@@ -40,6 +41,8 @@ public class BaseCrawlData implements ICrawlData {
     private CrawlState state;
     private String metaChecksum;
     private String contentChecksum;
+    private ContentType contentType;
+    private Date crawlDate;
     
     /**
      * Constructor.
@@ -86,6 +89,7 @@ public class BaseCrawlData implements ICrawlData {
         this.state = state;
     }
     
+    @Override
     public String getMetaChecksum() {
         return metaChecksum;
     }
@@ -97,6 +101,7 @@ public class BaseCrawlData implements ICrawlData {
      * Gets the content checksum.
      * @return the content checksum
      */
+    @Override
     public String getContentChecksum() {
         return contentChecksum;
     }
@@ -116,6 +121,42 @@ public class BaseCrawlData implements ICrawlData {
     public void setDocumentChecksum(String contentChecksum) {
         this.contentChecksum = contentChecksum;
     }
+    
+    /**
+     * Gets the content type.
+     * @return content type
+     * @since 1.5.0
+     */
+    @Override
+    public ContentType getContentType() {
+        return contentType;
+    }
+    /**
+     * Sets the content type.
+     * @param contentType the content type
+     * @since 1.5.0
+     */
+    public void setContentType(ContentType contentType) {
+        this.contentType = contentType;
+    }
+    
+    /**
+     * Gets the crawl date.
+     * @return the crawl date
+     * @since 1.5.0
+     */
+    @Override
+    public Date getCrawlDate() {
+        return crawlDate;
+    }
+    /**
+     * Sets the crawl date.
+     * @param crawlDate the crawl date
+     */
+    public void setCrawlDate(Date crawlDate) {
+        this.crawlDate = crawlDate;
+    }
+
     @Override
     public ICrawlData clone() {
         try {
@@ -136,6 +177,8 @@ public class BaseCrawlData implements ICrawlData {
                 .append("state", state)
                 .append("metaChecksum", metaChecksum)
                 .append("contentChecksum", contentChecksum)
+                .append("contentType", contentType)
+                .append("crawlDate", crawlDate)
                 .toString();
     }
     @Override
@@ -150,6 +193,8 @@ public class BaseCrawlData implements ICrawlData {
                 .append(state, castOther.state)
                 .append(metaChecksum, castOther.metaChecksum)
                 .append(contentChecksum, castOther.contentChecksum)
+                .append(contentType, castOther.contentType)
+                .append(crawlDate, castOther.crawlDate)
                 .isEquals();
     }
     @Override
@@ -161,6 +206,8 @@ public class BaseCrawlData implements ICrawlData {
                 .append(state)
                 .append(metaChecksum)
                 .append(contentChecksum)
+                .append(contentType)
+                .append(crawlDate)
                 .toHashCode();
     }
 }

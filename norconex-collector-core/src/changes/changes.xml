@@ -7,9 +7,32 @@
   </properties>
   <body>
 
-    <release version="1.4.1-SNAPSHOT" date="2016-??-??" description="Bugfix release">
+    <release version="1.5.0-SNAPSHOT" date="2016-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        New BasicJDBCCrawlDataStoreFactory implementation for collector 
+        implementations with basic crawl storage needs.
+      </action>
+      <action dev="essiembre" type="add">
+        New document crawl state: PREMATURE.
+      </action>
+      <action dev="essiembre" type="add">
+        New crawler event: REJECTED_PREMATURE.
+      </action>
+      <action dev="essiembre" type="update">
+        Default database implementation for AbstractJDBCDataStoreFactory when
+        invoked with an empty constructor is now H2.
+      </action>
+      <action dev="essiembre" type="update">
+        When provided by collectors, document "crawl date" and content type
+        can be added to the crawl data and will be stored in the crawl data 
+        store (affects all ICrawlDataStoreFactory implementations).
+      </action>
       <action dev="essiembre" type="update">
         Maven dependency updates: MapDB 1.0.9, H2 1.4.191.
+      </action>
+      <action dev="essiembre" type="update">
+        Event string value for DOCUMENT_COMMITTED_REMOVE changed from
+        DOCUMENT_COMMITTED_REMOV to DOCUMENT_COMMITTED_REMOVE.
       </action>
     </release>
 

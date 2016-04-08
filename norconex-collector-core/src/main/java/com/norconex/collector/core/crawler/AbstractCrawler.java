@@ -186,6 +186,11 @@ public abstract class AbstractCrawler
         ICrawlDataStore crawlDataStore = 
                 config.getCrawlDataStoreFactory().createCrawlDataStore(
                         config, resume);
+
+//        boolean incremental = !crawlDataStore.isCacheEmpty();
+//System.out.println("IS Incremental? " + incremental);     
+//xx
+        
         
         this.crawlerEventManager = new CrawlerEventManager(
                 this, getCrawlerConfig().getCrawlerListeners());
@@ -562,6 +567,18 @@ public abstract class AbstractCrawler
                     + crawlData.getReference() + "\". This should not "
                     + "happen. Assuming bad status.");
             crawlData.setState(CrawlState.BAD_STATUS);
+        }
+        
+        //--- If a good document not recrawled, set some info from cache -------
+        if (crawlData.getState().isGoodState() && cached != null) {
+            //TODO new CrawlData instances should be initialized with cache
+            //data available.
+            if (crawlData.getContentType() == null) {
+                crawlData.setContentType(cached.getContentType());
+            }
+            if (crawlData.getCrawlDate() == null) {
+                crawlData.setCrawlDate(cached.getCrawlDate());
+            }
         }
         
         //--- Deal with bad states (if not already deleted) --------------------
