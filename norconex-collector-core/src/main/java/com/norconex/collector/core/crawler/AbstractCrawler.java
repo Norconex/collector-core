@@ -186,11 +186,6 @@ public abstract class AbstractCrawler
         ICrawlDataStore crawlDataStore = 
                 config.getCrawlDataStoreFactory().createCrawlDataStore(
                         config, resume);
-
-//        boolean incremental = !crawlDataStore.isCacheEmpty();
-//System.out.println("IS Incremental? " + incremental);     
-//xx
-        
         
         this.crawlerEventManager = new CrawlerEventManager(
                 this, getCrawlerConfig().getCrawlerListeners());
