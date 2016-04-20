@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 package com.norconex.collector.core.data.store.impl.mongo;
 
 import java.util.Date;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -45,7 +47,9 @@ public class BaseMongoSerializer implements IMongoSerializer {
         doc.put(FIELD_CONTENT_CHECKSUM, crawlData.getContentChecksum());
         doc.put(FIELD_IS_VALID, crawlData.getState().isGoodState());
         doc.put(FIELD_STAGE, stage.toString());
-        doc.put(FIELD_CONTENT_TYPE, crawlData.getContentType());
+        if (crawlData.getContentType() != null) {
+            doc.put(FIELD_CONTENT_TYPE, crawlData.getContentType().toString());
+        }
         doc.put(FIELD_CRAWL_DATE, crawlData.getCrawlDate());
         return doc;
     }
@@ -68,7 +72,10 @@ public class BaseMongoSerializer implements IMongoSerializer {
         }
         data.setMetaChecksum((String) dbObject.get(FIELD_META_CHECKSUM));
         data.setContentChecksum((String) dbObject.get(FIELD_CONTENT_CHECKSUM));
-        data.setContentType((ContentType) dbObject.get(FIELD_CONTENT_TYPE));
+        String contentType = (String) dbObject.get(FIELD_CONTENT_TYPE);
+        if (StringUtils.isNotBlank(contentType)) {
+            data.setContentType(ContentType.valueOf(contentType));
+        }
         data.setCrawlDate((Date) dbObject.get(FIELD_CRAWL_DATE));
         return data;
     }
