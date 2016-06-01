@@ -130,6 +130,7 @@ public abstract class AbstractCrawler
         LOG.info(getId() + ": Stopping the crawler.");
     }
     
+    @Override
     public Importer getImporter() {
         return importer;
     }

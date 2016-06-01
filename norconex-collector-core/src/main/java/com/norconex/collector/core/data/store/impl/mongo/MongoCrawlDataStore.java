@@ -118,8 +118,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
         try {
             ServerAddress server = new ServerAddress(
                     connDetails.getHost(), port);
-            List<MongoCredential> credentialsList = 
-                    new ArrayList<MongoCredential>();
+            List<MongoCredential> credentialsList = new ArrayList<>();
             if (StringUtils.isNoneBlank(connDetails.getUsername())) {
                 MongoCredential credential = 
                         MongoCredential.createMongoCRCredential(
@@ -265,7 +264,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
         DBCursor cursor = collRefs.find(whereQuery);
 
         // Add them to cache in batch
-        ArrayList<DBObject> list = new ArrayList<DBObject>(BATCH_UPDATE_SIZE);
+        ArrayList<DBObject> list = new ArrayList<>(BATCH_UPDATE_SIZE);
         while (cursor.hasNext()) {
             list.add(cursor.next());
             if (list.size() == BATCH_UPDATE_SIZE) {

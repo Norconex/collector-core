@@ -28,7 +28,8 @@
         store (affects all ICrawlDataStoreFactory implementations).
       </action>
       <action dev="essiembre" type="update">
-        Maven dependency updates: MapDB 1.0.9, H2 1.4.191, Fongo 1.6.2.
+        Maven dependency updates: Norconex Importer 2.5.2, MapDB 1.0.9, 
+        H2 1.4.191, Fongo 1.6.2.
       </action>
       <action dev="essiembre" type="update">
         Event string value for DOCUMENT_COMMITTED_REMOVE changed from

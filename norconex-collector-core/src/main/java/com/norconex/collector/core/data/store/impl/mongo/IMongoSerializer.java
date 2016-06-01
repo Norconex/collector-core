@@ -25,7 +25,7 @@ import com.norconex.collector.core.data.ICrawlData;
  */
 public interface IMongoSerializer {
 
-    public static enum Stage {
+    public enum Stage {
         QUEUED, ACTIVE, PROCESSED;
     }
 
