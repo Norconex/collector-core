@@ -48,11 +48,13 @@ import com.norconex.importer.doc.ImporterMetadata;
  * one or more given source fields are specified, in which case the MD5 
  * checksum value is constructed from those fields.  This checksum is normally 
  * performed right after the document has been imported.
- * <br><br>
- * You can optionally have the checksum value stored with the
- * document under the field name 
- * {@link CollectorMetadata#COLLECTOR_CHECKSUM_DOC}
- * or one you specify.
+ * </p>
+ * <p>
+ * You have the option to keep the checksum as a document metadata field. 
+ * When {@link #setKeep(boolean)} is <code>true</code>, the checksum will be
+ * stored in the target field name specified. If you do not specify any,
+ * it stores it under the metadata field name 
+ * {@link CollectorMetadata#COLLECTOR_CHECKSUM_METADATA}. 
  * </p>
  * <h3>XML configuration usage:</h3>
  * <pre>

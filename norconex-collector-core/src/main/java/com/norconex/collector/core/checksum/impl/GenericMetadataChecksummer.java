@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 
 import com.norconex.collector.core.checksum.AbstractMetadataChecksummer;
 import com.norconex.collector.core.checksum.IMetadataChecksummer;
+import com.norconex.collector.core.doc.CollectorMetadata;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 
@@ -42,6 +43,13 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  * specified source field names and their values for the checksum. The name
  * and values are simply returned as is, joined using this format:
  * <code>fieldName=fieldValue;fieldName=fieldValue;...</code>.
+ * </p>
+ * <p>
+ * You have the option to keep the checksum as a document metadata field. 
+ * When {@link #setKeep(boolean)} is <code>true</code>, the checksum will be
+ * stored in the target field name specified. If you do not specify any,
+ * it stores it under the metadata field name 
+ * {@link CollectorMetadata#COLLECTOR_CHECKSUM_METADATA}. 
  * </p>
  * <p>
  * XML configuration usage:
