@@ -8,6 +8,10 @@
   <body>
 
     <release version="1.5.1-SNAPSHOT" date="2016-??-??" description="Maintenance release">
+      <action dev="essiembre" type="add">
+        New "checkcfg" launch action that will load a configuration
+        without doing anything with it (to help resolve config issues).  
+      </action>
       <action dev="essiembre" type="update">
         Maven dependency updates: Norconex Importer 2.6.0.
       </action>

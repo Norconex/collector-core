@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,9 +41,9 @@ public abstract class AbstractCollectorLauncher {
     public static final String ARG_ACTION_START = "start";
     public static final String ARG_ACTION_RESUME = "resume";
     public static final String ARG_ACTION_STOP = "stop";
+    public static final String ARG_ACTION_CHECKCONFIG = "checkcfg";
     public static final String ARG_CONFIG = "config";
     public static final String ARG_VARIABLES = "variables";
-    
     
     /**
      * Constructor.
@@ -82,6 +82,13 @@ public abstract class AbstractCollectorLauncher {
                 collector.start(true);
             } else if (ARG_ACTION_STOP.equalsIgnoreCase(action)) {
                 collector.stop();
+            } else if (ARG_ACTION_CHECKCONFIG.equalsIgnoreCase(action)) {
+                System.out.println("--- CONFIGURATION CHECKED ---");
+                System.out.println("Verify no errors were printed.");
+                System.out.println("Please note that while your configuration "
+                        + "may load without errors, it may ");
+                System.out.println("still contain misconfiguration that "
+                        + "will only show up at runtime.");
             }
         } catch (Exception e) {
             PrintStream err = System.err;
@@ -111,7 +118,7 @@ public abstract class AbstractCollectorLauncher {
         options.addOption("v", ARG_VARIABLES, true, 
                 "Optional: variable file.");
         options.addOption("a", ARG_ACTION, true, 
-                "Required: one of start|resume|stop");
+                "Required: one of start|resume|stop|checkcfg");
         
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
@@ -119,7 +126,8 @@ public abstract class AbstractCollectorLauncher {
             cmd = parser.parse( options, args);
             if(!cmd.hasOption(ARG_CONFIG) || !cmd.hasOption(ARG_ACTION)
                     || EqualsUtil.equalsNone(cmd.getOptionValue(ARG_ACTION),
-                        ARG_ACTION_START, ARG_ACTION_RESUME, ARG_ACTION_STOP)) {
+                        ARG_ACTION_START, ARG_ACTION_RESUME, ARG_ACTION_STOP,
+                        ARG_ACTION_CHECKCONFIG)) {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp( "collector-http[.bat|.sh]", options );
                 System.exit(-1);
