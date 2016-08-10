@@ -13,7 +13,9 @@
         without doing anything with it (to help resolve config issues).  
       </action>
       <action dev="essiembre" type="update">
-        Maven dependency updates: Norconex Importer 2.6.0, JSoup 1.8.3.
+        Maven dependency updates: Norconex Importer 2.6.0, 
+        Norconex Committer Core 2.0.4, JSoup 1.8.3, Apache Commons DBCP 2.1.1,
+        H2 Database 1.4.192.
       </action>
     </release>
 

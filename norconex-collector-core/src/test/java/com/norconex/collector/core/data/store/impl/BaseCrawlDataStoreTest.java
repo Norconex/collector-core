@@ -190,7 +190,7 @@ public abstract class BaseCrawlDataStoreTest {
     
     @Test
     public void testQueue() throws Exception {
-        String ref = "http://www.norconex.com/";
+        String ref = "https://www.norconex.com/";
         crawlStore.queue(createCrawlData(ref));
 
         // Make sure the ref is queued
@@ -202,7 +202,7 @@ public abstract class BaseCrawlDataStoreTest {
     @Test
     public void testNext() throws Exception {
 
-        String ref = "http://www.norconex.com/";
+        String ref = "https://www.norconex.com/";
         crawlStore.queue(createCrawlData(ref));
 
         // Make sure the next ref is the one we just queue
@@ -218,7 +218,7 @@ public abstract class BaseCrawlDataStoreTest {
     @Test
     public void testProcess() throws Exception {
 
-        String ref = "http://www.norconex.com/";
+        String ref = "https://www.norconex.com/";
         crawlStore.queue(createCrawlData(ref));
         ICrawlData next = crawlStore.nextQueued();
 
@@ -237,7 +237,7 @@ public abstract class BaseCrawlDataStoreTest {
     public void testCache() throws Exception {
 
         // Cache an ref
-        String ref = "http://www.norconex.com/";
+        String ref = "https://www.norconex.com/";
         cacheReference(ref);
 
         // Make sure the ref is cached
@@ -250,7 +250,7 @@ public abstract class BaseCrawlDataStoreTest {
     public void testRemoveFromCacheOnProcess() throws Exception {
 
         // Cache an ref
-        String ref = "http://www.norconex.com/";
+        String ref = "https://www.norconex.com/";
         cacheReference(ref);
 
         // Process it
@@ -267,7 +267,7 @@ public abstract class BaseCrawlDataStoreTest {
     public void testCacheIterator() throws Exception {
 
         // Cache an ref
-        String ref = "http://www.norconex.com/";
+        String ref = "https://www.norconex.com/";
         cacheReference(ref);
 
         Iterator<ICrawlData> it = crawlStore.getCacheIterator();
@@ -283,7 +283,7 @@ public abstract class BaseCrawlDataStoreTest {
     @Test
     public void testQueuedUnique() throws Exception {
 
-        String ref = "http://www.norconex.com/";
+        String ref = "https://www.norconex.com/";
         ICrawlData crawlData = createCrawlData(ref);
         crawlStore.queue(crawlData);
         assertEquals(1, crawlStore.getQueueSize());
@@ -296,7 +296,7 @@ public abstract class BaseCrawlDataStoreTest {
     @Test
     public void testProcessedUnique() throws Exception {
 
-        String ref = "http://www.norconex.com/";
+        String ref = "https://www.norconex.com/";
         ICrawlData crawlData = createCrawlData(ref);
 
         crawlStore.processed(crawlData);
@@ -320,7 +320,7 @@ public abstract class BaseCrawlDataStoreTest {
         assertTrue(crawlStore.isCacheEmpty());
 
         // Simulate a successful fetch
-        String ref = "http://www.norconex.com/";
+        String ref = "https://www.norconex.com/";
         crawlStore.queue(createCrawlData(ref));
         ICrawlData next = crawlStore.nextQueued();
         crawlStore.processed(next);
@@ -354,7 +354,7 @@ public abstract class BaseCrawlDataStoreTest {
         assertTrue(crawlStore.isCacheEmpty());
 
         // Simulate a unsuccessful fetch
-        String ref = "http://www.norconex.com/";
+        String ref = "https://www.norconex.com/";
         crawlStore.queue(createCrawlData(ref));
         ICrawlData next = crawlStore.nextQueued();
         setCrawlState(next, CrawlState.NOT_FOUND);
@@ -380,7 +380,7 @@ public abstract class BaseCrawlDataStoreTest {
     public void testResumeQueued() throws Exception {
 
         // Queue a ref
-        String ref = "http://www.norconex.com/";
+        String ref = "https://www.norconex.com/";
         crawlStore.queue(createCrawlData(ref));
 
         // Instantiate a new impl with the "resume" option set to true. The
@@ -403,7 +403,7 @@ public abstract class BaseCrawlDataStoreTest {
     public void testResumeActived() throws Exception {
 
         // Activate an ref
-        String ref = "http://www.norconex.com/";
+        String ref = "https://www.norconex.com/";
         crawlStore.queue(createCrawlData(ref));
         crawlStore.nextQueued();
 
@@ -421,7 +421,7 @@ public abstract class BaseCrawlDataStoreTest {
     public void testResumeProcessed() throws Exception {
 
         // Process an ref
-        String ref = "http://www.norconex.com/";
+        String ref = "https://www.norconex.com/";
         crawlStore.queue(createCrawlData(ref));
         ICrawlData next = crawlStore.nextQueued();
         crawlStore.processed(next);
@@ -439,7 +439,7 @@ public abstract class BaseCrawlDataStoreTest {
     public void testResumeCached() throws Exception {
 
         // Cache an ref
-        String ref = "http://www.norconex.com/";
+        String ref = "https://www.norconex.com/";
         cacheReference(ref);
 
         // Instantiate a new impl with the "resume" option set to true. The
