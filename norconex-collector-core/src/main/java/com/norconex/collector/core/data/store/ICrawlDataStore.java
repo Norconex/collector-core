@@ -25,13 +25,13 @@ import com.norconex.collector.core.data.ICrawlData;
  * <p>
  * The few stages a reference should have in most implementations are:</p>
  * <ul>
- *   <li><b>Queued:</b> URLs extracted from documents are first queued for 
+ *   <li><b>Queued:</b> References extracted from documents are first queued for 
  *       future processing.</li>
- *   <li><b>Active:</b> A URL is being processed.</li>
- *   <li><b>Processed:</b> A URL has been processed.  If the same URL is 
+ *   <li><b>Active:</b> A reference is being processed.</li>
+ *   <li><b>Processed:</b> A reference has been processed.  If the same URL is 
  *       encountered again during the same run, it will be ignored.</li>
- *   <li><b>Cached:</b> When crawling is over, processed URLs will be cached on 
- *       the next run.</li>
+ *   <li><b>Cached:</b> When crawling is over, processed references will be 
+ *       cached on the next run.</li>
  * </ul>
  * @author Pascal Essiembre
  */
