@@ -48,7 +48,7 @@ public class CrawlState implements Serializable {
     /**
      * For collectors that support it, this state indicates a previously 
      * crawled document is not yet ready to be re-crawled.  It may or may not
-     * be recrawled in the next crawl session (if ready).
+     * be re-crawled in the next crawl session (if ready).
      * @since 1.5.0
      */
     public static final CrawlState PREMATURE  = new CrawlState("PREMATURE");
@@ -96,6 +96,16 @@ public class CrawlState implements Serializable {
      */
     public boolean isNewOrModified() {
         return isOneOf(NEW, MODIFIED);
+    }
+    
+    /**
+     * Returns whether a state indicate the document is to be skipped
+     * ({@link #UNMODIFIED} or {@link #PREMATURE}). 
+     * @return <code>true</code> if skipped
+     * @since 1.6.0
+     */
+    public boolean isSkipped() {
+        return isOneOf(UNMODIFIED, PREMATURE);
     }
 
     

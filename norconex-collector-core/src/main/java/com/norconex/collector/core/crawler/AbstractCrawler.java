@@ -576,12 +576,16 @@ public abstract class AbstractCrawler
                 crawlData.setCrawlDate(cached.getCrawlDate());
             }
         }
-        
-        //--- Deal with bad states (if not already deleted) --------------------
+
         try {
+            //--- Deal with skipped documents
+            if (crawlData.getState().isSkipped()) {
+                onDocumentSkipped(crawlData, store, doc, cached);
+            }
+            
+            //--- Deal with bad states (if not already deleted) ----------------
             if (!crawlData.getState().isGoodState()
-                    && !crawlData.getState().isOneOf(
-                            CrawlState.DELETED)) {
+                    && !crawlData.getState().isOneOf(CrawlState.DELETED)) {
 
                 //TODO If duplicate, consider it as spoiled if a cache version
                 // exists in a good state.
@@ -649,6 +653,21 @@ public abstract class AbstractCrawler
         } catch (Exception e) {
             LOG.error(getId() + ": Could not dispose of resources.", e);
         }
+    }
+    
+    /**
+     * Invoked when a document is being finalized, to give the chance 
+     * to implementing crawlers to deal with skipped documents.
+     * Default implementation does nothing.
+     * @param crawlData crawl data
+     * @param store crawl store
+     * @param doc skipped document
+     * @param cached cached crawl data
+     */
+    protected void onDocumentSkipped(BaseCrawlData crawlData,
+            ICrawlDataStore store, ImporterDocument doc,
+            ICrawlData cached) {
+        //noop
     }
     
     protected abstract void markReferenceVariationsAsProcessed(

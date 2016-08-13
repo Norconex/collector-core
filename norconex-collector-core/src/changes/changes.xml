@@ -7,10 +7,18 @@
   </properties>
   <body>
 
-    <release version="1.5.1-SNAPSHOT" date="2016-??-??" description="Maintenance release">
+    <release version="1.6.0-SNAPSHOT" date="2016-??-??" description="Feature release">
       <action dev="essiembre" type="add">
         New "checkcfg" launch action that will load a configuration
         without doing anything with it (to help resolve config issues).  
+      </action>
+      <action dev="essiembre" type="add">
+        New CrawlState#isSkipped() method to indicate if a document
+        was unmodified or premature.  
+      </action>
+      <action dev="essiembre" type="add">
+        New AbstractCrawler#onDocumentSkipped() method to let implementations
+        override to provide special handling of skipped documents.  
       </action>
       <action dev="essiembre" type="update">
         Dependency updates: Norconex Importer 2.6.0, 
