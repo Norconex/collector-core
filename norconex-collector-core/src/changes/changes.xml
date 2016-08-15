@@ -17,14 +17,20 @@
         was unmodified or premature.  
       </action>
       <action dev="essiembre" type="add">
-        New AbstractCrawler#onDocumentSkipped() method to let implementations
-        override to provide special handling of skipped documents.  
+        New AbstractCrawler#beforeFinalizeDocumentProcessing() method to let 
+        crawler implementations act on a document before it is being finalized.  
       </action>
       <action dev="essiembre" type="update">
         Dependency updates: Norconex Importer 2.6.0, 
         Norconex Committer Core 2.0.4, JSoup 1.8.3, Apache Commons DBCP 2.1.1,
         H2 Database 1.4.192.
       </action>
+      <action dev="essiembre" type="update">
+        API break: method signature changed for AbstractCrawler from
+        applyCrawlData(ICrawlData crawlData, ImporterDocument document) 
+        to initCrawlData(ICrawlData crawlData, ICrawlData cachedCrawlData, 
+        ImporterDocument document).
+      </action>      
     </release>
 
     <release version="1.5.0" date="2016-06-03" description="Feature release">

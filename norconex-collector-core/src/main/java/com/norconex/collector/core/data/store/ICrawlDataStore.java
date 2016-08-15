@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ public interface ICrawlDataStore {
      * Gets the cached reference from previous time crawler was run
      * (e.g. for comparison purposes).
      * @param cacheReference reference cached from previous run
-     * @return url
+     * @return crawl data
      */
     ICrawlData getCached(String cacheReference);
     
@@ -110,10 +110,10 @@ public interface ICrawlDataStore {
 
     /**
      * Whether the given reference has been processed.
-     * @param referenceId the reference id
+     * @param reference the reference
      * @return <code>true</code> if processed
      */
-    boolean isProcessed(String referenceId);
+    boolean isProcessed(String reference);
 
     /**
      * Gets the number of references processed.

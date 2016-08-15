@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -169,9 +169,9 @@ public class MVStoreCrawlDataStore extends AbstractCrawlDataStore {
     }
 
     @Override
-    public boolean isProcessed(String referenceId) {
-        return mapProcessedValid.containsKey(referenceId)
-                || mapProcessedInvalid.containsKey(referenceId);
+    public boolean isProcessed(String reference) {
+        return mapProcessedValid.containsKey(reference)
+                || mapProcessedInvalid.containsKey(reference);
     }
 
     @Override

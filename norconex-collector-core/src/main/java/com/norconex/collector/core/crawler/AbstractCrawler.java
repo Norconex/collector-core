@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.norconex.collector.core.crawler;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
@@ -34,6 +35,7 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
+import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -84,6 +86,8 @@ public abstract class AbstractCrawler
     private static final long STATUS_LOGGING_INTERVAL = 
             TimeUnit.SECONDS.toMillis(5);
     
+    private final NullAwareBeanUtilsBean nullAwareBeanUtils = 
+            new NullAwareBeanUtilsBean();
     private final ICrawlerConfig config;
     private CrawlerEventManager crawlerEventManager;
     private Importer importer;
@@ -264,37 +268,42 @@ public abstract class AbstractCrawler
     
     protected void handleOrphans(ICrawlDataStore refStore,
             JobStatusUpdater statusUpdater, JobSuite suite) {
+        
         OrphansStrategy strategy = config.getOrphansStrategy();
         if (strategy == null) {
-            // null is same as ignore, so we end here
+            // null is same as ignore
+            strategy = OrphansStrategy.IGNORE;
+        }
+
+        // If PROCESS, we do not care to validate if really orphan since 
+        // all cache items will be reprocessed regardless
+        if (strategy == OrphansStrategy.PROCESS) {
+            reprocessCacheOrphans(refStore, statusUpdater, suite);
             return;
         }
-        
+
         if (strategy == OrphansStrategy.DELETE) {
-            LOG.info(getId() + ": Deleting orphan references (if any)...");
             deleteCacheOrphans(refStore, statusUpdater, suite);
-        } else if (strategy == OrphansStrategy.PROCESS) {
-            if (!isMaxDocuments()) {
-                LOG.info(getId() 
-                        + ": Re-processing orphan references (if any)...");
-                reprocessCacheOrphans(refStore, statusUpdater, suite);
-            } else {
-                LOG.info(getId() 
-                        + ": Max documents reached. Not reprocessing orphans "
-                        + "(if any).");
-            }
         }
         // else, ignore (i.e. don't do anything)
+        //TODO log how many where ignored (cache count)
     }
     
     protected boolean isMaxDocuments() {
         return getCrawlerConfig().getMaxDocuments() > -1 
                 && processedCount >= getCrawlerConfig().getMaxDocuments();
     }
-    
+
     protected void reprocessCacheOrphans(
             ICrawlDataStore crawlDataStore, 
             JobStatusUpdater statusUpdater, JobSuite suite) {
+        if (isMaxDocuments()) {
+            LOG.info(getId() + ": Max documents reached. "
+                    + "Not reprocessing orphans (if any).");
+            return;
+        }
+        LOG.info(getId() + ": Reprocessing any cached/orphan references...");
+        
         long count = 0;
         Iterator<ICrawlData> it = crawlDataStore.getCacheIterator();
         if (it != null) {
@@ -305,7 +314,8 @@ public abstract class AbstractCrawler
             }
             processReferences(crawlDataStore, statusUpdater, suite, false);
         }
-        LOG.info(getId() + ": Reprocessed " + count + " orphan references...");
+        LOG.debug(getId() + ": Reprocessed " + count 
+                + " cached/orphan references...");
     }
     
     protected abstract void executeQueuePipeline(
@@ -313,6 +323,7 @@ public abstract class AbstractCrawler
     
     protected void deleteCacheOrphans(ICrawlDataStore crawlDataStore, 
             JobStatusUpdater statusUpdater, JobSuite suite) {
+        LOG.info(getId() + ": Deleting orphan references (if any)...");
         long count = 0;
         Iterator<ICrawlData> it = crawlDataStore.getCacheIterator();
         if (it != null && it.hasNext()) {
@@ -452,8 +463,10 @@ public abstract class AbstractCrawler
     //using generics instead of having this wrapping method?
     protected abstract ImporterDocument wrapDocument(
             ICrawlData crawlData, ImporterDocument document);
-    protected void applyCrawlData(
-            ICrawlData crawlData, ImporterDocument document) {
+    protected void initCrawlData(
+            ICrawlData crawlData, 
+            ICrawlData cachedCrawlData, 
+            ImporterDocument document) {
         // default does nothing 
     }
     
@@ -462,17 +475,19 @@ public abstract class AbstractCrawler
         String reference = crawlData.getReference();
         ImporterDocument doc = wrapDocument(crawlData, new ImporterDocument(
                 crawlData.getReference(), getStreamFactory().newInputStream()));
-        applyCrawlData(crawlData, doc);
-        
         
         //TODO create a composite object that has crawler, crawlData,
         // cachedCrawlData, ... To reduce the number of arguments passed around.
         // It could potentially be a base class for pipeline contexts too.
         BaseCrawlData cachedCrawlData = 
                 (BaseCrawlData) crawlDataStore.getCached(reference);
+        
         doc.getMetadata().setBoolean(
                 CollectorMetadata.COLLECTOR_IS_CRAWL_NEW, 
                 cachedCrawlData == null);
+
+        initCrawlData(crawlData, cachedCrawlData, doc);
+
         try {
             if (delete) {
                 deleteReference(crawlData, doc);
@@ -553,6 +568,7 @@ public abstract class AbstractCrawler
         }
     }
     
+   
     private void finalizeDocumentProcessing(BaseCrawlData crawlData,
             ICrawlDataStore store, ImporterDocument doc,
             ICrawlData cached) {
@@ -565,22 +581,21 @@ public abstract class AbstractCrawler
             crawlData.setState(CrawlState.BAD_STATUS);
         }
         
-        //--- If a good document not recrawled, set some info from cache -------
-        if (crawlData.getState().isGoodState() && cached != null) {
-            //TODO new CrawlData instances should be initialized with cache
-            //data available.
-            if (crawlData.getContentType() == null) {
-                crawlData.setContentType(cached.getContentType());
-            }
-            if (crawlData.getCrawlDate() == null) {
-                crawlData.setCrawlDate(cached.getCrawlDate());
-            }
-        }
-
         try {
-            //--- Deal with skipped documents
-            if (crawlData.getState().isSkipped()) {
-                onDocumentSkipped(crawlData, store, doc, cached);
+            
+            // important to call this before copying properties further down
+            beforeFinalizeDocumentProcessing(crawlData, store, doc, cached);
+            
+            //--- If doc crawl was incomplete, set missing info from cache -----
+            // If document is not new or modified, it did not go through
+            // the entire crawl life cycle for a document so maybe not all info
+            // could be gathered for a reference.  Since we do not want to lose
+            // previous information when the crawl was effective/good
+            // we copy it all that is non-null from cache.
+            if (!crawlData.getState().isNewOrModified() && cached != null) {
+                //TODO maybe new CrawlData instances should be initialized with 
+                // some of cache data available?
+                nullAwareBeanUtils.copyProperties(crawlData, cached);
             }
             
             //--- Deal with bad states (if not already deleted) ----------------
@@ -630,7 +645,7 @@ public abstract class AbstractCrawler
                 }
             }
         } catch (Exception e) {
-            LOG.error(getId() + ": Could not resolve reference bad status: "
+            LOG.error(getId() + ": Could not finalize processing of "
                     + crawlData.getReference()
                     + " (" + e.getMessage() + ")", e);
         }
@@ -656,18 +671,20 @@ public abstract class AbstractCrawler
     }
     
     /**
-     * Invoked when a document is being finalized, to give the chance 
-     * to implementing crawlers to deal with skipped documents.
-     * Default implementation does nothing.
-     * @param crawlData crawl data
+     * Gives implementors a change to take action on a document before 
+     * its processing is being finalized (cycle end-of-life for a crawled
+     * reference). Default implementation does nothing.
+     * @param crawlData crawl data with data the crawler was able to obtain, 
+     *                  guaranteed to have a non-null state
      * @param store crawl store
-     * @param doc skipped document
-     * @param cached cached crawl data
+     * @param doc the document
+     * @param cachedCrawlData cached crawl data 
+     *        (<code>null</code> if document was not crawled before)
      */
-    protected void onDocumentSkipped(BaseCrawlData crawlData,
+    protected void beforeFinalizeDocumentProcessing(BaseCrawlData crawlData,
             ICrawlDataStore store, ImporterDocument doc,
-            ICrawlData cached) {
-        //noop
+            ICrawlData cachedCrawlData) {
+        //NOOP
     }
     
     protected abstract void markReferenceVariationsAsProcessed(
@@ -772,4 +789,15 @@ public abstract class AbstractCrawler
         }
     }
     
+    public class NullAwareBeanUtilsBean extends BeanUtilsBean{
+        @Override
+        public void copyProperty(Object dest, String name, Object value)
+                throws IllegalAccessException, InvocationTargetException {
+            if (value == null) {
+                return;
+            }
+            super.copyProperty(dest, name, value);
+        }
+
+    }
 }
