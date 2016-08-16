@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import com.norconex.collector.core.checksum.IDocumentChecksummer;
 import com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer;
 import com.norconex.collector.core.crawler.event.ICrawlerEventListener;
 import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
-import com.norconex.collector.core.data.store.impl.mapdb.MapDBCrawlDataStoreFactory;
+import com.norconex.collector.core.data.store.impl.mvstore.MVStoreCrawlDataStoreFactory;
 import com.norconex.collector.core.filter.IDocumentFilter;
 import com.norconex.collector.core.filter.IMetadataFilter;
 import com.norconex.collector.core.filter.IReferenceFilter;
@@ -71,7 +71,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     private OrphansStrategy orphansStrategy = OrphansStrategy.PROCESS;
     
     private ICrawlDataStoreFactory crawlDataStoreFactory = 
-            new MapDBCrawlDataStoreFactory();
+            new MVStoreCrawlDataStoreFactory();
 
     private IReferenceFilter[] referenceFilters;
     private IMetadataFilter[] metadataFilters;

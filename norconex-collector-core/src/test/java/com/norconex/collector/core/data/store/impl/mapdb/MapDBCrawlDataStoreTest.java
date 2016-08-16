@@ -22,6 +22,7 @@ import com.norconex.collector.core.data.store.impl.BaseCrawlDataStoreTest;
 
 public class MapDBCrawlDataStoreTest extends BaseCrawlDataStoreTest {
 
+    @SuppressWarnings("deprecation")
     @Override
     protected ICrawlDataStore createCrawlDataStore(
             ICrawlerConfig config, TemporaryFolder tempFolder, boolean resume) {

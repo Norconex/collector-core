@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
+import com.norconex.collector.core.data.store.impl.mvstore.MVStoreCrawlDataStoreFactory;
 import com.norconex.commons.lang.file.FileUtil;
 
 /**
@@ -37,7 +38,10 @@ import com.norconex.commons.lang.file.FileUtil;
  * </pre>
  * 
  * @author Pascal Essiembre
+ * @deprecated Since 1.6.0 {@link MVStoreCrawlDataStoreFactory} (now default
+ *             implementation) is considered a more stable implementation.
  */
+@Deprecated
 public class MapDBCrawlDataStoreFactory implements ICrawlDataStoreFactory {
 
     private Serializer<ICrawlData> valueSerializer;

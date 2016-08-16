@@ -36,6 +36,7 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -86,8 +87,8 @@ public abstract class AbstractCrawler
     private static final long STATUS_LOGGING_INTERVAL = 
             TimeUnit.SECONDS.toMillis(5);
     
-    private final NullAwareBeanUtilsBean nullAwareBeanUtils = 
-            new NullAwareBeanUtilsBean();
+    private final CopyIfNullBeanUtilsBean nullAwareBeanUtils = 
+            new CopyIfNullBeanUtilsBean();
     private final ICrawlerConfig config;
     private CrawlerEventManager crawlerEventManager;
     private Importer importer;
@@ -499,10 +500,8 @@ public abstract class AbstractCrawler
                 LOG.debug(getId() + ": Processing reference: " + reference);
             }
             
-            
             ImporterResponse response = executeImporterPipeline(
                     this, doc, crawlDataStore, crawlData, cachedCrawlData);
-            
             if (response != null) {
                 processImportResponse(
                         response, crawlDataStore, crawlData, cachedCrawlData);
@@ -594,7 +593,7 @@ public abstract class AbstractCrawler
             // we copy it all that is non-null from cache.
             if (!crawlData.getState().isNewOrModified() && cached != null) {
                 //TODO maybe new CrawlData instances should be initialized with 
-                // some of cache data available?
+                // some of cache data available instead?
                 nullAwareBeanUtils.copyProperties(crawlData, cached);
             }
             
@@ -616,7 +615,7 @@ public abstract class AbstractCrawler
                 
                 SpoiledReferenceStrategy strategy = 
                         getSpoiledStateStrategy(crawlData);
-
+                
                 if (strategy == SpoiledReferenceStrategy.IGNORE) {
                     LOG.debug(getId() + ": ignoring spoiled reference: "
                             + crawlData.getReference());
@@ -789,12 +788,17 @@ public abstract class AbstractCrawler
         }
     }
     
-    public class NullAwareBeanUtilsBean extends BeanUtilsBean{
+    public class CopyIfNullBeanUtilsBean extends BeanUtilsBean{
         @Override
         public void copyProperty(Object dest, String name, Object value)
                 throws IllegalAccessException, InvocationTargetException {
-            if (value == null) {
-                return;
+            try {
+                if (PropertyUtils.getProperty(dest, name) != null) {
+                    return;
+                }
+            } catch (NoSuchMethodException e) {
+                throw new InvocationTargetException(e, 
+                        "Could not get property '" + name + "' for " + dest);
             }
             super.copyProperty(dest, name, value);
         }

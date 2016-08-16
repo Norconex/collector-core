@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,9 @@ import com.norconex.collector.core.data.store.ICrawlDataStore;
 /**
  * MapDB implementation of {@link ICrawlDataStore}.
  * @author Pascal Essiembre
+ * @deprecated Since 1.6.0.  Will be removed in future release.
  */
+@Deprecated
 public class MapDBCrawlDataStore extends AbstractCrawlDataStore {
 
     private static final Logger LOG = 

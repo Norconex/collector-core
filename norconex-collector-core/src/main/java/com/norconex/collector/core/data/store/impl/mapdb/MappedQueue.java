@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,9 @@ import com.norconex.collector.core.data.ICrawlData;
  * @author Pascal Essiembre
  *
  * @param <T> the type of {@link ICrawlData}
+ * @deprecated Since 1.6.0.  Will be removed in future release.
  */
+@Deprecated
 public class MappedQueue<T extends ICrawlData> implements Queue<T> {
 
     private final Queue<String> queue;

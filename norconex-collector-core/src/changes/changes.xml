@@ -21,6 +21,10 @@
         crawler implementations act on a document before it is being finalized.  
       </action>
       <action dev="essiembre" type="update">
+        MVStoreCrawlDataStoreFactory is now the default crawl store 
+        factory (replacing now deprecated MapDB implementation).
+      </action>
+      <action dev="essiembre" type="update">
         Dependency updates: Norconex Importer 2.6.0, 
         Norconex Committer Core 2.0.4, JSoup 1.8.3, Apache Commons DBCP 2.1.1,
         H2 Database 1.4.192.
