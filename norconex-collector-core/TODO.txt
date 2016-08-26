@@ -1,10 +1,11 @@
-- To remove number of dependencies and reduce maintenance, deprecate:
+- To remove number of dependencies and reduce maintenance, 
+  deprecate and eventually remove:
    - MapDB given MVStore is a more stable and as fast equivalent.
    - Derby given H2 is a significantly faster equivalent.
 
 - Refactor the whole approach of passing if new or modified to simplify it.
 
-- Introduce full/incremental as part of collector framework
+- Introduce full/incremental flag as part of collector framework
 
 - Have document default value other than NEW (e.g. UNKNOWN, UNPROCESSED, etc) 
 
