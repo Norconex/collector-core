@@ -71,8 +71,17 @@ import com.norconex.jef4.status.JobStatusUpdater;
 import com.norconex.jef4.suite.JobSuite;
 
 /**
- * Abstract crawler implementation providing a common base to building
- * crawlers.
+ * <p>Abstract crawler implementation providing a common base to building
+ * crawlers.</p>
+ * 
+ * <p>As of 1.6.1, JMX support is disabled by default.  To enable it,
+ * set the system property "enableJMX" to <code>true</code>.  You can do so
+ * by adding this to your Java launch command: 
+ * </p>
+ * <pre>
+ *     -DenableJMX=true</code>
+ * </pre>
+ * 
  * @author Pascal Essiembre
  */
 public abstract class AbstractCrawler 
@@ -198,7 +207,9 @@ public abstract class AbstractCrawler
         importer = new Importer(getCrawlerConfig().getImporterConfig());
         streamFactory = importer.getStreamFactory();
         processedCount = crawlDataStore.getProcessedCount();
-        registerMonitoringMbean(crawlDataStore);
+        if (Boolean.getBoolean("enableJMX")) {
+            registerMonitoringMbean(crawlDataStore);
+        }
         
         try {
             prepareExecution(statusUpdater, suite, crawlDataStore, resume);
@@ -413,10 +424,11 @@ public abstract class AbstractCrawler
     
     private void registerMonitoringMbean(ICrawlDataStore crawlDataStore) {
         try {
-            MBeanServer mbs = ManagementFactory.getPlatformMBeanServer(); 
-            ObjectName name = 
-                    new ObjectName("com.norconex.collector.http.crawler:type=" + 
-                            getCrawlerConfig().getId()); 
+            MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+            String objName = "com.norconex.collector.crawler:type=" + 
+                    getCrawlerConfig().getId();
+            LOG.info("Adding MBean for JMX monitoring: " + objName);
+            ObjectName name = new ObjectName(objName); 
             Monitoring mbean = new Monitoring(crawlDataStore); 
             mbs.registerMBean(mbean, name);
         } catch (MalformedObjectNameException | 
