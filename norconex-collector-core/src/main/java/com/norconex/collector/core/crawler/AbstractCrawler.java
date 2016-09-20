@@ -79,7 +79,7 @@ import com.norconex.jef4.suite.JobSuite;
  * by adding this to your Java launch command: 
  * </p>
  * <pre>
- *     -DenableJMX=true</code>
+ *     -DenableJMX=true
  * </pre>
  * 
  * @author Pascal Essiembre
