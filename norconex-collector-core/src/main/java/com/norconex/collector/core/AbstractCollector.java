@@ -17,6 +17,7 @@ package com.norconex.collector.core;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +35,7 @@ import com.norconex.jef4.status.FileJobStatusStore;
 import com.norconex.jef4.status.IJobStatus;
 import com.norconex.jef4.status.JobState;
 import com.norconex.jef4.suite.AbstractSuiteLifeCycleListener;
+import com.norconex.jef4.suite.ISuiteLifeCycleListener;
 import com.norconex.jef4.suite.JobSuite;
 import com.norconex.jef4.suite.JobSuiteConfig;
  
@@ -185,8 +187,11 @@ public abstract class AbstractCollector implements ICollector {
         suiteConfig.setJobStatusStore(
                 new FileJobStatusStore(collectorConfig.getProgressDir()));
         suiteConfig.setWorkdir(collectorConfig.getProgressDir()); 
-        suiteConfig.setSuiteLifeCycleListeners(
-                new AbstractSuiteLifeCycleListener() {
+        updateJobSuiteConfig(suiteConfig);
+        
+        List<ISuiteLifeCycleListener> suiteListeners = 
+                suiteConfig.getSuiteLifeCycleListeners();
+        suiteListeners.add(0, new AbstractSuiteLifeCycleListener() {
             @Override
             public void suiteStarted(JobSuite suite) {
                 printReleaseVersion();
@@ -195,6 +200,35 @@ public abstract class AbstractCollector implements ICollector {
         JobSuite suite = new JobSuite(rootJob, suiteConfig);
         LOG.info("Suite of " + crawlers.length + " crawler jobs created.");
         return suite;
+    }
+    
+    /**
+     * <p>
+     * <b>For advanced use only.</b>
+     * <b>Use at your own risk!</b>
+     * </p>
+     * <p>
+     * Allows implementors to modify the underlying JEF (Job Execution 
+     * Framework) job suite configuration. Since collectors need to configure 
+     * the <a href="https://www.norconex.com/jef/api/">JEF API</a>
+     * job suite a specific way, overwriting its configuration in 
+     * an unintended way may compromise the collector stability. 
+     * </p>
+     * <p>
+     * The log manager, job status store, and working directory should already
+     * be set by the collector based on the collector configuration so be 
+     * cautious in changing them.
+     * It should be safe to add JEF listeners.
+     * The collector adds a suite life cycle listener to print component 
+     * versions on startup.  
+     * </p>
+     * <p>
+     * Defaut implementation does nothing.
+     * </p>
+     * @param suiteConfig
+     */
+    protected void updateJobSuiteConfig(JobSuiteConfig suiteConfig) {
+        //NOOP
     }
     
     /**

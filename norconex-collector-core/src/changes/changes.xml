@@ -7,15 +7,22 @@
   </properties>
   <body>
 
-    <release version="1.6.1-SNAPSHOT" date="2016-??-??" description="Bugfix release">
+    <release version="1.6.1-SNAPSHOT" date="2016-??-??" description="Maintenance release">
+      <action dev="essiembre" type="update">
+        Developers can now modify underlying JEF API Job Suite 
+        configuration by sub-classing new 
+        AbstractCollector#updateJobSuiteConfig(JobSuiteConfig) method
+        (for advanced use only). 
+      </action>
       <action dev="essiembre" type="update">
         JXM support is not disabled by default to improve performance.
         It can be enabled by adding the JVM argument : -DenableJMX=true 
       </action>
       <action dev="essiembre" type="update">
         Dependency updates: Norconex Commons Lang 1.12.1, 
-        Norconex Importer 2.6.1, Joda Time 2.9.4, JJ2000 5.3,
-        Apache HTTP Client 4.5.2, Apache HTTP Core 4.4.5.
+        Norconex Importer 2.6.1, Norconex JEF API 4.0.8, 
+        Joda Time 2.9.4, JJ2000 5.3, Apache HTTP Client 4.5.2, 
+        Apache HTTP Core 4.4.5.
       </action>      
     </release>
 
