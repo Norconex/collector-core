@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,11 @@
  */
 package com.norconex.collector.core;
 
+import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.jef4.job.IJobErrorListener;
+import com.norconex.jef4.job.IJobLifeCycleListener;
+import com.norconex.jef4.suite.ISuiteLifeCycleListener;
 
 /**
  * @author Pascal Essiembre
@@ -40,5 +44,43 @@ public interface ICollectorConfig extends IXMLConfigurable {
      * @return logs directory path
      */
     String getLogsDir();
+
+    /**
+     * Gets JEF job life cycle listeners. A job typically represents a 
+     * crawler instance. Interacting directly
+     * with the <a href="https://www.norconex.com/jef/api/">JEF API</a>
+     * is normally reserved for more advanced use. 
+     * This method can safely return <code>null</code>.  
+     * @return JEF job life cycle listeners. 
+     * @since 1.7.0
+     */    
+    IJobLifeCycleListener[] getJobLifeCycleListeners();
+    /**
+     * Gets JEF error listeners. Interacting directly
+     * with the <a href="https://www.norconex.com/jef/api/">JEF API</a>
+     * is normally reserved for more advanced use. 
+     * This method can safely return <code>null</code>.  
+     * @return JEF job error listeners
+     * @since 1.7.0
+     */    
+    IJobErrorListener[] getJobErrorListeners();
+    /**
+     * Gets JEF job suite life cycle listeners. 
+     * A job suite typically represents a collector instance. 
+     * Interacting directly
+     * with the <a href="https://www.norconex.com/jef/api/">JEF API</a>
+     * is normally reserved for more advanced use. 
+     * This method can safely return <code>null</code>.  
+     * @return JEF suite life cycle listeners 
+     * @since 1.7.0
+     */    
+    ISuiteLifeCycleListener[] getSuiteLifeCycleListeners();
+    
+    /**
+     * Gets all crawler configurations.
+     * @return crawler configurations
+     * @since 1.7.0
+     */
+    ICrawlerConfig[] getCrawlerConfigs();
 
 }

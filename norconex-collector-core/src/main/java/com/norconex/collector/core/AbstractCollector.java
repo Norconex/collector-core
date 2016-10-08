@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.norconex.collector.core;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -55,7 +56,7 @@ public abstract class AbstractCollector implements ICollector {
     private static final Logger LOG = 
             LogManager.getLogger(AbstractCollector.class);
     
-    private AbstractCollectorConfig collectorConfig;
+    private ICollectorConfig collectorConfig;
 
     private ICrawler[] crawlers;
     private JobSuite jobSuite;
@@ -65,7 +66,7 @@ public abstract class AbstractCollector implements ICollector {
 	 * configuration.
 	 * @param collectorConfig Collector configuration
 	 */
-    public AbstractCollector(AbstractCollectorConfig collectorConfig) {
+    public AbstractCollector(ICollectorConfig collectorConfig) {
         //TODO clone config so modifications no longer apply.
         if (collectorConfig == null) {
             throw new IllegalArgumentException(
@@ -177,7 +178,6 @@ public abstract class AbstractCollector implements ICollector {
         
         JobSuiteConfig suiteConfig = new JobSuiteConfig();
 
-        
         //TODO have a base workdir, which is used to figure out where to put
         // everything (log, progress), and make log and progress overwritable.
 
@@ -187,48 +187,33 @@ public abstract class AbstractCollector implements ICollector {
         suiteConfig.setJobStatusStore(
                 new FileJobStatusStore(collectorConfig.getProgressDir()));
         suiteConfig.setWorkdir(collectorConfig.getProgressDir()); 
-        updateJobSuiteConfig(suiteConfig);
-        
-        List<ISuiteLifeCycleListener> suiteListeners = 
-                suiteConfig.getSuiteLifeCycleListeners();
-        suiteListeners.add(0, new AbstractSuiteLifeCycleListener() {
+
+        // Add JEF listeners
+        if (collectorConfig.getJobLifeCycleListeners() != null) {
+            suiteConfig.setJobLifeCycleListeners(
+                    collectorConfig.getJobLifeCycleListeners());
+        }
+        if (collectorConfig.getJobErrorListeners() != null) {
+            suiteConfig.setJobErrorListeners(
+                    collectorConfig.getJobErrorListeners());
+        }
+        List<ISuiteLifeCycleListener> suiteListeners = new ArrayList<>();
+        suiteListeners.add(new AbstractSuiteLifeCycleListener() {
             @Override
             public void suiteStarted(JobSuite suite) {
                 printReleaseVersion();
             }
         });
+        if (collectorConfig.getSuiteLifeCycleListeners() != null) {
+            suiteListeners.addAll(Arrays.asList(
+                    collectorConfig.getSuiteLifeCycleListeners()));
+        }
+        suiteConfig.setSuiteLifeCycleListeners(
+                suiteListeners.toArray(new ISuiteLifeCycleListener[]{}));
+        
         JobSuite suite = new JobSuite(rootJob, suiteConfig);
         LOG.info("Suite of " + crawlers.length + " crawler jobs created.");
         return suite;
-    }
-    
-    /**
-     * <p>
-     * <b>For advanced use only.</b>
-     * <b>Use at your own risk!</b>
-     * </p>
-     * <p>
-     * Allows implementors to modify the underlying JEF (Job Execution 
-     * Framework) job suite configuration. Since collectors need to configure 
-     * the <a href="https://www.norconex.com/jef/api/">JEF API</a>
-     * job suite a specific way, overwriting its configuration in 
-     * an unintended way may compromise the collector stability. 
-     * </p>
-     * <p>
-     * The log manager, job status store, and working directory should already
-     * be set by the collector based on the collector configuration so be 
-     * cautious in changing them.
-     * It should be safe to add JEF listeners.
-     * The collector adds a suite life cycle listener to print component 
-     * versions on startup.  
-     * </p>
-     * <p>
-     * Defaut implementation does nothing.
-     * </p>
-     * @param suiteConfig
-     */
-    protected void updateJobSuiteConfig(JobSuiteConfig suiteConfig) {
-        //NOOP
     }
     
     /**
@@ -243,7 +228,7 @@ public abstract class AbstractCollector implements ICollector {
      * @return the collectorConfig
      */
     @Override
-    public AbstractCollectorConfig getCollectorConfig() {
+    public ICollectorConfig getCollectorConfig() {
         return collectorConfig;
     }
     

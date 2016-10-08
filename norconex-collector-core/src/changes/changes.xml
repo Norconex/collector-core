@@ -7,12 +7,10 @@
   </properties>
   <body>
 
-    <release version="1.6.1-SNAPSHOT" date="2016-??-??" description="Maintenance release">
-      <action dev="essiembre" type="update">
-        Developers can now modify underlying JEF API Job Suite 
-        configuration by sub-classing new 
-        AbstractCollector#updateJobSuiteConfig(JobSuiteConfig) method
-        (for advanced use only). 
+    <release version="1.7.0-SNAPSHOT" date="2016-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        It is now possible to add JEF-related listeners on the collector 
+        configuration.
       </action>
       <action dev="essiembre" type="update">
         JXM support is not disabled by default to improve performance.

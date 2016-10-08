@@ -426,11 +426,6 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
             Writer out, String tagName, Object object) throws IOException {
         writeObject(out, tagName, object, false);
     }
-    protected void writeObjectKeepable(
-            Writer out, String tagName, Object object, boolean keep) {
-        
-    }
-
     
     protected void writeObject(
             Writer out, String tagName, Object object, boolean ignore) 
