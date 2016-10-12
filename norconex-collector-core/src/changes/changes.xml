@@ -17,10 +17,10 @@
         It can be enabled by adding the JVM argument : -DenableJMX=true 
       </action>
       <action dev="essiembre" type="update">
-        Dependency updates: Norconex Commons Lang 1.12.1, 
+        Dependency updates: Norconex Commons Lang 1.12.2, 
         Norconex Importer 2.6.1, Norconex JEF API 4.0.8, 
         Joda Time 2.9.4, JJ2000 5.3, Apache HTTP Client 4.5.2, 
-        Apache HTTP Core 4.4.5.
+        Apache HTTP Core 4.4.5, Apache Commons Logging 1.2
       </action>      
     </release>
 
