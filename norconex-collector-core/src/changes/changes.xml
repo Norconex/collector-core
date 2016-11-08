@@ -21,6 +21,10 @@
         Norconex Importer 2.6.1, Norconex JEF API 4.0.8, 
         Joda Time 2.9.4, JJ2000 5.3, Apache HTTP Client 4.5.2, 
         Apache HTTP Core 4.4.5, Apache Commons Logging 1.2
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed NullPointerException when stopping a crawler that did not 
+        previously run.
       </action>      
     </release>
 

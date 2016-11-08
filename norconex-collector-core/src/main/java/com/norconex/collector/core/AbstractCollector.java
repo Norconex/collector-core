@@ -138,10 +138,13 @@ public abstract class AbstractCollector implements ICollector {
         IJobStatus status = jobSuite.getStatus();
         if (status == null 
                 || !status.isState(JobState.RUNNING, JobState.UNKNOWN)) {
+            String curState = "";
+            if (status != null) {
+                curState = " State: " + status.getState();
+            }
             throw new CollectorException(
                     "This collector cannot be stopped since it is NOT "
-                  + "running. Current state: " 
-                  + jobSuite.getStatus().getState());
+                  + "running." + curState); 
         } else if (LOG.isDebugEnabled()) {
             LOG.debug("Suite state: " + status.getState());        
         }
