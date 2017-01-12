@@ -47,7 +47,7 @@ public interface ICollectorConfig extends IXMLConfigurable {
 
     /**
      * Gets collector life cycle listeners. 
-     * @param listener collector life cycle listeners. 
+     * @return collector life cycle listeners. 
      * @since 1.8.0
      */    
     ICollectorLifeCycleListener[] getCollectorListeners();

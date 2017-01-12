@@ -149,7 +149,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
     }
     /**
      * Sets collector life cycle listeners. 
-     * @param listener collector life cycle listeners. 
+     * @param collectorListeners collector life cycle listeners. 
      * @since 1.8.0
      */    
     public void setCollectorListeners(
