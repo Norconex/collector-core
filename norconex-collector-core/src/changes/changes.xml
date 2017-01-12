@@ -7,6 +7,27 @@
   </properties>
   <body>
 
+    <release version="1.8.0-SNAPSHOT" date="2017-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        New ICollectorLifeCycleListener interface that can be added on 
+        the collector configuration to be notified and take action when the 
+        collector starts and stops.
+      </action>
+      <action dev="essiembre" type="update">
+        Crawler events REJECTED_FILTER, REJECTED_BAD_STATUS, REJECTED_IMPORT,
+        and REJECTED_ERROR are now DEBUG in log4j.properties.
+      </action>
+      <action dev="essiembre" type="update">
+        When their log level is DEBUG, the word "Subject:" has been removed 
+        form crawler event messages and "No additional information available."
+        is shown when there is no extra info to show.
+      </action>
+      <action dev="essiembre" type="update">
+        Dependency updates: Norconex Commons Lang 1.13.0, 
+        Norconex Importer 2.7.0, Norconex JEF API 4.0.9
+      </action>
+    </release>
+
     <release version="1.7.0" date="2016-12-14" description="Feature release">
       <action dev="essiembre" type="add">
         It is now possible to add JEF-related listeners on the collector 

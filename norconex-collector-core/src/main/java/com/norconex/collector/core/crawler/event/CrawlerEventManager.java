@@ -76,8 +76,9 @@ public class CrawlerEventManager {
             b.append(event.getCrawlData().getReference());
         }
         if (includeSubject) {
-            b.append(" (Subject: ");
-            b.append(Objects.toString(event.getSubject(), "none"));
+            b.append(" (");
+            b.append(Objects.toString(event.getSubject(), 
+                    "No additional information available."));
             b.append(")");
         }
         return b.toString();

@@ -46,6 +46,13 @@ public interface ICollectorConfig extends IXMLConfigurable {
     String getLogsDir();
 
     /**
+     * Gets collector life cycle listeners. 
+     * @param listener collector life cycle listeners. 
+     * @since 1.8.0
+     */    
+    ICollectorLifeCycleListener[] getCollectorListeners();
+    
+    /**
      * Gets JEF job life cycle listeners. A job typically represents a 
      * crawler instance. Interacting directly
      * with the <a href="https://www.norconex.com/jef/api/">JEF API</a>

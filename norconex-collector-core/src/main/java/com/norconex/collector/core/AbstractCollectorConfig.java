@@ -63,9 +63,10 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
     private ICrawlerConfig[] crawlerConfigs;
     private String progressDir = DEFAULT_PROGRESS_DIR;
     private String logsDir = DEFAULT_LOGS_DIR;
+    private ICollectorLifeCycleListener[] collectorListeners;
     private IJobLifeCycleListener[] jobLifeCycleListeners;
     private IJobErrorListener[] jobErrorListeners;
-    private ISuiteLifeCycleListener[] suiteLifeCycleListeners;    
+    private ISuiteLifeCycleListener[] suiteLifeCycleListeners;
 
     public AbstractCollectorConfig() {
         this(null);
@@ -142,6 +143,20 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         this.logsDir = logsDir;
     }
 
+    @Override    
+    public ICollectorLifeCycleListener[] getCollectorListeners() {
+        return collectorListeners;
+    }
+    /**
+     * Sets collector life cycle listeners. 
+     * @param listener collector life cycle listeners. 
+     * @since 1.8.0
+     */    
+    public void setCollectorListeners(
+            ICollectorLifeCycleListener... collectorListeners) {
+        this.collectorListeners = collectorListeners;
+    }
+
     @Override
     public IJobLifeCycleListener[] getJobLifeCycleListeners() {
         return jobLifeCycleListeners;
@@ -204,6 +219,8 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
             writer.writeElementString("progressDir", getProgressDir());
             writer.flush();
 
+            writeArray(out, "collectorListeners", 
+                    "listener", getCollectorListeners());
             writeArray(out, "jobLifeCycleListeners", 
                     "listener", getJobLifeCycleListeners());
             writeArray(out, "jobErrorListeners", 
@@ -235,6 +252,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
     
     @Override
     public final void loadFromXML(Reader in) throws IOException {
+        
         XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
         String collectorId = xml.getString("[@id]", null);
         if (StringUtils.isBlank(collectorId)) {
@@ -244,6 +262,12 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         setId(collectorId);
         setLogsDir(xml.getString("logsDir", getLogsDir()));
         setProgressDir(xml.getString("progressDir", getProgressDir()));
+        
+        // Collector listeners
+        ICollectorLifeCycleListener[] collListeners = loadCollectorListeners(
+                xml, "collectorListeners.listener");
+        setCollectorListeners(defaultIfEmpty(collListeners,
+                getCollectorListeners()));
         
         // JEF Job listeners
         IJobLifeCycleListener[] jlcListeners = loadJobLifeCycleListeners(
@@ -275,15 +299,28 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
                     + getLogsDir() + "; progressDir=" + getProgressDir());
         }
     }
-    
+
+    private ICollectorLifeCycleListener[] loadCollectorListeners(
+            XMLConfiguration xml, String xmlPath) {
+        List<ICollectorLifeCycleListener> listeners = new ArrayList<>();
+        List<HierarchicalConfiguration> listenerNodes = xml
+                .configurationsAt(xmlPath);
+        for (HierarchicalConfiguration listenerNode : listenerNodes) {
+            ICollectorLifeCycleListener listener = 
+                    ConfigurationUtil.newInstance(listenerNode);
+            listeners.add(listener);
+            LOG.info("Collector life cycle listener loaded: " + listener);
+        }
+        return listeners.toArray(new ICollectorLifeCycleListener[] {});
+    }
     private IJobLifeCycleListener[] loadJobLifeCycleListeners(
             XMLConfiguration xml, String xmlPath) {
         List<IJobLifeCycleListener> listeners = new ArrayList<>();
         List<HierarchicalConfiguration> listenerNodes = xml
                 .configurationsAt(xmlPath);
         for (HierarchicalConfiguration listenerNode : listenerNodes) {
-            IJobLifeCycleListener listener = ConfigurationUtil
-                    .newInstance(listenerNode);
+            IJobLifeCycleListener listener = 
+                    ConfigurationUtil.newInstance(listenerNode);
             listeners.add(listener);
             LOG.info("Job life cycle listener loaded: " + listener);
         }
@@ -295,8 +332,8 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         List<HierarchicalConfiguration> listenerNodes = xml
                 .configurationsAt(xmlPath);
         for (HierarchicalConfiguration listenerNode : listenerNodes) {
-            IJobErrorListener listener = ConfigurationUtil
-                    .newInstance(listenerNode);
+            IJobErrorListener listener = 
+                    ConfigurationUtil.newInstance(listenerNode);
             listeners.add(listener);
             LOG.info("Job error listener loaded: " + listener);
         }
@@ -308,8 +345,8 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         List<HierarchicalConfiguration> listenerNodes = xml
                 .configurationsAt(xmlPath);
         for (HierarchicalConfiguration listenerNode : listenerNodes) {
-            ISuiteLifeCycleListener listener = ConfigurationUtil
-                    .newInstance(listenerNode);
+            ISuiteLifeCycleListener listener = 
+                    ConfigurationUtil.newInstance(listenerNode);
             listeners.add(listener);
             LOG.info("Suite life cycle listener loaded: " + listener);
         }
@@ -387,6 +424,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
                 .append(crawlerConfigs, castOther.crawlerConfigs)
                 .append(progressDir, castOther.progressDir)
                 .append(logsDir, castOther.logsDir)
+                .append(collectorListeners, castOther.collectorListeners)
                 .append(jobLifeCycleListeners, castOther.jobLifeCycleListeners)
                 .append(jobErrorListeners, castOther.jobErrorListeners)
                 .append(suiteLifeCycleListeners, 
@@ -402,6 +440,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
                 .append(crawlerConfigs)
                 .append(progressDir)
                 .append(logsDir)
+                .append(collectorListeners)
                 .append(jobLifeCycleListeners)
                 .append(jobErrorListeners)
                 .append(suiteLifeCycleListeners)
@@ -416,6 +455,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
                 .append("crawlerConfigs", crawlerConfigs)
                 .append("progressDir", progressDir)
                 .append("logsDir", logsDir)
+                .append("collectorListeners", collectorListeners)
                 .append("jobLifeCycleListeners", jobLifeCycleListeners)
                 .append("jobErrorListeners", jobErrorListeners)
                 .append("suiteLifeCycleListeners", suiteLifeCycleListeners)

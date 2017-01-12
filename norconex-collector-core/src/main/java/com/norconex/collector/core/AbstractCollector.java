@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -119,9 +120,22 @@ public abstract class AbstractCollector implements ICollector {
                   + "the currently running instance first.");
         }
         jobSuite = createJobSuite();
+        
+        ICollectorLifeCycleListener[] listeners = 
+                collectorConfig.getCollectorListeners();
         try {
+            if (ArrayUtils.isNotEmpty(listeners)) {
+                for (ICollectorLifeCycleListener l : listeners) {
+                    l.onCollectorStart(this);
+                }
+            }
             jobSuite.execute(resumeNonCompleted);
         } finally {
+            if (ArrayUtils.isNotEmpty(listeners)) {
+                for (ICollectorLifeCycleListener l : listeners) {
+                    l.onCollectorFinish(this);
+                }
+            }
             jobSuite = null;
         }
     }
