@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.ConfigurationLoader;
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 
 /**
  * Collector configuration loader.  Configuration options are defined
@@ -75,7 +75,7 @@ public class CollectorConfigLoader {
         try {
             ICollectorConfig collectorConfig = 
                     collectorConfigClass.newInstance();
-            collectorConfig.loadFromXML(ConfigurationUtil.newReader(xml));
+            collectorConfig.loadFromXML(XMLConfigurationUtil.newReader(xml));
             return collectorConfig;
         } catch (InstantiationException | IllegalAccessException e) {
             throw new CollectorException(

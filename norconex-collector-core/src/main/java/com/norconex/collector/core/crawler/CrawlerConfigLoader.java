@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 
 import com.norconex.collector.core.CollectorException;
 import com.norconex.commons.lang.config.ConfigurationLoader;
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 
 /**
  * HTTP Crawler configuration loader.
@@ -64,7 +64,7 @@ public class CrawlerConfigLoader {
             HierarchicalConfiguration xml) {
         try {
             XMLConfiguration defaults = 
-                    ConfigurationUtil.getXmlAt(xml, "crawlerDefaults");
+                    XMLConfigurationUtil.getXmlAt(xml, "crawlerDefaults");
             
             ICrawlerConfig  defaultConfig = crawlerConfigClass.newInstance();
 
@@ -81,7 +81,7 @@ public class CrawlerConfigLoader {
             for (HierarchicalConfiguration node : nodes) {
                 ICrawlerConfig config = defaultConfig.clone();
                 loadCrawlerConfig(config, 
-                        ConfigurationUtil.newXMLConfiguration(node));
+                        XMLConfigurationUtil.newXMLConfiguration(node));
                 configs.add(config);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Crawler configuration loaded: "
@@ -120,7 +120,7 @@ public class CrawlerConfigLoader {
                         "Crawler ID is missing in configuration.");
             }
         }
-        config.loadFromXML(ConfigurationUtil.newReader(node));
+        config.loadFromXML(XMLConfigurationUtil.newReader(node));
     }
         
 }

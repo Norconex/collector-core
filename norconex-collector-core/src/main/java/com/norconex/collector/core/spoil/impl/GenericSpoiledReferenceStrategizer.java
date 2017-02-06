@@ -36,8 +36,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
 import com.norconex.collector.core.spoil.SpoiledReferenceStrategy;
-import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 
 /**
@@ -121,7 +121,7 @@ public class GenericSpoiledReferenceStrategizer implements
 
     @Override
     public void loadFromXML(Reader in) throws IOException {
-        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
+        XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
         SpoiledReferenceStrategy fallback = 
                 toStrategy(xml.getString("[@fallbackStrategy]", null));
         if (fallback != null) {
@@ -138,10 +138,9 @@ public class GenericSpoiledReferenceStrategizer implements
             }
             CrawlState state = CrawlState.valueOf(attribState);
             SpoiledReferenceStrategy strategy = toStrategy(attribStrategy);
-            if (state == null || strategy == null) {
-                continue;
+            if (state != null && strategy != null) {
+                addMapping(state, strategy);
             }
-            addMapping(state, strategy);
         }
     }
 

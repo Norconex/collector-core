@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,8 +36,8 @@ import org.apache.log4j.Logger;
 
 import com.norconex.collector.core.crawler.CrawlerConfigLoader;
 import com.norconex.collector.core.crawler.ICrawlerConfig;
-import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.jef4.job.IJobErrorListener;
 import com.norconex.jef4.job.IJobLifeCycleListener;
@@ -207,6 +207,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         this.suiteLifeCycleListeners = suiteLifeCycleListeners;
     }
     
+    @Override
     public void saveToXML(Writer out) throws IOException {
         try {
             out.flush();
@@ -253,7 +254,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
     @Override
     public final void loadFromXML(Reader in) throws IOException {
         
-        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
+        XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
         String collectorId = xml.getString("[@id]", null);
         if (StringUtils.isBlank(collectorId)) {
             throw new CollectorException(
@@ -307,7 +308,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
                 .configurationsAt(xmlPath);
         for (HierarchicalConfiguration listenerNode : listenerNodes) {
             ICollectorLifeCycleListener listener = 
-                    ConfigurationUtil.newInstance(listenerNode);
+                    XMLConfigurationUtil.newInstance(listenerNode);
             listeners.add(listener);
             LOG.info("Collector life cycle listener loaded: " + listener);
         }
@@ -320,7 +321,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
                 .configurationsAt(xmlPath);
         for (HierarchicalConfiguration listenerNode : listenerNodes) {
             IJobLifeCycleListener listener = 
-                    ConfigurationUtil.newInstance(listenerNode);
+                    XMLConfigurationUtil.newInstance(listenerNode);
             listeners.add(listener);
             LOG.info("Job life cycle listener loaded: " + listener);
         }
@@ -333,7 +334,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
                 .configurationsAt(xmlPath);
         for (HierarchicalConfiguration listenerNode : listenerNodes) {
             IJobErrorListener listener = 
-                    ConfigurationUtil.newInstance(listenerNode);
+                    XMLConfigurationUtil.newInstance(listenerNode);
             listeners.add(listener);
             LOG.info("Job error listener loaded: " + listener);
         }
@@ -346,7 +347,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
                 .configurationsAt(xmlPath);
         for (HierarchicalConfiguration listenerNode : listenerNodes) {
             ISuiteLifeCycleListener listener = 
-                    ConfigurationUtil.newInstance(listenerNode);
+                    XMLConfigurationUtil.newInstance(listenerNode);
             listeners.add(listener);
             LOG.info("Suite life cycle listener loaded: " + listener);
         }

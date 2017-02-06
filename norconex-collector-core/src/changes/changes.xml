@@ -24,7 +24,8 @@
       </action>
       <action dev="essiembre" type="update">
         Dependency updates: Norconex Commons Lang 1.13.0, 
-        Norconex Importer 2.7.0, Norconex JEF API 4.0.9
+        Norconex Importer 2.7.0, Norconex JEF API 4.1.0,
+        Norconex Committer Core 2.0.6.
       </action>
     </release>
 

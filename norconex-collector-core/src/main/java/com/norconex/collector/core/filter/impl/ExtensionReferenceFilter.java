@@ -1,4 +1,4 @@
-/* Copyright 2014,2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,8 +36,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.norconex.collector.core.filter.IDocumentFilter;
 import com.norconex.collector.core.filter.IMetadataFilter;
 import com.norconex.collector.core.filter.IReferenceFilter;
-import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.handler.filter.AbstractOnMatchFilter;
@@ -59,7 +59,6 @@ import com.norconex.importer.handler.filter.OnMatch;
  * </pre>
  * @author Pascal Essiembre
  */
-@SuppressWarnings("nls")
 public class ExtensionReferenceFilter extends AbstractOnMatchFilter implements 
         IReferenceFilter, IDocumentFilter, IMetadataFilter, IXMLConfigurable {
 
@@ -102,7 +101,8 @@ public class ExtensionReferenceFilter extends AbstractOnMatchFilter implements
         for (String ext : extensionParts) {
             if (!isCaseSensitive() && ext.equalsIgnoreCase(refExtension)) {
                 return getOnMatch() == OnMatch.INCLUDE;
-            } else if (isCaseSensitive() && ext.equals(refExtension)) {
+            }
+            if (isCaseSensitive() && ext.equals(refExtension)) {
                 return getOnMatch() == OnMatch.INCLUDE;
             }
         }
@@ -137,7 +137,7 @@ public class ExtensionReferenceFilter extends AbstractOnMatchFilter implements
     }
     @Override
     public void loadFromXML(Reader in)  {
-        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
+        XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
         setExtensions(xml.getString(""));
         loadFromXML(xml);
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));

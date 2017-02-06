@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,8 +49,8 @@ import com.norconex.collector.core.filter.IReferenceFilter;
 import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
 import com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer;
 import com.norconex.committer.core.ICommitter;
-import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterConfigLoader;
@@ -137,6 +137,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         this.maxDocuments = maxDocuments;
     }
 
+    @Override
     public OrphansStrategy getOrphansStrategy() {
         return orphansStrategy;
     }
@@ -287,7 +288,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     
     @Override
     public final void loadFromXML(Reader in) throws IOException {
-        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
+        XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
         
 
         String crawlerId = xml.getString("[@id]", null);
@@ -310,16 +311,15 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         setMaxDocuments(xml.getInt("maxDocuments", getMaxDocuments()));
 
         //--- Reference Filters ------------------------------------------------
-        IReferenceFilter[] referenceFilters = 
+        IReferenceFilter[] refFilters = 
                 loadReferenceFilters(xml, "referenceFilters.filter");
         setReferenceFilters(defaultIfEmpty(
-                referenceFilters, getReferenceFilters()));
+                refFilters, getReferenceFilters()));
         
         //--- Metadata Filters ---------------------------------------------
-        IMetadataFilter[] metadataFilters = 
+        IMetadataFilter[] metaFilters = 
                 loadMetadataFilters(xml, "metadataFilters.filter");
-        setMetadataFilters(defaultIfEmpty(
-                metadataFilters, getMetadataFilters()));
+        setMetadataFilters(defaultIfEmpty(metaFilters, getMetadataFilters()));
         
         //--- Document Filters -------------------------------------------------
         IDocumentFilter[] docFilters = 
@@ -327,33 +327,33 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         setDocumentFilters(defaultIfEmpty(docFilters, getDocumentFilters()));
         
         //--- Crawler Listeners ------------------------------------------------
-        ICrawlerEventListener[] crawlerListeners = 
+        ICrawlerEventListener[] cEventListeners = 
                 loadListeners(xml, "crawlerListeners.listener");
-        setCrawlerListeners(defaultIfEmpty(crawlerListeners,
-                getCrawlerListeners()));
+        setCrawlerListeners(
+                defaultIfEmpty(cEventListeners, getCrawlerListeners()));
 
         //--- IMPORTER ---------------------------------------------------------
         XMLConfiguration importerNode = 
-                ConfigurationUtil.getXmlAt(xml, "importer");
-        ImporterConfig importerConfig = ImporterConfigLoader
-                .loadImporterConfig(importerNode);
-        setImporterConfig(ObjectUtils.defaultIfNull(importerConfig,
-                getImporterConfig()));
+                XMLConfigurationUtil.getXmlAt(xml, "importer");
+        ImporterConfig iConfig = 
+                ImporterConfigLoader.loadImporterConfig(importerNode);
+        setImporterConfig(
+                ObjectUtils.defaultIfNull(iConfig, getImporterConfig()));
 
         //--- Data Store -------------------------------------------------------
-        setCrawlDataStoreFactory(ConfigurationUtil.newInstance(xml,
+        setCrawlDataStoreFactory(XMLConfigurationUtil.newInstance(xml,
                 "crawlDataStoreFactory", getCrawlDataStoreFactory()));
 
         //--- Document Committer -----------------------------------------------
-        setCommitter(ConfigurationUtil.newInstance(
+        setCommitter(XMLConfigurationUtil.newInstance(
                 xml, "committer", getCommitter()));
         
         //--- Document Checksummer ---------------------------------------------
-        setDocumentChecksummer(ConfigurationUtil.newInstance(
+        setDocumentChecksummer(XMLConfigurationUtil.newInstance(
                 xml, "documentChecksummer", getDocumentChecksummer()));
 
         //--- Spoiled State Strategy Resolver ----------------------------------
-        setSpoiledReferenceStrategizer(ConfigurationUtil.newInstance(
+        setSpoiledReferenceStrategizer(XMLConfigurationUtil.newInstance(
                 xml, "spoiledReferenceStrategizer", 
                         getSpoiledReferenceStrategizer()));
         
@@ -369,8 +369,8 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         List<HierarchicalConfiguration> listenerNodes = xml
                 .configurationsAt(xmlPath);
         for (HierarchicalConfiguration listenerNode : listenerNodes) {
-            ICrawlerEventListener listener = ConfigurationUtil
-                    .newInstance(listenerNode);
+            ICrawlerEventListener listener = 
+                    XMLConfigurationUtil.newInstance(listenerNode);
             listeners.add(listener);
             LOG.info("Crawler event listener loaded: " + listener);
         }
@@ -384,7 +384,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
                 xml.configurationsAt(xmlPath);
         for (HierarchicalConfiguration filterNode : filterNodes) {
             IReferenceFilter refFilter = 
-                    ConfigurationUtil.newInstance(filterNode);
+                    XMLConfigurationUtil.newInstance(filterNode);
             if (refFilter != null) {
                 refFilters.add(refFilter);
                 LOG.info("Reference filter loaded: " + refFilter);
@@ -402,7 +402,8 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         List<HierarchicalConfiguration> filterNodes = xml
                 .configurationsAt(xmlPath);
         for (HierarchicalConfiguration filterNode : filterNodes) {
-            IMetadataFilter filter = ConfigurationUtil.newInstance(filterNode);
+            IMetadataFilter filter = 
+                    XMLConfigurationUtil.newInstance(filterNode);
             filters.add(filter);
             LOG.info("Matadata filter loaded: " + filter);
         }
@@ -415,7 +416,8 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         List<HierarchicalConfiguration> filterNodes = 
                 xml.configurationsAt(xmlPath);
         for (HierarchicalConfiguration filterNode : filterNodes) {
-            IDocumentFilter filter = ConfigurationUtil.newInstance(filterNode);
+            IDocumentFilter filter = 
+                    XMLConfigurationUtil.newInstance(filterNode);
             filters.add(filter);
             LOG.info("Document filter loaded: " + filter);
         }

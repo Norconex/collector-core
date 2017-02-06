@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.collector.core.doc.CollectorMetadata;
-import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 
@@ -69,13 +69,13 @@ public abstract class AbstractMetadataChecksummer
     public final String createMetadataChecksum(Properties metadata) {
         String checksum = doCreateMetaChecksum(metadata);
         if (isKeep()) {
-            String field = targetField;
+            String field = getTargetField();
             if (StringUtils.isBlank(field)) {
                 field = CollectorMetadata.COLLECTOR_CHECKSUM_METADATA;
             }
-            metadata.addString(getTargetField(), checksum);
+            metadata.addString(field, checksum);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Meta checksum stored in " + targetField);
+                LOG.debug("Meta checksum stored in " + field);
             }
         }
         return checksum;
@@ -117,7 +117,7 @@ public abstract class AbstractMetadataChecksummer
 
     @Override
     public final void loadFromXML(Reader in) {
-        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
+        XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
         setKeep(xml.getBoolean("[@keep]", keep));
         setTargetField(xml.getString("[@targetField]", targetField));
         loadChecksummerFromXML(xml);
