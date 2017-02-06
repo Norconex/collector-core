@@ -140,6 +140,7 @@ public abstract class AbstractCrawler
     
     @Override
     public void stop(IJobStatus jobStatus, JobSuite suite) {
+        fireCrawlerEvent(CrawlerEvent.CRAWLER_STOPPING, null, this);
         stopped = true;
         LOG.info(getId() + ": Stopping the crawler.");
     }
@@ -273,6 +274,8 @@ public abstract class AbstractCrawler
 
         if (!isStopped()) {
             fireCrawlerEvent(CrawlerEvent.CRAWLER_FINISHED, null, this);
+        } else {
+            fireCrawlerEvent(CrawlerEvent.CRAWLER_STOPPED, null, this);
         }
         LOG.info(getId() + ": Crawler "
                 + (isStopped() ? "stopped." : "completed."));

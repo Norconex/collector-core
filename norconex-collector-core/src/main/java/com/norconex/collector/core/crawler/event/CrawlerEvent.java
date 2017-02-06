@@ -28,10 +28,30 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  */
 public class CrawlerEvent {
 
+    /**
+     * The crawler started.
+     */
     public static final String CRAWLER_STARTED = "CRAWLER_STARTED";
+    /**
+     * The crawler resumed execution (from a previous incomplete crawl).
+     */
     public static final String CRAWLER_RESUMED = "CRAWLER_RESUMED";
+    /**
+     * The crawler completed execution (without being stopped).
+     */
     public static final String CRAWLER_FINISHED = "CRAWLER_FINISHED";
-
+    /**
+     * Issued when a request to stop the crawler has been received.
+     * @since 1.8.0
+     */
+    public static final String CRAWLER_STOPPING = "CRAWLER_STOPPING";
+    /**
+     * Issued when a request to stop the crawler has been fully executed
+     * (crawler stopped).
+     * @since 1.8.0
+     */
+    public static final String CRAWLER_STOPPED = "CRAWLER_STOPPED";
+    
     public static final String REJECTED_FILTER = "REJECTED_FILTER";
     public static final String REJECTED_UNMODIFIED = "REJECTED_UNMODIFIED";
     /**

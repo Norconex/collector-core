@@ -13,6 +13,10 @@
         the collector configuration to be notified and take action when the 
         collector starts and stops.
       </action>
+      <action dev="essiembre" type="add">
+        Two new crawler events where added for crawler event listeners:
+        CRAWLER_STOPPING and CRAWLER_STOPPED.
+      </action>
       <action dev="essiembre" type="update">
         Crawler events REJECTED_FILTER, REJECTED_BAD_STATUS, REJECTED_IMPORT,
         and REJECTED_ERROR are now DEBUG in log4j.properties.
