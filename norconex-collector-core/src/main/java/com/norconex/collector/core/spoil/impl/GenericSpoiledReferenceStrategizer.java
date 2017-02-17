@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,9 +59,7 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  *   <tr><td>ERROR</td><td>GRACE_ONCE</td></tr>
  * </table>
  * 
- * <p>
- * XML configuration usage:
- * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;spoiledReferenceStrategizer 
  *      class="com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer"
@@ -69,7 +67,23 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  *    &lt;mapping state="(any crawl state)" strategy="[DELETE|GRACE_ONCE|IGNORE]" /&gt;
  *    (repeat mapping tag as needed)
  *  &lt;/spoiledReferenceStrategizer&gt;
+ * </pre>
+ * 
+ * <h4>Usage example:</h4>
+ * <p>
+ * The following indicates we should ignore (do nothing) errors processing
+ * documents, and send a deletion request if they are not found or have 
+ * resulted in a bad status. 
+ * </p> 
+ * <pre>
+ *  &lt;spoiledReferenceStrategizer 
+ *      class="com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer"&gt;
+ *    &lt;mapping state="NOT_FOUND" strategy="DELETE" /&gt;
+ *    &lt;mapping state="BAD_STATUS" strategy="DELETE" /&gt;
+ *    &lt;mapping state="ERROR" strategy="IGNORE" /&gt;
+ *  &lt;/spoiledReferenceStrategizer&gt;
  * </pre> 
+ * 
  * @author Pascal Essiembre
  * @since 1.2.0
  */
@@ -153,7 +167,7 @@ public class GenericSpoiledReferenceStrategizer implements
     public void saveToXML(Writer out) throws IOException {
         try {
             EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
-            writer.writeStartElement("spoiledStateStrategyResolver");
+            writer.writeStartElement("spoiledReferenceStrategizer");
             writer.writeAttribute("class", getClass().getCanonicalName());
             writer.writeAttribute(
                     "fallbackStrategy", getFallbackStrategy().toString());

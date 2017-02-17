@@ -49,7 +49,7 @@ import com.norconex.importer.doc.ImporterDocument;
  * Implementors should offer this XML configuration usage:
  * <pre>
  *  &lt;documentChecksummer 
- *      class="(subclass)"&gt;
+ *      class="(subclass)"
  *      keep="[false|true]"
  *      targetField="(optional metadata field to store the checksum)" /&gt;
  * </pre>

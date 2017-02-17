@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<!-- 
+   Copyright 2017 Norconex Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<!-- This is a config file with as many configuration options being set
+     as possible, to test validation as much we can.
+     -->
+<collector id="Test Collector Core Config">
+
+  <progressDir>/progress</progressDir>
+  <logsDir>/logs</logsDir>
+
+  <collectorListeners>
+    <listener class="com.norconex.collector.core.MockCollectorLifeCycleListener">
+      <sample sample="sample">sample</sample>
+    </listener>
+  </collectorListeners>
+  <jobLifeCycleListeners>
+    <listener class="com.norconex.collector.core.MockJobLifeCycleListener">
+      <sample sample="sample">sample</sample>
+    </listener>
+  </jobLifeCycleListeners>
+  <jobErrorListeners>
+    <listener class="com.norconex.collector.core.MockJobErrorListener">
+      <sample sample="sample">sample</sample>
+    </listener>
+  </jobErrorListeners>
+  <suiteLifeCycleListeners>
+    <listener class="com.norconex.collector.core.MockSuiteLifeCycleListener" >
+      <sample sample="sample">sample</sample>
+    </listener>
+  </suiteLifeCycleListeners>
+
+  <crawlerDefaults>
+    <numThreads>1</numThreads>
+    <workDir>/tmp/111</workDir>
+    <maxDocuments>111</maxDocuments>
+    <orphansStrategy>PROCESS</orphansStrategy>
+    <crawlDataStoreFactory class="com.norconex.collector.core.data.store.impl.mvstore.MVStoreCrawlDataStoreFactory" />
+    <referenceFilters>
+      <filter class="com.norconex.collector.core.filter.impl.ExtensionReferenceFilter"
+          onMatch="exclude" caseSensitive="true">xml,pdf,doc</filter>
+      <filter class="com.norconex.collector.core.filter.impl.RegexReferenceFilter"
+          onMatch="exclude" caseSensitive="false">.*example.com.*</filter>
+    </referenceFilters>
+    <metadataFilters>
+      <filter class="com.norconex.collector.core.filter.impl.ExtensionReferenceFilter"
+          onMatch="exclude" caseSensitive="true">xml,pdf,doc</filter>
+      <filter class="com.norconex.collector.core.filter.impl.RegexReferenceFilter"
+          onMatch="exclude" caseSensitive="false">.*example.com.*</filter>
+      <filter class="com.norconex.collector.core.filter.impl.RegexMetadataFilter"
+          onMatch="include" caseSensitive="false" field="title">Blah.*</filter>
+    </metadataFilters>
+    <documentFilters>
+      <filter class="com.norconex.collector.core.filter.impl.ExtensionReferenceFilter"
+          onMatch="exclude" caseSensitive="true">xml,pdf,doc</filter>
+      <filter class="com.norconex.collector.core.filter.impl.RegexReferenceFilter"
+          onMatch="exclude" caseSensitive="false">.*example.com.*</filter>
+      <filter class="com.norconex.collector.core.filter.impl.RegexMetadataFilter"
+          onMatch="include" caseSensitive="false" field="title">Blah.*</filter>
+    </documentFilters>
+    <crawlerListeners>
+      <listener class="com.norconex.collector.core.crawler.event.MockCrawlerEventListener">
+        <sample sample="sample">sample</sample>
+      </listener>
+    </crawlerListeners>
+
+    <!-- Importer is purposely slim since the full config is tested in
+         Importer project. -->
+    <importer>
+      <preParseHandlers>
+        <transformer class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer">
+          <replace><fromValue>A</fromValue><toValue>B</toValue></replace>
+        </transformer>  
+      </preParseHandlers>
+      <postParseHandlers>
+        <transformer class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer">
+          <replace><fromValue>C</fromValue><toValue>D</toValue></replace>
+        </transformer>  
+      </postParseHandlers>    
+    </importer>
+
+    <committer class="com.norconex.committer.core.impl.FileSystemCommitter">
+      <directory>/tmp/somepath</directory>
+    </committer>
+
+    <documentChecksummer 
+        class="com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer"
+        disabled="false" keep="true" targetField="afield">
+      <sourceFields>field1,field2</sourceFields>
+    </documentChecksummer>
+    <spoiledReferenceStrategizer 
+        class="com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer"
+        fallbackStrategy="DELETE">
+      <mapping state="NOT_FOUND" strategy="DELETE" />
+      <mapping state="BAD_STATUS" strategy="DELETE" />
+      <mapping state="ERROR" strategy="IGNORE" />
+    </spoiledReferenceStrategizer>
+  </crawlerDefaults>
+  <crawlers>
+    <crawler id="myCrawler1">
+      <numThreads>2</numThreads>
+      <workDir>/tmp/222</workDir>
+      <maxDocuments>222</maxDocuments>
+      <orphansStrategy>DELETE</orphansStrategy>
+    </crawler>
+    <crawler id="myCrawler2">
+      <numThreads>3</numThreads>
+      <workDir>/tmp/333</workDir>
+      <maxDocuments>333</maxDocuments>
+      <orphansStrategy>IGNORE</orphansStrategy>
+    </crawler>
+  </crawlers>
+
+</collector>

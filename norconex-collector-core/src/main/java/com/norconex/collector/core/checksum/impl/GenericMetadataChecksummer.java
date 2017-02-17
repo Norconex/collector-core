@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,19 +51,29 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  * it stores it under the metadata field name 
  * {@link CollectorMetadata#COLLECTOR_CHECKSUM_METADATA}. 
  * </p>
- * <p>
- * XML configuration usage:
- * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;metadataChecksummer 
- *      class="com.norconex.collector.core.checksum.impl.HttpMetadataChecksummer"
+ *      class="com.norconex.collector.core.checksum.impl.GenericMetadataChecksummer"
  *      disabled="[false|true]"
  *      keep="[false|true]"
  *      targetField="(field to store checksum)"&gt;
  *    &lt;sourceFields&gt;
  *        (optional coma-separated list fields used to create checksum)
  *    &lt;/sourceFields&gt;
- *  &lt;/documentChecksummer&gt;
+ *  &lt;/metadataChecksummer&gt;
+ * </pre>
+ * 
+ * <h4>Usage example:</h4>
+ * <p>
+ * The following uses a combination of two (fictitious) fields called
+ * "docLastModified" and "docSize" to make the checksum.
+ * </p> 
+ * <pre>
+ *  &lt;metadataChecksummer 
+ *      class="com.norconex.collector.core.checksum.impl.GenericMetadataChecksummer"&gt;
+ *    &lt;sourceFields&gt;docLastModified,docSize&lt;/sourceFields&gt;
+ *  &lt;/metadataChecksummer&gt;
  * </pre>
  * @since 1.2.0
  * @author Pascal Essiembre

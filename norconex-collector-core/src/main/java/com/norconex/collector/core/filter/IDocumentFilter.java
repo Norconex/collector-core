@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.norconex.collector.core.filter;
 import com.norconex.importer.doc.ImporterDocument;
 
 /**
- * Filter a document after the document content is fetched, dowloaded,
+ * Filter a document after the document content is fetched, downloaded,
  * or otherwise read or acquired.
  * <p>
  * It is highly recommended to overwrite the <code>toString()</code> method

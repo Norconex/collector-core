@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,13 @@ import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
 import com.norconex.commons.lang.file.FileUtil;
 
 /**
+ * <p>
  * H2 MVStore crawl data store factory 
  * (<a href="http://h2database.com/html/mvstore.html"
  * >http://h2database.com/html/mvstore.html</a>).
+ * </p>
  * 
- * XML Configuration Usage: 
- * 
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;crawlDataStoreFactory 
  *          class="com.norconex.collector.core.data.store.impl.mvstore.MVStoreCrawlDataStoreFactory" /&gt;

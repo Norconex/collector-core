@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,11 @@
  */
 package com.norconex.collector.core.data.store;
 
-import com.norconex.collector.core.data.CrawlState;
-import com.norconex.collector.core.data.ICrawlData;
-
 /**
- * <p>Abstract crawl data store.</p>
- * <p>As of 1.2.0, this class does not implement any non-deprecated methods 
- * from {@link ICrawlDataStore}.</p>
+ * <p>Abstract crawl data store. Does not implement any method.</p>
  * @author Pascal Essiembre
  */
 public abstract class AbstractCrawlDataStore implements ICrawlDataStore {
-
-    @Override
-    @Deprecated
-    public final boolean isVanished(ICrawlData crawlData) {
-        ICrawlData cachedReference = getCached(crawlData.getReference());
-        if (cachedReference == null) {
-            return false;
-        }
-        CrawlState current = crawlData.getState();
-        CrawlState last = cachedReference.getState();
-        return !current.isGoodState() && last.isGoodState();
-    }
-
-
+    //TODO used to implement isVanished(...).  Shall we delete or keep
+    //as an adapter to avoid API change issues with ICrawlStore?
 }

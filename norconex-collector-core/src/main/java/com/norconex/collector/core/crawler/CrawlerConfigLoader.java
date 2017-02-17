@@ -120,7 +120,7 @@ public class CrawlerConfigLoader {
                         "Crawler ID is missing in configuration.");
             }
         }
-        config.loadFromXML(XMLConfigurationUtil.newReader(node));
+        XMLConfigurationUtil.loadFromXML(config, node);
     }
         
 }

@@ -16,15 +16,19 @@ package com.norconex.collector.core.data.store.impl.mongo;
 
 import static org.junit.Assert.assertNull;
 
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.github.fakemongo.Fongo;
 import com.mongodb.DB;
+import com.norconex.collector.core.TestUtil;
 import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.impl.BaseCrawlDataStoreTest;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 
 public class MongoCrawlDataStoreTest extends BaseCrawlDataStoreTest {
 
@@ -50,5 +54,22 @@ public class MongoCrawlDataStoreTest extends BaseCrawlDataStoreTest {
         // To test against a real Mongo, use:
         // db = new MongoCrawlURLDatabase(config, resume, 27017, "localhost",
         // "unit-tests-001");        
+    }
+    
+    @Test
+    public void testValidation() throws IOException {
+        TestUtil.testValidation(getClass());
+    }
+    
+    @Test
+    public void testWriteRead() throws IOException {
+        MockMongoCrawlDataStoreFactory f = new MockMongoCrawlDataStoreFactory();
+        f.getConnectionDetails().setDatabaseName("dbName");
+        f.getConnectionDetails().setHost("host");
+        f.getConnectionDetails().setPort(123);
+        f.getConnectionDetails().setUsername("username");
+        f.getConnectionDetails().setPassword("password");
+        System.out.println("Writing/Reading this: " + f);
+        XMLConfigurationUtil.assertWriteRead(f);
     }
 }

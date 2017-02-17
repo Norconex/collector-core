@@ -14,8 +14,13 @@
  */
 package com.norconex.collector.core.filter.impl;
 
+import java.io.IOException;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.importer.handler.filter.OnMatch;
 
 public class ExtensionReferenceFilterTest {
 
@@ -93,5 +98,15 @@ public class ExtensionReferenceFilterTest {
         ExtensionReferenceFilter filter = new ExtensionReferenceFilter();
         filter.setExtensions(extensions);
         return filter;
+    }
+    
+    @Test
+    public void testWriteRead() throws IOException {
+        ExtensionReferenceFilter f = new ExtensionReferenceFilter();
+        f.setCaseSensitive(true);
+        f.setExtensions("com,pdf");
+        f.setOnMatch(OnMatch.EXCLUDE);
+        System.out.println("Writing/Reading this: " + f);
+        XMLConfigurationUtil.assertWriteRead(f);
     }
 }

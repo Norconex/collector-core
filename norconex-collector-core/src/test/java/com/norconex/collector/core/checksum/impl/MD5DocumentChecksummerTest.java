@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.importer.doc.ImporterDocument;
@@ -75,6 +76,16 @@ public class MD5DocumentChecksummerTest {
                 checksum3);
 
         is.dispose();
-
+    }
+    
+    @Test
+    public void testWriteRead() throws IOException {
+        MD5DocumentChecksummer c = new MD5DocumentChecksummer();
+        c.setDisabled(true);
+        c.setKeep(true);
+        c.setSourceFields("field1","field2");
+        c.setTargetField("target");
+        System.out.println("Writing/Reading this: " + c);
+        XMLConfigurationUtil.assertWriteRead(c);
     }
 }

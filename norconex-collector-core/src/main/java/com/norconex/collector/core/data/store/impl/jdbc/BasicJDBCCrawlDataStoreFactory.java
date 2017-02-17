@@ -1,4 +1,4 @@
-/* Copyright 2016 Norconex Inc.
+/* Copyright 2016-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,18 +21,28 @@ import com.norconex.collector.core.data.store.impl.jdbc.IJDBCSerializer;
 import com.norconex.collector.core.data.store.impl.jdbc.JDBCCrawlDataStore.Database;
 
 /**
+ * <p>
  * JDBC implementation of {@link ICrawlDataStore}.  Defaults to H2 
  * database.
- * <br><br>
- * XML configuration usage:
- * <br><br>
+ * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;crawlDataStoreFactory 
  *          class="com.norconex.collector.core.data.store.impl.jdbc.BasicJDBCCrawlDataStoreFactory"&gt;
  *      &lt;database&gt;[h2|derby]&lt;/database&gt;
  *  &lt;/crawlDataStoreFactory&gt;
  * </pre>
- *
+ * 
+ * <h4>Usage example:</h4>
+ * <p>
+ * The following changes the default to use an embedded derby database.
+ * </p> 
+ * <pre>
+ *  &lt;crawlDataStoreFactory 
+ *          class="com.norconex.collector.core.data.store.impl.jdbc.BasicJDBCCrawlDataStoreFactory"&gt;
+ *      &lt;database&gt;derby&lt;/database&gt;
+ *  &lt;/crawlDataStoreFactory&gt;;
+ * </pre>
  * @author Pascal Essiembre
  * @since 1.5.0
  */

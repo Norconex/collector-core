@@ -21,6 +21,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -246,10 +247,11 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
             EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
             writer.writeStartElement("crawler");
             writer.writeAttributeClass("class", getClass());
-            writer.writeAttribute("id", getId());
+            writer.writeAttributeString("id", getId());
 
             writer.writeElementInteger("numThreads", getNumThreads());
-            writer.writeElementString("workDir", getWorkDir().toString()); 
+            writer.writeElementString("workDir", 
+                    Objects.toString(getWorkDir(), null)); 
             writer.writeElementInteger("maxDocuments", getMaxDocuments());
             
             OrphansStrategy strategy = getOrphansStrategy();

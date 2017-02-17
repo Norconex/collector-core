@@ -1,4 +1,4 @@
-/* Copyright 2016 Norconex Inc.
+/* Copyright 2016-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,19 @@
  */
 package com.norconex.collector.core;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.Writer;
 
-import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.lang3.CharEncoding;
+import org.apache.log4j.Level;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.file.FileUtil;
+import com.norconex.collector.core.crawler.ICrawlerConfig;
+import com.norconex.collector.core.crawler.MockCrawlerConfig;
+import com.norconex.committer.core.impl.FileSystemCommitter;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.log.CountingConsoleAppender;
 
 
 /**
@@ -38,43 +37,36 @@ public class AbstractCollectorTest {
 
     @Test
     public void testWriteRead() throws IOException {
-        MockCollectorConfig config1 = new MockCollectorConfig();
-        config1.setId("test-collector");
-        config1.setJobErrorListeners(new MockJobErrorListener());
-        config1.setJobLifeCycleListeners(new MockJobLifeCycleListener());
-        config1.setSuiteLifeCycleListeners(new MockSuiteLifeCycleListener());
+        MockCollectorConfig config = new MockCollectorConfig();
+        config.setId("test-collector");
+        config.setCollectorListeners(new MockCollectorLifeCycleListener());
+        config.setJobErrorListeners(new MockJobErrorListener());
+        config.setJobLifeCycleListeners(new MockJobLifeCycleListener());
+        config.setSuiteLifeCycleListeners(new MockSuiteLifeCycleListener());
+        
+        MockCrawlerConfig crawlerCfg = new MockCrawlerConfig();
+        crawlerCfg.setId("myCrawler");
+        crawlerCfg.setCommitter(new FileSystemCommitter());
+        
+        config.setCrawlerConfigs(new ICrawlerConfig[] {crawlerCfg});
         
         
-        File tempFile = File.createTempFile("AbstractCollectorTest", ".xml");
-        
-        // Write
-        try (Writer out = new OutputStreamWriter(
-                new FileOutputStream(tempFile), CharEncoding.UTF_8)) {
-            config1.saveToXML(out);
-        }
-        
-        // Read
-        MockCollectorConfig config2 = new MockCollectorConfig();
-        
-        try (Reader in = new FileReader(tempFile)) {
-            config2.loadFromXML(in);
-        }
-
-        FileUtil.delete(tempFile);
-
-        Assert.assertEquals(config1, config2);
+        System.out.println("Writing/Reading this: " + config);
+        XMLConfigurationUtil.assertWriteRead(config);
     }
     
-    class MockCollectorConfig extends AbstractCollectorConfig {
-        @Override
-        protected void loadCollectorConfigFromXML(XMLConfiguration xml) {
-            // TODO Auto-generated method stub
-            
+    
+    @Test
+    public void testValidation() throws IOException {
+        CountingConsoleAppender appender = new CountingConsoleAppender();
+        appender.startCountingFor(XMLConfigurationUtil.class, Level.WARN);
+        try (Reader r = new InputStreamReader(getClass().getResourceAsStream(
+                "/validation/collector-core-full.xml"))) {
+            XMLConfigurationUtil.loadFromXML(new MockCollectorConfig(), r);
+        } finally {
+            appender.stopCountingFor(XMLConfigurationUtil.class);
         }
-        @Override
-        protected void saveCollectorConfigToXML(Writer out) {
-            // TODO Auto-generated method stub
-            
-        }
+        Assert.assertEquals("Validation warnings/errors were found.", 
+                0, appender.getCount());
     }
 }

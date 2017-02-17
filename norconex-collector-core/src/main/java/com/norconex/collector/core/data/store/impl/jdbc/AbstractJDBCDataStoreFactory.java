@@ -106,7 +106,8 @@ public abstract class AbstractJDBCDataStoreFactory
             writer.writeStartElement("crawlDataStoreFactory");
             writer.writeAttribute("class", getClass().getCanonicalName());
             if (database != null) {
-                writer.writeElementString("database", database.toString());
+                writer.writeElementString(
+                        "database", database.toString().toLowerCase());
             }
             writer.flush();
             writer.close();

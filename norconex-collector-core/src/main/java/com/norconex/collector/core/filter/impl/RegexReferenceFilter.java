@@ -40,10 +40,10 @@ import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.handler.filter.AbstractOnMatchFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 /**
- * Filters URL based on a regular expression.
  * <p>
- * XML configuration usage:
+ * Filters URL based on a regular expression.
  * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;filter class="com.norconex.collector.core.filter.impl.RegexReferenceFilter"
  *          onMatch="[include|exclude]" 
@@ -51,10 +51,20 @@ import com.norconex.importer.handler.filter.OnMatch;
  *      (regular expression)
  *  &lt;/filter&gt;
  * </pre>
+ * 
+ * <h4>Usage example:</h4>
+ * <p>
+ * The following will reject documents having "/login/" in their reference. 
+ * </p> 
+ * <pre>
+ *  &lt;filter class="com.norconex.collector.core.filter.impl.RegexReferenceFilter"
+ *          onMatch="exclude"&gt;
+ *      .*&#47;login/.*
+ *  &lt;/filter&gt; 
+ * </pre>
  * @author Pascal Essiembre
  * @see Pattern
  */
-@SuppressWarnings("nls")
 public class RegexReferenceFilter extends AbstractOnMatchFilter implements 
         IReferenceFilter, 
         IDocumentFilter,

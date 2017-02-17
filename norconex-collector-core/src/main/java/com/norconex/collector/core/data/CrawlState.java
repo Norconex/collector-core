@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,15 +81,6 @@ public class CrawlState implements Serializable {
         return isOneOf(NEW, MODIFIED, UNMODIFIED, PREMATURE);
     }
 
-    /**
-     * Returns whether a state indicates new or modified.
-     * @return <code>true</code> if new or modified
-     * @deprecated Since 1.2.0, use {@link #isNewOrModified()}
-     */
-    @Deprecated
-    public boolean isCommittable() {
-        return isOneOf(NEW, MODIFIED);
-    }
     /**
      * Returns whether a state indicates new or modified.
      * @return <code>true</code> if new or modified

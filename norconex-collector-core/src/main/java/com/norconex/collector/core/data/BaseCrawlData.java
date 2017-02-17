@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,15 +110,6 @@ public class BaseCrawlData implements ICrawlData {
      * @param contentChecksum content checksum
      */
     public void setContentChecksum(String contentChecksum) {
-        this.contentChecksum = contentChecksum;
-    }
-    /**
-     * Sets the content checksum.
-     * @param contentChecksum content checksum
-     * @deprecated use {@link #setContentChecksum(String)}
-     */
-    @Deprecated
-    public void setDocumentChecksum(String contentChecksum) {
         this.contentChecksum = contentChecksum;
     }
     

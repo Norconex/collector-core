@@ -44,17 +44,28 @@ import com.norconex.importer.handler.filter.AbstractOnMatchFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 
 /**
+ * <p>
  * Filters a reference based on a comma-separated list of extensions.
  * Extensions are typically the last characters of a file name, after the 
  * last dot.
- * <p>
- * XML configuration usage:
  * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;filter class="com.norconex.collector.core.filter.impl.ExtensionReferenceFilter"
  *          onMatch="[include|exclude]" 
  *          caseSensitive="[false|true]" &gt;
  *      (comma-separated list of extensions)
+ *  &lt;/filter&gt;
+ * </pre>
+ * 
+ * <h4>Usage example:</h4>
+ * <p>
+ * The following example will only accept references with the following 
+ * extensions: .html, .htm, .php, and .asp. 
+ * </p> 
+ * <pre>
+ *  &lt;filter class="com.norconex.collector.core.filter.impl.ExtensionReferenceFilter"&gt;
+ *      html,htm,php,asp
  *  &lt;/filter&gt;
  * </pre>
  * @author Pascal Essiembre

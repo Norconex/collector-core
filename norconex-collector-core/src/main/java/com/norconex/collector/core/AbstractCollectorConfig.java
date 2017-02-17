@@ -289,8 +289,11 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
                 getSuiteLifeCycleListeners()));
 
         if (crawlerConfigClass != null) {
-            setCrawlerConfigs(new CrawlerConfigLoader(
-                    crawlerConfigClass).loadCrawlerConfigs(xml));
+            ICrawlerConfig[] cfgs = new CrawlerConfigLoader(
+                    crawlerConfigClass).loadCrawlerConfigs(xml);
+            if (ArrayUtils.isNotEmpty(cfgs)) {
+                setCrawlerConfigs(cfgs);
+            }
         }
 
         loadCollectorConfigFromXML(xml);

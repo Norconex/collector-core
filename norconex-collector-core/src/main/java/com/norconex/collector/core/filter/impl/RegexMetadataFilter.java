@@ -41,19 +41,32 @@ import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.handler.filter.AbstractOnMatchFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 /**
+ * <p>
  * Accepts or rejects a reference using regular expression to match 
  * a metadata field value.
- * <p>
- * XML configuration usage:
  * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;filter class="com.norconex.collector.core.filter.impl.RegexMetadataFilter"
  *          onMatch="[include|exclude]" 
- *          caseSensitive="[false|true]" &gt;
- *          field="(metadata field to holding the value to match)"
+ *          caseSensitive="[false|true]"
+ *          field="(metadata field to holding the value to match)"&gt;
  *      (regular expression of value to match)
  *  &lt;/filter&gt;
  * </pre>
+ * 
+ * <h4>Usage example:</h4>
+ * <p>
+ * Used in a web context, the following example filters out Zip documents base
+ * on HTTP metadata "Content-Type". 
+ * </p> 
+ * <pre>
+ *  &lt;filter class="com.norconex.collector.core.filter.impl.RegexMetadataFilter"
+ *          onMatch="exclude" field="Content-Type"&gt;
+ *      application/zip
+ *  &lt;/filter&gt; 
+ * </pre> 
+ * 
  * @author Pascal Essiembre
  * @see Pattern
  */

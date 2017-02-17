@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package com.norconex.collector.core;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -27,8 +28,13 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.CharEncoding;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.EqualsUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.log.CountingConsoleAppender;
 
 /**
  * Encapsulates most of the logic for launching a collector implementation
@@ -37,13 +43,21 @@ import com.norconex.commons.lang.EqualsUtil;
  */
 public abstract class AbstractCollectorLauncher {
 
+    private static final Logger LOG = 
+            LogManager.getLogger(AbstractCollectorLauncher.class);
+    
     public static final String ARG_ACTION = "action";
     public static final String ARG_ACTION_START = "start";
     public static final String ARG_ACTION_RESUME = "resume";
     public static final String ARG_ACTION_STOP = "stop";
+    /**
+     * @deprecated Since 1.8.0, use -k or --checkcfg argument instead.
+     */
+    @Deprecated
     public static final String ARG_ACTION_CHECKCONFIG = "checkcfg";
     public static final String ARG_CONFIG = "config";
     public static final String ARG_VARIABLES = "variables";
+    public static final String ARG_CHECKCFG = "checkcfg";    
     
     /**
      * Constructor.
@@ -61,6 +75,7 @@ public abstract class AbstractCollectorLauncher {
         }
         
         try {
+            // Validate arguments
             if (!configFile.isFile()) {
                 System.err.println("Invalid configuration file path: "
                         + configFile.getAbsolutePath());
@@ -71,10 +86,10 @@ public abstract class AbstractCollectorLauncher {
                         + configFile.getAbsolutePath());
                 System.exit(-1);
             }
-            
-            ICollectorConfig config = new CollectorConfigLoader(
-                    getCollectorConfigClass()).loadCollectorConfig(
-                            configFile, varFile);
+
+            // Proceed
+            ICollectorConfig config = 
+                    loadCommandLineConfig(cmd, configFile, varFile);
             ICollector collector = createCollector(config);
             if (ARG_ACTION_START.equalsIgnoreCase(action)) {
                 collector.start(false);
@@ -111,6 +126,43 @@ public abstract class AbstractCollectorLauncher {
         }
     }
     
+    private ICollectorConfig loadCommandLineConfig(
+            CommandLine cmd, File configFile, File varFile) {
+        ICollectorConfig config = null;
+        CountingConsoleAppender appender = null;
+        try {
+            if (cmd.hasOption(ARG_CHECKCFG)) {
+                appender = new CountingConsoleAppender();
+                appender.startCountingFor(
+                        XMLConfigurationUtil.class, Level.WARN);
+            }
+            config = new CollectorConfigLoader(
+                    getCollectorConfigClass()).loadCollectorConfig(
+                            configFile, varFile);
+            if (cmd.hasOption(ARG_CHECKCFG)) {
+                if (!appender.isEmpty()) {
+                    System.err.println("There were " + appender.getCount()
+                            + " XML configuration error(s).");
+                    System.exit(-1);
+                } else if (cmd.hasOption(ARG_ACTION)) {
+                    LOG.info("No XML configuration errors.");
+                } else {
+                    System.out.println("No XML configuration errors.");
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("A problem occured loading configuration.");
+            e.printStackTrace(System.err);
+            System.exit(-1);
+        } finally {
+            if (appender != null) {
+                appender.stopCountingFor(XMLConfigurationUtil.class);
+            }
+        }
+        return config;
+
+    }
+    
     protected CommandLine parseCommandLineArguments(String[] args) {
         Options options = new Options();
         options.addOption("c", ARG_CONFIG, true, 
@@ -118,29 +170,43 @@ public abstract class AbstractCollectorLauncher {
         options.addOption("v", ARG_VARIABLES, true, 
                 "Optional: variable file.");
         options.addOption("a", ARG_ACTION, true, 
-                "Required: one of start|resume|stop|checkcfg");
+                "Required: one of start|resume|stop");
+        options.addOption("k", ARG_CHECKCFG, false,   
+                "Validates XML configuration. When combined "
+              + "with -a, prevents execution on configuration "
+              + "error.");
         
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
         try {
             cmd = parser.parse( options, args);
-            if(!cmd.hasOption(ARG_CONFIG) || !cmd.hasOption(ARG_ACTION)
-                    || EqualsUtil.equalsNone(cmd.getOptionValue(ARG_ACTION),
-                        ARG_ACTION_START, ARG_ACTION_RESUME, ARG_ACTION_STOP,
-                        ARG_ACTION_CHECKCONFIG)) {
+            if(!cmd.hasOption(ARG_CONFIG)
+                    || (!cmd.hasOption(ARG_CHECKCFG)
+                            && (!cmd.hasOption(ARG_ACTION)
+                                    || !isActionValid(cmd)))) {
                 HelpFormatter formatter = new HelpFormatter();
-                formatter.printHelp( "collector-http[.bat|.sh]", options );
+                formatter.printHelp("<collector-script>", options );
                 System.exit(-1);
             }
         } catch (ParseException e) {
-            PrintStream err = System.err;
-            err.println("Could not parse arguments.");
+            System.err.println("Could not parse arguments.");
             e.printStackTrace(System.err);
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp( "collector-http[.bat|.sh]", options );
+            formatter.printHelp("<collector-script>", options );
             System.exit(-1);
         }
         return cmd;
+    }
+    
+    private boolean isActionValid (CommandLine cmd) {
+        String action = cmd.getOptionValue(ARG_ACTION);
+        if (ARG_ACTION_CHECKCONFIG.equals(action)) {
+            System.err.println("-action checkcfg is deprecated, "
+                    + "use -k or --checkcfg instead.");
+            return false;
+        }
+        return EqualsUtil.equalsAny(action,
+                ARG_ACTION_START, ARG_ACTION_RESUME, ARG_ACTION_STOP);
     }
     
     protected abstract Class<? extends AbstractCollectorConfig> 

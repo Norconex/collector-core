@@ -7,6 +7,9 @@
    - MapDB given MVStore is a more stable and as fast equivalent.
    - Derby given H2 is a significantly faster equivalent.
 
+- Consider adding metadata checksummer to AbstractCrawlerConfig
+  given there are already metadata filters. Add Metadata checksum stage as well?
+
 - Refactor the whole approach of passing if new or modified to simplify it.
 
 - Introduce full/incremental flag as part of collector framework

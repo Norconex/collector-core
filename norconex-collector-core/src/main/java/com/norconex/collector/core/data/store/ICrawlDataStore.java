@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,17 +126,6 @@ public interface ICrawlDataStore {
      * @return cache iterator
      */
     Iterator<ICrawlData> getCacheIterator();
-    
-    /**
-     * Whether a reference has been deleted.  To find this out, the reference 
-     * has to be of an invalid state (e.g. NOT_FOUND) and must exists in the 
-     * reference cache in a valid state.
-     * @param crawlData the reference
-     * @return <code>true</code> if reference has been deleted on site
-     * @deprecated Since 1.2.0, this method is no longer used.
-     */
-    @Deprecated
-    boolean isVanished(ICrawlData crawlData);
     
     /**
      * Closes a database connection. This method gets called a the end

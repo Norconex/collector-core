@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import com.norconex.collector.core.CollectorException;
 import com.norconex.collector.core.checksum.AbstractDocumentChecksummer;
 import com.norconex.collector.core.checksum.IDocumentChecksummer;
 import com.norconex.collector.core.doc.CollectorMetadata;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -73,15 +74,20 @@ import com.norconex.importer.doc.ImporterMetadata;
  * attribute is set to <code>true</code>.
  * </p>
  * <p>
- * Since 1.1.0, this implementation can be disabled in your 
+ * This implementation can be disabled in your 
  * configuration by specifying <code>disabled="true"</code>. When disabled,
  * the checksum returned is always <code>null</code>.  
  * </p>
+ * 
+ * <h4>Usage example:</h4>
  * <p>
- * Since 1.2.0, {@link #setSourceField(String)} has been replaced
- * by {@link #setSourceFields(String...)}. XML configuration usage was
- * updated accordingly.
- * </p>
+ * The following uses the document body (default) to make the checksum.
+ * </p> 
+ * <pre>
+ *  &lt;documentChecksummer 
+ *      class="com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer" /&gt;
+ * </pre> 
+ * 
  * @author Pascal Essiembre
  */
 public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
@@ -145,37 +151,6 @@ public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
     }
 
 	/**
-	 * Gets the specific field to construct a MD5 checksum on.  Default
-	 * is <code>null</code> (checksum is performed on entire content).
-	 * @return field to perform checksum on
-	 * @deprecated Since 1.2.0, use {@link #getSourceFields()}
-	 */
-    @Deprecated
-	public String getSourceField() {
-	    LOG.warn("MD5DocumentChecksummer#getSourceField() is deprecated. "
-	            + "Use MD5DocumentChecksummer#getSourceFields() instead.");
-	    if (ArrayUtils.isEmpty(sourceFields)) {
-	        return null;
-	    }
-		return sourceFields[0];
-	}
-    /**
-     * Sets the specific field to construct a MD5 checksum on.  Specifying
-     * <code>null</code> means all content will be used.
-     * @param field field to perform checksum on
-     * @deprecated Since 1.2.0, use {@link #setSourceFields(String...)}
-     */
-    @Deprecated
-	public void setSourceField(String field) {
-        LOG.warn("MD5DocumentChecksummer#setSourceField(String) is deprecated. "
-                + "Use MD5DocumentChecksummer#setSourceFields(String...) "
-                + "instead.");
-        if (field != null) {
-            this.sourceFields = new String[] { field };
-        }
-	}
-	
-	/**
      * Gets the fields used to construct a MD5 checksum.  Default
      * is <code>null</code> (checksum is performed on entire content).
      * @return fields to use to construct the checksum
@@ -214,23 +189,8 @@ public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
     @Override
 	protected void loadChecksummerFromXML(XMLConfiguration xml) {
         setDisabled(xml.getBoolean("[@disabled]", disabled));
-        
-        String oldSourceField = xml.getString("[@sourceField]", null);
-        if (StringUtils.isNotBlank(oldSourceField)) {
-            LOG.warn("The \"sourceField\" attribute id deprecated in favor "
-                    + "of the <sourceFields> element. Please update your "
-                    + "configuration.");
-        }
-        String flds = xml.getString("sourceFields", null);
-        if (StringUtils.isBlank(flds)) {
-            if (StringUtils.isNotBlank(oldSourceField)) {
-                sourceFields = new String[] { oldSourceField };
-            } else {
-                sourceFields = null;
-            }
-        } else {
-            sourceFields = flds.split("\\s*,\\s*");
-        }        
+        setSourceFields(XMLConfigurationUtil.getCSVStringArray(
+                xml, "sourceFields", getSourceFields()));
     }
 	@Override
 	protected void saveChecksummerToXML(EnhancedXMLStreamWriter writer)
