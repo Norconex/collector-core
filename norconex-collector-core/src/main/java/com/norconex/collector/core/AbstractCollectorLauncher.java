@@ -179,7 +179,7 @@ public abstract class AbstractCollectorLauncher {
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
         try {
-            cmd = parser.parse( options, args);
+            cmd = parser.parse(options, args);
             if(!cmd.hasOption(ARG_CONFIG)
                     || (!cmd.hasOption(ARG_CHECKCFG)
                             && (!cmd.hasOption(ARG_ACTION)

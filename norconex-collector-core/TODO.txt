@@ -22,3 +22,7 @@
 
 - Consider changing default base directory for logs and progress 
   (to avoid logs and progress appearing twice in path by default).
+  
+- Consider a way to merge documents by temporarily storing mergeable
+  docs in a queue until all mergable siblings are encountered.
+  Maybe this should be made a wrapping committer instead?
