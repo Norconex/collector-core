@@ -42,6 +42,10 @@
       <action dev="essiembre" type="fix">
         Fixed minor errors in writing IXMLConfigurable classes to XML.
       </action>
+      <action dev="essiembre" type="fix">
+        Throwable exceptions no longer makes a crawler hang under certain
+        conditions when importing/parsing a file. 
+      </action>
       <action dev="essiembre" type="remove">
         Removed code deprecated in version 1.2 or older.
       </action>

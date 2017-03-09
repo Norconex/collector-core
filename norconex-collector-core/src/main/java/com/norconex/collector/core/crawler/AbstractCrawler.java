@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -537,7 +537,7 @@ public abstract class AbstractCrawler
                 finalizeDocumentProcessing(
                         crawlData, crawlDataStore, doc, cachedCrawlData);
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             //TODO do we really want to catch anything other than 
             // HTTPFetchException?  In case we want special treatment to the 
             // class?

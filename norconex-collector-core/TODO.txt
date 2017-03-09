@@ -1,4 +1,8 @@
 
+- In Allow crawler to "expire" after configurable delay if 
+  activeCount in AbstractCrawler#processNextReference is equal or less
+  than number of thread and the crawler has been running idle for too long.
+
 - Test/modify so that the crawler can be restarted in the same VM
   (e.g. for people wanting java scheduling).
 
