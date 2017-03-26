@@ -25,7 +25,6 @@ import java.util.Objects;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
@@ -38,7 +37,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.norconex.collector.core.CollectorException;
 import com.norconex.collector.core.checksum.IDocumentChecksummer;
 import com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer;
 import com.norconex.collector.core.crawler.event.ICrawlerEventListener;
@@ -228,16 +226,6 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     }
     public void setCommitter(ICommitter committer) {
         this.committer = committer;
-    }
-    
-    @Override
-    public ICrawlerConfig clone() {
-        try {
-            return (ICrawlerConfig) BeanUtils.cloneBean(this);
-        } catch (Exception e) {
-            throw new CollectorException(
-                    "Cannot clone crawler configuration.", e);
-        }
     }
     
     @Override

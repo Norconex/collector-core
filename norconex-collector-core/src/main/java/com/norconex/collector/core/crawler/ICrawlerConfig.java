@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import com.norconex.importer.ImporterConfig;
  * recommended to change it.
  * @author Pascal Essiembre
  */
-public interface ICrawlerConfig extends IXMLConfigurable, Cloneable {
+public interface ICrawlerConfig extends IXMLConfigurable {
 
     enum OrphansStrategy { 
         /**
@@ -130,12 +130,6 @@ public interface ICrawlerConfig extends IXMLConfigurable, Cloneable {
      */
     ICommitter getCommitter();
 
-    /**
-     * Clone this configuration.
-     * @return new configuration
-     */
-    ICrawlerConfig clone();
-    
     /**
      * Gets the reference filters.
      * @return reference filters

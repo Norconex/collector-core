@@ -58,6 +58,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
     public static final String DEFAULT_PROGRESS_DIR = "./progress";
     
     private final Class<? extends ICrawlerConfig> crawlerConfigClass;
+    private final String xmlConfigRootTag;
     
     private String id;
     private ICrawlerConfig[] crawlerConfigs;
@@ -69,14 +70,23 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
     private ISuiteLifeCycleListener[] suiteLifeCycleListeners;
 
     public AbstractCollectorConfig() {
-        this(null);
+        this((Class<? extends ICrawlerConfig>) null);
     }
-    
     public AbstractCollectorConfig(
             Class<? extends ICrawlerConfig> crawlerConfigClass) {
+        this(crawlerConfigClass, "collector");
+    }
+    public AbstractCollectorConfig(String xmlConfigRootTag) {
+        this(null, xmlConfigRootTag);
+    }
+    public AbstractCollectorConfig(
+            Class<? extends ICrawlerConfig> crawlerConfigClass, 
+            String xmlConfigRootTag) {
         super();
         this.crawlerConfigClass = crawlerConfigClass;
+        this.xmlConfigRootTag = xmlConfigRootTag;
     }
+    
 
 	/**
 	 * Gets this collector unique identifier.
@@ -212,7 +222,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         try {
             out.flush();
             EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
-            writer.writeStartElement("collector");
+            writer.writeStartElement(xmlConfigRootTag);
             writer.writeAttributeClass("class", getClass());
             writer.writeAttribute("id", getId());
             

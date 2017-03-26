@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -198,21 +198,19 @@ public abstract class AbstractCollector implements ICollector {
         //TODO have a base workdir, which is used to figure out where to put
         // everything (log, progress), and make log and progress overwritable.
 
-        ICollectorConfig collectorConfig = getCollectorConfig();
-        suiteConfig.setLogManager(
-                new FileLogManager(collectorConfig.getLogsDir()));
+        ICollectorConfig collConfig = getCollectorConfig();
+        suiteConfig.setLogManager(new FileLogManager(collConfig.getLogsDir()));
         suiteConfig.setJobStatusStore(
-                new FileJobStatusStore(collectorConfig.getProgressDir()));
-        suiteConfig.setWorkdir(collectorConfig.getProgressDir()); 
+                new FileJobStatusStore(collConfig.getProgressDir()));
+        suiteConfig.setWorkdir(collConfig.getProgressDir()); 
 
         // Add JEF listeners
-        if (collectorConfig.getJobLifeCycleListeners() != null) {
+        if (collConfig.getJobLifeCycleListeners() != null) {
             suiteConfig.setJobLifeCycleListeners(
-                    collectorConfig.getJobLifeCycleListeners());
+                    collConfig.getJobLifeCycleListeners());
         }
-        if (collectorConfig.getJobErrorListeners() != null) {
-            suiteConfig.setJobErrorListeners(
-                    collectorConfig.getJobErrorListeners());
+        if (collConfig.getJobErrorListeners() != null) {
+            suiteConfig.setJobErrorListeners(collConfig.getJobErrorListeners());
         }
         List<ISuiteLifeCycleListener> suiteListeners = new ArrayList<>();
         suiteListeners.add(new AbstractSuiteLifeCycleListener() {
@@ -221,9 +219,9 @@ public abstract class AbstractCollector implements ICollector {
                 printReleaseVersion();
             }
         });
-        if (collectorConfig.getSuiteLifeCycleListeners() != null) {
+        if (collConfig.getSuiteLifeCycleListeners() != null) {
             suiteListeners.addAll(Arrays.asList(
-                    collectorConfig.getSuiteLifeCycleListeners()));
+                    collConfig.getSuiteLifeCycleListeners()));
         }
         suiteConfig.setSuiteLifeCycleListeners(
                 suiteListeners.toArray(new ISuiteLifeCycleListener[]{}));

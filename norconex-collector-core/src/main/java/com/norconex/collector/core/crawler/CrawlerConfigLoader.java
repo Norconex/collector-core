@@ -63,23 +63,20 @@ public class CrawlerConfigLoader {
     public ICrawlerConfig[] loadCrawlerConfigs(
             HierarchicalConfiguration xml) {
         try {
-            XMLConfiguration defaults = 
+            XMLConfiguration xmlCrawlerDefaults = 
                     XMLConfigurationUtil.getXmlAt(xml, "crawlerDefaults");
-            
-            ICrawlerConfig  defaultConfig = crawlerConfigClass.newInstance();
-
-            if (defaults != null) {
-                loadCrawlerConfig(defaultConfig, defaults);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Crawler defaults loaded.");
-                }
-            }
             
             List<HierarchicalConfiguration> nodes = 
                     xml.configurationsAt("crawlers.crawler");
             List<ICrawlerConfig> configs = new ArrayList<>();
             for (HierarchicalConfiguration node : nodes) {
-                ICrawlerConfig config = defaultConfig.clone();
+                ICrawlerConfig  config = crawlerConfigClass.newInstance();
+                if (xmlCrawlerDefaults != null) {
+                    loadCrawlerConfig(config, xmlCrawlerDefaults);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Crawler defaults loaded for new crawler.");
+                    }
+                }
                 loadCrawlerConfig(config, 
                         XMLConfigurationUtil.newXMLConfiguration(node));
                 configs.add(config);

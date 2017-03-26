@@ -39,6 +39,12 @@
         Modified Javadoc to include an XML usage example for all 
         XML-configurable classes.
       </action>      
+      <action dev="essiembre" type="update">
+        ICrawlerConfig no longer implements Cloneable.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed crawler defaults not always being applied as it should.
+      </action>
       <action dev="essiembre" type="fix">
         Fixed minor errors in writing IXMLConfigurable classes to XML.
       </action>
