@@ -72,7 +72,8 @@ public final class ImporterPipelineUtil {
         }
         if (hasIncludes && !atLeastOneIncludeMatch) {
             ctx.fireCrawlerEvent(
-                    CrawlerEvent.REJECTED_FILTER, ctx.getCrawlData(), null);
+                    CrawlerEvent.REJECTED_FILTER, ctx.getCrawlData(), 
+                    "No \"include\" metadata filters matched.");
             return true;
         }
         return false;        

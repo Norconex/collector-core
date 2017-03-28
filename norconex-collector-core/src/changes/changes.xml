@@ -42,6 +42,10 @@
       <action dev="essiembre" type="update">
         ICrawlerConfig no longer implements Cloneable.
       </action>
+      <action dev="essiembre" type="update">
+        Document, metadata, and reference filters now logs appropriate
+        message when there is no "include" match, when log level is DEBUG.
+      </action>
       <action dev="essiembre" type="fix">
         Fixed crawler defaults not always being applied as it should.
       </action>

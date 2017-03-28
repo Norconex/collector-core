@@ -89,16 +89,17 @@ public final class ReferenceFiltersStageUtil {
                       + "attribute is set to 'include', but none of them were "
                       + "matched]");
             }
-            fireDocumentRejected(null, ctx);
+            fireDocumentRejected(
+                    "No \"include\" reference filters matched.", ctx);
             return true;
         }
         return false;
     }
     
     private static void fireDocumentRejected(
-            IReferenceFilter filter, BasePipelineContext ctx) {
+            Object subject, BasePipelineContext ctx) {
         ctx.fireCrawlerEvent(
-                CrawlerEvent.REJECTED_FILTER, ctx.getCrawlData(), filter);
+                CrawlerEvent.REJECTED_FILTER, ctx.getCrawlData(), subject);
 
     }
     

@@ -71,7 +71,8 @@ public class DocumentFiltersStage
         }
         if (hasIncludes && !atLeastOneIncludeMatch) {
             ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_FILTER, 
-                    ctx.getCrawlData(), null);
+                    ctx.getCrawlData(), 
+                    "No \"include\" document filters matched.");
             ctx.getCrawlData().setState(CrawlState.REJECTED);
             return false;
         }
