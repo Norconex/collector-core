@@ -22,6 +22,17 @@ import com.norconex.collector.core.crawler.ICrawlerConfig;
  */
 public interface ICrawlDataStoreFactory {
 
+    //enum InitMethod { INCREMENTAL, FULL, RESUME }
+    
+    //TODO instead of passing "resume" boolean, have 
+    // incremental(defalut)|full|resume
+    // - incremental is same as full if run for first time
+    // - resume is to restart either a full or incremental that was aborted
+    //     prematurally
+    // - full is to clean any existing DB first, including cache.
+    
+    
+    
     /**
      * Creates a new crawl data store.
      * @param config crawler configuration

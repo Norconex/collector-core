@@ -1,4 +1,6 @@
 
+- Add a new flag to start crawling "fresh" (deleting the crawl database).
+
 - In Allow crawler to "expire" after configurable delay if 
   activeCount in AbstractCrawler#processNextReference is equal or less
   than number of thread and the crawler has been running idle for too long.

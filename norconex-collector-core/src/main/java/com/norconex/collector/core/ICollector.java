@@ -31,6 +31,8 @@ public interface ICollector extends IJobSuiteFactory {
 
     String getId();
     
+    //TODO Should we deprecate this since IJobSuiteFactory has createJobSuite
+    //which can be overwritten if need be, instead of exposing it?
     JobSuite getJobSuite();
 
     /**
