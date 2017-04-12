@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ArrayListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.commons.io.FileUtils;
-import org.apache.derby.jdbc.EmbeddedDriver;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -45,8 +44,6 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
     private static final Logger LOG = 
             LogManager.getLogger(JDBCCrawlDataStore.class);
     
-    public static enum Database { DERBY, H2 };
-    
     public static final String TABLE_QUEUE = "queue";
     public static final String TABLE_ACTIVE = "active";
     public static final String TABLE_CACHE = "cache";
@@ -54,20 +51,16 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
     public static final String TABLE_PROCESSED_INVALID = "invalid";
     
     private static final int NUMBER_OF_TABLES = 5;
-    private static final int DERBY_ERROR_ALREADY_EXISTS = 30000;
-    private static final String DERBY_STATE_SHUTDOWN_SUCCESS = "08006";
     private static final int H2_ERROR_ALREADY_EXISTS = 23505;
 
     private final DataSource datasource;
     private final IJDBCSerializer serializer;
     private final String dbDir;
-    private final Database database;
     
-    public JDBCCrawlDataStore(Database database, String path, boolean resume,
+    public JDBCCrawlDataStore(String path, boolean resume,
             IJDBCSerializer serializer) {
         super();
         
-        this.database = database;
         this.serializer = serializer;
         String fullPath = new File(path).getAbsolutePath();
         
@@ -79,12 +72,7 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
             throw new CrawlDataStoreException(
                     "Cannot create crawl store directory: " + fullPath, e);
         }
-        if (database == Database.DERBY) {
-            System.setProperty("derby.system.home", fullPath + "/derby/log");
-            this.dbDir = fullPath + "/derby/db";
-        } else {
-            this.dbDir = fullPath + "/h2/db";
-        }
+        this.dbDir = fullPath + "/h2/db";
         this.datasource = createDataSource(dbDir);
         boolean incrementalRun;
         try {
@@ -106,13 +94,8 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
             LOG.info("Caching processed reference from last run (if any)...");
             LOG.debug("Rename processed table to cache...");
             sqlUpdate("DROP TABLE " + TABLE_CACHE);
-            if (database == Database.DERBY) {
-                sqlUpdate("RENAME TABLE " + TABLE_PROCESSED_VALID 
-                        + " TO " + TABLE_CACHE);
-            } else {
-                sqlUpdate("ALTER TABLE " + TABLE_PROCESSED_VALID 
-                        + " RENAME TO " + TABLE_CACHE);
-            }
+            sqlUpdate("ALTER TABLE " + TABLE_PROCESSED_VALID 
+                    + " RENAME TO " + TABLE_CACHE);
             LOG.debug("Cleaning queue table...");
             sqlClearTable(TABLE_QUEUE);
             LOG.debug("Cleaning invalid references table...");
@@ -183,10 +166,9 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
 
     @Override
     public synchronized ICrawlData getCached(String reference) {
-        ICrawlData crawlData = sqlFindCrawlData(TABLE_CACHE, 
+        return sqlFindCrawlData(TABLE_CACHE, 
                 serializer.getCachedCrawlDataSQL(),
                 serializer.getCachedCrawlDataValues(reference));
-        return crawlData;
     }
 
     @Override
@@ -229,29 +211,7 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
     
     @Override
     public void close() {
-        if (database == Database.DERBY) {
-            Connection conn = null;
-            try {
-                LOG.info("Closing Derby database...");
-                conn = new EmbeddedDriver().connect(
-                        "jdbc:derby:" + dbDir + ";shutdown=true", null);
-            } catch (SQLException e) {
-                if (!DERBY_STATE_SHUTDOWN_SUCCESS.equals(e.getSQLState())) {
-                    throw new CrawlDataStoreException(
-                            "Cannot shutdown Derby database.", e);
-                }
-                LOG.info("Derby database closed.");
-            } finally {
-                if (conn != null) {
-                    try {
-                        conn.close();
-                    } catch (SQLException e) {
-                        LOG.info("Problem closing database "
-                                + "shutdown connection.", e);
-                    }
-                }
-            }
-        }
+        // NOOP
     }
     
     private boolean sqlReferenceExists(String table, String reference) {
@@ -360,21 +320,13 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
     }
 
     private boolean alreadyExists(SQLException e) {
-        return (database == Database.DERBY 
-                && e.getErrorCode() == DERBY_ERROR_ALREADY_EXISTS)
-                || (database == Database.H2
-                        && e.getErrorCode() == H2_ERROR_ALREADY_EXISTS);
+        return e.getErrorCode() == H2_ERROR_ALREADY_EXISTS;
     }
     
     private DataSource createDataSource(String dbDir) {
         BasicDataSource ds = new BasicDataSource();
-        if (database == Database.DERBY) {
-            ds.setDriverClassName("org.apache.derby.jdbc.EmbeddedDriver");
-            ds.setUrl("jdbc:derby:" + dbDir + ";create=true");
-        } else {
-            ds.setDriverClassName("org.h2.Driver");
-            ds.setUrl("jdbc:h2:" + dbDir + ";WRITE_DELAY=0;AUTOCOMMIT=ON");
-        }
+        ds.setDriverClassName("org.h2.Driver");
+        ds.setUrl("jdbc:h2:" + dbDir + ";WRITE_DELAY=0;AUTOCOMMIT=ON");
         ds.setDefaultAutoCommit(true);
         return ds;
     }

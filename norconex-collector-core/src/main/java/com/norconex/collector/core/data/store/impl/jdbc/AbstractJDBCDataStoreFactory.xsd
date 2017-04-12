@@ -17,16 +17,6 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
   <xs:complexType name="AbstractJDBCDataStoreFactory" abstract="true">
-    <xs:all>
-      <xs:element name="database" minOccurs="0" maxOccurs="1">
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:enumeration value="h2"/>
-            <xs:enumeration value="derby"/>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:element>
-    </xs:all>
     <xs:attribute name="class" type="xs:string"/>
   </xs:complexType>
 

@@ -26,10 +26,6 @@ import java.util.Date;
 import java.util.Iterator;
 
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,25 +46,6 @@ import com.norconex.commons.lang.file.ContentType;
  */
 public abstract class BaseCrawlDataStoreTest {
 
-    static {
-        // Disabling durability increases test performance by a HUGE factor.
-        System.setProperty("derby.system.durability", "test");
-    }
-    
-    static {
-        // Root
-        Logger logger = Logger.getRootLogger();
-        logger.setLevel(Level.INFO);
-        logger.setAdditivity(false);
-        logger.addAppender(new ConsoleAppender(
-                new PatternLayout("%-5p [%C{1}] %m%n"), 
-                ConsoleAppender.SYSTEM_OUT));
-        
-        // Apache
-        logger = Logger.getLogger("com.norconex");
-        logger.setLevel(Level.INFO);
-    }   
-    
     @Rule
     public final TemporaryFolder tempFolder = new TemporaryFolder();
     

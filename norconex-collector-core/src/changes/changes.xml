@@ -59,6 +59,10 @@
       <action dev="essiembre" type="remove">
         Removed code deprecated in version 1.2 or older.
       </action>
+      <action dev="essiembre" type="remove">
+        Removed MapDB and Apache Derby crawlstore dependencies/implementations 
+        which were deprecated in version 1.6.
+      </action>
     </release>
 
     <release version="1.7.0" date="2016-12-14" description="Feature release">

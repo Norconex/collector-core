@@ -14,51 +14,106 @@
  */
 package com.norconex.collector.core.data.store.impl.jdbc;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+
+import javax.xml.stream.XMLStreamException;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
+import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
-import com.norconex.collector.core.data.store.impl.jdbc.AbstractJDBCDataStoreFactory;
-import com.norconex.collector.core.data.store.impl.jdbc.BasicJDBCSerializer;
-import com.norconex.collector.core.data.store.impl.jdbc.IJDBCSerializer;
-import com.norconex.collector.core.data.store.impl.jdbc.JDBCCrawlDataStore.Database;
+import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
+import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.file.FileUtil;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 
 /**
  * <p>
- * JDBC implementation of {@link ICrawlDataStore}.  Defaults to H2 
- * database.
+ * JDBC implementation of {@link ICrawlDataStore} using H2 database.
  * </p>
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;crawlDataStoreFactory 
- *          class="com.norconex.collector.core.data.store.impl.jdbc.BasicJDBCCrawlDataStoreFactory"&gt;
- *      &lt;database&gt;[h2|derby]&lt;/database&gt;
- *  &lt;/crawlDataStoreFactory&gt;
+ *          class="com.norconex.collector.core.data.store.impl.jdbc.BasicJDBCCrawlDataStoreFactory"/&gt;
  * </pre>
  * 
  * <h4>Usage example:</h4>
  * <p>
- * The following changes the default to use an embedded derby database.
+ * The following changes the default to use an H2 database.
  * </p> 
  * <pre>
  *  &lt;crawlDataStoreFactory 
- *          class="com.norconex.collector.core.data.store.impl.jdbc.BasicJDBCCrawlDataStoreFactory"&gt;
- *      &lt;database&gt;derby&lt;/database&gt;
- *  &lt;/crawlDataStoreFactory&gt;;
+ *          class="com.norconex.collector.core.data.store.impl.jdbc.BasicJDBCCrawlDataStoreFactory"/&gt;
  * </pre>
  * @author Pascal Essiembre
  * @since 1.5.0
  */
 public class BasicJDBCCrawlDataStoreFactory 
-        extends AbstractJDBCDataStoreFactory {
+        implements ICrawlDataStoreFactory, IXMLConfigurable {
 
     public BasicJDBCCrawlDataStoreFactory() {
         super();
     }
-    public BasicJDBCCrawlDataStoreFactory(Database database) {
-        super(database);
-    }
 
-    @Override
     protected IJDBCSerializer createJDBCSerializer() {
         return new BasicJDBCSerializer();
     }
+    
+    @Override
+    public ICrawlDataStore createCrawlDataStore(
+            ICrawlerConfig config, boolean resume) {
+        String storeDir = config.getWorkDir().getPath() + "/crawlstore/jdbc/" 
+                + FileUtil.toSafeFileName(config.getId()) + "/";
+        return new JDBCCrawlDataStore(
+                storeDir, resume, createJDBCSerializer());
+    }
+
+    @Override
+    public void loadFromXML(Reader in) throws IOException {
+        // NOOP
+    }
+
+    @Override
+    public void saveToXML(Writer out) throws IOException {
+        try {
+            EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
+            writer.writeStartElement("crawlDataStoreFactory");
+            writer.writeAttribute("class", getClass().getCanonicalName());
+            writer.flush();
+            writer.close();
+        } catch (XMLStreamException e) {
+            throw new IOException("Cannot save as XML.", e);
+        }
+    }
+    
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof BasicJDBCCrawlDataStoreFactory)) {
+            return false;
+        }
+        BasicJDBCCrawlDataStoreFactory castOther = 
+                (BasicJDBCCrawlDataStoreFactory) other;
+        return new EqualsBuilder()
+                .append(getClass(), castOther.getClass())
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(getClass())
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .toString();
+    }    
 }
 
