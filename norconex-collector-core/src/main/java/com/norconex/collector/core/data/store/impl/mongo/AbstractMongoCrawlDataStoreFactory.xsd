@@ -23,6 +23,17 @@
       <xs:element name="dbname" type="nonEmptyString" minOccurs="0" maxOccurs="1"/>
       <xs:element name="username" type="nonEmptyString" minOccurs="0" maxOccurs="1"/>
       <xs:element name="password" type="nonEmptyString" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="passwordKey" type="nonEmptyString" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="passwordKeySource" minOccurs="0" maxOccurs="1">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="key"/>
+            <xs:enumeration value="file"/>
+            <xs:enumeration value="environment"/>
+            <xs:enumeration value="property"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
     </xs:all>
     <xs:attribute name="class" type="xs:string"/>
   </xs:complexType>

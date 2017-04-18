@@ -21,6 +21,7 @@ import java.io.Writer;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -31,6 +32,8 @@ import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.encrypt.EncryptionKey;
+import com.norconex.commons.lang.encrypt.EncryptionUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 
 /**
@@ -40,7 +43,41 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  * They go from the "QUEUED", "ACTIVE" and "PROCESSED" stages.</p>
  * 
  * <p>The cached references are stored in a separated collection named 
- * "cached".</p>
+ * "cached".
+ * </p>
+ * 
+ * <p>
+ * As of 1.8.0, <code>password</code> can take a password that has been 
+ * encrypted using {@link EncryptionUtil} (or command-line encrypt.[bat|sh]). 
+ * In order for the password to be decrypted properly by the crawler, you need
+ * to specify the encryption key used to encrypt it. The key can be stored
+ * in a few supported locations and a combination of 
+ * <code>passwordKey</code>
+ * and <code>passwordKeySource</code> must be specified to properly
+ * locate the key. The supported sources are:
+ * </p> 
+ * <table border="1" summary="">
+ *   <tr>
+ *     <th><code>passwordKeySource</code></th>
+ *     <th><code>passwordKey</code></th>
+ *   </tr>
+ *   <tr>
+ *     <td><code>key</code></td>
+ *     <td>The actual encryption key.</td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>file</code></td>
+ *     <td>Path to a file containing the encryption key.</td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>environment</code></td>
+ *     <td>Name of an environment variable containing the key.</td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>property</code></td>
+ *     <td>Name of a JVM system property containing the key.</td>
+ *   </tr>
+ * </table>
  * 
  * <p>
  * Implementing classes should contain the following XML configuration usage:
@@ -52,6 +89,9 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  *      &lt;dbname&gt;(Optional Mongo database name. Default to crawl id)&lt;/dbname&gt;
  *      &lt;username&gt;(Optional user name)&lt;/username&gt;
  *      &lt;password&gt;(Optional user password)&lt;/password&gt;
+ *      &lt;!-- Use the following if password is encrypted. --&gt;
+ *      &lt;passwordKey&gt;(the encryption key or a reference to it)&lt;/passwordKey&gt;
+ *      &lt;passwordKeySource&gt;[key|file|environment|property]&lt;/passwordKeySource&gt;
  *  &lt;/crawlDataStoreFactory&gt;
  * </pre>
  * <p>
@@ -97,8 +137,19 @@ public abstract class AbstractMongoCrawlDataStoreFactory
                 xml.getString("username", connDetails.getUsername()));
         connDetails.setPassword(
                 xml.getString("password", connDetails.getPassword()));
-    }
 
+        // encrypted password:
+        String xmlKey = xml.getString("passwordKey", null);
+        String xmlSource = xml.getString("passwordKeySource", null);
+        if (StringUtils.isNotBlank(xmlKey)) {
+            EncryptionKey.Source source = null;
+            if (StringUtils.isNotBlank(xmlSource)) {
+                source = EncryptionKey.Source.valueOf(xmlSource.toUpperCase());
+            }
+            connDetails.setPasswordKey(new EncryptionKey(xmlKey, source));
+        }
+    }
+    
     @Override
     public void saveToXML(Writer out) throws IOException {
         try {
@@ -112,6 +163,16 @@ public abstract class AbstractMongoCrawlDataStoreFactory
             writer.writeElementString("username", connDetails.getUsername());
             writer.writeElementString("password", connDetails.getPassword());
 
+            // Encrypted password:
+            EncryptionKey key = connDetails.getPasswordKey();
+            if (key != null) {
+                writer.writeElementString("passwordKey", key.getValue());
+                if (key.getSource() != null) {
+                    writer.writeElementString("passwordKeySource", 
+                            key.getSource().name().toLowerCase());
+                }
+            }
+            
             writer.flush();
             writer.close();
         } catch (XMLStreamException e) {

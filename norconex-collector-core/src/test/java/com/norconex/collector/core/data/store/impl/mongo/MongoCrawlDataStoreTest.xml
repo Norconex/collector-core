@@ -23,4 +23,6 @@
     <dbname>database</dbname>
     <username>user</username>
     <password>pwd</password>
+    <passwordKey>blah</passwordKey>
+    <passwordKeySource>key</passwordKeySource>
   </crawlDataStoreFactory>

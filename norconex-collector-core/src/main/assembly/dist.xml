@@ -23,13 +23,6 @@
   <includeSiteDirectory>false</includeSiteDirectory>
   <fileSets>
     <fileSet>
-      <directory>${basedir}/src/main/scripts</directory>
-      <includes>
-        <include>**</include>
-      </includes>
-      <outputDirectory>/</outputDirectory>
-    </fileSet>
-    <fileSet>
       <directory>${basedir}/src/site/resources/examples</directory>
       <includes>
         <include>**</include>
@@ -54,6 +47,10 @@
     <fileSet>
       <directory>${project.build.directory}/generated-resources</directory>
       <outputDirectory>third-party</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/shared-resources</directory>
+      <outputDirectory>/</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/generated-sources/license</directory>

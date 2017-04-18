@@ -21,6 +21,12 @@
         Two new crawler events where added for crawler event listeners:
         CRAWLER_STOPPING and CRAWLER_STOPPED.
       </action>
+      <action dev="essiembre" type="add">
+        AbstractMongoCrawlDataStoreFactory now accepts encrypted passwords.
+      </action>
+      <action dev="essiembre" type="add">
+        Now distributed with utility scripts.
+      </action>
       <action dev="essiembre" type="update">
         Crawler events REJECTED_FILTER, REJECTED_BAD_STATUS, REJECTED_IMPORT,
         and REJECTED_ERROR are now DEBUG in log4j.properties.

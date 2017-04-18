@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import com.norconex.collector.core.data.store.AbstractCrawlDataStore;
 import com.norconex.collector.core.data.store.CrawlDataStoreException;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.impl.mongo.IMongoSerializer.Stage;
+import com.norconex.commons.lang.encrypt.EncryptionUtil;
 
 /**
  * <p>Mongo implementation of {@link ICrawlDataStore}.</p>
@@ -120,10 +121,13 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
                     connDetails.getHost(), port);
             List<MongoCredential> credentialsList = new ArrayList<>();
             if (StringUtils.isNoneBlank(connDetails.getUsername())) {
+                String password = EncryptionUtil.decrypt(
+                        connDetails.getPassword(), 
+                        connDetails.getPasswordKey());
                 MongoCredential credential = 
                         MongoCredential.createMongoCRCredential(
                                 connDetails.getUsername(), dbName, 
-                                connDetails.getPassword().toCharArray());
+                                password.toCharArray());
                 credentialsList.add(credential);
             }
             MongoClient client = new MongoClient(server, credentialsList);
