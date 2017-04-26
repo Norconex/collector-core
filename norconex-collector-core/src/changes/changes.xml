@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="1.8.0-SNAPSHOT" date="2017-??-??" description="Feature release">
+    <release version="1.8.0" date="2017-04-26" description="Feature release">
       <action dev="essiembre" type="add">
         Added schema-based XML configuration validation which can be trigged
         on command prompt with this new flag: -k or --checkcfg
@@ -39,7 +39,7 @@
       <action dev="essiembre" type="update">
         Dependency updates: Norconex Commons Lang 1.13.0, 
         Norconex Importer 2.7.0, Norconex JEF API 4.1.0,
-        Norconex Committer Core 2.0.6, JSoup 1.10.2.
+        Norconex Committer Core 2.1.0, JSoup 1.10.2.
       </action>
       <action dev="essiembre" type="update">
         Modified Javadoc to include an XML usage example for all 

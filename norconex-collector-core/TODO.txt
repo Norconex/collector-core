@@ -5,11 +5,6 @@
   activeCount in AbstractCrawler#processNextReference is equal or less
   than number of thread and the crawler has been running idle for too long.
 
-- To remove number of dependencies and reduce maintenance, 
-  deprecate and eventually remove:
-   - MapDB given MVStore is a more stable and as fast equivalent.
-   - Derby given H2 is a significantly faster equivalent.
-
 - Consider adding metadata checksummer to AbstractCrawlerConfig
   given there are already metadata filters. Add Metadata checksum stage as well?
 
