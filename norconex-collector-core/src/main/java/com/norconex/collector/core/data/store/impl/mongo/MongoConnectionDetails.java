@@ -24,6 +24,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
 
+import com.mongodb.AuthenticationMechanism;
+
 /**
  * Hold Mongo connection details.
  * @author Pascal Essiembre
@@ -37,6 +39,7 @@ public class MongoConnectionDetails implements Serializable {
     private String databaseName;
     private String username;
     private String password;
+    private String mechanism;
     private EncryptionKey passwordKey;
 
     public int getPort() {
@@ -69,6 +72,12 @@ public class MongoConnectionDetails implements Serializable {
     public void setPassword(String password) {
         this.password = password;
     }
+    public String getMechanism() {
+        return mechanism;
+    }
+    public void setMechanism(String mechanism) {
+        this.mechanism = mechanism;
+    }
     /**
      * Gets the password encryption key.
      * @return the password key or <code>null</code> if the password is not
@@ -80,7 +89,7 @@ public class MongoConnectionDetails implements Serializable {
         return passwordKey;
     }
     /**
-     * Sets the proxy password encryption key. Only required when 
+     * Sets the proxy password encryption key. Only required when
      * the password is encrypted.
      * @param passwordKey password key
      * @see EncryptionUtil
@@ -88,8 +97,8 @@ public class MongoConnectionDetails implements Serializable {
      */
     public void setPasswordKey(EncryptionKey passwordKey) {
         this.passwordKey = passwordKey;
-    }    
-    
+    }
+
     @Override
     public boolean equals(final Object other) {
         if (!(other instanceof MongoConnectionDetails)) {
@@ -102,6 +111,7 @@ public class MongoConnectionDetails implements Serializable {
                 .append(databaseName, castOther.databaseName)
                 .append(username, castOther.username)
                 .append(password, castOther.password)
+                .append(mechanism, castOther.mechanism)
                 .append(passwordKey, castOther.passwordKey)
                 .isEquals();
     }
@@ -113,6 +123,7 @@ public class MongoConnectionDetails implements Serializable {
                 .append(databaseName)
                 .append(username)
                 .append(password)
+                .append(mechanism)
                 .append(passwordKey)
                 .toHashCode();
     }
@@ -124,6 +135,7 @@ public class MongoConnectionDetails implements Serializable {
                 .append("databaseName", databaseName)
                 .append("username", username)
                 .append("password", password)
+                .append("mechanism", mechanism)
                 .append("passwordKey", passwordKey)
                 .toString();
     }

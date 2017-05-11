@@ -39,13 +39,13 @@ import com.norconex.commons.lang.encrypt.EncryptionUtil;
 
 /**
  * <p>Mongo implementation of {@link ICrawlDataStore}.</p>
- * 
- * <p>All the references are stored in a collection named 'references'. 
+ *
+ * <p>All the references are stored in a collection named 'references'.
  * They go from the "QUEUED", "ACTIVE" and "PROCESSED" stages.</p>
- * 
- * <p>The cached references are stored in a separated collection named 
+ *
+ * <p>The cached references are stored in a separated collection named
  * "cached".</p>
- * 
+ *
  * @author Pascal Dimassimo
  * @author Pascal Essiembre
  */
@@ -53,14 +53,14 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
     private static final String COLLECTION_CACHED = "cached";
     private static final String COLLECTION_REFERENCES = "references";
-    
+
     private static final int BATCH_UPDATE_SIZE = 1000;
 
     private final DB database;
     private final IMongoSerializer serializer;
-    
+
     /*
-     * We need to have a separate collection for cached because a reference can 
+     * We need to have a separate collection for cached because a reference can
      * be both queued and cached (it will be removed from cache when it is
      * processed)
      */
@@ -95,7 +95,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
         if (resume) {
             changeStage(Stage.ACTIVE, Stage.QUEUED);
         } else {
-            // Delete everything except valid processed urls that are 
+            // Delete everything except valid processed urls that are
             // transfered to cache
             deleteAllDocuments(collCached);
             processedToCached();
@@ -106,35 +106,48 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
     protected static DB buildMongoDB(
             String crawlerId, MongoConnectionDetails connDetails) {
-        
+
         String dbName = MongoUtil.getDbNameOrGenerate(
                 connDetails.getDatabaseName(),
                 crawlerId);
-        
+
         int port = connDetails.getPort();
         if (port <= 0) {
         	port = ServerAddress.defaultPort();
         }
-        
-        try {
+
             ServerAddress server = new ServerAddress(
                     connDetails.getHost(), port);
             List<MongoCredential> credentialsList = new ArrayList<>();
             if (StringUtils.isNoneBlank(connDetails.getUsername())) {
+
                 String password = EncryptionUtil.decrypt(
-                        connDetails.getPassword(), 
+                        connDetails.getPassword(),
                         connDetails.getPasswordKey());
-                MongoCredential credential = 
-                        MongoCredential.createMongoCRCredential(
-                                connDetails.getUsername(), dbName, 
-                                password.toCharArray());
+
+                MongoCredential credential = buildMongoCredential(
+                        connDetails.getUsername(),
+                        dbName, password.toCharArray(),
+                        connDetails.getMechanism());
                 credentialsList.add(credential);
             }
             MongoClient client = new MongoClient(server, credentialsList);
             return client.getDB(dbName);
-        } catch (UnknownHostException e) {
-            throw new CrawlDataStoreException(e);
+    }
+
+    protected static MongoCredential buildMongoCredential(
+            String username,
+            String dbName,
+            char[] password,
+            String mechanism) {
+        if (mechanism != null) {
+            if (mechanism.equals(MongoCredential.MONGODB_CR_MECHANISM)) {
+                return MongoCredential.createMongoCRCredential(username, dbName, password);
+            } else if (mechanism.equals(MongoCredential.SCRAM_SHA_1_MECHANISM)) {
+                return MongoCredential.createScramSha1Credential(username, dbName, password);
+            }
         }
+        return MongoCredential.createCredential(username, dbName, password);
     }
 
     protected void clear() {
@@ -144,7 +157,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
     @Override
     public void queue(ICrawlData crawlData) {
         BasicDBObject document = serializer.toDBObject(Stage.QUEUED, crawlData);
-        
+
         // If the document does not exist yet, it will be inserted. If exists,
         // it will be replaced.
         BasicDBObject whereQuery = new BasicDBObject(
@@ -197,7 +210,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
     @Override
     public void processed(ICrawlData crawlData) {
-        BasicDBObject document = 
+        BasicDBObject document =
                 serializer.toDBObject(Stage.PROCESSED, crawlData);
         // If the document does not exist yet, it will be inserted. If exists,
         // it will be updated.
@@ -232,7 +245,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
     protected void deleteReferences(String... stages) {
         BasicDBObject document = new BasicDBObject();
         List<String> list = Arrays.asList(stages);
-        document.put(IMongoSerializer.FIELD_STAGE, 
+        document.put(IMongoSerializer.FIELD_STAGE,
                 new BasicDBObject("$in", list));
         collRefs.remove(document);
     }
@@ -245,9 +258,9 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
     protected boolean isStage(String reference, IMongoSerializer.Stage stage) {
         BasicDBObject whereQuery = new BasicDBObject(
-                IMongoSerializer.FIELD_REFERENCE, reference);        
+                IMongoSerializer.FIELD_REFERENCE, reference);
         DBObject result = collRefs.findOne(whereQuery);
-        if (result == null 
+        if (result == null
                 || result.get(IMongoSerializer.FIELD_STAGE) == null) {
             return false;
         }

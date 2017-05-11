@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
+<!--
    Copyright 2017 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,15 @@
       <xs:element name="dbname" type="nonEmptyString" minOccurs="0" maxOccurs="1"/>
       <xs:element name="username" type="nonEmptyString" minOccurs="0" maxOccurs="1"/>
       <xs:element name="password" type="nonEmptyString" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="mechanism" minOccurs="0" maxOccurs="1">
+        <!-- This supports a subset of com.mongodb.AuthenticationMechanism -->
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="MONGODB-CR"/>
+            <xs:enumeration value="SCRAM-SHA-1"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
       <xs:element name="passwordKey" type="nonEmptyString" minOccurs="0" maxOccurs="1"/>
       <xs:element name="passwordKeySource" minOccurs="0" maxOccurs="1">
         <xs:simpleType>

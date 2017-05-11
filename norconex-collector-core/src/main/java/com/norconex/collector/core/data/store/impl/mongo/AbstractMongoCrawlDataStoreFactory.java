@@ -38,24 +38,24 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 
 /**
  * <p>Mongo implementation of {@link ICrawlDataStore}.</p>
- * 
- * <p>All the references are stored in a collection named 'references'. 
+ *
+ * <p>All the references are stored in a collection named 'references'.
  * They go from the "QUEUED", "ACTIVE" and "PROCESSED" stages.</p>
- * 
- * <p>The cached references are stored in a separated collection named 
+ *
+ * <p>The cached references are stored in a separated collection named
  * "cached".
  * </p>
- * 
+ *
  * <p>
- * As of 1.8.0, <code>password</code> can take a password that has been 
- * encrypted using {@link EncryptionUtil} (or command-line encrypt.[bat|sh]). 
+ * As of 1.8.0, <code>password</code> can take a password that has been
+ * encrypted using {@link EncryptionUtil} (or command-line encrypt.[bat|sh]).
  * In order for the password to be decrypted properly by the crawler, you need
  * to specify the encryption key used to encrypt it. The key can be stored
- * in a few supported locations and a combination of 
+ * in a few supported locations and a combination of
  * <code>passwordKey</code>
  * and <code>passwordKeySource</code> must be specified to properly
  * locate the key. The supported sources are:
- * </p> 
+ * </p>
  * <table border="1" summary="">
  *   <tr>
  *     <th><code>passwordKeySource</code></th>
@@ -78,7 +78,7 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  *     <td>Name of a JVM system property containing the key.</td>
  *   </tr>
  * </table>
- * 
+ *
  * <p>
  * Implementing classes should contain the following XML configuration usage:
  * </p>
@@ -95,24 +95,24 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  *  &lt;/crawlDataStoreFactory&gt;
  * </pre>
  * <p>
- * If "username" is not provided, no authentication will be attempted. 
- * The "username" must be a valid user that has the "readWrite" role over 
+ * If "username" is not provided, no authentication will be attempted.
+ * The "username" must be a valid user that has the "readWrite" role over
  * the database (set with "dbname").
  * </p>
  *
  * @author Pascal Essiembre
  * @see BaseMongoSerializer
  */
-public abstract class AbstractMongoCrawlDataStoreFactory 
+public abstract class AbstractMongoCrawlDataStoreFactory
         implements ICrawlDataStoreFactory, IXMLConfigurable {
 
-    private final MongoConnectionDetails connDetails = 
+    private final MongoConnectionDetails connDetails =
             new MongoConnectionDetails();
-    
+
     @Override
     public ICrawlDataStore createCrawlDataStore(
             ICrawlerConfig config, boolean resume) {
-        
+
         return new MongoCrawlDataStore(
                 config.getId(),
                 resume,
@@ -123,9 +123,9 @@ public abstract class AbstractMongoCrawlDataStoreFactory
     public MongoConnectionDetails getConnectionDetails() {
         return connDetails;
     }
-    
+
     protected abstract IMongoSerializer createMongoSerializer();
-    
+
     @Override
     public void loadFromXML(Reader in) throws IOException {
         XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
@@ -137,6 +137,8 @@ public abstract class AbstractMongoCrawlDataStoreFactory
                 xml.getString("username", connDetails.getUsername()));
         connDetails.setPassword(
                 xml.getString("password", connDetails.getPassword()));
+        connDetails.setMechanism(
+                xml.getString("mechanism", connDetails.getMechanism()));
 
         // encrypted password:
         String xmlKey = xml.getString("passwordKey", null);
@@ -149,7 +151,7 @@ public abstract class AbstractMongoCrawlDataStoreFactory
             connDetails.setPasswordKey(new EncryptionKey(xmlKey, source));
         }
     }
-    
+
     @Override
     public void saveToXML(Writer out) throws IOException {
         try {
@@ -163,30 +165,35 @@ public abstract class AbstractMongoCrawlDataStoreFactory
             writer.writeElementString("username", connDetails.getUsername());
             writer.writeElementString("password", connDetails.getPassword());
 
+            String mechanism = connDetails.getMechanism();
+            if (StringUtils.isNotBlank(mechanism)) {
+                writer.writeElementString("mechanism", connDetails.getMechanism());
+            }
+
             // Encrypted password:
             EncryptionKey key = connDetails.getPasswordKey();
             if (key != null) {
                 writer.writeElementString("passwordKey", key.getValue());
                 if (key.getSource() != null) {
-                    writer.writeElementString("passwordKeySource", 
+                    writer.writeElementString("passwordKeySource",
                             key.getSource().name().toLowerCase());
                 }
             }
-            
+
             writer.flush();
             writer.close();
         } catch (XMLStreamException e) {
             throw new IOException("Cannot save as XML.", e);
         }
-        
+
     }
-    
+
     @Override
     public boolean equals(final Object other) {
         if (!(other instanceof AbstractMongoCrawlDataStoreFactory)) {
             return false;
         }
-        AbstractMongoCrawlDataStoreFactory castOther = 
+        AbstractMongoCrawlDataStoreFactory castOther =
                 (AbstractMongoCrawlDataStoreFactory) other;
         return new EqualsBuilder()
                 .append(connDetails, castOther.connDetails)

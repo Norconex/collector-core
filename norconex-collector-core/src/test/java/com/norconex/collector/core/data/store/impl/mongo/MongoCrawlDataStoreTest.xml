@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xml>
-<!-- 
+<!--
    Copyright 2017 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,13 +16,14 @@
    limitations under the License.
 -->
   <!-- Validation done here since not in /validation/collector-core-full.xml -->
-  <crawlDataStoreFactory 
+  <crawlDataStoreFactory
           class="com.norconex.collector.core.data.store.impl.mongo.MockMongoCrawlDataStoreFactory">
     <host>hostname</host>
     <port>123</port>
     <dbname>database</dbname>
     <username>user</username>
     <password>pwd</password>
+    <mechanism>MONGODB-CR</mechanism>
     <passwordKey>blah</passwordKey>
     <passwordKeySource>key</passwordKeySource>
   </crawlDataStoreFactory>
