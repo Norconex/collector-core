@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@ package com.norconex.collector.core.data.store.impl.mongo;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bson.Document;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.IndexOptions;
 import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.data.ICrawlData;
@@ -33,10 +34,9 @@ import com.norconex.commons.lang.file.ContentType;
 public class BaseMongoSerializer implements IMongoSerializer {
 
     @Override
-    public BasicDBObject toDBObject(
-            Stage stage, ICrawlData crawlData) {
+    public Document toDocument(Stage stage, ICrawlData crawlData) {
  
-        BasicDBObject doc = new BasicDBObject();
+        Document doc = new Document();
         doc.put(FIELD_REFERENCE, crawlData.getReference());
         doc.put(FIELD_PARENT_ROOT_REFERENCE, 
                 crawlData.getParentRootReference());
@@ -55,43 +55,43 @@ public class BaseMongoSerializer implements IMongoSerializer {
     }
 
     @Override
-    public ICrawlData fromDBObject(DBObject dbObject) {
-        if (dbObject == null) {
+    public ICrawlData fromDocument(Document doc) {
+        if (doc == null) {
             return null;
         }
         BaseCrawlData data = new BaseCrawlData();
       
-        data.setReference((String) dbObject.get(FIELD_REFERENCE));
-        data.setParentRootReference(
-                (String) dbObject.get(FIELD_PARENT_ROOT_REFERENCE));
+        data.setReference(doc.getString(FIELD_REFERENCE));
+        data.setParentRootReference(doc.getString(FIELD_PARENT_ROOT_REFERENCE));
         data.setRootParentReference(
-                (Boolean) dbObject.get(FIELD_IS_ROOT_PARENT_REFERENCE));
-        String crawlState = (String) dbObject.get(FIELD_CRAWL_STATE);
+                doc.getBoolean(FIELD_IS_ROOT_PARENT_REFERENCE));
+        String crawlState = doc.getString(FIELD_CRAWL_STATE);
         if (crawlState != null) {
             data.setState(CrawlState.valueOf(crawlState));
         }
-        data.setMetaChecksum((String) dbObject.get(FIELD_META_CHECKSUM));
-        data.setContentChecksum((String) dbObject.get(FIELD_CONTENT_CHECKSUM));
-        String contentType = (String) dbObject.get(FIELD_CONTENT_TYPE);
+        data.setMetaChecksum((String) doc.get(FIELD_META_CHECKSUM));
+        data.setContentChecksum((String) doc.get(FIELD_CONTENT_CHECKSUM));
+        String contentType = (String) doc.get(FIELD_CONTENT_TYPE);
         if (StringUtils.isNotBlank(contentType)) {
             data.setContentType(ContentType.valueOf(contentType));
         }
-        data.setCrawlDate((Date) dbObject.get(FIELD_CRAWL_DATE));
+        data.setCrawlDate((Date) doc.get(FIELD_CRAWL_DATE));
         return data;
     }
 
     @Override
-    public DBObject getNextQueued(DBCollection collRefs) {
+    public Document getNextQueued(MongoCollection<Document> collRefs) {
         BasicDBObject whereQuery = 
                 new BasicDBObject(FIELD_STAGE, Stage.QUEUED.name());
         BasicDBObject newDocument = new BasicDBObject("$set",
               new BasicDBObject(FIELD_STAGE, Stage.ACTIVE.name()));
-        return collRefs.findAndModify(whereQuery, newDocument);
+        return collRefs.findOneAndUpdate(whereQuery, newDocument);
     }
 
     @Override
     public void createIndices(
-            DBCollection referenceCollection, DBCollection cachedCollection) {
+            MongoCollection<Document> referenceCollection, 
+            MongoCollection<Document> cachedCollection) {
         ensureIndex(referenceCollection, true, FIELD_REFERENCE);
         ensureIndex(cachedCollection, true, FIELD_REFERENCE);
         ensureIndex(referenceCollection, false, FIELD_IS_VALID);
@@ -100,12 +100,12 @@ public class BaseMongoSerializer implements IMongoSerializer {
         		FIELD_STAGE, FIELD_DEPTH);
     }
 
-    protected final void ensureIndex(DBCollection coll, boolean unique,
-            String... fields) {
+    protected final void ensureIndex(
+            MongoCollection<Document> coll, boolean unique, String... fields) {
         BasicDBObject fieldsObject = new BasicDBObject();
         for (String field : fields) {
             fieldsObject.append(field, 1);
         }
-        coll.createIndex(fieldsObject, null, unique);
+        coll.createIndex(fieldsObject, new IndexOptions().unique(unique));
     }
 }

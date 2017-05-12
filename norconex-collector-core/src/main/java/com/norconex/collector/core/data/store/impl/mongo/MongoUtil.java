@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,17 +42,16 @@ public final class MongoUtil {
      *             if the dbName provided contains invalid characters
      * @return DB name
      */
-    public static String getDbNameOrGenerate(
+    public static String getSafeDBName(
             String dbName, String crawlerId) {
 
         // If we already have a name, try to use it
-        if (dbName != null && dbName.length() > 0) {
+        if (StringUtils.isNotBlank(dbName)) {
             // Validate it
-            if (StringUtils
-                    .containsAny(dbName, MONGO_INVALID_DBNAME_CHARACTERS)
+            if (StringUtils.containsAny(dbName, MONGO_INVALID_DBNAME_CHARACTERS)
                     || StringUtils.containsWhitespace(dbName)) {
-                throw new IllegalArgumentException("Invalid Mongo DB name: "
-                        + dbName);
+                throw new IllegalArgumentException(
+                        "Invalid Mongo DB name: " + dbName);
             }
             return dbName;
         }

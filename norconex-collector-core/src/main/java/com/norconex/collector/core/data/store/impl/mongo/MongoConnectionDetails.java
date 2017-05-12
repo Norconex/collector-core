@@ -16,15 +16,13 @@ package com.norconex.collector.core.data.store.impl.mongo;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
-
-import com.mongodb.AuthenticationMechanism;
 
 /**
  * Hold Mongo connection details.
@@ -72,9 +70,21 @@ public class MongoConnectionDetails implements Serializable {
     public void setPassword(String password) {
         this.password = password;
     }
+    /**
+     * Gets the authentication mechanism to use (<code>MONGODB-CR</code>, 
+     * <code>SCRAM-SHA-1</code> or <code>null</code> to use default).
+     * @return authentication mechanism
+     * @since 1.8.1
+     */
     public String getMechanism() {
         return mechanism;
     }
+    /**
+     * Sets the authentication mechanism to use (<code>MONGODB-CR</code>, 
+     * <code>SCRAM-SHA-1</code> or <code>null</code> to use default).
+     * @param mechanism authentication mechanism
+     * @since 1.8.1
+     */
     public void setMechanism(String mechanism) {
         this.mechanism = mechanism;
     }

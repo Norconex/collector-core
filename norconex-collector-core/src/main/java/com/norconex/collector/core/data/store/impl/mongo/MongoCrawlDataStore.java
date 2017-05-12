@@ -14,25 +14,27 @@
  */
 package com.norconex.collector.core.data.store.impl.mongo;
 
-import java.net.UnknownHostException;
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.eq;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.UpdateOptions;
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.AbstractCrawlDataStore;
-import com.norconex.collector.core.data.store.CrawlDataStoreException;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.impl.mongo.IMongoSerializer.Stage;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
@@ -46,7 +48,6 @@ import com.norconex.commons.lang.encrypt.EncryptionUtil;
  * <p>The cached references are stored in a separated collection named
  * "cached".</p>
  *
- * @author Pascal Dimassimo
  * @author Pascal Essiembre
  */
 public class MongoCrawlDataStore extends AbstractCrawlDataStore {
@@ -56,7 +57,8 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
     private static final int BATCH_UPDATE_SIZE = 1000;
 
-    private final DB database;
+    private final MongoClient client;
+    private final MongoDatabase database;
     private final IMongoSerializer serializer;
 
     /*
@@ -64,34 +66,38 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
      * be both queued and cached (it will be removed from cache when it is
      * processed)
      */
-    private final DBCollection collCached;
-    private final DBCollection collRefs;
+    private final MongoCollection<Document> collCached;
+    private final MongoCollection<Document> collRefs;
 
     /**
      * Constructor.
      * @param crawlerId crawler id
      * @param resume whether to resume an aborted job
      * @param serializer Mongo serializer
-     * @param connDetails Mongo connection details
+     * @param conn Mongo connection details
      */
     public MongoCrawlDataStore(String crawlerId, boolean resume,
-            MongoConnectionDetails connDetails, IMongoSerializer serializer) {
-        this(resume, buildMongoDB(crawlerId, connDetails), serializer);
+            MongoConnectionDetails conn, IMongoSerializer serializer) {
+        this(resume, buildMongoClient(crawlerId, conn), 
+                MongoUtil.getSafeDBName(conn.getDatabaseName(), crawlerId),
+                serializer);
     }
 
     /**
      * Constructor.
      * @param resume whether to resume an aborted job
-     * @param database Mongo database
+     * @param client Mongo client
+     * @param dbName Mongo database name
      * @param serializer Mongo serializer
      */
-    public MongoCrawlDataStore(
-            boolean resume, DB database, IMongoSerializer serializer) {
-
+    public MongoCrawlDataStore(boolean resume, MongoClient client, 
+            String dbName, IMongoSerializer serializer) {
         this.serializer = serializer;
-        this.database = database;
+        this.client = client;
+        this.database = client.getDatabase(dbName);
         this.collRefs = database.getCollection(COLLECTION_REFERENCES);
         this.collCached = database.getCollection(COLLECTION_CACHED);
+        
         if (resume) {
             changeStage(Stage.ACTIVE, Stage.QUEUED);
         } else {
@@ -102,67 +108,62 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
             deleteAllDocuments(collRefs);
         }
         serializer.createIndices(collRefs, collCached);
-    }
-
-    protected static DB buildMongoDB(
+    }    
+    
+    protected static MongoClient buildMongoClient(
             String crawlerId, MongoConnectionDetails connDetails) {
 
-        String dbName = MongoUtil.getDbNameOrGenerate(
-                connDetails.getDatabaseName(),
-                crawlerId);
-
+        String dbName = MongoUtil.getSafeDBName(
+                connDetails.getDatabaseName(), crawlerId);
+        
         int port = connDetails.getPort();
         if (port <= 0) {
         	port = ServerAddress.defaultPort();
         }
 
-            ServerAddress server = new ServerAddress(
-                    connDetails.getHost(), port);
-            List<MongoCredential> credentialsList = new ArrayList<>();
-            if (StringUtils.isNoneBlank(connDetails.getUsername())) {
+        ServerAddress server = new ServerAddress(
+                connDetails.getHost(), port);
+        List<MongoCredential> credentialsList = new ArrayList<>();
+        if (StringUtils.isNoneBlank(connDetails.getUsername())) {
 
-                String password = EncryptionUtil.decrypt(
-                        connDetails.getPassword(),
-                        connDetails.getPasswordKey());
+            String password = EncryptionUtil.decrypt(
+                    connDetails.getPassword(),
+                    connDetails.getPasswordKey());
 
-                MongoCredential credential = buildMongoCredential(
-                        connDetails.getUsername(),
-                        dbName, password.toCharArray(),
-                        connDetails.getMechanism());
-                credentialsList.add(credential);
-            }
-            MongoClient client = new MongoClient(server, credentialsList);
-            return client.getDB(dbName);
+            MongoCredential credential = buildMongoCredential(
+                    connDetails.getUsername(),
+                    dbName, password.toCharArray(),
+                    connDetails.getMechanism());
+            credentialsList.add(credential);
+        }
+        return new MongoClient(server, credentialsList);
     }
-
+    
     protected static MongoCredential buildMongoCredential(
             String username,
             String dbName,
             char[] password,
             String mechanism) {
-        if (mechanism != null) {
-            if (mechanism.equals(MongoCredential.MONGODB_CR_MECHANISM)) {
-                return MongoCredential.createMongoCRCredential(username, dbName, password);
-            } else if (mechanism.equals(MongoCredential.SCRAM_SHA_1_MECHANISM)) {
-                return MongoCredential.createScramSha1Credential(username, dbName, password);
-            }
+        if (MongoCredential.MONGODB_CR_MECHANISM.equals(mechanism)) {
+            return MongoCredential.createMongoCRCredential(
+                    username, dbName, password);
+        } 
+        if (MongoCredential.SCRAM_SHA_1_MECHANISM.equals(mechanism)) {
+            return MongoCredential.createScramSha1Credential(
+                    username, dbName, password);
         }
         return MongoCredential.createCredential(username, dbName, password);
     }
 
-    protected void clear() {
-        database.dropDatabase();
-    }
-
     @Override
     public void queue(ICrawlData crawlData) {
-        BasicDBObject document = serializer.toDBObject(Stage.QUEUED, crawlData);
+        Document document = serializer.toDocument(Stage.QUEUED, crawlData);
 
         // If the document does not exist yet, it will be inserted. If exists,
         // it will be replaced.
-        BasicDBObject whereQuery = new BasicDBObject(
-                IMongoSerializer.FIELD_REFERENCE, crawlData.getReference());
-        collRefs.update(whereQuery, document, true, false);
+        collRefs.updateOne(referenceFilter(crawlData.getReference()), 
+                new Document("$set", document),
+                new UpdateOptions().upsert(true));
     }
 
     @Override
@@ -182,7 +183,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
     @Override
     public ICrawlData nextQueued() {
-        return serializer.fromDBObject(serializer.getNextQueued(collRefs));
+        return serializer.fromDocument(serializer.getNextQueued(collRefs));
     }
 
     @Override
@@ -197,10 +198,8 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
     @Override
     public ICrawlData getCached(String reference) {
-        BasicDBObject whereQuery = new BasicDBObject(
-                IMongoSerializer.FIELD_REFERENCE, reference);
-        DBObject result = collCached.findOne(whereQuery);
-        return serializer.fromDBObject(result);
+        Document result = collCached.find(referenceFilter(reference)).first();
+        return serializer.fromDocument(result);
     }
 
     @Override
@@ -210,16 +209,16 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
     @Override
     public void processed(ICrawlData crawlData) {
-        BasicDBObject document =
-                serializer.toDBObject(Stage.PROCESSED, crawlData);
+        Document document = serializer.toDocument(Stage.PROCESSED, crawlData);
         // If the document does not exist yet, it will be inserted. If exists,
         // it will be updated.
-        BasicDBObject whereQuery = new BasicDBObject(
-                IMongoSerializer.FIELD_REFERENCE, crawlData.getReference());
-        collRefs.update(whereQuery, new BasicDBObject("$set", document), true,
-                false);
+        Bson filter = referenceFilter(crawlData.getReference());
+        collRefs.updateOne(filter, 
+                new Document("$set", document),
+                new UpdateOptions().upsert(true));
+
         // Remove from cache
-        collCached.remove(whereQuery);
+        collCached.deleteOne(filter);
     }
 
     @Override
@@ -234,32 +233,27 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
     private void changeStage(
             IMongoSerializer.Stage stage, IMongoSerializer.Stage newStage) {
-        BasicDBObject whereQuery = new BasicDBObject(
-                IMongoSerializer.FIELD_STAGE, stage.name());
-        BasicDBObject newDocument = new BasicDBObject("$set", new BasicDBObject(
+        Document newDocument = new Document("$set", new Document(
                 IMongoSerializer.FIELD_STAGE, newStage.name()));
         // Batch update
-        collRefs.update(whereQuery, newDocument, false, true);
+        collRefs.updateMany(
+                eq(IMongoSerializer.FIELD_STAGE, stage.name()), newDocument);
     }
 
     protected void deleteReferences(String... stages) {
-        BasicDBObject document = new BasicDBObject();
+        Document document = new Document();
         List<String> list = Arrays.asList(stages);
-        document.put(IMongoSerializer.FIELD_STAGE,
-                new BasicDBObject("$in", list));
-        collRefs.remove(document);
+        document.put(IMongoSerializer.FIELD_STAGE, new Document("$in", list));
+        collRefs.deleteMany(document);
     }
 
     protected int getReferencesCount(IMongoSerializer.Stage stage) {
-        BasicDBObject whereQuery = new BasicDBObject(
-                IMongoSerializer.FIELD_STAGE, stage.name());
-        return (int) collRefs.count(whereQuery);
+        return (int) collRefs.count(
+                eq(IMongoSerializer.FIELD_STAGE, stage.name()));
     }
 
     protected boolean isStage(String reference, IMongoSerializer.Stage stage) {
-        BasicDBObject whereQuery = new BasicDBObject(
-                IMongoSerializer.FIELD_REFERENCE, reference);
-        DBObject result = collRefs.findOne(whereQuery);
+        Document result = collRefs.find(referenceFilter(reference)).first();
         if (result == null
                 || result.get(IMongoSerializer.FIELD_STAGE) == null) {
             return false;
@@ -271,36 +265,40 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
     @Override
     public void close() {
-        database.getMongo().close();
+        client.close();
     }
 
     private void processedToCached() {
-        BasicDBObject whereQuery = new BasicDBObject(
-                IMongoSerializer.FIELD_STAGE, Stage.PROCESSED.name());
-        whereQuery.put(IMongoSerializer.FIELD_IS_VALID, true);
-        DBCursor cursor = collRefs.find(whereQuery);
+        Bson filter = and(
+                eq(IMongoSerializer.FIELD_STAGE, Stage.PROCESSED.name()),
+                eq(IMongoSerializer.FIELD_IS_VALID, true));
+        MongoCursor<Document> cursor = collRefs.find(filter).iterator();
 
         // Add them to cache in batch
-        ArrayList<DBObject> list = new ArrayList<>(BATCH_UPDATE_SIZE);
+        ArrayList<Document> list = new ArrayList<>(BATCH_UPDATE_SIZE);
         while (cursor.hasNext()) {
             list.add(cursor.next());
             if (list.size() == BATCH_UPDATE_SIZE) {
-                collCached.insert(list);
+                collCached.insertMany(list);
                 list.clear();
             }
         }
         if (!list.isEmpty()) {
-            collCached.insert(list);
+            collCached.insertMany(list);
         }
     }
 
-    private void deleteAllDocuments(DBCollection coll) {
-        coll.remove(new BasicDBObject());
+    private void deleteAllDocuments(MongoCollection<Document> coll) {
+        coll.deleteMany(new Document());
     }
 
+    private Bson referenceFilter(String reference) {
+        return eq(IMongoSerializer.FIELD_REFERENCE, reference);
+    }
+    
     @Override
     public Iterator<ICrawlData> getCacheIterator() {
-        final DBCursor cursor = collCached.find();
+        final MongoCursor<Document> cursor = collCached.find().iterator();
         return new Iterator<ICrawlData>() {
             @Override
             public boolean hasNext() {
@@ -308,7 +306,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
             }
             @Override
             public ICrawlData next() {
-                return serializer.fromDBObject(cursor.next());
+                return serializer.fromDocument(cursor.next());
             }
             @Override
             public void remove() {

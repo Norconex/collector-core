@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
  */
 package com.norconex.collector.core.data.store.impl.mongo;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
+import org.bson.Document;
+
+import com.mongodb.client.MongoCollection;
 import com.norconex.collector.core.data.ICrawlData;
 
 /**
@@ -44,26 +44,26 @@ public interface IMongoSerializer {
     String FIELD_CRAWL_DATE = "crawlDate";
     
     /**
-     * Converts a {@link ICrawlData} to a Mongo {@link BasicDBObject}.
+     * Converts a {@link ICrawlData} to a Mongo {@link Document}.
      * @param stage the Mongo serializer stage
      * @param crawlData the data to serialize
      * @return Mongo Basic DB object
      */
-    BasicDBObject toDBObject(Stage stage, ICrawlData crawlData);
+    Document toDocument(Stage stage, ICrawlData crawlData);
     
     /**
-     * Converts a Mongo {@link DBObject} to an {@link ICrawlData}.
-     * @param dbObject Mongo db object
+     * Converts a Mongo {@link Document} to an {@link ICrawlData}.
+     * @param document Mongo document
      * @return crawl data
      */
-    ICrawlData fromDBObject(DBObject dbObject);
+    ICrawlData fromDocument(Document document);
 
     /**
-     * Gets the next queued DB object from the given collection.
-     * @param referenceCollection the collection to get the next DB object from
-     * @return Mongo DB object
+     * Gets the next queued DB document from the given collection.
+     * @param referenceCollection the collection to get the next document from
+     * @return Mongo document
      */
-    DBObject getNextQueued(DBCollection referenceCollection);
+    Document getNextQueued(MongoCollection<Document> referenceCollection);
     
     /**
      * Creates Mongo indices for the given collections.
@@ -71,5 +71,6 @@ public interface IMongoSerializer {
      * @param cachedCollection the collection holding cached crawl references
      */
     void createIndices(
-            DBCollection referenceCollection, DBCollection cachedCollection);
+            MongoCollection<Document> referenceCollection, 
+            MongoCollection<Document> cachedCollection);
 }

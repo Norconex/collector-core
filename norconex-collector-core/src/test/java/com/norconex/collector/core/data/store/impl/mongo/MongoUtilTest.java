@@ -26,7 +26,7 @@ public class MongoUtilTest {
     @Test
     public void testGetDbNameOrGenerateDoGenarate() throws Exception {
         String id = "my-crawl";
-        assertEquals(id, MongoUtil.getDbNameOrGenerate("", id));
+        assertEquals(id, MongoUtil.getSafeDBName("", id));
     }
 
     @Test
@@ -34,7 +34,7 @@ public class MongoUtilTest {
             throws Exception {
         String id = "my crawl";
         // Whitespace should be replaced with '_'
-        assertEquals("my_crawl", MongoUtil.getDbNameOrGenerate("", id));
+        assertEquals("my_crawl", MongoUtil.getSafeDBName("", id));
     }
 
     @Test
@@ -49,7 +49,7 @@ public class MongoUtilTest {
 
     private void checkInvalidName(String name) {
         try {
-            MongoUtil.getDbNameOrGenerate(name, null);
+            MongoUtil.getSafeDBName(name, null);
             fail("Should throw an IllegalArgumentException "
                     + "because the name is invalid");
         } catch (IllegalArgumentException e) {

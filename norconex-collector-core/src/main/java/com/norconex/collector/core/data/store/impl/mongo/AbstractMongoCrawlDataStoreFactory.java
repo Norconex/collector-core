@@ -89,6 +89,7 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  *      &lt;dbname&gt;(Optional Mongo database name. Default to crawl id)&lt;/dbname&gt;
  *      &lt;username&gt;(Optional user name)&lt;/username&gt;
  *      &lt;password&gt;(Optional user password)&lt;/password&gt;
+ *      &lt;mechanism&gt;(Optional authentication mechanism)&lt;/mechanism&gt;
  *      &lt;!-- Use the following if password is encrypted. --&gt;
  *      &lt;passwordKey&gt;(the encryption key or a reference to it)&lt;/passwordKey&gt;
  *      &lt;passwordKeySource&gt;[key|file|environment|property]&lt;/passwordKeySource&gt;
@@ -99,16 +100,24 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  * The "username" must be a valid user that has the "readWrite" role over
  * the database (set with "dbname").
  * </p>
+ * <h3>Authentication mechanism</h3>
  * <p>
- * An optional parameter may be provided that will control whether
- * the client will use MONGODB Challenge Response authentication
- * mechanism, or the newer SCRAM SHA1 SASL mechanism.  Without the
- * parameter, Challenge Response will be used with MongoDB 2
- * and SCRAM SHA1 will be used with MongoDB 3+.  An example follows:
+ * As of 1.8.1, it is now possible to specify the MongoDB authentication 
+ * mechanism to use.  The following are supported:
+ * </p>
+ * <ul>
+ *  <li>MONGODB-CR</li>
+ *  <li>SCRAM-SHA-1</li>
+ * </ul>
+ * <p>
+ * When no mechanism is specified, the default mechanism will be 
+ * the Challenge Response (MONGODB-CR) for MongoDB 2 and and 
+ * SCRAM SHA1 (SCRAM-SHA-1) for MongoDB 3+. 
+ * The following is an example forcing MONGODB-CR authentication:
  * <pre>
- *      &lt;username&gt;(user name)&lt;/username&gt;
- *      &lt;password&gt;(user password)&lt;/password&gt;
- *      &lt;mechanism&gt;(either "MONGODB-CR" or "SCRAM-SHA-1")&lt;/mechanism&gt;
+ *      &lt;username&gt;joe_user&lt;/username&gt;
+ *      &lt;password&gt;joe_pwd&lt;/password&gt;
+ *      &lt;mechanism&gt;MONGODB-CR&lt;/mechanism&gt;
  * </pre>
  *
  * @author Pascal Essiembre
@@ -175,11 +184,7 @@ public abstract class AbstractMongoCrawlDataStoreFactory
             writer.writeElementString("dbname", connDetails.getDatabaseName());
             writer.writeElementString("username", connDetails.getUsername());
             writer.writeElementString("password", connDetails.getPassword());
-
-            String mechanism = connDetails.getMechanism();
-            if (StringUtils.isNotBlank(mechanism)) {
-                writer.writeElementString("mechanism", connDetails.getMechanism());
-            }
+            writer.writeElementString("mechanism", connDetails.getMechanism());
 
             // Encrypted password:
             EncryptionKey key = connDetails.getPasswordKey();
@@ -196,7 +201,6 @@ public abstract class AbstractMongoCrawlDataStoreFactory
         } catch (XMLStreamException e) {
             throw new IOException("Cannot save as XML.", e);
         }
-
     }
 
     @Override
