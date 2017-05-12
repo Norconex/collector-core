@@ -8,7 +8,7 @@
   <body>
 
     <release version="1.8.1-SNAPSHOT" date="2017-??-??" description="Maintenance release">
-      <action dev="essiembre" type="add">
+      <action dev="essiembre,danizen" type="add">
         MongoCrawlDataStore now support specifying the MongoDB authentication 
         mechanism to use (MONGODB-CR or SCRAM-SHA-1).
       </action>
@@ -16,7 +16,7 @@
         Classes related to MongoDB crawl store implementation were updated
         to use MongoDB 3.x API.
       </action>
-      <action dev="essiembre" type="update">
+      <action dev="danizen" type="update">
         Dependency updates: Mongodb Driver 3.4.2, Fongo 2.0.13 (for tests).
       </action>
     </release>
