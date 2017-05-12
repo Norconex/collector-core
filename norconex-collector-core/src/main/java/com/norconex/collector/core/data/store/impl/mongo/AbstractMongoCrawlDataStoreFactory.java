@@ -99,6 +99,17 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  * The "username" must be a valid user that has the "readWrite" role over
  * the database (set with "dbname").
  * </p>
+ * <p>
+ * An optional parameter may be provided that will control whether
+ * the client will use MONGODB Challenge Response authentication
+ * mechanism, or the newer SCRAM SHA1 SASL mechanism.  Without the
+ * parameter, Challenge Response will be used with MongoDB 2
+ * and SCRAM SHA1 will be used with MongoDB 3+.  An example follows:
+ * <pre>
+ *      &lt;username&gt;(user name)&lt;/username&gt;
+ *      &lt;password&gt;(user password)&lt;/password&gt;
+ *      &lt;mechanism&gt;(either "MONGODB-CR" or "SCRAM-SHA-1")&lt;/mechanism&gt;
+ * </pre>
  *
  * @author Pascal Essiembre
  * @see BaseMongoSerializer
