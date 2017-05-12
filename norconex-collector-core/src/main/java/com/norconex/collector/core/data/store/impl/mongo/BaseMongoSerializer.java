@@ -14,12 +14,13 @@
  */
 package com.norconex.collector.core.data.store.impl.mongo;
 
+import static com.mongodb.client.model.Filters.eq;
+
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexOptions;
 import com.norconex.collector.core.data.BaseCrawlData;
@@ -81,11 +82,10 @@ public class BaseMongoSerializer implements IMongoSerializer {
 
     @Override
     public Document getNextQueued(MongoCollection<Document> collRefs) {
-        BasicDBObject whereQuery = 
-                new BasicDBObject(FIELD_STAGE, Stage.QUEUED.name());
-        BasicDBObject newDocument = new BasicDBObject("$set",
-              new BasicDBObject(FIELD_STAGE, Stage.ACTIVE.name()));
-        return collRefs.findOneAndUpdate(whereQuery, newDocument);
+        Document newDocument = new Document(
+                "$set", new Document(FIELD_STAGE, Stage.ACTIVE.name()));
+        return collRefs.findOneAndUpdate(
+                eq(FIELD_STAGE, Stage.QUEUED.name()), newDocument);
     }
 
     @Override
@@ -102,7 +102,7 @@ public class BaseMongoSerializer implements IMongoSerializer {
 
     protected final void ensureIndex(
             MongoCollection<Document> coll, boolean unique, String... fields) {
-        BasicDBObject fieldsObject = new BasicDBObject();
+        Document fieldsObject = new Document();
         for (String field : fields) {
             fieldsObject.append(field, 1);
         }
