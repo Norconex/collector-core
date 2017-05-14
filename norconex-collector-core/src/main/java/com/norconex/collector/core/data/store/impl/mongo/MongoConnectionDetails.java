@@ -99,7 +99,7 @@ public class MongoConnectionDetails implements Serializable {
         return passwordKey;
     }
     /**
-     * Sets the proxy password encryption key. Only required when
+     * Sets the password encryption key. Only required when
      * the password is encrypted.
      * @param passwordKey password key
      * @see EncryptionUtil
