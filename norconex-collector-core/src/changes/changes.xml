@@ -17,7 +17,11 @@
         to use MongoDB 3.x API.
       </action>
       <action dev="danizen" type="update">
-        Dependency updates: Mongodb Driver 3.4.2, Fongo 2.0.13 (for tests).
+        Dependency updates: Norconex Importer 2.7.1, Mongodb Driver 3.4.2, 
+        Fongo 2.0.13 (for tests).
+      </action>
+      <action dev="essiembre" type="update">
+        AbstractCollector#saveToXML(...) now written with xml:space="preserve".
       </action>
     </release>
 

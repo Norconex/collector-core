@@ -225,6 +225,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
             writer.writeStartElement(xmlConfigRootTag);
             writer.writeAttributeClass("class", getClass());
             writer.writeAttribute("id", getId());
+            writer.writeAttributeString("xml:space", "preserve");
             
             writer.writeElementString("logsDir", getLogsDir());
             writer.writeElementString("progressDir", getProgressDir());
