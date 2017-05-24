@@ -23,6 +23,11 @@
       <action dev="essiembre" type="update">
         AbstractCollector#saveToXML(...) now written with xml:space="preserve".
       </action>
+      <action dev="essiembre" type="fix">
+        Fixed "importer" config section not being inherited from 
+        "crawlerDefaults" when a specific crawler configuration does not 
+        declare one.
+      </action>
     </release>
 
     <release version="1.8.0" date="2017-04-26" description="Feature release">

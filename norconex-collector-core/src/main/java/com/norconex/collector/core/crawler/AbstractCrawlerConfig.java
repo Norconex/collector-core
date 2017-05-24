@@ -28,7 +28,6 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -325,10 +324,12 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         //--- IMPORTER ---------------------------------------------------------
         XMLConfiguration importerNode = 
                 XMLConfigurationUtil.getXmlAt(xml, "importer");
-        ImporterConfig iConfig = 
-                ImporterConfigLoader.loadImporterConfig(importerNode);
-        setImporterConfig(
-                ObjectUtils.defaultIfNull(iConfig, getImporterConfig()));
+        if (importerNode != null) {
+            setImporterConfig(
+                    ImporterConfigLoader.loadImporterConfig(importerNode));
+        } else if (getImporterConfig() == null) {
+            setImporterConfig(new ImporterConfig());
+        }
 
         //--- Data Store -------------------------------------------------------
         setCrawlDataStoreFactory(XMLConfigurationUtil.newInstance(xml,

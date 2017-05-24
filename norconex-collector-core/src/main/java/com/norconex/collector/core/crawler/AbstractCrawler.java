@@ -199,9 +199,7 @@ public abstract class AbstractCrawler
             JobSuite suite, boolean resume) {
         StopWatch stopWatch = new StopWatch();;
         stopWatch.start();
-        ICrawlDataStore crawlDataStore = 
-                config.getCrawlDataStoreFactory().createCrawlDataStore(
-                        config, resume);
+        ICrawlDataStore crawlDataStore = createCrawlDataStore(resume);
         
         this.crawlerEventManager = new CrawlerEventManager(
                 this, getCrawlerConfig().getCrawlerListeners());
@@ -237,6 +235,11 @@ public abstract class AbstractCrawler
                 crawlDataStore.close();
             }
         }
+    }
+    
+    protected ICrawlDataStore createCrawlDataStore(boolean resume) {
+        return config.getCrawlDataStoreFactory().createCrawlDataStore(
+                config, resume);
     }
     
     protected abstract void prepareExecution(
