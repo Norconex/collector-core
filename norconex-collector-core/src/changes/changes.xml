@@ -7,6 +7,16 @@
   </properties>
   <body>
 
+    <release version="1.8.2-SNAPSHOT" date="2017-??-??" description="Bugfix release">
+      <action dev="danizen" type="update">
+        Dependency updates: Norconex Importer 2.7.2.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed "caseSensitive" flag sometimes having no effect in 
+        RegexMetadataFilter and RegexReferenceFilter.
+      </action>
+    </release>
+
     <release version="1.8.1" date="2017-05-25" description="Maintenance release">
       <action dev="essiembre,danizen" type="add">
         MongoCrawlDataStore now support specifying the MongoDB authentication 

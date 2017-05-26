@@ -14,6 +14,9 @@
  */
 package com.norconex.collector.core.filter.impl;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 
 import org.junit.Test;
@@ -22,6 +25,24 @@ import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.handler.filter.OnMatch;
 
 public class RegexReferenceFilterTest {
+
+    @Test
+    public void testCaseSensitivity() throws IOException {
+        RegexReferenceFilter f = new RegexReferenceFilter();
+        f.setOnMatch(OnMatch.INCLUDE);
+        f.setRegex("case");
+
+        // must match any case:
+        f.setCaseSensitive(false);
+        assertTrue(f.acceptReference("case"));
+        assertTrue(f.acceptReference("CASE"));
+        
+        // must match only matching case:
+        f.setCaseSensitive(true);
+        assertTrue(f.acceptReference("case"));
+        assertFalse(f.acceptReference("CASE"));
+    }
+    
     
     @Test
     public void testWriteRead() throws IOException {

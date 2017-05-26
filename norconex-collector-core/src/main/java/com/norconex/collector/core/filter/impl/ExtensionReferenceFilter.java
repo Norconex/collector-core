@@ -140,8 +140,9 @@ public class ExtensionReferenceFilter extends AbstractOnMatchFilter implements
         this.extensions = extensions;
         if (extensions != null) {
             this.extensionParts = extensions.split("\\s*,\\s*");
-            for (int i = 0; i < this.extensionParts.length; i++)
+            for (int i = 0; i < this.extensionParts.length; i++) {
                 this.extensionParts[i] = this.extensionParts[i].trim();
+            }
         } else {
             this.extensionParts = ArrayUtils.EMPTY_STRING_ARRAY;
         }

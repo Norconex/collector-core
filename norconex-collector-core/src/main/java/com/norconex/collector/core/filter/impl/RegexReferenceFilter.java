@@ -73,7 +73,7 @@ public class RegexReferenceFilter extends AbstractOnMatchFilter implements
 
     private boolean caseSensitive;
     private String regex;
-    private Pattern pattern;
+    private Pattern cachedPattern;
 
     public RegexReferenceFilter() {
         this(null, OnMatch.INCLUDE);
@@ -103,18 +103,11 @@ public class RegexReferenceFilter extends AbstractOnMatchFilter implements
     }
     public final void setCaseSensitive(boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
+        cachedPattern = null;
     }
     public final void setRegex(String regex) {
         this.regex = regex;
-        if (regex != null) {
-            int flags = Pattern.DOTALL;
-            if (!caseSensitive) {
-                flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-            }
-            this.pattern = Pattern.compile(regex, flags);
-        } else {
-            this.pattern = Pattern.compile(".*");
-        }
+        cachedPattern = null;
     }
 
     @Override
@@ -123,8 +116,26 @@ public class RegexReferenceFilter extends AbstractOnMatchFilter implements
         if (StringUtils.isBlank(regex)) {
             return isInclude;
         }
-        boolean matches = pattern.matcher(url).matches();
+        boolean matches = getCachedPattern().matcher(url).matches();
         return matches && isInclude || !matches && !isInclude;
+    }
+    
+    private synchronized Pattern getCachedPattern() {
+        if (cachedPattern != null) {
+            return cachedPattern;
+        }
+        Pattern p;
+        if (regex == null) {
+            p = Pattern.compile(".*");
+        } else {
+            int flags = Pattern.DOTALL;
+            if (!caseSensitive) {
+                flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+            }
+            p = Pattern.compile(regex, flags);
+        }
+        cachedPattern = p;
+        return p;
     }
 
     @Override

@@ -78,7 +78,7 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
     private boolean caseSensitive;
     private String field;
     private String regex;
-    private Pattern pattern;
+    private Pattern cachedPattern;
 
     public RegexMetadataFilter() {
         this(null, null, OnMatch.INCLUDE);
@@ -110,21 +110,14 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
     }
     public final void setCaseSensitive(boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
+        cachedPattern = null;
     }
     public final void setField(String header) {
         this.field = header;
     }
     public final void setRegex(String regex) {
         this.regex = regex;
-        if (regex != null) {
-            int flags = Pattern.DOTALL;
-            if (!caseSensitive) {
-                flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-            }
-            this.pattern = Pattern.compile(regex, flags);            
-        } else {
-            this.pattern = Pattern.compile(".*");
-        }
+        cachedPattern = null;
     }
 
     @Override
@@ -135,13 +128,31 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
         Collection<String> values = metadata.getStrings(field);
         for (Object value : values) {
             String strVal = Objects.toString(value, StringUtils.EMPTY);
-            if (pattern.matcher(strVal).matches()) {
+            if (getCachedPattern().matcher(strVal).matches()) {
                 return getOnMatch() == OnMatch.INCLUDE;
             }
         }
         return getOnMatch() == OnMatch.EXCLUDE;
     }
 
+    private synchronized Pattern getCachedPattern() {
+        if (cachedPattern != null) {
+            return cachedPattern;
+        }
+        Pattern p;
+        if (regex == null) {
+            p = Pattern.compile(".*");
+        } else {
+            int flags = Pattern.DOTALL;
+            if (!caseSensitive) {
+                flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+            }
+            p = Pattern.compile(regex, flags);
+        }
+        cachedPattern = p;
+        return p;
+    }    
+    
     @Override
     public boolean acceptDocument(ImporterDocument document) {
         if (document == null) {
