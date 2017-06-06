@@ -42,25 +42,35 @@ import com.norconex.commons.lang.encrypt.EncryptionUtil;
 /**
  * <p>Mongo implementation of {@link ICrawlDataStore}.</p>
  *
- * <p>All the references are stored in a collection named 'references'.
+ * <p>All references are stored in a collection with a default name 
+ * of "references".
  * They go from the "QUEUED", "ACTIVE" and "PROCESSED" stages.</p>
  *
- * <p>The cached references are stored in a separated collection named
- * "cached".</p>
+ * <p>The cached references are stored in a separated collection with the 
+ * default name "cached".</p>
+ *
+ * <p>
+ * As of 1.8.3, you can define your own collection names with 
+ * {@link #setReferencesCollectionName(String)} and 
+ * {@link #setCachedCollectionName(String)}.
+ * </p>
  *
  * @author Pascal Essiembre
  */
 public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
-    private static final String COLLECTION_CACHED = "cached";
-    private static final String COLLECTION_REFERENCES = "references";
+    public static final String DEFAULT_CACHED_COL_NAME = "cached";
+    public static final String DEFAULT_REFERENCES_COL_NAME = "references";
 
     private static final int BATCH_UPDATE_SIZE = 1000;
 
     private final MongoClient client;
     private final MongoDatabase database;
     private final IMongoSerializer serializer;
-
+    
+    private String referencesCollectionName = DEFAULT_REFERENCES_COL_NAME;
+    private String cachedCollectionName = DEFAULT_CACHED_COL_NAME;
+    
     /*
      * We need to have a separate collection for cached because a reference can
      * be both queued and cached (it will be removed from cache when it is
@@ -95,9 +105,11 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
         this.serializer = serializer;
         this.client = client;
         this.database = client.getDatabase(dbName);
-        this.collRefs = database.getCollection(COLLECTION_REFERENCES);
-        this.collCached = database.getCollection(COLLECTION_CACHED);
-        
+        this.collRefs = database.getCollection(StringUtils.defaultIfBlank(
+                getReferencesCollectionName(), DEFAULT_REFERENCES_COL_NAME));
+        this.collCached = database.getCollection(
+                StringUtils.defaultIfBlank(
+                        getCachedCollectionName(), DEFAULT_CACHED_COL_NAME));
         if (resume) {
             changeStage(Stage.ACTIVE, Stage.QUEUED);
         } else {
@@ -108,8 +120,41 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
             deleteAllDocuments(collRefs);
         }
         serializer.createIndices(collRefs, collCached);
-    }    
+    }
     
+    /**
+     * Gets the references collection name. Defaults to "references".
+     * @return collection name
+     * @since 1.9.0
+     */
+    public String getReferencesCollectionName() {
+        return referencesCollectionName;
+    }
+    /**
+     * Sets the references collection name.
+     * @param referencesCollectionName collection name
+     * @since 1.9.0
+     */
+    public void setReferencesCollectionName(String referencesCollectionName) {
+        this.referencesCollectionName = referencesCollectionName;
+    }
+    /**
+     * Gets the cached collection name. Defaults to "cached".
+     * @return collection name
+     * @since 1.9.0
+     */
+    public String getCachedCollectionName() {
+        return cachedCollectionName;
+    }
+    /**
+     * Sets the cached collection name.
+     * @param cachedCollectionName collection name
+     * @since 1.9.0
+     */
+    public void setCachedCollectionName(String cachedCollectionName) {
+        this.cachedCollectionName = cachedCollectionName;
+    }
+
     protected static MongoClient buildMongoClient(
             String crawlerId, MongoConnectionDetails connDetails) {
 

@@ -89,6 +89,8 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  *      &lt;dbname&gt;(Optional Mongo database name. Default to crawl id)&lt;/dbname&gt;
  *      &lt;username&gt;(Optional user name)&lt;/username&gt;
  *      &lt;password&gt;(Optional user password)&lt;/password&gt;
+ *      &lt;cachedCollectionName&gt;(Custom "cached" collection name)&lt;/cachedCollectionName&gt;
+ *      &lt;referencesCollectionName&gt;(Custom "references" collection name)&lt;/referencesCollectionName&gt;
  *      &lt;mechanism&gt;(Optional authentication mechanism)&lt;/mechanism&gt;
  *      &lt;!-- Use the following if password is encrypted. --&gt;
  *      &lt;passwordKey&gt;(the encryption key or a reference to it)&lt;/passwordKey&gt;
@@ -120,6 +122,12 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  *      &lt;mechanism&gt;MONGODB-CR&lt;/mechanism&gt;
  * </pre>
  *
+ * <p>
+ * As of 1.8.3, you can define your own collection names with 
+ * {@link #setReferencesCollectionName(String)} and 
+ * {@link #setCachedCollectionName(String)}.
+ * </p>
+ *
  * @author Pascal Essiembre
  * @see BaseMongoSerializer
  */
@@ -128,7 +136,11 @@ public abstract class AbstractMongoCrawlDataStoreFactory
 
     private final MongoConnectionDetails connDetails =
             new MongoConnectionDetails();
-
+    private String referencesCollectionName = 
+            MongoCrawlDataStore.DEFAULT_REFERENCES_COL_NAME;
+    private String cachedCollectionName = 
+            MongoCrawlDataStore.DEFAULT_CACHED_COL_NAME;
+    
     @Override
     public ICrawlDataStore createCrawlDataStore(
             ICrawlerConfig config, boolean resume) {
@@ -142,6 +154,39 @@ public abstract class AbstractMongoCrawlDataStoreFactory
 
     public MongoConnectionDetails getConnectionDetails() {
         return connDetails;
+    }
+
+    /**
+     * Gets the references collection name. Defaults to "references".
+     * @return collection name
+     * @since 1.9.0
+     */
+    public String getReferencesCollectionName() {
+        return referencesCollectionName;
+    }
+    /**
+     * Sets the references collection name.
+     * @param referencesCollectionName collection name
+     * @since 1.9.0
+     */
+    public void setReferencesCollectionName(String referencesCollectionName) {
+        this.referencesCollectionName = referencesCollectionName;
+    }
+    /**
+     * Gets the cached collection name. Defaults to "cached".
+     * @return collection name
+     * @since 1.9.0
+     */
+    public String getCachedCollectionName() {
+        return cachedCollectionName;
+    }
+    /**
+     * Sets the cached collection name.
+     * @param cachedCollectionName collection name
+     * @since 1.9.0
+     */
+    public void setCachedCollectionName(String cachedCollectionName) {
+        this.cachedCollectionName = cachedCollectionName;
     }
 
     protected abstract IMongoSerializer createMongoSerializer();
@@ -159,6 +204,10 @@ public abstract class AbstractMongoCrawlDataStoreFactory
                 xml.getString("password", connDetails.getPassword()));
         connDetails.setMechanism(
                 xml.getString("mechanism", connDetails.getMechanism()));
+        setCachedCollectionName(xml.getString(
+                "cachedCollectionName", getCachedCollectionName()));
+        setReferencesCollectionName(xml.getString(
+                "referencesCollectionName", getReferencesCollectionName()));
 
         // encrypted password:
         String xmlKey = xml.getString("passwordKey", null);
@@ -185,6 +234,10 @@ public abstract class AbstractMongoCrawlDataStoreFactory
             writer.writeElementString("username", connDetails.getUsername());
             writer.writeElementString("password", connDetails.getPassword());
             writer.writeElementString("mechanism", connDetails.getMechanism());
+            writer.writeElementString(
+                    "cachedCollectionName", getCachedCollectionName());
+            writer.writeElementString(
+                    "referencesCollectionName", getReferencesCollectionName());
 
             // Encrypted password:
             EncryptionKey key = connDetails.getPasswordKey();

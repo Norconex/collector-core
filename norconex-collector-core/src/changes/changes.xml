@@ -7,8 +7,16 @@
   </properties>
   <body>
 
+    <release version="1.8.3-SNAPSHOT" date="2017-??-??" description="Maintenance release">
+      <action dev="essiembre" type="add">
+        Can now specify custom collection names when using 
+        MongoCrawlDataStore and AbstractMongoCrawlDataStoreFactory
+        implementations.
+      </action>
+    </release>
+
     <release version="1.8.2" date="2017-05-26" description="Bugfix release">
-      <action dev="danizen" type="update">
+      <action dev="essiembre" type="update">
         Dependency updates: Norconex Importer 2.7.2.
       </action>
       <action dev="essiembre" type="fix">

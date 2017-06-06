@@ -26,4 +26,6 @@
     <mechanism>MONGODB-CR</mechanism>
     <passwordKey>blah</passwordKey>
     <passwordKeySource>key</passwordKeySource>
+    <cachedCollectionName>mycached</cachedCollectionName>
+    <referencesCollectionName>myreferences</referencesCollectionName>
   </crawlDataStoreFactory>

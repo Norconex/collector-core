@@ -23,6 +23,8 @@
       <xs:element name="dbname" type="nonEmptyString" minOccurs="0" maxOccurs="1"/>
       <xs:element name="username" type="nonEmptyString" minOccurs="0" maxOccurs="1"/>
       <xs:element name="password" type="nonEmptyString" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="cachedCollectionName" type="nonEmptyString" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="referencesCollectionName" type="nonEmptyString" minOccurs="0" maxOccurs="1"/>
       <xs:element name="mechanism" minOccurs="0" maxOccurs="1">
         <!-- This supports a subset of com.mongodb.AuthenticationMechanism -->
         <xs:simpleType>

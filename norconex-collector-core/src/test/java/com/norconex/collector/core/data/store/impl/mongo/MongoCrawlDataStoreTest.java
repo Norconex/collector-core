@@ -65,6 +65,8 @@ public class MongoCrawlDataStoreTest extends BaseCrawlDataStoreTest {
         f.getConnectionDetails().setUsername("username");
         f.getConnectionDetails().setPassword("password");
         f.getConnectionDetails().setMechanism("MONGODB-CR");
+        f.setCachedCollectionName("mycache");
+        f.setReferencesCollectionName("myrefs");
         System.out.println("Writing/Reading this: " + f);
         XMLConfigurationUtil.assertWriteRead(f);
     }
