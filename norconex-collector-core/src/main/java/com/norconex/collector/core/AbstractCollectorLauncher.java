@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -27,7 +28,6 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -114,7 +114,8 @@ public abstract class AbstractCollectorLauncher {
             err.println("\n\nDetails of the error has been stored at: "
                     + errorFile.getAbsolutePath() + "\n\n");
             try {
-                PrintWriter w = new PrintWriter(errorFile, CharEncoding.UTF_8);
+                PrintWriter w = new PrintWriter(
+                        errorFile, StandardCharsets.UTF_8.toString());
                 e.printStackTrace(w);
                 w.flush();
                 w.close();

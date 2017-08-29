@@ -13,6 +13,12 @@
         MongoCrawlDataStore and AbstractMongoCrawlDataStoreFactory
         implementations.
       </action>
+      <action dev="essiembre" type="update">
+        Dependency updates: Norconex Importer 2.8.0, 
+        Norconex Commons Lang 1.14.0, Norconex Committer Core 2.1.2,
+        Apache Commons DbUtils 1.7, MongoDB Java Driver 3.5.0,
+        H2 Database 1.4.196.
+      </action>
     </release>
 
     <release version="1.8.2" date="2017-05-26" description="Bugfix release">

@@ -1,4 +1,10 @@
 
+- Add <regex> to RegexReferenceFilter to match how it is done
+  in Importer.
+
+- Rename RegexReferenceFilter to avoid confusion with class of the same name
+  in Importer.
+
 - Add a new flag to start crawling "fresh" (deleting the crawl database).
 
 - In Allow crawler to "expire" after configurable delay if 
