@@ -51,16 +51,27 @@
   </repositories>
 
   <dependencies>
+
+    <!-- === Fix transitive dependencies versions: === -->
+
+    <dependency>
+      <groupId>com.norconex.commons</groupId>
+      <artifactId>norconex-commons-lang</artifactId>
+      <version>${norconex-commons-lang.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.2</version>
+    </dependency>
+
+    <!--  === Other dependencies: === -->
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.12</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.norconex.jef</groupId>
-      <artifactId>norconex-jef</artifactId>
-      <version>4.1.0</version>
     </dependency>
     <dependency>
       <groupId>com.norconex.collectors</groupId>
@@ -71,6 +82,11 @@
       <groupId>com.norconex.collectors</groupId>
       <artifactId>norconex-committer-core</artifactId>
       <version>2.1.2-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.norconex.jef</groupId>
+      <artifactId>norconex-jef</artifactId>
+      <version>4.1.0</version>
     </dependency>
     <dependency>
       <groupId>commons-beanutils</groupId>
@@ -110,19 +126,6 @@
       <classifier>resources</classifier>
       <type>zip</type>
       <scope>provided</scope>
-    </dependency>
-
-    <!-- === Fix transitive dependencies versions: === -->
-
-    <dependency>
-      <groupId>com.norconex.commons</groupId>
-      <artifactId>norconex-commons-lang</artifactId>
-      <version>${norconex-commons-lang.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-logging</groupId>
-      <artifactId>commons-logging</artifactId>
-      <version>1.2</version>
     </dependency>
 
   </dependencies>
