@@ -144,12 +144,13 @@ public abstract class AbstractMongoCrawlDataStoreFactory
     @Override
     public ICrawlDataStore createCrawlDataStore(
             ICrawlerConfig config, boolean resume) {
-
         return new MongoCrawlDataStore(
                 config.getId(),
                 resume,
                 getConnectionDetails(),
-                createMongoSerializer());
+                createMongoSerializer(),
+                getReferencesCollectionName(),
+                getCachedCollectionName());
     }
 
     public MongoConnectionDetails getConnectionDetails() {
@@ -159,7 +160,7 @@ public abstract class AbstractMongoCrawlDataStoreFactory
     /**
      * Gets the references collection name. Defaults to "references".
      * @return collection name
-     * @since 1.9.0
+     * @since 1.8.3
      */
     public String getReferencesCollectionName() {
         return referencesCollectionName;
@@ -167,7 +168,7 @@ public abstract class AbstractMongoCrawlDataStoreFactory
     /**
      * Sets the references collection name.
      * @param referencesCollectionName collection name
-     * @since 1.9.0
+     * @since 1.8.3
      */
     public void setReferencesCollectionName(String referencesCollectionName) {
         this.referencesCollectionName = referencesCollectionName;
@@ -175,7 +176,7 @@ public abstract class AbstractMongoCrawlDataStoreFactory
     /**
      * Gets the cached collection name. Defaults to "cached".
      * @return collection name
-     * @since 1.9.0
+     * @since 1.8.3
      */
     public String getCachedCollectionName() {
         return cachedCollectionName;
@@ -183,7 +184,7 @@ public abstract class AbstractMongoCrawlDataStoreFactory
     /**
      * Sets the cached collection name.
      * @param cachedCollectionName collection name
-     * @since 1.9.0
+     * @since 1.8.3
      */
     public void setCachedCollectionName(String cachedCollectionName) {
         this.cachedCollectionName = cachedCollectionName;
@@ -265,18 +266,25 @@ public abstract class AbstractMongoCrawlDataStoreFactory
                 (AbstractMongoCrawlDataStoreFactory) other;
         return new EqualsBuilder()
                 .append(connDetails, castOther.connDetails)
+                .append(referencesCollectionName, 
+                        castOther.referencesCollectionName)
+                .append(cachedCollectionName, castOther.cachedCollectionName)
                 .isEquals();
     }
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
                 .append(connDetails)
+                .append(referencesCollectionName)
+                .append(cachedCollectionName)
                 .toHashCode();
     }
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("connDetails", connDetails)
+                .append("referencesCollectionName", referencesCollectionName)
+                .append("cachedCollectionName", cachedCollectionName)
                 .toString();
     }
 }

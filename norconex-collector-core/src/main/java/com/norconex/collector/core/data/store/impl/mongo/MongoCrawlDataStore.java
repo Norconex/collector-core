@@ -50,9 +50,8 @@ import com.norconex.commons.lang.encrypt.EncryptionUtil;
  * default name "cached".</p>
  *
  * <p>
- * As of 1.8.3, you can define your own collection names with 
- * {@link #setReferencesCollectionName(String)} and 
- * {@link #setCachedCollectionName(String)}.
+ * As of 1.8.3, you can define your own collection names using one of the
+ * new constructors.
  * </p>
  *
  * @author Pascal Essiembre
@@ -68,8 +67,8 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
     private final MongoDatabase database;
     private final IMongoSerializer serializer;
     
-    private String referencesCollectionName = DEFAULT_REFERENCES_COL_NAME;
-    private String cachedCollectionName = DEFAULT_CACHED_COL_NAME;
+    private final String referencesCollectionName;
+    private final String cachedCollectionName;
     
     /*
      * We need to have a separate collection for cached because a reference can
@@ -92,6 +91,23 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
                 MongoUtil.getSafeDBName(conn.getDatabaseName(), crawlerId),
                 serializer);
     }
+    /**
+     * Constructor.
+     * @param crawlerId crawler id
+     * @param resume whether to resume an aborted job
+     * @param serializer Mongo serializer
+     * @param conn Mongo connection details
+     * @param referencesCollectionName name of Mongo references collection
+     * @param cachedCollectionName name of Mongo cached collection 
+     * @since 1.8.3
+     */
+    public MongoCrawlDataStore(String crawlerId, boolean resume,
+            MongoConnectionDetails conn, IMongoSerializer serializer, 
+            String referencesCollectionName, String cachedCollectionName) {
+        this(resume, buildMongoClient(crawlerId, conn), 
+                MongoUtil.getSafeDBName(conn.getDatabaseName(), crawlerId),
+                serializer, referencesCollectionName, cachedCollectionName);
+    }
 
     /**
      * Constructor.
@@ -102,14 +118,32 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
      */
     public MongoCrawlDataStore(boolean resume, MongoClient client, 
             String dbName, IMongoSerializer serializer) {
+        this(resume, client, dbName, serializer, null, null);
+    }
+    /**
+     * Constructor.
+     * @param resume whether to resume an aborted job
+     * @param client Mongo client
+     * @param dbName Mongo database name
+     * @param serializer Mongo serializer
+     * @param referencesCollectionName name of Mongo references collection
+     * @param cachedCollectionName name of Mongo cached collection 
+     * @since 1.8.3
+     */
+    public MongoCrawlDataStore(boolean resume, MongoClient client, 
+            String dbName, IMongoSerializer serializer,
+            String referencesCollectionName, String cachedCollectionName) {
         this.serializer = serializer;
         this.client = client;
         this.database = client.getDatabase(dbName);
         this.collRefs = database.getCollection(StringUtils.defaultIfBlank(
-                getReferencesCollectionName(), DEFAULT_REFERENCES_COL_NAME));
+                referencesCollectionName, DEFAULT_REFERENCES_COL_NAME));
         this.collCached = database.getCollection(
                 StringUtils.defaultIfBlank(
-                        getCachedCollectionName(), DEFAULT_CACHED_COL_NAME));
+                        cachedCollectionName, DEFAULT_CACHED_COL_NAME));
+        this.referencesCollectionName = referencesCollectionName;
+        this.cachedCollectionName = cachedCollectionName;
+        
         if (resume) {
             changeStage(Stage.ACTIVE, Stage.QUEUED);
         } else {
@@ -125,34 +159,18 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
     /**
      * Gets the references collection name. Defaults to "references".
      * @return collection name
-     * @since 1.9.0
+     * @since 1.8.3
      */
     public String getReferencesCollectionName() {
         return referencesCollectionName;
     }
     /**
-     * Sets the references collection name.
-     * @param referencesCollectionName collection name
-     * @since 1.9.0
-     */
-    public void setReferencesCollectionName(String referencesCollectionName) {
-        this.referencesCollectionName = referencesCollectionName;
-    }
-    /**
      * Gets the cached collection name. Defaults to "cached".
      * @return collection name
-     * @since 1.9.0
+     * @since 1.8.3
      */
     public String getCachedCollectionName() {
         return cachedCollectionName;
-    }
-    /**
-     * Sets the cached collection name.
-     * @param cachedCollectionName collection name
-     * @since 1.9.0
-     */
-    public void setCachedCollectionName(String cachedCollectionName) {
-        this.cachedCollectionName = cachedCollectionName;
     }
 
     protected static MongoClient buildMongoClient(
