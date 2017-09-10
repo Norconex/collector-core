@@ -123,7 +123,7 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  * </pre>
  *
  * <p>
- * As of 1.8.3, you can define your own collection names with 
+ * As of 1.9.0, you can define your own collection names with 
  * {@link #setReferencesCollectionName(String)} and 
  * {@link #setCachedCollectionName(String)}.
  * </p>
@@ -160,7 +160,7 @@ public abstract class AbstractMongoCrawlDataStoreFactory
     /**
      * Gets the references collection name. Defaults to "references".
      * @return collection name
-     * @since 1.8.3
+     * @since 1.9.0
      */
     public String getReferencesCollectionName() {
         return referencesCollectionName;
@@ -168,7 +168,7 @@ public abstract class AbstractMongoCrawlDataStoreFactory
     /**
      * Sets the references collection name.
      * @param referencesCollectionName collection name
-     * @since 1.8.3
+     * @since 1.9.0
      */
     public void setReferencesCollectionName(String referencesCollectionName) {
         this.referencesCollectionName = referencesCollectionName;
@@ -176,7 +176,7 @@ public abstract class AbstractMongoCrawlDataStoreFactory
     /**
      * Gets the cached collection name. Defaults to "cached".
      * @return collection name
-     * @since 1.8.3
+     * @since 1.9.0
      */
     public String getCachedCollectionName() {
         return cachedCollectionName;
@@ -184,7 +184,7 @@ public abstract class AbstractMongoCrawlDataStoreFactory
     /**
      * Sets the cached collection name.
      * @param cachedCollectionName collection name
-     * @since 1.8.3
+     * @since 1.9.0
      */
     public void setCachedCollectionName(String cachedCollectionName) {
         this.cachedCollectionName = cachedCollectionName;

@@ -30,6 +30,13 @@
                 </xs:restriction>
               </xs:simpleType>        
             </xs:element>
+            <xs:element name="sourceFieldsRegex" minOccurs="0" maxOccurs="1">
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:minLength value="1"/>
+                </xs:restriction>
+              </xs:simpleType>        
+            </xs:element>
           </xs:all>
           <xs:attribute name="disabled" type="xs:boolean"/>
         </xs:extension>

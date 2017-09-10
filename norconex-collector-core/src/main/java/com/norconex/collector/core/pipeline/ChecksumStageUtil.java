@@ -25,7 +25,7 @@ import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.CrawlState;
 
 /**
- * Checksum utility methods.
+ * Checksum stage utility methods.
  * @author Pascal Essiembre
  */
 public final class ChecksumStageUtil {

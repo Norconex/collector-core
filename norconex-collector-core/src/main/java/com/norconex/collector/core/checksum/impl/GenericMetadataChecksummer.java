@@ -14,24 +14,17 @@
  */
 package com.norconex.collector.core.checksum.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 
 import com.norconex.collector.core.checksum.AbstractMetadataChecksummer;
+import com.norconex.collector.core.checksum.ChecksumUtil;
 import com.norconex.collector.core.checksum.IMetadataChecksummer;
 import com.norconex.collector.core.doc.CollectorMetadata;
 import com.norconex.commons.lang.map.Properties;
@@ -51,6 +44,16 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  * it stores it under the metadata field name 
  * {@link CollectorMetadata#COLLECTOR_CHECKSUM_METADATA}. 
  * </p>
+ * <p>
+ * <b>Since 1.9.0</b>, it is possible to use regular expressions to match
+ * fields. 
+ * Use <code>sourceFields</code> to list all fields to use, separated by commas.
+ * Use <code>sourceFieldsRegex</code> to match fields to use using a regular 
+ * expression.
+ * Both <code>sourceFields</code> and <code>sourceFieldsRegex</code> can be used
+ * together. Matching fields from both will be combined, in the order
+ * provided/matched, starting with <code>sourceFields</code> entries.
+ * </p> 
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;metadataChecksummer 
@@ -61,6 +64,9 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  *    &lt;sourceFields&gt;
  *        (optional coma-separated list fields used to create checksum)
  *    &lt;/sourceFields&gt;
+ *    &lt;sourceFieldsRegex&gt;
+ *      (regular expression matching fields used to create checksum)
+ *    &lt;/sourceFieldsRegex&gt;    
  *  &lt;/metadataChecksummer&gt;
  * </pre>
  * 
@@ -80,44 +86,17 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  */
 public class GenericMetadataChecksummer extends AbstractMetadataChecksummer {
 
-	private static final Logger LOG = LogManager.getLogger(
-			GenericMetadataChecksummer.class);
-
     private String[] sourceFields = null;
+    private String sourceFieldsRegex;
     private boolean disabled;
 	
     @Override
     protected String doCreateMetaChecksum(Properties metadata) {
-        if (disabled || ArrayUtils.isEmpty(sourceFields)) {
+        if (disabled) {
             return null;
         }
-        
-        StringBuilder b = new StringBuilder();
-        List<String> fields = 
-                new ArrayList<String>(Arrays.asList(sourceFields));
-        // Sort to make sure field order does not affect checksum.
-        Collections.sort(fields);
-        for (String field : fields) {
-            List<String> values = metadata.getStrings(field);
-            if (values != null) {
-                for (String value : values) {
-                    if (StringUtils.isNotBlank(value)) {
-                        b.append(field).append('=');
-                        b.append(value).append(';');
-                    }
-                }
-            }
-        }
-        String checksum = b.toString();
-        if (StringUtils.isNotBlank(checksum)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Metadata checksum from "
-                        + StringUtils.join(sourceFields, ',')
-                        + " : " + checksum);
-            }
-            return checksum;
-        }
-        return null;
+        return ChecksumUtil.metadataChecksumPlain(
+                metadata, getSourceFieldsRegex(), getSourceFields());
     }
 
     /**
@@ -128,15 +107,32 @@ public class GenericMetadataChecksummer extends AbstractMetadataChecksummer {
         return sourceFields;
     }
     /**
-     * Sets the metadata header fields used construct a checksum.  Specifying
-     * <code>null</code> has the same effect as setting 
-     * {@link #setDisabled(boolean)} to <code>true</code>.
+     * Sets the metadata header fields used construct a checksum.
      * @param fields fields to use for checksum
      */
     public void setSourceFields(String... fields) {
         this.sourceFields = fields;
     }
-	
+
+    /**
+     * Gets the regular expression matching metadata fields used to construct
+     * a checksum.
+     * @return regular expression
+     * @since 1.9.0
+     */
+    public String getSourceFieldsRegex() {
+        return sourceFieldsRegex;
+    }
+    /**
+     * Sets the regular expression matching metadata fields used construct 
+     * a checksum.
+     * @param sourceFieldsRegex regular expression
+     * @since 1.9.0
+     */
+    public void setSourceFieldsRegex(String sourceFieldsRegex) {
+        this.sourceFieldsRegex = sourceFieldsRegex;
+    }
+
     /**
      * Whether this checksummer is disabled or not. When disabled, not
      * checksum will be created (the checksum will be <code>null</code>).
@@ -162,7 +158,9 @@ public class GenericMetadataChecksummer extends AbstractMetadataChecksummer {
             sourceFields = null;
         } else {
             sourceFields = flds.split("\\s*,\\s*");
-        }        
+        }
+        setSourceFieldsRegex(xml.getString(
+                "sourceFieldsRegex", getSourceFieldsRegex()));
     }
 
     @Override
@@ -171,6 +169,7 @@ public class GenericMetadataChecksummer extends AbstractMetadataChecksummer {
         writer.writeAttributeBoolean("disabled", isDisabled());
         writer.writeElementString(
                 "sourceFields", StringUtils.join(sourceFields, ','));
+        writer.writeElementString("sourceFieldsRegex", getSourceFieldsRegex());
     }
 
     @Override
@@ -184,6 +183,7 @@ public class GenericMetadataChecksummer extends AbstractMetadataChecksummer {
                 .appendSuper(super.equals(castOther))
                 .append(disabled, castOther.disabled)
                 .append(sourceFields, castOther.sourceFields)
+                .append(sourceFieldsRegex, castOther.sourceFieldsRegex)
                 .isEquals();
     }
 
@@ -193,6 +193,7 @@ public class GenericMetadataChecksummer extends AbstractMetadataChecksummer {
                 .appendSuper(super.hashCode())
                 .append(disabled)
                 .append(sourceFields)
+                .append(sourceFieldsRegex)
                 .toHashCode();
     }
 
@@ -202,6 +203,7 @@ public class GenericMetadataChecksummer extends AbstractMetadataChecksummer {
                 .appendSuper(super.toString())
                 .append("disabled", disabled)
                 .append("sourceFields", sourceFields)
+                .append("sourceFieldsRegex", sourceFieldsRegex)
                 .toString();
     }
 }

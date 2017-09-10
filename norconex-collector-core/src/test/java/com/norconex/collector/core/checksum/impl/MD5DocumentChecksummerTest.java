@@ -72,9 +72,62 @@ public class MD5DocumentChecksummerTest {
         cs.setSourceFields("field4", "field5");
         String checksum3 = cs.createDocumentChecksum(doc);
         Assert.assertNull(
-                "Checksum for no matching fie3lds should have been null.",
+                "Checksum for no matching fields should have been null.",
                 checksum3);
 
+        // Fields + Regex
+        cs.setSourceFieldsRegex("field.*");
+        String checksum4 = cs.createDocumentChecksum(doc);
+        Assert.assertTrue("No checksum was generated.", 
+                StringUtils.isNotBlank(checksum4));
+
+        // Regex only
+        cs.setSourceFields();
+        cs.setSourceFieldsRegex("field.*");
+        String checksum5 = cs.createDocumentChecksum(doc);
+        Assert.assertTrue("No checksum was generated.", 
+                StringUtils.isNotBlank(checksum5));
+
+        // Regex only no match
+        cs.setSourceFieldsRegex("NOfield.*");
+        String checksum6 = cs.createDocumentChecksum(doc);
+        Assert.assertNull(
+                "Checksum for no matching regex should have been null.",
+                checksum6);
+        
+        is.dispose();
+    }
+    
+    // https://github.com/Norconex/collector-http/issues/388
+    @Test
+    public void testCombineFieldsAndContent() throws IOException {
+        // Simply should not fail and return something.
+        CachedInputStream is = 
+                new CachedStreamFactory(1024, 1024).newInputStream("Content");
+        ImporterDocument doc = new ImporterDocument("N/A", is);
+        doc.getMetadata().addString("field1", "value1.1", "value1.2");
+        doc.getMetadata().addString("field2", "value2");
+        MD5DocumentChecksummer cs = new MD5DocumentChecksummer();
+
+        // With no source fields, should use content only.
+        String contentChecksum = cs.createDocumentChecksum(doc);
+        
+        // With source fields, should use fields only.
+        cs.setSourceFieldsRegex("field.*");
+        String fieldsChecksum = cs.createDocumentChecksum(doc);
+
+        // When combining, should use both fields and content.
+        cs.setCombineFieldsAndContent(true);
+        String combinedChecksum = cs.createDocumentChecksum(doc);
+        
+        // The 3 checksums should be non-null, but different.
+        Assert.assertNotNull("Null content checksum.", contentChecksum);
+        Assert.assertNotNull("Null fields checksum.", fieldsChecksum);
+        Assert.assertNotNull("Null combined checksum.", combinedChecksum);
+
+        Assert.assertNotEquals(contentChecksum, fieldsChecksum);
+        Assert.assertNotEquals(fieldsChecksum, combinedChecksum);
+        
         is.dispose();
     }
     
@@ -84,6 +137,8 @@ public class MD5DocumentChecksummerTest {
         c.setDisabled(true);
         c.setKeep(true);
         c.setSourceFields("field1","field2");
+        c.setSourceFieldsRegex("field.*");
+        c.setCombineFieldsAndContent(true);
         c.setTargetField("target");
         System.out.println("Writing/Reading this: " + c);
         XMLConfigurationUtil.assertWriteRead(c);

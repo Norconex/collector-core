@@ -50,7 +50,7 @@ import com.norconex.commons.lang.encrypt.EncryptionUtil;
  * default name "cached".</p>
  *
  * <p>
- * As of 1.8.3, you can define your own collection names using one of the
+ * As of 1.9.0, you can define your own collection names using one of the
  * new constructors.
  * </p>
  *
@@ -99,7 +99,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
      * @param conn Mongo connection details
      * @param referencesCollectionName name of Mongo references collection
      * @param cachedCollectionName name of Mongo cached collection 
-     * @since 1.8.3
+     * @since 1.9.0
      */
     public MongoCrawlDataStore(String crawlerId, boolean resume,
             MongoConnectionDetails conn, IMongoSerializer serializer, 
@@ -128,7 +128,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
      * @param serializer Mongo serializer
      * @param referencesCollectionName name of Mongo references collection
      * @param cachedCollectionName name of Mongo cached collection 
-     * @since 1.8.3
+     * @since 1.9.0
      */
     public MongoCrawlDataStore(boolean resume, MongoClient client, 
             String dbName, IMongoSerializer serializer,
@@ -159,7 +159,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
     /**
      * Gets the references collection name. Defaults to "references".
      * @return collection name
-     * @since 1.8.3
+     * @since 1.9.0
      */
     public String getReferencesCollectionName() {
         return referencesCollectionName;
@@ -167,7 +167,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
     /**
      * Gets the cached collection name. Defaults to "cached".
      * @return collection name
-     * @since 1.8.3
+     * @since 1.9.0
      */
     public String getCachedCollectionName() {
         return cachedCollectionName;

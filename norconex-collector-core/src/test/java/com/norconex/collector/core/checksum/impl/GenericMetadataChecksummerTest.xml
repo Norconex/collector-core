@@ -15,10 +15,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-  <!-- Validation testing done here since metadata checksummers are not
-       on AbstractCrawlerConfig.  Should it be??? -->
-  <metadataChecksummer 
+<!-- Validation testing done here since metadata checksummers are not
+     on AbstractCrawlerConfig.  Should it be??? -->
+<metadataChecksummer 
       class="com.norconex.collector.core.checksum.impl.GenericMetadataChecksummer"
       disabled="false" keep="true" targetField="afield">
-    <sourceFields>field1,field2</sourceFields>
-  </metadataChecksummer>
+  <sourceFields>field1,field2</sourceFields>
+  <sourceFieldsRegex>field.*</sourceFieldsRegex>
+</metadataChecksummer>

@@ -7,7 +7,16 @@
   </properties>
   <body>
 
-    <release version="1.8.3-SNAPSHOT" date="2017-??-??" description="Maintenance release">
+    <release version="1.9.0-SNAPSHOT" date="2017-??-??" description="Maintenance release">
+      <action dev="essiembre" type="add">
+        New "sourceFieldsRegex" option on GenericMetadataChecksummer and
+        MD5DocumentChecksummer allowing the use of regular expressions
+        to match the fields to use for building the checksum.
+      </action>
+      <action dev="essiembre" type="add">
+        New "combineFieldsAndContent" option on MD5DocumentChecksummer
+        to use both fields and content for building the checksum.
+      </action>
       <action dev="essiembre" type="add">
         Can now specify custom collection names when using 
         MongoCrawlDataStore and AbstractMongoCrawlDataStoreFactory

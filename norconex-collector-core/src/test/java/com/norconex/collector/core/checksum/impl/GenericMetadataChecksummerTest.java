@@ -32,6 +32,7 @@ public class GenericMetadataChecksummerTest {
         c.setDisabled(true);
         c.setKeep(true);
         c.setSourceFields("field1","field2");
+        c.setSourceFieldsRegex("field.*");
         c.setTargetField("target");
         System.out.println("Writing/Reading this: " + c);
         XMLConfigurationUtil.assertWriteRead(c);

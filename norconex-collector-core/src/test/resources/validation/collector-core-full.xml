@@ -100,8 +100,10 @@
 
     <documentChecksummer 
         class="com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer"
+        combineFieldsAndContent="true"
         disabled="false" keep="true" targetField="afield">
       <sourceFields>field1,field2</sourceFields>
+      <sourceFieldsRegex>field.*</sourceFieldsRegex>
     </documentChecksummer>
     <spoiledReferenceStrategizer 
         class="com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer"
