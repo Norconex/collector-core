@@ -53,6 +53,7 @@ import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.doc.CollectorMetadata;
 import com.norconex.collector.core.jmx.Monitoring;
+import com.norconex.collector.core.pipeline.importer.ImporterPipelineContext;
 import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
 import com.norconex.collector.core.spoil.SpoiledReferenceStrategy;
 import com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer;
@@ -117,12 +118,6 @@ public abstract class AbstractCrawler
      */
     public AbstractCrawler(ICrawlerConfig config) {
         this.config = config;
-        try {
-            FileUtils.forceMkdir(config.getWorkDir());
-        } catch (IOException e) {
-            throw new CollectorException("Cannot create working directory: "
-                    + config.getWorkDir(), e);
-        }
     }
 
     @Override
@@ -170,12 +165,11 @@ public abstract class AbstractCrawler
     }
 
     public File getBaseDownloadDir() {
-        return new File(getCrawlerConfig().getWorkDir().getAbsolutePath() 
-                + "/downloads");
+        return new File(
+                getCrawlerConfig().getWorkDir().getAbsolutePath(), "downloads");
     }
     public File getCrawlerDownloadDir() {
-        return new File(getBaseDownloadDir() 
-                + "/" + getCrawlerConfig().getId());
+        return new File(getBaseDownloadDir(), getCrawlerConfig().getId());
     }
     
     @Override
@@ -197,7 +191,14 @@ public abstract class AbstractCrawler
 
     private void doExecute(JobStatusUpdater statusUpdater,
             JobSuite suite, boolean resume) {
-        StopWatch stopWatch = new StopWatch();;
+        try {
+            FileUtils.forceMkdir(config.getWorkDir());
+        } catch (IOException e) {
+            throw new CollectorException("Cannot create working directory: "
+                    + config.getWorkDir(), e);
+        }
+        
+        StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         ICrawlDataStore crawlDataStore = createCrawlDataStore(resume);
         
@@ -252,14 +253,16 @@ public abstract class AbstractCrawler
 
     
     protected void execute(JobStatusUpdater statusUpdater,
-            JobSuite suite, ICrawlDataStore refStore) {
+            JobSuite suite, ICrawlDataStore crawlDataStore) {
 
         //--- Process start/queued references ----------------------------------
         LOG.info(getId() + ": Crawling references...");
-        processReferences(refStore, statusUpdater, suite, false);
+        ImporterPipelineContext contextPrototype = 
+                new ImporterPipelineContext(this, crawlDataStore);
+        processReferences(statusUpdater, suite, contextPrototype);
 
         if (!isStopped()) {
-            handleOrphans(refStore, statusUpdater, suite);
+            handleOrphans(crawlDataStore, statusUpdater, suite);
         }
         
         ICommitter committer = getCrawlerConfig().getCommitter();
@@ -284,7 +287,7 @@ public abstract class AbstractCrawler
                 + (isStopped() ? "stopped." : "completed."));
     }
     
-    protected void handleOrphans(ICrawlDataStore refStore,
+    protected void handleOrphans(ICrawlDataStore crawlStore,
             JobStatusUpdater statusUpdater, JobSuite suite) {
         
         OrphansStrategy strategy = config.getOrphansStrategy();
@@ -296,12 +299,12 @@ public abstract class AbstractCrawler
         // If PROCESS, we do not care to validate if really orphan since 
         // all cache items will be reprocessed regardless
         if (strategy == OrphansStrategy.PROCESS) {
-            reprocessCacheOrphans(refStore, statusUpdater, suite);
+            reprocessCacheOrphans(crawlStore, statusUpdater, suite);
             return;
         }
 
         if (strategy == OrphansStrategy.DELETE) {
-            deleteCacheOrphans(refStore, statusUpdater, suite);
+            deleteCacheOrphans(crawlStore, statusUpdater, suite);
         }
         // else, ignore (i.e. don't do anything)
         //TODO log how many where ignored (cache count)
@@ -330,7 +333,10 @@ public abstract class AbstractCrawler
                 executeQueuePipeline(crawlData, crawlDataStore);
                 count++;
             }
-            processReferences(crawlDataStore, statusUpdater, suite, false);
+            ImporterPipelineContext contextPrototype = 
+                    new ImporterPipelineContext(this, crawlDataStore);
+            contextPrototype.setOrphan(true);
+            processReferences(statusUpdater, suite, contextPrototype);
         }
         LOG.debug(getId() + ": Reprocessed " + count 
                 + " cached/orphan references...");
@@ -349,18 +355,21 @@ public abstract class AbstractCrawler
                 crawlDataStore.queue(it.next());
                 count++;
             }
-            processReferences(crawlDataStore, statusUpdater, suite, true);
+            ImporterPipelineContext contextPrototype = 
+                    new ImporterPipelineContext(this, crawlDataStore);
+            contextPrototype.setDelete(true);
+            processReferences(statusUpdater, suite, contextPrototype);
         }
         LOG.info(getId() + ": Deleted " + count + " orphan references...");
     }
     
     
     protected void processReferences(
-            final ICrawlDataStore refStore,
             final JobStatusUpdater statusUpdater, 
             final JobSuite suite,
-            final boolean delete) {
-        
+            final ImporterPipelineContext contextPrototype) {
+
+    
         int numThreads = getCrawlerConfig().getNumThreads();
         final CountDownLatch latch = new CountDownLatch(numThreads);
         ExecutorService pool = Executors.newFixedThreadPool(numThreads);
@@ -370,29 +379,31 @@ public abstract class AbstractCrawler
             LOG.debug(getId() 
                     + ": Crawler thread #" + threadIndex + " started.");
             pool.execute(new ProcessReferencesRunnable(
-                    suite, statusUpdater, refStore, delete, latch));
+                    suite, statusUpdater, latch, contextPrototype));
         }
 
         try {
             latch.await();
             pool.shutdown();
         } catch (InterruptedException e) {
+             Thread.currentThread().interrupt();
              throw new CollectorException(e);
         }
     }
  
     // return <code>true</code> if more references to process
     protected boolean processNextReference(
-            final ICrawlDataStore crawlDataStore,
             final JobStatusUpdater statusUpdater, 
-            final boolean delete) {
-        if (!delete && isMaxDocuments()) {
+            final ImporterPipelineContext context) {
+        if (!context.isDelete() && isMaxDocuments()) {
             LOG.info(getId() + ": Maximum documents reached: " 
                     + getCrawlerConfig().getMaxDocuments());
             return false;
         }
-        BaseCrawlData queuedCrawlData = 
-                (BaseCrawlData) crawlDataStore.nextQueued();
+        ICrawlDataStore crawlStore = context.getCrawlDataStore();
+        
+        BaseCrawlData queuedCrawlData = (BaseCrawlData) crawlStore.nextQueued();
+        context.setCrawlData(queuedCrawlData);
         
         if (LOG.isTraceEnabled()) {
             LOG.trace(getId() + " Processing next reference from Queue: " 
@@ -404,16 +415,16 @@ public abstract class AbstractCrawler
                 watch = new StopWatch();
                 watch.start();
             }
-            processNextQueuedCrawlData(queuedCrawlData, crawlDataStore, delete);
-            setProgress(statusUpdater, crawlDataStore);
+            processNextQueuedCrawlData(context);
+            setProgress(statusUpdater, crawlStore);
             if (LOG.isDebugEnabled()) {
                 watch.stop();
                 LOG.debug(getId() + ": " + watch.toString() 
                         + " to process: " + queuedCrawlData.getReference());
             }
         } else {
-            int activeCount = crawlDataStore.getActiveCount();
-            boolean queueEmpty = crawlDataStore.isQueueEmpty();
+            int activeCount = crawlStore.getActiveCount();
+            boolean queueEmpty = crawlStore.isQueueEmpty();
             if (LOG.isTraceEnabled()) {
                 LOG.trace(getId() 
                         + " Number of references currently being processed: "
@@ -489,17 +500,25 @@ public abstract class AbstractCrawler
         // default does nothing 
     }
     
-    private void processNextQueuedCrawlData(BaseCrawlData crawlData, 
-            ICrawlDataStore crawlDataStore, boolean delete) {
+    
+    private void processNextQueuedCrawlData(ImporterPipelineContext context) {
+//    private void processNextQueuedCrawlData(BaseCrawlData crawlData, 
+//            ICrawlDataStore crawlDataStore, boolean delete) {
+        
+        BaseCrawlData crawlData = context.getCrawlData();
+        ICrawlDataStore crawlDataStore = context.getCrawlDataStore();
+        
         String reference = crawlData.getReference();
         ImporterDocument doc = wrapDocument(crawlData, new ImporterDocument(
                 crawlData.getReference(), getStreamFactory().newInputStream()));
+        context.setDocument(doc);
         
         //TODO create a composite object that has crawler, crawlData,
         // cachedCrawlData, ... To reduce the number of arguments passed around.
         // It could potentially be a base class for pipeline contexts too.
         BaseCrawlData cachedCrawlData = 
                 (BaseCrawlData) crawlDataStore.getCached(reference);
+        context.setCachedCrawlData(cachedCrawlData);
         
         doc.getMetadata().setBoolean(
                 CollectorMetadata.COLLECTOR_IS_CRAWL_NEW, 
@@ -508,7 +527,7 @@ public abstract class AbstractCrawler
         initCrawlData(crawlData, cachedCrawlData, doc);
 
         try {
-            if (delete) {
+            if (context.isDelete()) {
                 deleteReference(crawlData, doc);
                 finalizeDocumentProcessing(
                         crawlData, crawlDataStore, doc, cachedCrawlData);
@@ -517,9 +536,9 @@ public abstract class AbstractCrawler
             if (LOG.isDebugEnabled()) {
                 LOG.debug(getId() + ": Processing reference: " + reference);
             }
-            
-            ImporterResponse response = executeImporterPipeline(
-                    this, doc, crawlDataStore, crawlData, cachedCrawlData);
+
+            ImporterResponse response = executeImporterPipeline(context);
+
             if (response != null) {
                 processImportResponse(
                         response, crawlDataStore, crawlData, cachedCrawlData);
@@ -711,14 +730,10 @@ public abstract class AbstractCrawler
     protected abstract BaseCrawlData createEmbeddedCrawlData(
             String embeddedReference, ICrawlData parentCrawlData);
     
-    //TODO replace args by Core DocumentPipelineContext?
     protected abstract ImporterResponse executeImporterPipeline(
-            ICrawler crawler,
-            ImporterDocument doc,
-            ICrawlDataStore crawlDataStore, 
-            BaseCrawlData crawlData,
-            BaseCrawlData cachedCrawlData);
+            ImporterPipelineContext context);
     
+    //TODO, replace with DocumentPipelineContext?
     protected abstract void executeCommitterPipeline(
             ICrawler crawler,
             ImporterDocument doc,
@@ -763,31 +778,31 @@ public abstract class AbstractCrawler
     }
     
     private final class ProcessReferencesRunnable implements Runnable {
+        private final ImporterPipelineContext importerContextPrototype;
         private final JobSuite suite;
         private final JobStatusUpdater statusUpdater;
-        private final ICrawlDataStore crawlStore;
-        private final boolean delete;
         private final CountDownLatch latch;
 
-        private ProcessReferencesRunnable(JobSuite suite, 
+        private ProcessReferencesRunnable(
+                JobSuite suite, 
                 JobStatusUpdater statusUpdater,
-                ICrawlDataStore refStore, boolean delete,
-                CountDownLatch latch) {
+                CountDownLatch latch,
+                ImporterPipelineContext importerContextPrototype) {
             this.suite = suite;
             this.statusUpdater = statusUpdater;
-            this.crawlStore = refStore;
-            this.delete = delete;
             this.latch = latch;
-        }
-
+            this.importerContextPrototype = importerContextPrototype;
+        }        
+        
         @Override
         public void run() {
             JobSuite.setCurrentJobId(statusUpdater.getJobId());
             try {
                 while (!isStopped()) {
                     try {
-                        if (!processNextReference(
-                                crawlStore, statusUpdater, delete)) {
+                        if (!processNextReference(statusUpdater, 
+                                new ImporterPipelineContext(
+                                        importerContextPrototype))) {
                             break;
                         }
                     } catch (Exception e) {

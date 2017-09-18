@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
  * limitations under the License.
  */
 package com.norconex.collector.core.pipeline;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.crawler.ICrawler;
 import com.norconex.collector.core.crawler.ICrawlerConfig;
@@ -32,30 +37,31 @@ public class BasePipelineContext {
 
     private final ICrawler crawler;
     private final ICrawlDataStore crawlDataStore;
-    private final BaseCrawlData crawlData;
-    //TODO move this one to DocumentPipelineContext?
-    private final BaseCrawlData cachedCrawlData;
+    private BaseCrawlData crawlData;
 
+    /**
+     * Constructor.
+     * @param crawler the crawler
+     * @param crawlDataStore crawl data store
+     * @since 1.9.0
+     */
     public BasePipelineContext(
-            ICrawler crawler, ICrawlDataStore crawlDataStore, 
-            BaseCrawlData crawlData) {
-        this(crawler, crawlDataStore, crawlData, null);
+            ICrawler crawler, ICrawlDataStore crawlDataStore) {
+        this(crawler, crawlDataStore, null);
     }
+    
     /**
      * Constructor.
      * @param crawler the crawler
      * @param crawlDataStore crawl data store
      * @param crawlData current crawl data
-     * @param cachedCrawlData crawl data from previous run, if any
-     * @since 1.3.0
      */
     public BasePipelineContext(
             ICrawler crawler, ICrawlDataStore crawlDataStore, 
-            BaseCrawlData crawlData, BaseCrawlData cachedCrawlData) {
+            BaseCrawlData crawlData) {
         this.crawler = crawler;
         this.crawlDataStore = crawlDataStore;
         this.crawlData = crawlData;
-        this.cachedCrawlData = cachedCrawlData;
     }
 
     public ICrawler getCrawler() {
@@ -70,14 +76,14 @@ public class BasePipelineContext {
         return crawlData;
     }
     /**
-     * Gets the crawl data from previous run, if any.
-     * @return cached crawl data
-     * @since 1.3.0
+     * Sets the current crawl data.
+     * @param crawlData crawl data
+     * @since 1.9.0
      */
-    public BaseCrawlData getCachedCrawlData() {
-        return cachedCrawlData;
+    public void setCrawlData(BaseCrawlData crawlData) {
+        this.crawlData = crawlData;
     }
-
+    
     public ICrawlDataStore getCrawlDataStore() {
         return crawlDataStore;
     }
@@ -89,5 +95,19 @@ public class BasePipelineContext {
             crawler.getCrawlerEventManager().fireCrawlerEvent(new CrawlerEvent(
                     event, crawlData, subject));
         }
+    }
+    
+    @Override
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
+    }
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(this, 
+                ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

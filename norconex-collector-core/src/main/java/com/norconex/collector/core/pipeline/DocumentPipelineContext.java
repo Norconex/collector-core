@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,14 +33,38 @@ import com.norconex.importer.doc.ImporterDocument;
  */
 public class DocumentPipelineContext extends BasePipelineContext {
 
-    private final ImporterDocument document;
-    
+    private ImporterDocument document;
+    private BaseCrawlData cachedCrawlData;
+
+    /**
+     * Constructor.
+     * @param crawler the crawler
+     * @param crawlDataStore crawl data store
+     * @since 1.9.0
+     */
+    public DocumentPipelineContext(
+            ICrawler crawler, ICrawlDataStore crawlDataStore) {
+        super(crawler, crawlDataStore, null);
+    }
+    /**
+     * Constructor.
+     * @param crawler the crawler
+     * @param crawlDataStore crawl data store
+     * @param crawlData current crawl data
+     * @since 1.9.0
+     */
+    public DocumentPipelineContext(
+            ICrawler crawler, ICrawlDataStore crawlDataStore, 
+            BaseCrawlData crawlData) {
+        super(crawler, crawlDataStore, crawlData);
+    }
     public DocumentPipelineContext(
             ICrawler crawler, ICrawlDataStore crawlDataStore, 
             BaseCrawlData crawlData,
             BaseCrawlData cachedCrawlData,
             ImporterDocument document) {
-        super(crawler, crawlDataStore, crawlData, cachedCrawlData);
+        super(crawler, crawlDataStore, crawlData);
+        this.cachedCrawlData = cachedCrawlData;
         this.document = document;
     }
 
@@ -48,6 +72,30 @@ public class DocumentPipelineContext extends BasePipelineContext {
         return document;
     }
 
+    /**
+     * Gets cached crawl data.
+     * @return cached crawl data
+     * @since 1.9.0
+     */
+    public BaseCrawlData getCachedCrawlData() {
+        return cachedCrawlData;
+    }
+    /**
+     * Sets cached crawl data.
+     * @param cachedCrawlData cached crawl data.
+     * @since 1.9.0
+     */
+    public void setCachedCrawlData(BaseCrawlData cachedCrawlData) {
+        this.cachedCrawlData = cachedCrawlData;
+    }
+    /**
+     * Sets document.
+     * @param document a document
+     * @since 1.9.0
+     */
+    public void setDocument(ImporterDocument document) {
+        this.document = document;
+    }
     public CachedInputStream getContent() {
         return getDocument().getContent();
     }

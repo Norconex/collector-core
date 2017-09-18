@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,18 +39,18 @@ public final class ChecksumStageUtil {
 
     
     public static boolean resolveMetaChecksum(
-            String newChecksum, BasePipelineContext ctx, Object subject) {
+            String newChecksum, DocumentPipelineContext ctx, Object subject) {
         return resolveChecksum(true, newChecksum, ctx, subject);
     }
     public static boolean resolveDocumentChecksum(
-            String newChecksum, BasePipelineContext ctx, Object subject) {
+            String newChecksum, DocumentPipelineContext ctx, Object subject) {
         return resolveChecksum(false, newChecksum, ctx, subject);
     }
 
     
     // return false if checksum is rejected/unmodified
     private static boolean resolveChecksum(boolean isMeta, String newChecksum, 
-            BasePipelineContext ctx, Object subject) {
+            DocumentPipelineContext ctx, Object subject) {
         BaseCrawlData crawlData = ctx.getCrawlData();
 
         // Set new checksum on crawlData + metadata

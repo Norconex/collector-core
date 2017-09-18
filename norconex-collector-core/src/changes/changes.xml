@@ -23,10 +23,20 @@
         implementations.
       </action>
       <action dev="essiembre" type="update">
+        AbstractCrawler no longer create work directory on object construction,
+        but rather does it when the crawler starts.
+      </action>
+      <action dev="essiembre" type="update">
         Dependency updates: Norconex Importer 2.8.0, 
         Norconex Commons Lang 1.14.0, Norconex Committer Core 2.1.2,
         Apache Commons DbUtils 1.7, MongoDB Java Driver 3.5.0,
         H2 Database 1.4.196.
+      </action>
+      <action dev="essiembre" type="fix">
+        When orphan strategy is "PROCESS", the crawler now always attempts
+        to process a document, regardless of sitemap delays or recrawlable 
+        delays, since the reason for it to become orphan may be deletion, and
+        we do not want to wait a future crawl cycle to find out.
       </action>
     </release>
 

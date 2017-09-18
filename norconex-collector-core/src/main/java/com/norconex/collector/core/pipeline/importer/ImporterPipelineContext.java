@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,11 @@
  */
 package com.norconex.collector.core.pipeline.importer;
 
+import java.lang.reflect.InvocationTargetException;
+
+import org.apache.commons.beanutils.BeanUtils;
+
+import com.norconex.collector.core.CollectorException;
 import com.norconex.collector.core.crawler.ICrawler;
 import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
@@ -32,7 +37,45 @@ import com.norconex.importer.response.ImporterResponse;
 public class ImporterPipelineContext extends DocumentPipelineContext {
 
     private ImporterResponse importerResponse;
+    private boolean delete;
+    private boolean orphan;
+
+    /**
+     * Constructor creating a copy of supplied context.
+     * @param copiable the item to be copied
+     * @since 1.9.0
+     */
+    public ImporterPipelineContext(ImporterPipelineContext copiable) {
+        this(copiable.getCrawler(), copiable.getCrawlDataStore());
+        try {
+            BeanUtils.copyProperties(this, copiable);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new CollectorException("Could not copy importer context.", e);
+        }
+    }
     
+    /**
+     * Constructor.
+     * @param crawler the crawler
+     * @param crawlDataStore crawl data store
+     * @since 1.9.0
+     */
+    public ImporterPipelineContext(
+            ICrawler crawler, ICrawlDataStore crawlDataStore) {
+        super(crawler, crawlDataStore, null);
+    }
+    /**
+     * Constructor.
+     * @param crawler the crawler
+     * @param crawlDataStore crawl data store
+     * @param crawlData current crawl data
+     * @since 1.9.0
+     */
+    public ImporterPipelineContext(
+            ICrawler crawler, ICrawlDataStore crawlDataStore, 
+            BaseCrawlData crawlData) {
+        super(crawler, crawlDataStore, crawlData);
+    }
     public ImporterPipelineContext(
             ICrawler crawler, ICrawlDataStore crawlDataStore, 
             BaseCrawlData crawlData, BaseCrawlData cachedCrawlData, 
@@ -47,4 +90,37 @@ public class ImporterPipelineContext extends DocumentPipelineContext {
         this.importerResponse = importerResponse;
     }
 
+    /**
+     * Gets whether the document should be deleted.
+     * @return <code>true</code> if should be deleted
+     * @since 1.9.0
+     */
+    public boolean isDelete() {
+        return delete;
+    }
+    /**
+     * Sets whether the document should be deleted.
+     * @param delete <code>true</code> if should be deleted
+     * @since 1.9.0
+     */
+    public void setDelete(boolean delete) {
+        this.delete = delete;
+    }
+
+    /**
+     * Gets whether the document is an orphan (no longer referenced).
+     * @return <code>true</code> is an orphan
+     * @since 1.9.0
+     */
+    public boolean isOrphan() {
+        return orphan;
+    }
+    /**
+     * Sets whether the document is an orphan (no longer referenced).
+     * @param orphan <code>true</code> is an orphan
+     * @since 1.9.0
+     */
+    public void setOrphan(boolean orphan) {
+        this.orphan = orphan;
+    }
 }
