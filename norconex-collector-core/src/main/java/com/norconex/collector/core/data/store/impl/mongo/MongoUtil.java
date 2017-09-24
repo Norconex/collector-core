@@ -27,6 +27,8 @@ import com.norconex.collector.core.CollectorException;
  */
 public final class MongoUtil {
 
+    public static final int TRUNCATE_HASH_LENGTH = 24;
+    
     private static final Logger LOG = 
             LogManager.getLogger(MongoUtil.class);
     
@@ -85,20 +87,19 @@ public final class MongoUtil {
      * @return truncated text, or original text if no truncation required
      */
     public static String truncateWithHash(String text, int maxLength) {
-        int maxHashLenght = 24;
         if (text == null) {
             return null;
         }
-        if (maxLength < maxHashLenght) {
+        if (maxLength < TRUNCATE_HASH_LENGTH) {
             throw new CollectorException("\"maxLength\" (" 
-                    + maxLength + ") cannot be smaller than " + maxHashLenght
-                    + ".");
+                    + maxLength + ") cannot be smaller than "
+                    + TRUNCATE_HASH_LENGTH + ".");
         }
         if (text.length() <= maxLength) {
             return text;
         }
         
-        int cutIndex = maxLength - maxHashLenght;
+        int cutIndex = maxLength - TRUNCATE_HASH_LENGTH;
         String truncated = StringUtils.left(text, cutIndex);
         int hash = StringUtils.substring(text, cutIndex).hashCode();
         truncated = truncated + "!" + hash;

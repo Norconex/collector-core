@@ -49,16 +49,16 @@ public class MongoUtilTest {
 
     @Test
     public void testTruncateWithHash() {
-        String text = "I am a string with 28 chars.";
+        String text = "I am a string with 33 characters.";
 
         // Test no truncate needed
-        assertEquals(text, MongoUtil.truncateWithHash(text, 30));
+        assertEquals(text, MongoUtil.truncateWithHash(text, 50));
         // Test no truncate needed equal size
-        assertEquals(text, MongoUtil.truncateWithHash(text, 28));
+        assertEquals(text, MongoUtil.truncateWithHash(text, 33));
 
         // Test truncate needed
-        assertEquals("I am a string w!" + "ith 28 chars.".hashCode(), 
-                MongoUtil.truncateWithHash(text, 15));
+        assertEquals("I am a!" + " string with 33 characters.".hashCode(), 
+                MongoUtil.truncateWithHash(text, 30));
     }
 
     
