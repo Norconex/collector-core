@@ -14,10 +14,14 @@
  */
 package com.norconex.collector.core.data.store.impl.mongo;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -44,11 +48,39 @@ public class MongoCrawlDataStoreTest extends BaseCrawlDataStoreTest {
         assertNull(getCrawlDataStore().nextQueued());
     }
 
+//    @Override
+//    protected ICrawlDataStore createCrawlDataStore(
+//            ICrawlerConfig config, TemporaryFolder tempFolder, boolean resume) {
+//        
+//        MongoConnectionDetails conn = new MongoConnectionDetails();
+//        conn.setDatabaseName("testdb");
+//        conn.setHost("localhost");
+//        conn.setPort(27017);
+//        return new MongoCrawlDataStore("crawl-test", resume, 
+//                conn, new BaseMongoSerializer());
+//    }
+
+    
     @Override
     protected ICrawlDataStore createCrawlDataStore(
             ICrawlerConfig config, TemporaryFolder tempFolder, boolean resume) {
         return new MongoCrawlDataStore(resume, 
                 fongo.getMongo(), "crawl-test", new BaseMongoSerializer());
+    }
+
+    //TODO make this a test for all implementations?
+    @Test
+    public void testQueueVeryLongId() throws Exception {
+        String ref = "https://www.norconex.com/verylong"
+                + StringUtils.repeat("-filler", 500);
+        ICrawlDataStore crawlStore = getCrawlDataStore();
+        crawlStore.queue(createCrawlData(ref));
+
+        // Make sure the long ref is queued and is the same when retrieved
+        assertFalse(crawlStore.isQueueEmpty());
+        assertEquals(1, crawlStore.getQueueSize());
+        assertTrue(crawlStore.isQueued(ref));
+        assertEquals(ref, crawlStore.nextQueued().getReference());
     }
     
     @Test

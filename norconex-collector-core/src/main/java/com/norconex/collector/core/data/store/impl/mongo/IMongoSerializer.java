@@ -42,6 +42,8 @@ public interface IMongoSerializer {
     String FIELD_CONTENT_TYPE = "contentType";
     /** @since 1.5.0 */
     String FIELD_CRAWL_DATE = "crawlDate";
+    /** @since 1.9.0 */
+    String FIELD_REFERENCE_EXCESSIVE = "reference-excess";
     
     /**
      * Converts a {@link ICrawlData} to a Mongo {@link Document}.

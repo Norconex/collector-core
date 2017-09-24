@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="1.9.0-SNAPSHOT" date="2017-??-??" description="Maintenance release">
+    <release version="1.9.0-SNAPSHOT" date="2017-??-??" description="Feature release">
       <action dev="essiembre" type="add">
         New "sourceFieldsRegex" option on GenericMetadataChecksummer and
         MD5DocumentChecksummer allowing the use of regular expressions
@@ -21,6 +21,10 @@
         Can now specify custom collection names when using 
         MongoCrawlDataStore and AbstractMongoCrawlDataStoreFactory
         implementations.
+      </action>
+      <action dev="essiembre" type="update">
+        The MongoCrawlDataStore now accepts references longer than 1024 
+        characters.
       </action>
       <action dev="essiembre" type="update">
         AbstractCrawler no longer create work directory on object construction,

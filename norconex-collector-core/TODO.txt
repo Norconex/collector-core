@@ -1,4 +1,8 @@
 
+- Add workdir to collector, and by default, have log, progress share it.
+  At crawler level, have all other paths relative to collector workdir,
+  or crawler workdir if that one is specified.  
+
 - Add <regex> to RegexReferenceFilter to match how it is done
   in Importer.
 

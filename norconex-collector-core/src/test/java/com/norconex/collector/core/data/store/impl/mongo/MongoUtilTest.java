@@ -1,4 +1,4 @@
-/* Copyright 2013-2016 Norconex Inc.
+/* Copyright 2013-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,21 @@ public class MongoUtilTest {
         checkInvalidName("invalid name");
     }
 
+    @Test
+    public void testTruncateWithHash() {
+        String text = "I am a string with 28 chars.";
+
+        // Test no truncate needed
+        assertEquals(text, MongoUtil.truncateWithHash(text, 30));
+        // Test no truncate needed equal size
+        assertEquals(text, MongoUtil.truncateWithHash(text, 28));
+
+        // Test truncate needed
+        assertEquals("I am a string w!" + "ith 28 chars.".hashCode(), 
+                MongoUtil.truncateWithHash(text, 15));
+    }
+
+    
     private void checkInvalidName(String name) {
         try {
             MongoUtil.getSafeDBName(name, null);

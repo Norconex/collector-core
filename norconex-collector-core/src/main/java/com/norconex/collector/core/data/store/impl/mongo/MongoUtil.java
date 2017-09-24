@@ -15,14 +15,21 @@
 package com.norconex.collector.core.data.store.impl.mongo;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
+import com.norconex.collector.core.CollectorException;
 
 
 /**
  * Utility method for Mongo operations.
- * @author Pascal Dimassimo
+ * @author Pascal Essiembre
  */
 public final class MongoUtil {
 
+    private static final Logger LOG = 
+            LogManager.getLogger(MongoUtil.class);
+    
     public static final String MONGO_INVALID_DBNAME_CHARACTERS = 
             "/\\.\"*<>:|?$";
 
@@ -65,6 +72,39 @@ public final class MongoUtil {
         }
         // Replace whitespaces
         dbIdName = dbIdName.replaceAll("\\s", "_");
-        return dbIdName ;
+        return dbIdName;
+    }
+    
+    //TODO consider moving to Norconex Commons Lang? Could be useful to 
+    //some committers?
+    /**
+     * Truncate text larger than the given max Length and appends a hash
+     * value from the truncated text. The maxLength 
+     * argument must be minimum 24, to leave room for the hash.
+     * @param text text to truncate
+     * @return truncated text, or original text if no truncation required
+     */
+    public static String truncateWithHash(String text, int maxLength) {
+        int maxHashLenght = 24;
+        if (text == null) {
+            return null;
+        }
+        if (maxLength < maxHashLenght) {
+            throw new CollectorException("\"maxLength\" (" 
+                    + maxLength + ") cannot be smaller than " + maxHashLenght
+                    + ".");
+        }
+        if (text.length() <= maxLength) {
+            return text;
+        }
+        
+        int cutIndex = maxLength - maxHashLenght;
+        String truncated = StringUtils.left(text, cutIndex);
+        int hash = StringUtils.substring(text, cutIndex).hashCode();
+        truncated = truncated + "!" + hash;
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Truncated text: " + truncated);
+        }
+        return truncated;
     }
 }

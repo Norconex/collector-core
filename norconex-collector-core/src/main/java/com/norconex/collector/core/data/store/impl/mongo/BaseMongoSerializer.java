@@ -17,6 +17,7 @@ package com.norconex.collector.core.data.store.impl.mongo;
 import static com.mongodb.client.model.Filters.eq;
 
 import java.util.Date;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
@@ -38,7 +39,17 @@ public class BaseMongoSerializer implements IMongoSerializer {
     public Document toDocument(Stage stage, ICrawlData crawlData) {
  
         Document doc = new Document();
-        doc.put(FIELD_REFERENCE, crawlData.getReference());
+        
+        // "reference" is a Mongo indexed field, which is limited to 1024.
+        // So if too long we truncate it, trying to keep it unique,
+        // while storing the original in a separate field.
+        String ref = MongoUtil.truncateWithHash(
+                crawlData.getReference(), 1024);
+        doc.put(FIELD_REFERENCE, ref);
+        if (!Objects.equals(ref, crawlData.getReference())) {
+            doc.put(FIELD_REFERENCE_EXCESSIVE, crawlData.getReference());
+        }
+        
         doc.put(FIELD_PARENT_ROOT_REFERENCE, 
                 crawlData.getParentRootReference());
         doc.put(FIELD_IS_ROOT_PARENT_REFERENCE, 
@@ -62,7 +73,14 @@ public class BaseMongoSerializer implements IMongoSerializer {
         }
         BaseCrawlData data = new BaseCrawlData();
       
-        data.setReference(doc.getString(FIELD_REFERENCE));
+        // If the doc has an excessively long URL, make sure to use it
+        // and ignore the indexed one that was truncated.
+        String ref = doc.getString(FIELD_REFERENCE_EXCESSIVE);
+        if (StringUtils.isBlank(ref)) {
+            ref = doc.getString(FIELD_REFERENCE);
+        }
+        data.setReference(ref);
+        
         data.setParentRootReference(doc.getString(FIELD_PARENT_ROOT_REFERENCE));
         data.setRootParentReference(
                 doc.getBoolean(FIELD_IS_ROOT_PARENT_REFERENCE));

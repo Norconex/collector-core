@@ -356,7 +356,8 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
     }
 
     private Bson referenceFilter(String reference) {
-        return eq(IMongoSerializer.FIELD_REFERENCE, reference);
+        return eq(IMongoSerializer.FIELD_REFERENCE, 
+                MongoUtil.truncateWithHash(reference, 1024));
     }
     
     @Override
