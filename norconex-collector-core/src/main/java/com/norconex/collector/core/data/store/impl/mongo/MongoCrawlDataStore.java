@@ -37,6 +37,7 @@ import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.AbstractCrawlDataStore;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.impl.mongo.IMongoSerializer.Stage;
+import com.norconex.commons.lang.StringUtil;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
 
 /**
@@ -357,7 +358,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
     private Bson referenceFilter(String reference) {
         return eq(IMongoSerializer.FIELD_REFERENCE, 
-                MongoUtil.truncateWithHash(reference, 1024));
+                StringUtil.truncateWithHash(reference, 1024, '!'));
     }
     
     @Override

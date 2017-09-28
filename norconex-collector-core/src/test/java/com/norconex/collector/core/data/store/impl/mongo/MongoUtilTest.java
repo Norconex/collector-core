@@ -19,8 +19,6 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import com.norconex.collector.core.data.store.impl.mongo.MongoUtil;
-
 public class MongoUtilTest {
 
     @Test
@@ -46,21 +44,6 @@ public class MongoUtilTest {
         checkInvalidName("invalid:name");
         checkInvalidName("invalid name");
     }
-
-    @Test
-    public void testTruncateWithHash() {
-        String text = "I am a string with 33 characters.";
-
-        // Test no truncate needed
-        assertEquals(text, MongoUtil.truncateWithHash(text, 50));
-        // Test no truncate needed equal size
-        assertEquals(text, MongoUtil.truncateWithHash(text, 33));
-
-        // Test truncate needed
-        assertEquals("I am a!" + " string with 33 characters.".hashCode(), 
-                MongoUtil.truncateWithHash(text, 30));
-    }
-
     
     private void checkInvalidName(String name) {
         try {
