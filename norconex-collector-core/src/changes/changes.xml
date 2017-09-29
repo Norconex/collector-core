@@ -22,6 +22,10 @@
         MongoCrawlDataStore and AbstractMongoCrawlDataStoreFactory
         implementations.
       </action>
+      <action dev="essiembre" type="add">
+        New "stopOnExceptions" added to crawler configuration to force 
+        crawler to stop upon encountering a specified exceptions.
+      </action>
       <action dev="essiembre" type="update">
         The MongoCrawlDataStore now accepts references longer than 1024 
         characters.

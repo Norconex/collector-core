@@ -21,6 +21,14 @@
       <xs:element name="numThreads" type="xs:int" minOccurs="0" maxOccurs="1"/>
       <xs:element name="workDir" type="xs:string" minOccurs="0" maxOccurs="1"/>
       <xs:element name="maxDocuments" type="xs:int" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="stopOnExceptions" minOccurs="0" maxOccurs="1">
+        <xs:complexType>
+          <xs:all>
+            <xs:element name="exception" type="nonEmptyString" 
+                minOccurs="1" maxOccurs="unbounded"/>
+          </xs:all>
+        </xs:complexType>
+      </xs:element>      
       <xs:element name="orphansStrategy" minOccurs="0" maxOccurs="1">
         <xs:simpleType>
           <xs:restriction base="xs:string">

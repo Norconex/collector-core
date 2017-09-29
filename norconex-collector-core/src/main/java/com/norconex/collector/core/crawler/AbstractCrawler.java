@@ -38,6 +38,7 @@ import javax.management.ObjectName;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.LogManager;
@@ -500,10 +501,7 @@ public abstract class AbstractCrawler
         // default does nothing 
     }
     
-    
     private void processNextQueuedCrawlData(ImporterPipelineContext context) {
-//    private void processNextQueuedCrawlData(BaseCrawlData crawlData, 
-//            ICrawlDataStore crawlDataStore, boolean delete) {
         
         BaseCrawlData crawlData = context.getCrawlData();
         ICrawlDataStore crawlDataStore = context.getCrawlDataStore();
@@ -569,6 +567,17 @@ public abstract class AbstractCrawler
                     + " (" + e.getMessage() + ")", e);
             finalizeDocumentProcessing(
                     crawlData, crawlDataStore, doc, cachedCrawlData);
+
+            // Rethrow exception is we want the crawler to stop
+            Class<? extends Exception>[] exceptionClasses = 
+                    config.getStopOnExceptions();
+            if (ArrayUtils.isNotEmpty(exceptionClasses)) {
+                for (Class<? extends Exception> c : exceptionClasses) {
+                    if (c.isAssignableFrom(e.getClass())) {
+                        throw e;
+                    }
+                }
+            }
         }
     }
 

@@ -80,6 +80,20 @@ public interface ICrawlerConfig extends IXMLConfigurable {
     int getMaxDocuments();
     
     /**
+     * Gets the exceptions we want to stop the crawler on.
+     * By default the crawler will log exceptions from processing
+     * a document and try to move on to the next without stopping.
+     * Even if no exceptions are returned by this method,
+     * the crawler can sometimes stop regardless if it cannot recover
+     * safely from an exception.
+     * To capture more exceptions, use a parent class (e.g., Exception
+     * should catch them all).
+     * @return exceptions that will stop the crawler when encountered
+     * @since 1.9.0
+     */
+    Class<? extends Exception>[] getStopOnExceptions();
+    
+    /**
      * <p>Gets the strategy to adopt when there are orphans.  Orphans are
      * references that were processed in a previous run, but were not in the
      * current run.  In other words, they are leftovers from a previous run

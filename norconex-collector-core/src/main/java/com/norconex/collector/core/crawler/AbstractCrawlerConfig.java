@@ -67,6 +67,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     private File workDir = new File("./work");
     private int maxDocuments = -1;
     private OrphansStrategy orphansStrategy = OrphansStrategy.PROCESS;
+    private Class<? extends Exception>[] stopOnExceptions;
     
     private ICrawlDataStoreFactory crawlDataStoreFactory = 
             new MVStoreCrawlDataStoreFactory();
@@ -141,6 +142,32 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     }
     public void setOrphansStrategy(OrphansStrategy orphansStrategy) {
         this.orphansStrategy = orphansStrategy;
+    }
+
+    /**
+     * @since 1.9.0
+     */
+    @Override
+    public Class<? extends Exception>[] getStopOnExceptions() {
+        return ArrayUtils.clone(stopOnExceptions);
+    }
+    /**
+     * Sets the exceptions we want to stop the crawler on.
+     * By default the crawler will log exceptions from processing
+     * a document and try to move on to the next without stopping.
+     * Even if no exceptions are returned by this method,
+     * the crawler can sometimes stop regardless if it cannot recover
+     * safely from an exception.
+     * To capture more exceptions, use a parent class (e.g., Exception
+     * should catch them all).
+     * @param stopOnExceptions exceptions that will stop the crawler when 
+     *         encountered
+     * @since 1.9.0
+     */
+    @SuppressWarnings("unchecked")
+    public void setStopOnExceptions(
+            Class<? extends Exception>... stopOnExceptions) {
+        this.stopOnExceptions = ArrayUtils.clone(stopOnExceptions);
     }
 
     @Override
@@ -240,6 +267,15 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
             writer.writeElementString("workDir", 
                     Objects.toString(getWorkDir(), null)); 
             writer.writeElementInteger("maxDocuments", getMaxDocuments());
+
+            Class<? extends Exception>[] stopOnExcepts = getStopOnExceptions();
+            if (ArrayUtils.isNotEmpty(stopOnExcepts)) {
+                writer.writeStartElement("stopOnExceptions");
+                for (Class<? extends Exception> c : stopOnExcepts) {
+                    writer.writeElementClass("exception", c.getClass());
+                }
+                writer.writeEndElement();
+            }
             
             OrphansStrategy strategy = getOrphansStrategy();
             if (strategy != null) {
@@ -299,6 +335,12 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         setWorkDir(dir);
         setMaxDocuments(xml.getInt("maxDocuments", getMaxDocuments()));
 
+        //--- Stop on Exceptions -----------------------------------------------
+        Class<? extends Exception>[] stopExceptions =
+                loadStopOnExceptions(xml, "stopOnExceptions.exception");
+        setStopOnExceptions(defaultIfEmpty(
+                stopExceptions, getStopOnExceptions()));
+        
         //--- Reference Filters ------------------------------------------------
         IReferenceFilter[] refFilters = 
                 loadReferenceFilters(xml, "referenceFilters.filter");
@@ -354,6 +396,23 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
             throws IOException;
     
 
+    @SuppressWarnings("unchecked")
+    private Class<? extends Exception>[] loadStopOnExceptions(
+            XMLConfiguration xml, String xmlPath) {
+        List<Class<? extends Exception>> exceptions = new ArrayList<>();
+        List<HierarchicalConfiguration> exceptionNodes = 
+                xml.configurationsAt(xmlPath);
+        for (HierarchicalConfiguration exNode : exceptionNodes) {
+            Class<? extends Exception> exception = (Class<? extends Exception>) 
+                    XMLConfigurationUtil.getNullableClass(exNode, "", null);
+            if (exception != null) {
+                exceptions.add(exception);
+                LOG.info("Stop on exception class loaded: " + exception);
+            }
+        }
+        return exceptions.toArray(new Class[] {});
+    }    
+    
     private ICrawlerEventListener[] loadListeners(XMLConfiguration xml,
             String xmlPath) {
         List<ICrawlerEventListener> listeners = new ArrayList<>();
@@ -476,6 +535,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
                 .append(numThreads, castOther.numThreads)
                 .append(workDir, castOther.workDir)
                 .append(maxDocuments, castOther.maxDocuments)
+                .append(stopOnExceptions, castOther.stopOnExceptions)
                 .append(orphansStrategy, castOther.orphansStrategy)
                 .append(crawlDataStoreFactory, castOther.crawlDataStoreFactory)
                 .append(referenceFilters, castOther.referenceFilters)
@@ -497,6 +557,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
                 .append(numThreads)
                 .append(workDir)
                 .append(maxDocuments)
+                .append(stopOnExceptions)
                 .append(orphansStrategy)
                 .append(crawlDataStoreFactory)
                 .append(referenceFilters)
@@ -517,6 +578,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
                 .append("numThreads", numThreads)
                 .append("workDir", workDir)
                 .append("maxDocuments", maxDocuments)
+                .append("stopOnExceptions", stopOnExceptions)
                 .append("orphansStrategy", orphansStrategy)
                 .append("crawlDataStoreFactory", crawlDataStoreFactory)
                 .append("referenceFilters", referenceFilters)
