@@ -24,8 +24,13 @@
       <xs:element name="stopOnExceptions" minOccurs="0" maxOccurs="1">
         <xs:complexType>
           <xs:all>
-            <xs:element name="exception" type="nonEmptyString" 
-                minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="exception" minOccurs="1" maxOccurs="unbounded">
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:minLength value="1"/>
+                </xs:restriction>
+              </xs:simpleType>        
+            </xs:element>
           </xs:all>
         </xs:complexType>
       </xs:element>      
