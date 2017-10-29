@@ -45,7 +45,7 @@ public class BaseMongoSerializer implements IMongoSerializer {
         // So if too long we truncate it, trying to keep it unique,
         // while storing the original in a separate field.
         String ref = StringUtil.truncateWithHash(
-                crawlData.getReference(), 1024, '!');
+                crawlData.getReference(), 1024, "!");
         doc.put(FIELD_REFERENCE, ref);
         if (!Objects.equals(ref, crawlData.getReference())) {
             doc.put(FIELD_REFERENCE_EXCESSIVE, crawlData.getReference());
