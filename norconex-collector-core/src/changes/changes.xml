@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="1.9.0-SNAPSHOT" date="2017-??-??" description="Feature release">
+    <release version="1.9.0" date="2017-11-26" description="Feature release">
       <action dev="essiembre" type="add">
         New "sourceFieldsRegex" option on GenericMetadataChecksummer and
         MD5DocumentChecksummer allowing the use of regular expressions
