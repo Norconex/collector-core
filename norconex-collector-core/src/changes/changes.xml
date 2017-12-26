@@ -7,6 +7,12 @@
   </properties>
   <body>
 
+    <release version="1.9.1-SNAPSHOT" date="2018-??-??" description="Maintenance release">
+      <action dev="essiembre" type="update">
+        Dependency updates: Norconex Importer 2.8.1. 
+      </action>
+    </release>
+
     <release version="1.9.0" date="2017-11-26" description="Feature release">
       <action dev="essiembre" type="add">
         New "sourceFieldsRegex" option on GenericMetadataChecksummer and
