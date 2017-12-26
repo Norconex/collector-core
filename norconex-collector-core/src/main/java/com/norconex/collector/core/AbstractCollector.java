@@ -51,7 +51,6 @@ import com.norconex.jef4.suite.JobSuiteConfig;
  * will help you.
  * @author Pascal Essiembre
  */
-@SuppressWarnings("nls")
 public abstract class AbstractCollector implements ICollector {
 
     private static final Logger LOG = 

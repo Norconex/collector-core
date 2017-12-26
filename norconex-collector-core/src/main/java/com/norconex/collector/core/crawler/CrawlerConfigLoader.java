@@ -33,7 +33,6 @@ import com.norconex.commons.lang.config.XMLConfigurationUtil;
  * HTTP Crawler configuration loader.
  * @author Pascal Essiembre
  */
-@SuppressWarnings("nls")
 public class CrawlerConfigLoader {
 
     private static final Logger LOG = LogManager.getLogger(
