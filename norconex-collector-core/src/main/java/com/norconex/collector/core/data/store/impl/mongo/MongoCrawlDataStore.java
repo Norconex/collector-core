@@ -43,11 +43,11 @@ import com.norconex.commons.lang.encrypt.EncryptionUtil;
 /**
  * <p>Mongo implementation of {@link ICrawlDataStore}.</p>
  *
- * <p>All references are stored in a collection with a default name 
+ * <p>All references are stored in a collection with a default name
  * of "references".
  * They go from the "QUEUED", "ACTIVE" and "PROCESSED" stages.</p>
  *
- * <p>The cached references are stored in a separated collection with the 
+ * <p>The cached references are stored in a separated collection with the
  * default name "cached".</p>
  *
  * <p>
@@ -67,10 +67,10 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
     private final MongoClient client;
     private final MongoDatabase database;
     private final IMongoSerializer serializer;
-    
+
     private final String referencesCollectionName;
     private final String cachedCollectionName;
-    
+
     /*
      * We need to have a separate collection for cached because a reference can
      * be both queued and cached (it will be removed from cache when it is
@@ -88,7 +88,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
      */
     public MongoCrawlDataStore(String crawlerId, boolean resume,
             MongoConnectionDetails conn, IMongoSerializer serializer) {
-        this(resume, buildMongoClient(crawlerId, conn), 
+        this(resume, buildMongoClient(crawlerId, conn),
                 MongoUtil.getSafeDBName(conn.getDatabaseName(), crawlerId),
                 serializer);
     }
@@ -99,13 +99,13 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
      * @param serializer Mongo serializer
      * @param conn Mongo connection details
      * @param referencesCollectionName name of Mongo references collection
-     * @param cachedCollectionName name of Mongo cached collection 
+     * @param cachedCollectionName name of Mongo cached collection
      * @since 1.9.0
      */
     public MongoCrawlDataStore(String crawlerId, boolean resume,
-            MongoConnectionDetails conn, IMongoSerializer serializer, 
+            MongoConnectionDetails conn, IMongoSerializer serializer,
             String referencesCollectionName, String cachedCollectionName) {
-        this(resume, buildMongoClient(crawlerId, conn), 
+        this(resume, buildMongoClient(crawlerId, conn),
                 MongoUtil.getSafeDBName(conn.getDatabaseName(), crawlerId),
                 serializer, referencesCollectionName, cachedCollectionName);
     }
@@ -117,7 +117,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
      * @param dbName Mongo database name
      * @param serializer Mongo serializer
      */
-    public MongoCrawlDataStore(boolean resume, MongoClient client, 
+    public MongoCrawlDataStore(boolean resume, MongoClient client,
             String dbName, IMongoSerializer serializer) {
         this(resume, client, dbName, serializer, null, null);
     }
@@ -128,10 +128,10 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
      * @param dbName Mongo database name
      * @param serializer Mongo serializer
      * @param referencesCollectionName name of Mongo references collection
-     * @param cachedCollectionName name of Mongo cached collection 
+     * @param cachedCollectionName name of Mongo cached collection
      * @since 1.9.0
      */
-    public MongoCrawlDataStore(boolean resume, MongoClient client, 
+    public MongoCrawlDataStore(boolean resume, MongoClient client,
             String dbName, IMongoSerializer serializer,
             String referencesCollectionName, String cachedCollectionName) {
         this.serializer = serializer;
@@ -144,7 +144,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
                         cachedCollectionName, DEFAULT_CACHED_COL_NAME));
         this.referencesCollectionName = referencesCollectionName;
         this.cachedCollectionName = cachedCollectionName;
-        
+
         if (resume) {
             changeStage(Stage.ACTIVE, Stage.QUEUED);
         } else {
@@ -156,7 +156,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
         }
         serializer.createIndices(collRefs, collCached);
     }
-    
+
     /**
      * Gets the references collection name. Defaults to "references".
      * @return collection name
@@ -176,47 +176,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
     protected static MongoClient buildMongoClient(
             String crawlerId, MongoConnectionDetails connDetails) {
-
-        String dbName = MongoUtil.getSafeDBName(
-                connDetails.getDatabaseName(), crawlerId);
-        
-        int port = connDetails.getPort();
-        if (port <= 0) {
-        	port = ServerAddress.defaultPort();
-        }
-
-        ServerAddress server = new ServerAddress(
-                connDetails.getHost(), port);
-        List<MongoCredential> credentialsList = new ArrayList<>();
-        if (StringUtils.isNoneBlank(connDetails.getUsername())) {
-
-            String password = EncryptionUtil.decrypt(
-                    connDetails.getPassword(),
-                    connDetails.getPasswordKey());
-
-            MongoCredential credential = buildMongoCredential(
-                    connDetails.getUsername(),
-                    dbName, password.toCharArray(),
-                    connDetails.getMechanism());
-            credentialsList.add(credential);
-        }
-        return new MongoClient(server, credentialsList);
-    }
-    
-    protected static MongoCredential buildMongoCredential(
-            String username,
-            String dbName,
-            char[] password,
-            String mechanism) {
-        if (MongoCredential.MONGODB_CR_MECHANISM.equals(mechanism)) {
-            return MongoCredential.createMongoCRCredential(
-                    username, dbName, password);
-        } 
-        if (MongoCredential.SCRAM_SHA_1_MECHANISM.equals(mechanism)) {
-            return MongoCredential.createScramSha1Credential(
-                    username, dbName, password);
-        }
-        return MongoCredential.createCredential(username, dbName, password);
+        return connDetails.buildMongoClient(crawlerId);
     }
 
     @Override
@@ -225,7 +185,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
         // If the document does not exist yet, it will be inserted. If exists,
         // it will be replaced.
-        collRefs.updateOne(referenceFilter(crawlData.getReference()), 
+        collRefs.updateOne(referenceFilter(crawlData.getReference()),
                 new Document("$set", document),
                 new UpdateOptions().upsert(true));
     }
@@ -277,7 +237,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
         // If the document does not exist yet, it will be inserted. If exists,
         // it will be updated.
         Bson filter = referenceFilter(crawlData.getReference());
-        collRefs.updateOne(filter, 
+        collRefs.updateOne(filter,
                 new Document("$set", document),
                 new UpdateOptions().upsert(true));
 
@@ -357,10 +317,10 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
     }
 
     private Bson referenceFilter(String reference) {
-        return eq(IMongoSerializer.FIELD_REFERENCE, 
+        return eq(IMongoSerializer.FIELD_REFERENCE,
                 StringUtil.truncateWithHash(reference, 1024, "!"));
     }
-    
+
     @Override
     public Iterator<ICrawlData> getCacheIterator() {
         final MongoCursor<Document> cursor = collCached.find().iterator();
