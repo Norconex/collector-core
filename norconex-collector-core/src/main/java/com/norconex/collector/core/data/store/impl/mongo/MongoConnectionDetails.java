@@ -15,12 +15,18 @@
 package com.norconex.collector.core.data.store.impl.mongo;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
 
@@ -71,7 +77,7 @@ public class MongoConnectionDetails implements Serializable {
         this.password = password;
     }
     /**
-     * Gets the authentication mechanism to use (<code>MONGODB-CR</code>, 
+     * Gets the authentication mechanism to use (<code>MONGODB-CR</code>,
      * <code>SCRAM-SHA-1</code> or <code>null</code> to use default).
      * @return authentication mechanism
      * @since 1.8.1
@@ -80,7 +86,7 @@ public class MongoConnectionDetails implements Serializable {
         return mechanism;
     }
     /**
-     * Sets the authentication mechanism to use (<code>MONGODB-CR</code>, 
+     * Sets the authentication mechanism to use (<code>MONGODB-CR</code>,
      * <code>SCRAM-SHA-1</code> or <code>null</code> to use default).
      * @param mechanism authentication mechanism
      * @since 1.8.1
@@ -107,6 +113,63 @@ public class MongoConnectionDetails implements Serializable {
      */
     public void setPasswordKey(EncryptionKey passwordKey) {
         this.passwordKey = passwordKey;
+    }
+    /**
+     * Gets a safe database name using MongoUtil, and treating a crawlerId as the default.
+     *
+     * @param crawlerId crawler id from collector configuration
+     * @see MongoCrawlDataStore
+     * @since 1.9.1
+     */
+    public String getSafeDatabaseName(String crawlerId) {
+        return MongoUtil.getSafeDBName(getDatabaseName(), crawlerId);
+    }
+    /**
+     * Builds a MongoClient object based on these connection details.
+     * Takes the crawler id as a default Mongo database name.
+     *
+     * @param crawlerId crawler id from collector configuration
+     * @see MongoCrawlDataStore
+     * @since 1.9.1
+     * @return instance of MongoClient
+     */
+    public MongoClient buildMongoClient(String crawlerId) {
+        String dbName = getSafeDatabaseName(crawlerId);
+
+        int port = getPort();
+        if (port <= 0) {
+            port = ServerAddress.defaultPort();
+        }
+
+        ServerAddress server = new ServerAddress(getHost(), port);
+        List<MongoCredential> credentialsList = new ArrayList<MongoCredential>();
+        if (StringUtils.isNoneBlank(getUsername())) {
+            // password may be decrypted, decrypt properly
+            String password = EncryptionUtil.decrypt(getPassword(), getPasswordKey());
+
+            // build credential and add to list
+            MongoCredential credential = buildMongoCredential(
+                    getUsername(), dbName, password.toCharArray(), getMechanism());
+            credentialsList.add(credential);
+        }
+        return new MongoClient(server, credentialsList);
+    }
+    /**
+     * Builds a MongoCredential object based on these connection details.
+     *
+     * @see buildMongoClient
+     * @since 1.9.1
+     * @return instance of MongoCredential
+     */
+    public static MongoCredential buildMongoCredential(
+            String username,
+            String dbName,
+            char[] password,
+            String mechanism) {
+        if (MongoCredential.MONGODB_CR_MECHANISM.equals(mechanism)) {
+            return MongoCredential.createMongoCRCredential(username, dbName, password);
+        }
+        return MongoCredential.createCredential(username, dbName, password);
     }
 
     @Override
