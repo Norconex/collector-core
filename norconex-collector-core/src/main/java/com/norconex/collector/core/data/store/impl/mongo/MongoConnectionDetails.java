@@ -121,6 +121,7 @@ public class MongoConnectionDetails implements Serializable {
      * @param crawlerId crawler id from collector configuration
      * @see MongoCrawlDataStore
      * @since 1.9.1
+     * @return database name safe to use in Mongo
      */
     public String getSafeDatabaseName(String crawlerId) {
         return MongoUtil.getSafeDBName(getDatabaseName(), crawlerId);
@@ -159,9 +160,13 @@ public class MongoConnectionDetails implements Serializable {
     /**
      * Builds a MongoCredential object based on these connection details.
      *
+     * @param username Mongo username
+     * @param dbName Mongo database name
+     * @param password Mongo password
+     * @param mechanism Mongo authentication mechanism
+     * @return instance of MongoCredential
      * @see #buildMongoClient(String)
      * @since 1.9.1
-     * @return instance of MongoCredential
      */
     public static MongoCredential buildMongoCredential(
             String username,

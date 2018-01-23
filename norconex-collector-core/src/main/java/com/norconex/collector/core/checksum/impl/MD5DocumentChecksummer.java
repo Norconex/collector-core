@@ -68,7 +68,7 @@ import com.norconex.importer.doc.ImporterDocument;
  * If you do not combine the two, specifying one or more source fields
  * will ignore the content while specifying none will only use the content. 
  * </p>
- * <p> 
+ *
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;documentChecksummer 
