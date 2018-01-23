@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import com.mongodb.MongoClient;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -38,7 +36,6 @@ import com.norconex.collector.core.data.store.AbstractCrawlDataStore;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.impl.mongo.IMongoSerializer.Stage;
 import com.norconex.commons.lang.StringUtil;
-import com.norconex.commons.lang.encrypt.EncryptionUtil;
 
 /**
  * <p>Mongo implementation of {@link ICrawlDataStore}.</p>

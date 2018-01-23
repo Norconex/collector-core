@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,7 +115,8 @@ public class MongoConnectionDetails implements Serializable {
         this.passwordKey = passwordKey;
     }
     /**
-     * Gets a safe database name using MongoUtil, and treating a crawlerId as the default.
+     * Gets a safe database name using MongoUtil, and treating a crawlerId as 
+     * the default.
      *
      * @param crawlerId crawler id from collector configuration
      * @see MongoCrawlDataStore
@@ -136,20 +137,21 @@ public class MongoConnectionDetails implements Serializable {
     public MongoClient buildMongoClient(String crawlerId) {
         String dbName = getSafeDatabaseName(crawlerId);
 
-        int port = getPort();
-        if (port <= 0) {
-            port = ServerAddress.defaultPort();
+        int realPort = getPort();
+        if (realPort <= 0) {
+            realPort = ServerAddress.defaultPort();
         }
 
-        ServerAddress server = new ServerAddress(getHost(), port);
-        List<MongoCredential> credentialsList = new ArrayList<MongoCredential>();
+        ServerAddress server = new ServerAddress(getHost(), realPort);
+        List<MongoCredential> credentialsList = new ArrayList<>();
         if (StringUtils.isNoneBlank(getUsername())) {
-            // password may be decrypted, decrypt properly
-            String password = EncryptionUtil.decrypt(getPassword(), getPasswordKey());
+            // password may be encrypted, decrypt properly
+            String password = 
+                    EncryptionUtil.decrypt(getPassword(), getPasswordKey());
 
             // build credential and add to list
-            MongoCredential credential = buildMongoCredential(
-                    getUsername(), dbName, password.toCharArray(), getMechanism());
+            MongoCredential credential = buildMongoCredential(getUsername(),
+                    dbName, password.toCharArray(), getMechanism());
             credentialsList.add(credential);
         }
         return new MongoClient(server, credentialsList);
@@ -157,7 +159,7 @@ public class MongoConnectionDetails implements Serializable {
     /**
      * Builds a MongoCredential object based on these connection details.
      *
-     * @see buildMongoClient
+     * @see #buildMongoClient(String)
      * @since 1.9.1
      * @return instance of MongoCredential
      */
@@ -167,7 +169,8 @@ public class MongoConnectionDetails implements Serializable {
             char[] password,
             String mechanism) {
         if (MongoCredential.MONGODB_CR_MECHANISM.equals(mechanism)) {
-            return MongoCredential.createMongoCRCredential(username, dbName, password);
+            return MongoCredential.createMongoCRCredential(
+                    username, dbName, password);
         }
         return MongoCredential.createCredential(username, dbName, password);
     }
