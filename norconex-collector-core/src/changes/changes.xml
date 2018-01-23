@@ -11,9 +11,13 @@
       <action dev="essiembre" type="update">
         Dependency updates: Norconex Importer 2.8.1. 
       </action>
-      <action dev="danizen" type="update">
+      <action dev="danizen" type="update" issue="15">
         MongoCrawlDataStore #buildMongoClient abd #buildMongoCredentials methods
         were moved to MongoConnectionDetails. 
+      </action>
+      <action dev="essiembre" type="fix" issue="16">
+        Fixed showing wrong path in error message when command-line variable 
+        file is invalid.
       </action>
     </release>
 

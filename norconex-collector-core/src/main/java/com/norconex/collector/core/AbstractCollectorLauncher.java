@@ -83,7 +83,7 @@ public abstract class AbstractCollectorLauncher {
             }
             if (varFile != null && !varFile.isFile()) {
                 System.err.println("Invalid variable file path: "
-                        + configFile.getAbsolutePath());
+                        + varFile.getAbsolutePath());
                 System.exit(-1);
             }
 
