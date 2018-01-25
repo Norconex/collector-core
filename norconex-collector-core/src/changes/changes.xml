@@ -8,6 +8,10 @@
   <body>
 
     <release version="1.9.1-SNAPSHOT" date="2018-??-??" description="Maintenance release">
+      <action dev="jmrichardson,essiembre" type="update">
+        Significant performance improvement on 
+        MongoCrawlDataStore#isQueueEmpty().
+      </action>
       <action dev="essiembre" type="update">
         Dependency updates: Norconex Importer 2.8.1. 
       </action>

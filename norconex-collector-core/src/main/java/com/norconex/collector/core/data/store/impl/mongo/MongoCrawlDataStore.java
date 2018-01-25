@@ -30,6 +30,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.UpdateOptions;
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.AbstractCrawlDataStore;
@@ -189,7 +190,8 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
     @Override
     public boolean isQueueEmpty() {
-        return getQueueSize() == 0;
+        return (int) collRefs.count(eq(IMongoSerializer.FIELD_STAGE, 
+                Stage.QUEUED.name()), new CountOptions().limit(1)) == 0;
     }
 
     @Override
