@@ -13,7 +13,8 @@
         MongoCrawlDataStore#isQueueEmpty().
       </action>
       <action dev="essiembre" type="update">
-        Dependency updates: Norconex Importer 2.8.1. 
+        Dependency updates: Norconex Importer 2.8.1, 
+        Norconex Commons Lang 1.14.1. 
       </action>
       <action dev="danizen" type="update" issue="15">
         MongoCrawlDataStore #buildMongoClient abd #buildMongoCredentials methods
