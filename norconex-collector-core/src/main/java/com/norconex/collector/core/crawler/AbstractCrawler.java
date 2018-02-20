@@ -608,8 +608,11 @@ public abstract class AbstractCrawler
         for (ImporterResponse child : children) {
             BaseCrawlData embeddedCrawlData = createEmbeddedCrawlData(
                     child.getReference(), crawlData);
-            processImportResponse(
-                    child, crawlDataStore, embeddedCrawlData, cachedCrawlData);
+            BaseCrawlData embeddedCachedCrawlData = 
+                    (BaseCrawlData) crawlDataStore.getCached(
+                            child.getReference());            
+            processImportResponse(child, crawlDataStore, 
+                    embeddedCrawlData, embeddedCachedCrawlData);
         }
     }
     

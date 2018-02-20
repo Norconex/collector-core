@@ -13,12 +13,17 @@
         MongoCrawlDataStore#isQueueEmpty().
       </action>
       <action dev="essiembre" type="update">
-        Dependency updates: Norconex Importer 2.8.1, 
+        Dependency updates: Norconex Importer 2.9.0, 
         Norconex Commons Lang 1.14.1. 
       </action>
       <action dev="danizen" type="update" issue="15">
         MongoCrawlDataStore #buildMongoClient abd #buildMongoCredentials methods
         were moved to MongoConnectionDetails. 
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed embedded document checksums creation pulling the wrong
+        cached checksum causing them to always appear new
+        when metadataChecksummer is disabled.. 
       </action>
       <action dev="essiembre" type="fix" issue="16">
         Fixed showing wrong path in error message when command-line variable 
