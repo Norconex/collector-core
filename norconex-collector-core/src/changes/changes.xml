@@ -16,6 +16,9 @@
         Dependency updates: Norconex Importer 2.9.0, 
         Norconex Commons Lang 1.14.1. 
       </action>
+      <action dev="essiembre" type="update">
+        AbstractCrawler now logs documents it could not process as INFO. 
+      </action>
       <action dev="danizen" type="update" issue="15">
         MongoCrawlDataStore #buildMongoClient abd #buildMongoCredentials methods
         were moved to MongoConnectionDetails. 

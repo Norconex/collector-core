@@ -563,8 +563,13 @@ public abstract class AbstractCrawler
             // class?
             crawlData.setState(CrawlState.ERROR);
             fireCrawlerEvent(CrawlerEvent.REJECTED_ERROR, crawlData, e);
-            LOG.error(getId() + ": Could not process document: " + reference
-                    + " (" + e.getMessage() + ")", e);
+            if (LOG.isDebugEnabled()) {
+                LOG.info(getId() + ": Could not process document: " + reference
+                        + " (" + e.getMessage() + ")", e);
+            } else {
+                LOG.info(getId() + ": Could not process document: " + reference
+                        + " (" + e.getMessage() + ")");
+            }
             finalizeDocumentProcessing(
                     crawlData, crawlDataStore, doc, cachedCrawlData);
 
