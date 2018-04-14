@@ -32,6 +32,10 @@
         Fixed showing wrong path in error message when command-line variable 
         file is invalid.
       </action>
+      <action dev="essiembre" type="fix">
+        Fixed NullPointerException under some conditions for 
+        AbstractCrawlerConfig#saveToXML(...).
+      </action>
     </release>
 
     <release version="1.9.0" date="2017-11-26" description="Feature release">

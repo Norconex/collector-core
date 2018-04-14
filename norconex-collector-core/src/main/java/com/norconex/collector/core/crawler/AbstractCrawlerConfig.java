@@ -272,7 +272,9 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
             if (ArrayUtils.isNotEmpty(stopOnExcepts)) {
                 writer.writeStartElement("stopOnExceptions");
                 for (Class<? extends Exception> c : stopOnExcepts) {
-                    writer.writeElementClass("exception", c.getClass());
+                    if (c != null) {
+                        writer.writeElementClass("exception", c.getClass());
+                    }
                 }
                 writer.writeEndElement();
             }
