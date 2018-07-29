@@ -7,14 +7,14 @@
   </properties>
   <body>
 
-    <release version="1.9.1-SNAPSHOT" date="2018-??-??" description="Maintenance release">
+    <release version="1.9.1" date="2018-07-29" description="Maintenance release">
       <action dev="jmrichardson,essiembre" type="update">
         Significant performance improvement on 
         MongoCrawlDataStore#isQueueEmpty().
       </action>
       <action dev="essiembre" type="update">
         Dependency updates: Norconex Importer 2.9.0, 
-        Norconex Commons Lang 1.14.1. 
+        Norconex Commons Lang 1.15.0. 
       </action>
       <action dev="essiembre" type="update">
         AbstractCrawler now logs documents it could not process as INFO. 
