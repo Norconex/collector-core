@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.filter.OnMatch;
 
 public class RegexReferenceFilterTest {
@@ -36,21 +36,20 @@ public class RegexReferenceFilterTest {
         f.setCaseSensitive(false);
         assertTrue(f.acceptReference("case"));
         assertTrue(f.acceptReference("CASE"));
-        
+
         // must match only matching case:
         f.setCaseSensitive(true);
         assertTrue(f.acceptReference("case"));
         assertFalse(f.acceptReference("CASE"));
     }
-    
-    
+
+
     @Test
     public void testWriteRead() throws IOException {
         RegexReferenceFilter f = new RegexReferenceFilter();
         f.setCaseSensitive(true);
         f.setRegex(".*blah.*");
         f.setOnMatch(OnMatch.EXCLUDE);
-        System.out.println("Writing/Reading this: " + f);
-        XMLConfigurationUtil.assertWriteRead(f);
+        XML.assertWriteRead(f, "filter");
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,10 @@
  */
 package com.norconex.collector.core.pipeline.importer;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.crawler.event.CrawlerEvent;
 import com.norconex.collector.core.filter.IMetadataFilter;
@@ -29,9 +31,9 @@ import com.norconex.importer.handler.filter.OnMatch;
  */
 public final class ImporterPipelineUtil {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(ImporterPipelineUtil.class);
-    
+    private static final Logger LOG =
+            LoggerFactory.getLogger(ImporterPipelineUtil.class);
+
     /**
      * Constructor.
      */
@@ -39,7 +41,7 @@ public final class ImporterPipelineUtil {
     }
 
     public static boolean isHeadersRejected(ImporterPipelineContext ctx) {
-        IMetadataFilter[] filters = ctx.getConfig().getMetadataFilters();
+        List<IMetadataFilter> filters = ctx.getConfig().getMetadataFilters();
         if (filters == null) {
             return false;
         }
@@ -65,18 +67,17 @@ public final class ImporterPipelineUtil {
                             ctx.getCrawlData().getReference(), filter));
                 }
             } else {
-                ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_FILTER, 
+                ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_FILTER,
                         ctx.getCrawlData(), filter);
                 return true;
             }
         }
         if (hasIncludes && !atLeastOneIncludeMatch) {
             ctx.fireCrawlerEvent(
-                    CrawlerEvent.REJECTED_FILTER, ctx.getCrawlData(), 
+                    CrawlerEvent.REJECTED_FILTER, ctx.getCrawlData(),
                     "No \"include\" metadata filters matched.");
             return true;
         }
-        return false;        
+        return false;
     }
-
 }

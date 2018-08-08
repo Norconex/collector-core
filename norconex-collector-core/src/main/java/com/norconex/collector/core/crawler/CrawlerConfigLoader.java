@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,18 @@ package com.norconex.collector.core.crawler;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.CollectorException;
 import com.norconex.commons.lang.config.ConfigurationLoader;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
+
 
 /**
  * HTTP Crawler configuration loader.
@@ -35,56 +35,94 @@ import com.norconex.commons.lang.config.XMLConfigurationUtil;
  */
 public class CrawlerConfigLoader {
 
-    private static final Logger LOG = LogManager.getLogger(
+    private static final Logger LOG = LoggerFactory.getLogger(
             CrawlerConfigLoader.class);
 
     private final Class<? extends ICrawlerConfig> crawlerConfigClass;
 
-    
+
     public CrawlerConfigLoader(
             Class<? extends ICrawlerConfig> crawlerConfigClass) {
         super();
         this.crawlerConfigClass = crawlerConfigClass;
     }
 
-    public ICrawlerConfig[] loadCrawlerConfigs(File configFile) {
+    /**
+     * Loads crawler configurations.
+     * @param configFile configuration file
+     * @return crawler configs
+     * @deprecated Since 2.0.0, use {@link #loadCrawlerConfigs(Path)} instead
+     */
+    @Deprecated
+    public List<ICrawlerConfig> loadCrawlerConfigs(File configFile) {
         return loadCrawlerConfigs(configFile, null);
     }
-    
-    public ICrawlerConfig[] loadCrawlerConfigs(
+    /**
+     * Loads crawler configurations.
+     * @param configFile configuration file
+     * @return crawler configs
+     * @since 2.0.0
+     */
+    public List<ICrawlerConfig> loadCrawlerConfigs(Path configFile) {
+        return loadCrawlerConfigs(configFile, null);
+    }
+    /**
+     * Loads crawler configurations.
+     * @param configFile configuration file
+     * @param configVariables variables file
+     * @return crawler configs
+     * @deprecated Since 2.0.0, use {@link #loadCrawlerConfigs(Path, Path)}
+     *             instead
+     */
+    @Deprecated
+    public List<ICrawlerConfig> loadCrawlerConfigs(
             File configFile, File configVariables) {
+        Path cfg = null;
+        Path vars = null;
+        if (configFile != null) {
+            cfg = configFile.toPath();
+        }
+        if (configVariables != null) {
+            vars = configVariables.toPath();
+        }
+        return loadCrawlerConfigs(cfg, vars);
+    }
+    /**
+     * Loads crawler configurations.
+     * @param configFile configuration file
+     * @param configVariables variables file
+     * @return crawler configs
+     * @since 2.0.0
+     */
+    public List<ICrawlerConfig> loadCrawlerConfigs(
+            Path configFile, Path configVariables) {
         ConfigurationLoader configLoader = new ConfigurationLoader();
-        XMLConfiguration xml = configLoader.loadXML(
-                configFile, configVariables);
+        XML xml = configLoader.loadXML(configFile, configVariables);
         return loadCrawlerConfigs(xml);
     }
-    
-    public ICrawlerConfig[] loadCrawlerConfigs(
-            HierarchicalConfiguration xml) {
+    public List<ICrawlerConfig> loadCrawlerConfigs(XML xml) {
         try {
-            XMLConfiguration xmlCrawlerDefaults = 
-                    XMLConfigurationUtil.getXmlAt(xml, "crawlerDefaults");
-            
-            List<HierarchicalConfiguration> nodes = 
-                    xml.configurationsAt("crawlers.crawler");
+            XML crawlerDefaultsXML = xml.getXML("crawlerDefaults");
+
+            List<XML> crawlersXML = xml.getXMLList("crawlers/crawler");
             List<ICrawlerConfig> configs = new ArrayList<>();
-            for (HierarchicalConfiguration node : nodes) {
+            for (XML crawlerXML : crawlersXML) {
                 ICrawlerConfig  config = crawlerConfigClass.newInstance();
-                if (xmlCrawlerDefaults != null) {
-                    loadCrawlerConfig(config, xmlCrawlerDefaults);
+                if (crawlerDefaultsXML != null) {
+                    loadCrawlerConfig(config, crawlerDefaultsXML);
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Crawler defaults loaded for new crawler.");
                     }
                 }
-                loadCrawlerConfig(config, 
-                        XMLConfigurationUtil.newXMLConfiguration(node));
+                loadCrawlerConfig(config, crawlerXML);
+//                        XMLConfigurationUtil.newXMLConfiguration(crawlerXML));
                 configs.add(config);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Crawler configuration loaded: "
                             + config.getId());
                 }
             }
-            return configs.toArray(new ICrawlerConfig[]{});
+            return configs;
         } catch (Exception e) {
             throw new CollectorException(
                     "Cannot load crawler configurations.", e);
@@ -96,27 +134,30 @@ public class CrawlerConfigLoader {
      * crawler or real crawler configuration instances
      * (keeping defaults).
      * @param config crawler configuration to populate/overwrite
-     * @param node the node representing the crawler configuration.
+     * @param xml the XML representing the crawler configuration.
      * @throws IOException problem loading crawler configuration
      */
     public void loadCrawlerConfig(
-            ICrawlerConfig config, XMLConfiguration node) throws IOException {
-        if (node == null) {
-            LOG.warn("Passing a null configuration for " 
+            ICrawlerConfig config, XML xml) throws IOException {
+        if (xml == null) {
+            LOG.warn("Passing a null configuration for "
                     + config.getId() + ", skipping.");
             return;
         }
-        boolean loadingDefaults = 
-                "crawlerDefaults".equalsIgnoreCase(node.getRootElementName());
-        
+        boolean loadingDefaults =
+                "crawlerDefaults".equalsIgnoreCase(xml.getName());//getRootElementName());
+
         if (!loadingDefaults) {
-            String crawlerId = node.getString("[@id]", null);
+            String crawlerId = xml.getString("@id", null);
             if (StringUtils.isBlank(crawlerId)) {
                 throw new CollectorException(
                         "Crawler ID is missing in configuration.");
             }
         }
-        XMLConfigurationUtil.loadFromXML(config, node);
+
+        xml.configure(config);
+
+//        XMLConfigurationUtil.loadFromXML(config, node);
     }
-        
+
 }

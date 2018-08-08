@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,11 @@
  */
 package com.norconex.collector.core.pipeline.queue;
 
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.crawler.event.CrawlerEvent;
 import com.norconex.collector.core.filter.IReferenceFilter;
@@ -30,16 +32,17 @@ import com.norconex.importer.handler.filter.OnMatch;
  */
 public final class ReferenceFiltersStageUtil {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(ReferenceFiltersStageUtil.class);
-    
+    private static final Logger LOG =
+            LoggerFactory.getLogger(ReferenceFiltersStageUtil.class);
+
     private ReferenceFiltersStageUtil() {
         super();
     }
 
     // return true if reference is rejected
     public static boolean resolveReferenceFilters(
-            IReferenceFilter[] filters, BasePipelineContext ctx, String type) {
+            List<IReferenceFilter> filters,
+            BasePipelineContext ctx, String type) {
         if (filters == null) {
             return false;
         }
@@ -47,13 +50,13 @@ public final class ReferenceFiltersStageUtil {
         if (StringUtils.isNotBlank(msg)) {
             msg = " (" + msg + ")";
         }
-        
+
         boolean hasIncludes = false;
         boolean atLeastOneIncludeMatch = false;
         for (IReferenceFilter filter : filters) {
             boolean accepted = filter.acceptReference(
                     ctx.getCrawlData().getReference());
-            
+
             // Deal with includes
             if (isIncludeFilter(filter)) {
                 hasIncludes = true;
@@ -83,8 +86,8 @@ public final class ReferenceFiltersStageUtil {
         if (hasIncludes && !atLeastOneIncludeMatch) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("REJECTED document reference" + msg
-                      + ". No include filters matched. Reference=" 
-                      + ctx.getCrawlData().getReference() 
+                      + ". No include filters matched. Reference="
+                      + ctx.getCrawlData().getReference()
                       + " Filter=[one or more filter 'onMatch' "
                       + "attribute is set to 'include', but none of them were "
                       + "matched]");
@@ -95,14 +98,14 @@ public final class ReferenceFiltersStageUtil {
         }
         return false;
     }
-    
+
     private static void fireDocumentRejected(
             Object subject, BasePipelineContext ctx) {
         ctx.fireCrawlerEvent(
                 CrawlerEvent.REJECTED_FILTER, ctx.getCrawlData(), subject);
 
     }
-    
+
     private static boolean isIncludeFilter(IReferenceFilter filter) {
         return filter instanceof IOnMatchFilter
                 && OnMatch.INCLUDE == ((IOnMatchFilter) filter).getOnMatch();

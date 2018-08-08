@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,16 @@ package com.norconex.collector.core.checksum;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.map.Properties;
 
@@ -39,10 +38,10 @@ import com.norconex.commons.lang.map.Properties;
 public final class ChecksumUtil {
 
     //TODO move to Importer and have checksum handlers?
-    
-    private static final Logger LOG = 
-            LogManager.getLogger(ChecksumUtil.class);
-    
+
+    private static final Logger LOG =
+            LoggerFactory.getLogger(ChecksumUtil.class);
+
     private ChecksumUtil() {
         super();
     }
@@ -51,7 +50,7 @@ public final class ChecksumUtil {
         try (InputStream stream = is) {
             String checksum = DigestUtils.md5Hex(stream);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("MD5 checksum from input stream: " + checksum);
+                LOG.debug("MD5 checksum from input stream: {}", checksum);
             }
             return checksum;
         }
@@ -62,34 +61,33 @@ public final class ChecksumUtil {
         }
         String checksum = DigestUtils.md5Hex(text);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("MD5 checksum from string: " + checksum);
+            LOG.debug("MD5 checksum from string: {}", checksum);
         }
         return checksum;
     }
     public static String metadataChecksumMD5(
-            Properties properties, String fieldsRegex, String... fields) {
+            Properties properties, String fieldsRegex, List<String> fields) {
         String checksum = checksumMD5(
                 metadataChecksumPlain(properties, fieldsRegex, fields));
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Metadata checksum (MD5) from "
-                    + StringUtils.join(fields, ',')
-                    + " : \"" + checksum + "\".");
+            LOG.debug("Metadata checksum (MD5) from {} : \"{}\".",
+                    StringUtils.join(fields, ','), checksum);
         }
         return checksum;
     }
     public static String metadataChecksumPlain(
-            Properties metadata, String fieldsRegex, String... fields) {
+            Properties metadata, String fieldsRegex, List<String> fields) {
 
-        if (ArrayUtils.isEmpty(fields) 
+        if (CollectionUtils.isEmpty(fields)
                 && StringUtils.isBlank(fieldsRegex)) {
             return null;
         }
-        
+
         StringBuilder b = new StringBuilder();
-        
+
         // From CSV
-        if (ArrayUtils.isNotEmpty(fields)) {
-            List<String> sortedFields = new ArrayList<>(Arrays.asList(fields));
+        if (CollectionUtils.isNotEmpty(fields)) {
+            List<String> sortedFields = new ArrayList<>(fields);
             // Sort to make sure field order does not affect checksum.
             Collections.sort(sortedFields);
             for (String field : sortedFields) {
@@ -105,12 +103,11 @@ public final class ChecksumUtil {
                 }
             }
         }
-        
+
         String checksum = b.toString();
         if (LOG.isDebugEnabled() && StringUtils.isNotBlank(checksum)) {
-            LOG.debug("Metadata checksum (plain text) from "
-                    + StringUtils.join(fields, ',')
-                    + " : \"" + checksum + "\".");
+            LOG.debug("Metadata checksum (plain text) from {} : \"{}\".",
+                    StringUtils.join(fields, ','), checksum);
         }
         return StringUtils.trimToNull(checksum);
     }

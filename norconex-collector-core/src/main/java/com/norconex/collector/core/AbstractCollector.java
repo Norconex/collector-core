@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,53 +14,50 @@
  */
 package com.norconex.collector.core;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.crawler.ICrawler;
 import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.committer.core.ICommitter;
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.importer.Importer;
-import com.norconex.jef4.job.IJob;
-import com.norconex.jef4.job.group.AsyncJobGroup;
-import com.norconex.jef4.log.FileLogManager;
-import com.norconex.jef4.status.FileJobStatusStore;
-import com.norconex.jef4.status.IJobStatus;
-import com.norconex.jef4.status.JobState;
-import com.norconex.jef4.suite.AbstractSuiteLifeCycleListener;
-import com.norconex.jef4.suite.ISuiteLifeCycleListener;
-import com.norconex.jef4.suite.JobSuite;
-import com.norconex.jef4.suite.JobSuiteConfig;
- 
+import com.norconex.jef5.job.IJob;
+import com.norconex.jef5.job.group.AsyncJobGroup;
+import com.norconex.jef5.shutdown.ShutdownException;
+import com.norconex.jef5.status.JobState;
+import com.norconex.jef5.status.JobStatus;
+import com.norconex.jef5.suite.JobSuite;
+import com.norconex.jef5.suite.JobSuiteConfig;
+
 /**
- * Base implementation of a Collector. 
+ * Base implementation of a Collector.
  * Instances of this class can hold several crawler, running at once.
  * This is convenient when there are configuration setting to be shared amongst
  * crawlers.  When you have many crawler jobs defined that have nothing
  * in common, it may be best to configure and run them separately, to facilitate
- * troubleshooting.  There is no best rule for this, experimentation 
+ * troubleshooting.  There is no best rule for this, experimentation
  * will help you.
  * @author Pascal Essiembre
  */
 public abstract class AbstractCollector implements ICollector {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(AbstractCollector.class);
-    
-    private ICollectorConfig collectorConfig;
+    private static final Logger LOG =
+            LoggerFactory.getLogger(AbstractCollector.class);
 
-    private ICrawler[] crawlers;
+    private final ICollectorConfig collectorConfig;
+
+    private final List<ICrawler> crawlers = new ArrayList<>();
     private JobSuite jobSuite;
-    
+
 	/**
 	 * Creates and configure a Collector with the provided
 	 * configuration.
@@ -72,20 +69,23 @@ public abstract class AbstractCollector implements ICollector {
             throw new IllegalArgumentException(
                     "Collector Configuration cannot be null.");
         }
-        
+
         this.collectorConfig = collectorConfig;
 
-        ICrawlerConfig[] crawlerConfigs = 
+        List<ICrawlerConfig> crawlerConfigs =
                 this.collectorConfig.getCrawlerConfigs();
         if (crawlerConfigs != null) {
-            ICrawler[] newCrawlers = new ICrawler[crawlerConfigs.length];
-            for (int i = 0; i < crawlerConfigs.length; i++) {
-                ICrawlerConfig crawlerConfig = crawlerConfigs[i];
-                newCrawlers[i] = createCrawler(crawlerConfig);
+//            ICrawler[] newCrawlers = new ICrawler[crawlerConfigs.length];
+            for (ICrawlerConfig crawlerConfig : crawlerConfigs) {
+                crawlers.add(createCrawler(crawlerConfig));
             }
-            this.crawlers = newCrawlers;
-        } else {
-            this.crawlers = new ICrawler[]{};
+//            for (int i = 0; i < crawlerConfigs.length; i++) {
+//                ICrawlerConfig crawlerConfig = crawlerConfigs[i];
+//                newCrawlers[i] = createCrawler(crawlerConfig);
+//            }
+//            this.crawlers = newCrawlers;
+//        } else {
+//            this.crawlers = Collections.emptyList();
         }
     }
 
@@ -97,11 +97,11 @@ public abstract class AbstractCollector implements ICollector {
     public JobSuite getJobSuite() {
         return jobSuite;
     }
-    
+
     /**
      * Start all crawlers defined in configuration.
      * @param resumeNonCompleted whether to resume where previous crawler
-     *        aborted (if applicable) 
+     *        aborted (if applicable)
      */
     @Override
     public void start(boolean resumeNonCompleted) {
@@ -111,7 +111,7 @@ public abstract class AbstractCollector implements ICollector {
             throw new CollectorException("Collector must be given "
                     + "a unique identifier (id).");
         }
-        
+
         if (jobSuite != null) {
             throw new CollectorException(
                     "Collector is already running. Wait for it to complete "
@@ -119,18 +119,18 @@ public abstract class AbstractCollector implements ICollector {
                   + "the currently running instance first.");
         }
         jobSuite = createJobSuite();
-        
-        ICollectorLifeCycleListener[] listeners = 
+
+        List<ICollectorLifeCycleListener> listeners =
                 collectorConfig.getCollectorListeners();
         try {
-            if (ArrayUtils.isNotEmpty(listeners)) {
+            if (CollectionUtils.isNotEmpty(listeners)) {
                 for (ICollectorLifeCycleListener l : listeners) {
                     l.onCollectorStart(this);
                 }
             }
             jobSuite.execute(resumeNonCompleted);
         } finally {
-            if (ArrayUtils.isNotEmpty(listeners)) {
+            if (CollectionUtils.isNotEmpty(listeners)) {
                 for (ICollectorLifeCycleListener l : listeners) {
                     l.onCollectorFinish(this);
                 }
@@ -148,20 +148,18 @@ public abstract class AbstractCollector implements ICollector {
             jobSuite = createJobSuite();
         }
 
-        IJobStatus status = jobSuite.getStatus();
-        if (status == null 
+        JobStatus status = jobSuite.getRootStatus();
+        if (status == null
                 || !status.isState(JobState.RUNNING, JobState.UNKNOWN)) {
-            String curState = "";
-            if (status != null) {
-                curState = " State: " + status.getState();
-            }
+            String curState =
+                    (status != null ? " State: " + status.getState() : "");
             throw new CollectorException(
                     "This collector cannot be stopped since it is NOT "
-                  + "running." + curState); 
+                  + "running." + curState);
         } else if (LOG.isDebugEnabled()) {
-            LOG.debug("Suite state: " + status.getState());        
+            LOG.debug("Suite state: {}", status.getState());
         }
-        
+
         try {
             LOG.info("Making a stop request...");
             jobSuite.stop();
@@ -173,70 +171,68 @@ public abstract class AbstractCollector implements ICollector {
                     + "the process.");
             //TODO wait for stop confirmation before setting to null?
             jobSuite = null;
-        } catch (IOException e) {
+        } catch (ShutdownException e) {
             throw new CollectorException(
                     "Could not stop collector: " + getId(), e);
         }
     }
-    
-    @Override
+
+//    @Override
     public JobSuite createJobSuite() {
-        ICrawler[] crawlers = getCrawlers();
-        
+        List<ICrawler> crawlerList = getCrawlers();
+
         IJob rootJob = null;
-        if (crawlers.length > 1) {
-            rootJob = new AsyncJobGroup(
-                    getId(), crawlers
-            );
-        } else if (crawlers.length == 1) {
-            rootJob = crawlers[0];
+        if (crawlerList.size() > 1) {
+            rootJob = new AsyncJobGroup(getId(), crawlerList);
+        } else if (crawlerList.size() == 1) {
+            rootJob = crawlerList.get(0);
         }
-        
+
         JobSuiteConfig suiteConfig = new JobSuiteConfig();
 
         //TODO have a base workdir, which is used to figure out where to put
         // everything (log, progress), and make log and progress overwritable.
 
         ICollectorConfig collConfig = getCollectorConfig();
-        suiteConfig.setLogManager(new FileLogManager(collConfig.getLogsDir()));
-        suiteConfig.setJobStatusStore(
-                new FileJobStatusStore(collConfig.getProgressDir()));
-        suiteConfig.setWorkdir(collConfig.getProgressDir()); 
+//        suiteConfig.setLogManager(new FileLogManager(collConfig.getLogsDir()));
+//        suiteConfig.setJobStatusStore(
+//                new FileJobStatusStore(collConfig.getProgressDir()));
+        suiteConfig.setWorkdir(collConfig.getProgressDir());
 
         // Add JEF listeners
-        if (collConfig.getJobLifeCycleListeners() != null) {
-            suiteConfig.setJobLifeCycleListeners(
-                    collConfig.getJobLifeCycleListeners());
-        }
-        if (collConfig.getJobErrorListeners() != null) {
-            suiteConfig.setJobErrorListeners(collConfig.getJobErrorListeners());
-        }
-        List<ISuiteLifeCycleListener> suiteListeners = new ArrayList<>();
-        suiteListeners.add(new AbstractSuiteLifeCycleListener() {
-            @Override
-            public void suiteStarted(JobSuite suite) {
-                printReleaseVersion();
-            }
-        });
-        if (collConfig.getSuiteLifeCycleListeners() != null) {
-            suiteListeners.addAll(Arrays.asList(
-                    collConfig.getSuiteLifeCycleListeners()));
-        }
-        suiteConfig.setSuiteLifeCycleListeners(
-                suiteListeners.toArray(new ISuiteLifeCycleListener[]{}));
-        
+//        if (collConfig.getJobLifeCycleListeners() != null) {
+//            suiteConfig.setJobLifeCycleListeners(
+//                    collConfig.getJobLifeCycleListeners());
+//        }
+//        if (collConfig.getJobErrorListeners() != null) {
+//            suiteConfig.setJobErrorListeners(collConfig.getJobErrorListeners());
+//        }
+//        List<ISuiteLifeCycleListener> suiteListeners = new ArrayList<>();
+//        suiteListeners.add(new AbstractSuiteLifeCycleListener() {
+//            @Override
+//            public void suiteStarted(JobSuite suite) {
+//                printReleaseVersion();
+//            }
+//        });
+//        if (collConfig.getSuiteLifeCycleListeners() != null) {
+//            suiteListeners.addAll(Arrays.asList(
+//                    collConfig.getSuiteLifeCycleListeners()));
+//        }
+//        suiteConfig.setSuiteLifeCycleListeners(
+//                suiteListeners.toArray(new ISuiteLifeCycleListener[]{}));
+
         JobSuite suite = new JobSuite(rootJob, suiteConfig);
-        LOG.info("Suite of " + crawlers.length + " crawler jobs created.");
+        LOG.info("Collector with {} crawler(s) created.", crawlerList.size());
         return suite;
     }
-    
+
     /**
      * Creates a new crawler instance.
      * @param config crawler configuration
      * @return new crawler
      */
     protected abstract ICrawler createCrawler(ICrawlerConfig config);
-    
+
     /**
      * Gets the collector configuration
      * @return the collectorConfig
@@ -245,34 +241,34 @@ public abstract class AbstractCollector implements ICollector {
     public ICollectorConfig getCollectorConfig() {
         return collectorConfig;
     }
-    
+
     @Override
     public String getId() {
         return collectorConfig.getId();
     }
-    
+
     /**
      * Add the provided crawlers to this collector.
      * @param crawlers crawlers to add
      */
-    public void setCrawlers(ICrawler[] crawlers) {
-        this.crawlers = Arrays.copyOf(crawlers, crawlers.length);
+    public void setCrawlers(List<ICrawler> crawlers) {
+        CollectionUtil.setAll(this.crawlers, crawlers);
     }
     /**
      * Gets all crawler instances in this collector.
      * @return crawlers
      */
-    public ICrawler[] getCrawlers() {
-        return Arrays.copyOf(crawlers, crawlers.length);
+    public List<ICrawler> getCrawlers() {
+        return Collections.unmodifiableList(crawlers);
     }
-    
+
     private void printReleaseVersion() {
         printReleaseVersion("Collector", getClass().getPackage());
-        printReleaseVersion("Collector Core", 
+        printReleaseVersion("Collector Core",
                 AbstractCollector.class.getPackage());
         printReleaseVersion("Importer", Importer.class.getPackage());
         printReleaseVersion("JEF", IJob.class.getPackage());
-        
+
         //--- Committers ---
         printReleaseVersion("Committer Core", ICommitter.class.getPackage());
         Set<ICommitter> committers = new HashSet<>();
@@ -280,7 +276,7 @@ public abstract class AbstractCollector implements ICollector {
             ICommitter committer = crawler.getCrawlerConfig().getCommitter();
             if (committer != null) {
                 Package committerPackage = committer.getClass().getPackage();
-                if (committerPackage != null 
+                if (committerPackage != null
                         && !committerPackage.getName().startsWith(
                                 "com.norconex.committer.core")) {
                     committers.add(committer);
@@ -295,14 +291,14 @@ public abstract class AbstractCollector implements ICollector {
     private void printReleaseVersion(String moduleName, Package p) {
         String version = p.getImplementationVersion();
         if (StringUtils.isBlank(version)) {
-            // No version is likely due to using an unpacked or modified 
-            // jar, or the jar not being packaged with version 
+            // No version is likely due to using an unpacked or modified
+            // jar, or the jar not being packaged with version
             // information.
             LOG.info("Version: \"" + moduleName
                     + "\" version is undefined.");
             return;
         }
-        LOG.info("Version: " + p.getImplementationTitle() + " " 
+        LOG.info("Version: " + p.getImplementationTitle() + " "
                 + p.getImplementationVersion()
                 + " (" + p.getImplementationVendor() + ")");
     }

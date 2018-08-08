@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,19 +20,19 @@ import org.junit.Test;
 
 import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.spoil.SpoiledReferenceStrategy;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
+
 
 public class GenericSpoiledReferenceStrategizerTest  {
 
-    
+
     @Test
     public void testWriteRead() throws IOException {
-        GenericSpoiledReferenceStrategizer s = 
+        GenericSpoiledReferenceStrategizer s =
                 new GenericSpoiledReferenceStrategizer();
         s.setFallbackStrategy(SpoiledReferenceStrategy.GRACE_ONCE);
         s.addMapping(CrawlState.MODIFIED, SpoiledReferenceStrategy.IGNORE);
         s.addMapping(CrawlState.BAD_STATUS, SpoiledReferenceStrategy.DELETE);
-        System.out.println("Writing/Reading this: " + s);
-        XMLConfigurationUtil.assertWriteRead(s);
+        XML.assertWriteRead(s, "spoiledReferenceStrategizer");
     }
 }

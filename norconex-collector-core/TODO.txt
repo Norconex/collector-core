@@ -1,4 +1,10 @@
 
+- Make sure validation reporting works fine (ignore vs throw exception)
+
+- Remove the need for XXXConfigLoader?
+
+- Add parent pom for managed dependencies.
+
 - Add workdir to collector, and by default, have log, progress share it.
   At crawler level, have all other paths relative to collector workdir,
   or crawler workdir if that one is specified.  

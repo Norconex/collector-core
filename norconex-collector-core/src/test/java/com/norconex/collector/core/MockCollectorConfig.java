@@ -1,4 +1,4 @@
-/* Copyright 2016-2017 Norconex Inc.
+/* Copyright 2016-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,23 @@
  */
 package com.norconex.collector.core;
 
-import java.io.Writer;
-
-import org.apache.commons.configuration.XMLConfiguration;
-
 import com.norconex.collector.core.crawler.MockCrawlerConfig;
+import com.norconex.commons.lang.xml.XML;
 
 public class MockCollectorConfig extends AbstractCollectorConfig {
-    
+
     public MockCollectorConfig() {
         super(MockCrawlerConfig.class);
     }
-    
+
     @Override
-    protected void loadCollectorConfigFromXML(XMLConfiguration xml) {
+    protected void loadCollectorConfigFromXML(XML xml) {
         // TODO Auto-generated method stub
-        
+
     }
     @Override
-    protected void saveCollectorConfigToXML(Writer out) {
+    protected void saveCollectorConfigToXML(XML xml) {
         // TODO Auto-generated method stub
-        
+
     }
 }

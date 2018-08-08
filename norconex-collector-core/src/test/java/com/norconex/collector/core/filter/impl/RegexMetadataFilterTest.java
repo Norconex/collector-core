@@ -18,11 +18,11 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.filter.OnMatch;
 
 public class RegexMetadataFilterTest {
-    
+
     @Test
     public void testWriteRead() throws IOException {
         RegexMetadataFilter f = new RegexMetadataFilter();
@@ -30,7 +30,6 @@ public class RegexMetadataFilterTest {
         f.setField("title");
         f.setRegex(".*blah.*");
         f.setOnMatch(OnMatch.EXCLUDE);
-        System.out.println("Writing/Reading this: " + f);
-        XMLConfigurationUtil.assertWriteRead(f);
+        XML.assertWriteRead(f, "filter");
     }
 }

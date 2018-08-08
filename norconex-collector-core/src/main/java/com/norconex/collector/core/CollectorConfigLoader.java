@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,31 +17,31 @@ package com.norconex.collector.core;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.config.ConfigurationLoader;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 
 /**
  * Collector configuration loader.  Configuration options are defined
  * as part of general product documentation.
  * @author Pascal Essiembre
+ * @deprecated
  */
+//TODO really deprecated... should be easy to do without now.
+@Deprecated
 public class CollectorConfigLoader {
 
-    private static final Logger LOG = LogManager.getLogger(
+    private static final Logger LOG = LoggerFactory.getLogger(
             CollectorConfigLoader.class);
 
     private final Class<? extends ICollectorConfig> collectorConfigClass;
-    
+
     public CollectorConfigLoader(
             Class<? extends ICollectorConfig> collectorConfigClass) {
         super();
         this.collectorConfigClass = collectorConfigClass;
     }
-    
+
     /**
      * Loads a collection configuration from file.
      * @param configFile configuration file
@@ -51,7 +51,7 @@ public class CollectorConfigLoader {
     public ICollectorConfig loadCollectorConfig(File configFile) throws IOException {
         return loadCollectorConfig(configFile, null);
     }
-    
+
     /**
      * Loads a collection configuration from file.
      * @param configFile configuration file
@@ -61,26 +61,26 @@ public class CollectorConfigLoader {
      */
     public ICollectorConfig loadCollectorConfig(
             File configFile, File configVariables) throws IOException {
-        
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Loading configuration file: " + configFile);
-        }
-        if (!configFile.exists()) {
-            return null;
-        }
-        
-        ConfigurationLoader configLoader = new ConfigurationLoader();
-        XMLConfiguration xml = configLoader.loadXML(
-                configFile, configVariables);
-        try {
-            ICollectorConfig collectorConfig = 
-                    collectorConfigClass.newInstance();
-            collectorConfig.loadFromXML(XMLConfigurationUtil.newReader(xml));
-            return collectorConfig;
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new CollectorException(
-                    "Cannot load configuration for class: " 
-                            + collectorConfigClass, e);
-        }
+        return null;
+//        if (LOG.isDebugEnabled()) {
+//            LOG.debug("Loading configuration file: {}", configFile);
+//        }
+//        if (!configFile.exists()) {
+//            return null;
+//        }
+//
+//        ConfigurationLoader configLoader = new ConfigurationLoader();
+//        XMLConfiguration xml = configLoader.loadXML(
+//                configFile, configVariables);
+//        try {
+//            ICollectorConfig collectorConfig =
+//                    collectorConfigClass.newInstance();
+//            collectorConfig.loadFromXML(XMLConfigurationUtil.newReader(xml));
+//            return collectorConfig;
+//        } catch (InstantiationException | IllegalAccessException e) {
+//            throw new CollectorException(
+//                    "Cannot load configuration for class: "
+//                            + collectorConfigClass, e);
+//        }
     }
 }

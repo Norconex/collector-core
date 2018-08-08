@@ -24,8 +24,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import com.norconex.collector.core.CollectorException;
 import com.norconex.collector.core.crawler.event.CrawlerEvent;
@@ -40,7 +40,7 @@ public class SaveDocumentStage
         implements IPipelineStage<ImporterPipelineContext> {
 
     private static final Logger LOG = 
-            LogManager.getLogger(SaveDocumentStage.class);
+            LoggerFactory.getLogger(SaveDocumentStage.class);
     
     private static final int MAX_SEGMENT_LENGTH = 25;
     

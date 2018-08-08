@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,17 @@
  */
 package com.norconex.collector.core.crawler;
 
-import java.io.IOException;
-import java.io.Writer;
-
-import org.apache.commons.configuration.XMLConfiguration;
+import com.norconex.commons.lang.xml.XML;
 
 public class MockCrawlerConfig extends AbstractCrawlerConfig {
 
     @Override
-    protected void saveCrawlerConfigToXML(Writer out) throws IOException {
+    protected void saveCrawlerConfigToXML(XML out) {
         //NOOP
     }
 
     @Override
-    protected void loadCrawlerConfigFromXML(XMLConfiguration xml)
-            throws IOException {
+    protected void loadCrawlerConfigFromXML(XML xml) {
         //NOOP
     }
 }

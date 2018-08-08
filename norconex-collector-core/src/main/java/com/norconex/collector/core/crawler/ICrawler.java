@@ -17,7 +17,7 @@ package com.norconex.collector.core.crawler;
 import com.norconex.collector.core.ICollector;
 import com.norconex.collector.core.crawler.event.CrawlerEventManager;
 import com.norconex.importer.Importer;
-import com.norconex.jef4.job.IJob;
+import com.norconex.jef5.job.IJob;
 
 /**
  * A document crawler.  Crawlers are part of a {@link ICollector} and 

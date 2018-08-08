@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,13 @@
  */
 package com.norconex.collector.core;
 
-import com.norconex.jef4.suite.IJobSuiteFactory;
-import com.norconex.jef4.suite.JobSuite;
+import com.norconex.jef5.suite.JobSuite;
 
 /**
  * @author Pascal Essiembre
  *
  */
-public interface ICollector extends IJobSuiteFactory {
+public interface ICollector { //extends IJobSuiteFactory {
 
     /**
      * Gets the collector configuration
@@ -30,15 +29,22 @@ public interface ICollector extends IJobSuiteFactory {
     ICollectorConfig getCollectorConfig();
 
     String getId();
-    
+
     //TODO Should we deprecate this since IJobSuiteFactory has createJobSuite
     //which can be overwritten if need be, instead of exposing it?
+    /**
+     * Get Job Suite
+     * @return JobSuite
+     * @deprecated Since 2.0.0
+     */
+    @Deprecated
+    //TODO try to deprecate
     JobSuite getJobSuite();
 
     /**
      * Launched all crawlers defined in configuration.
      * @param resumeNonCompleted whether to resume where previous crawler
-     *        aborted (if applicable) 
+     *        aborted (if applicable)
      */
     void start(boolean resumeNonCompleted);
 

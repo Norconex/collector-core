@@ -15,8 +15,8 @@
 package com.norconex.collector.core.pipeline.queue;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.pipeline.BasePipelineContext;
@@ -30,7 +30,7 @@ public class QueueReferenceStage
         implements IPipelineStage<BasePipelineContext> {
 
     private static final Logger LOG = 
-            LogManager.getLogger(QueueReferenceStage.class);
+            LoggerFactory.getLogger(QueueReferenceStage.class);
     
     /**
      * Constructor.

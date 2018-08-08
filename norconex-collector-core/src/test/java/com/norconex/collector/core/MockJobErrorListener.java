@@ -1,4 +1,4 @@
-/* Copyright 2016 Norconex Inc.
+/* Copyright 2016-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,14 @@
  */
 package com.norconex.collector.core;
 
-import com.norconex.jef4.job.IJobErrorListener;
-import com.norconex.jef4.job.JobErrorEvent;
+public class MockJobErrorListener {// implements IJobErrorListener {
 
-public class MockJobErrorListener implements IJobErrorListener {
+    private final String test = "MockJobErrorListener";
 
-    private String test = "MockJobErrorListener";
-    
-    @Override
-    public void jobError(JobErrorEvent event) {
-    }
-
+//    @Override
+//    public void jobError(JobErrorEvent event) {
+//    }
+//
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -35,18 +32,23 @@ public class MockJobErrorListener implements IJobErrorListener {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         MockJobErrorListener other = (MockJobErrorListener) obj;
         if (test == null) {
-            if (other.test != null)
+            if (other.test != null) {
                 return false;
-        } else if (!test.equals(other.test))
+            }
+        } else if (!test.equals(other.test)) {
             return false;
+        }
         return true;
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,38 +14,37 @@
  */
 package com.norconex.collector.core.crawler.event;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.crawler.ICrawler;
 
 /**
  * Manage event listeners and log events.  Events are logged
- * using Log4j with the INFO level.  
+ * using Log4j with the INFO level.
  * Each events have their own Log4j appenders, following this pattern:
  * <pre>
  *    CrawlerEvent.&lt;EVENT_ID&gt;
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  */
 public class CrawlerEventManager {
 
-    private final ICrawlerEventListener[] listeners;
+    private final List<ICrawlerEventListener> listeners = new ArrayList<>();
     private final ICrawler crawler;
     private static final int ID_PRINT_WIDTH = 25;
-    
+
     public CrawlerEventManager(
-            ICrawler crawler, ICrawlerEventListener[] listeners) {
+            ICrawler crawler, List<ICrawlerEventListener> listeners) {
         this.crawler = crawler;
         if (listeners != null) {
-            this.listeners = Arrays.copyOf(listeners, listeners.length);
-        } else {
-            this.listeners = new ICrawlerEventListener[] {};
+            this.listeners.addAll(listeners);
         }
     }
 
@@ -59,15 +58,15 @@ public class CrawlerEventManager {
             listener.crawlerEvent(crawler, event);
         }
     }
-    
+
     private void logEvent(CrawlerEvent event) {
-        Logger log =  LogManager.getLogger(CrawlerEvent.class.getSimpleName() 
+        Logger log =  LoggerFactory.getLogger(CrawlerEvent.class.getSimpleName()
                 + "." + event.getEventType());
         if (log.isInfoEnabled()) {
             log.info(getLogMessage(event, log.isDebugEnabled()));
         }
     }
-    
+
     private String getLogMessage(CrawlerEvent event, boolean includeSubject) {
         StringBuilder b = new StringBuilder();
         b.append(StringUtils.leftPad(event.getEventType(), ID_PRINT_WIDTH));
@@ -77,7 +76,7 @@ public class CrawlerEventManager {
         }
         if (includeSubject) {
             b.append(" (");
-            b.append(Objects.toString(event.getSubject(), 
+            b.append(Objects.toString(event.getSubject(),
                     "No additional information available."));
             b.append(")");
         }

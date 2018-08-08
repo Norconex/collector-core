@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,26 +15,15 @@
 package com.norconex.collector.core.crawler;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 
 import com.norconex.collector.core.checksum.IDocumentChecksummer;
 import com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer;
@@ -47,9 +36,8 @@ import com.norconex.collector.core.filter.IReferenceFilter;
 import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
 import com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer;
 import com.norconex.committer.core.ICommitter;
-import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterConfigLoader;
 
@@ -59,33 +47,35 @@ import com.norconex.importer.ImporterConfigLoader;
  */
 public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
 
-    private static final Logger LOG = LogManager.getLogger(
-            AbstractCrawlerConfig.class);
-    
+//    private static final Logger LOG = LoggerFactory.getLogger(
+//            AbstractCrawlerConfig.class);
+
     private String id;
     private int numThreads = 2;
     private File workDir = new File("./work");
     private int maxDocuments = -1;
     private OrphansStrategy orphansStrategy = OrphansStrategy.PROCESS;
-    private Class<? extends Exception>[] stopOnExceptions;
-    
-    private ICrawlDataStoreFactory crawlDataStoreFactory = 
+    private final List<Class<? extends Exception>> stopOnExceptions =
+            new ArrayList<>();
+
+    private ICrawlDataStoreFactory crawlDataStoreFactory =
             new MVStoreCrawlDataStoreFactory();
 
-    private IReferenceFilter[] referenceFilters;
-    private IMetadataFilter[] metadataFilters;
-    private IDocumentFilter[] documentFilters;
-    
-    private ICrawlerEventListener[] crawlerListeners;
+    private final List<IReferenceFilter> referenceFilters = new ArrayList<>();
+    private final List<IMetadataFilter> metadataFilters = new ArrayList<>();
+    private final List<IDocumentFilter> documentFilters = new ArrayList<>();
+
+    private final List<ICrawlerEventListener> crawlerListeners =
+            new ArrayList<>();
     private ImporterConfig importerConfig = new ImporterConfig();
     private ICommitter committer;
 
     private IDocumentChecksummer documentChecksummer =
             new MD5DocumentChecksummer();
-    
-    private ISpoiledReferenceStrategizer spoiledReferenceStrategizer = 
+
+    private ISpoiledReferenceStrategizer spoiledReferenceStrategizer =
             new GenericSpoiledReferenceStrategizer();
-        
+
     /**
      * Creates a new crawler configuration.
      */
@@ -119,7 +109,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     public void setNumThreads(int numThreads) {
         this.numThreads = numThreads;
     }
-    
+
     @Override
     public File getWorkDir() {
         return workDir;
@@ -127,7 +117,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     public void setWorkDir(File workDir) {
         this.workDir = workDir;
     }
-    
+
     @Override
     public int getMaxDocuments() {
         return maxDocuments;
@@ -148,8 +138,8 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
      * @since 1.9.0
      */
     @Override
-    public Class<? extends Exception>[] getStopOnExceptions() {
-        return ArrayUtils.clone(stopOnExceptions);
+    public List<Class<? extends Exception>> getStopOnExceptions() {
+        return Collections.unmodifiableList(stopOnExceptions);
     }
     /**
      * Sets the exceptions we want to stop the crawler on.
@@ -160,14 +150,18 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
      * safely from an exception.
      * To capture more exceptions, use a parent class (e.g., Exception
      * should catch them all).
-     * @param stopOnExceptions exceptions that will stop the crawler when 
+     * @param stopOnExceptions exceptions that will stop the crawler when
      *         encountered
      * @since 1.9.0
      */
-    @SuppressWarnings("unchecked")
     public void setStopOnExceptions(
+            @SuppressWarnings("unchecked")
             Class<? extends Exception>... stopOnExceptions) {
-        this.stopOnExceptions = ArrayUtils.clone(stopOnExceptions);
+        setStopOnExceptions(Arrays.asList(stopOnExceptions));
+    }
+    public void setStopOnExceptions(
+            List<Class<? extends Exception>> stopOnExceptions) {
+        CollectionUtil.setAll(this.stopOnExceptions, stopOnExceptions);
     }
 
     @Override
@@ -180,15 +174,24 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     }
 
     @Override
-    public ICrawlerEventListener[] getCrawlerListeners() {
-        return ArrayUtils.clone(crawlerListeners);
+    public List<ICrawlerEventListener> getCrawlerListeners() {
+        return Collections.unmodifiableList(crawlerListeners);
     }
+    public void setCrawlerListeners(ICrawlerEventListener... crawlerListeners) {
+        setCrawlerListeners(Arrays.asList(crawlerListeners));
+    }
+    /**
+     * Sets crawler listeners.
+     * @param crawlerListeners
+     * @since 2.0.0
+     */
+    // Keep this or replace with JEF events??
     public void setCrawlerListeners(
-            ICrawlerEventListener... crawlerListeners) {
-        this.crawlerListeners = ArrayUtils.clone(crawlerListeners);
+            List<ICrawlerEventListener> crawlerListeners) {
+        CollectionUtil.setAll(this.crawlerListeners, crawlerListeners);
     }
-    
-    
+
+
     @Override
     public ISpoiledReferenceStrategizer getSpoiledReferenceStrategizer() {
         return spoiledReferenceStrategizer;
@@ -203,30 +206,54 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
      * @return the referenceFilters
      */
     @Override
-    public IReferenceFilter[] getReferenceFilters() {
-        return ArrayUtils.clone(referenceFilters);
+    public List<IReferenceFilter> getReferenceFilters() {
+        return Collections.unmodifiableList(referenceFilters);
     }
     /**
      * Sets the reference filters.
      * @param referenceFilters the referenceFilters to set
      */
     public void setReferenceFilters(IReferenceFilter... referenceFilters) {
-        this.referenceFilters = ArrayUtils.clone(referenceFilters);
+        setReferenceFilters(Arrays.asList(referenceFilters));
+    }
+    /**
+     * Sets the reference filters.
+     * @param referenceFilters the referenceFilters to set
+     * @since 2.0.0
+     */
+    public void setReferenceFilters(List<IReferenceFilter> referenceFilters) {
+        CollectionUtil.setAll(this.referenceFilters, referenceFilters);
     }
     @Override
-    public IDocumentFilter[] getDocumentFilters() {
-        return ArrayUtils.clone(documentFilters);
+    public List<IDocumentFilter> getDocumentFilters() {
+        return Collections.unmodifiableList(documentFilters);
     }
     public void setDocumentFilters(IDocumentFilter... documentfilters) {
-        this.documentFilters = ArrayUtils.clone(documentfilters);
+        setDocumentFilters(Arrays.asList(documentfilters));
+    }
+    /**
+     * Sets document filters.
+     * @param documentfilters document filters
+     * @since 2.0.0
+     */
+    public void setDocumentFilters(List<IDocumentFilter> documentfilters) {
+        CollectionUtil.setAll(this.documentFilters, documentFilters);
     }
 
     @Override
-    public IMetadataFilter[] getMetadataFilters() {
-        return ArrayUtils.clone(metadataFilters);
+    public List<IMetadataFilter> getMetadataFilters() {
+        return Collections.unmodifiableList(metadataFilters);
     }
     public void setMetadataFilters(IMetadataFilter... metadataFilters) {
-        this.metadataFilters = ArrayUtils.clone(metadataFilters);
+        setMetadataFilters(Arrays.asList(metadataFilters));
+    }
+    /**
+     * Sets metadata filters.
+     * @param metadataFilters metadata filters
+     * @since 2.0.0
+     */
+    public void setMetadataFilters(List<IMetadataFilter> metadataFilters) {
+        CollectionUtil.setAll(this.metadataFilters, metadataFilters);
     }
 
     @Override
@@ -245,7 +272,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     public void setImporterConfig(ImporterConfig importerConfig) {
         this.importerConfig = importerConfig;
     }
-    
+
     @Override
     public ICommitter getCommitter() {
         return committer;
@@ -253,345 +280,217 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     public void setCommitter(ICommitter committer) {
         this.committer = committer;
     }
-    
+
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        try {
-            out.flush();
-            EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
-            writer.writeStartElement("crawler");
-            writer.writeAttributeClass("class", getClass());
-            writer.writeAttributeString("id", getId());
+    public void saveToXML(XML xml) {
+        xml.setAttribute("id", id);
+        xml.addElement("numThreads", numThreads);
+        xml.addElement("workDir", workDir);
+        xml.addElement("maxDocuments", maxDocuments);
+        xml.addElementList("stopOnExceptions", "exception", stopOnExceptions);
+        xml.addElement("orphansStrategy", orphansStrategy);
+        xml.addElement("crawlDataStoreFactory", crawlDataStoreFactory);
+        xml.addElementList("referenceFilters", "filter", referenceFilters);
+        xml.addElementList("metadataFilters", "filter", metadataFilters);
+        xml.addElementList("documentFilters", "filter", documentFilters);
+        xml.addElementList("crawlerListeners", "listener", crawlerListeners);
+        if (importerConfig != null) {
+            xml.addElement("importer").configure(importerConfig);
+        }
+//        xml.addElement("importer", importerConfig);
+        if (committer != null) {
+            xml.addElement("committer", committer);
+        }
+        xml.addElement("documentChecksummer", documentChecksummer);
+        xml.addElement(
+                "spoiledReferenceStrategizer", spoiledReferenceStrategizer);
 
-            writer.writeElementInteger("numThreads", getNumThreads());
-            writer.writeElementString("workDir", 
-                    Objects.toString(getWorkDir(), null)); 
-            writer.writeElementInteger("maxDocuments", getMaxDocuments());
-
-            Class<? extends Exception>[] stopOnExcepts = getStopOnExceptions();
-            if (ArrayUtils.isNotEmpty(stopOnExcepts)) {
-                writer.writeStartElement("stopOnExceptions");
-                for (Class<? extends Exception> c : stopOnExcepts) {
-                    if (c != null) {
-                        writer.writeElementClass("exception", c.getClass());
-                    }
-                }
-                writer.writeEndElement();
-            }
-            
-            OrphansStrategy strategy = getOrphansStrategy();
-            if (strategy != null) {
-                writer.writeElementString(
-                        "orphansStrategy", strategy.toString());
-            }
-            writer.flush();
-            
-            writeObject(out, "crawlDataStoreFactory", 
-                    getCrawlDataStoreFactory());
-            writeArray(out, "referenceFilters", 
-                    "filter", getReferenceFilters());
-            writeArray(out, "metadataFilters", "filter", getMetadataFilters());
-            writeArray(out, "documentFilters", "filter", getDocumentFilters());
-            writeArray(out, "crawlerListeners", "listener", 
-                    getCrawlerListeners());
-            writeObject(out, "importer", getImporterConfig());
-            writeObject(out, "committer", getCommitter());
-            writeObject(out, "documentChecksummer", getDocumentChecksummer());
-            writeObject(out, "spoiledReferenceStrategizer", 
-                    getSpoiledReferenceStrategizer());
-            
-            saveCrawlerConfigToXML(out);
-            
-            writer.writeEndElement();
-            writer.flush();
-            
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
-        }   
-        
+        saveCrawlerConfigToXML(xml);
     }
-    protected abstract void saveCrawlerConfigToXML(Writer out)
-            throws IOException;
-    
+    protected abstract void saveCrawlerConfigToXML(XML xml);
+
     @Override
-    public final void loadFromXML(Reader in) throws IOException {
-        XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
-        
+    public final void loadFromXML(XML xml) {
+        setId(xml.getString("@id", id));
+        setNumThreads(xml.getInteger("numThreads", numThreads));
+        setOrphansStrategy(xml.getEnum(
+                OrphansStrategy.class, "orphansStrategy", orphansStrategy));
+        setWorkDir(xml.getFile("workDir", workDir));
+        setMaxDocuments(xml.getInteger("maxDocuments", maxDocuments));
+        setStopOnExceptions(xml.getClassList(
+                "stopOnExceptions/exception", stopOnExceptions));
+        setReferenceFilters(xml.getObjectList(
+                "referenceFilters/filter", referenceFilters));
+        setMetadataFilters(xml.getObjectList(
+                "metadataFilters/filter", metadataFilters));
+        setDocumentFilters(xml.getObjectList(
+                "documentFilters/filter", documentFilters));
+        setCrawlerListeners(xml.getObjectList(
+                "crawlerListeners/listener", crawlerListeners));
 
-        String crawlerId = xml.getString("[@id]", null);
-        setId(crawlerId);
-        setNumThreads(xml.getInt("numThreads", getNumThreads()));
-        OrphansStrategy strategy = getOrphansStrategy();
-        String strategyStr = xml.getString("orphansStrategy", null);
-        if (StringUtils.isNotBlank(strategyStr)) {
-            strategy = OrphansStrategy.valueOf(strategyStr.toUpperCase());
-        }
-        setOrphansStrategy(strategy);
-        
-        // Work directory
-        File dir = workDir;
-        String dirStr = xml.getString("workDir", null);
-        if (StringUtils.isNotBlank(dirStr)) {
-            dir = new File(dirStr);
-        }
-        setWorkDir(dir);
-        setMaxDocuments(xml.getInt("maxDocuments", getMaxDocuments()));
 
-        //--- Stop on Exceptions -----------------------------------------------
-        Class<? extends Exception>[] stopExceptions =
-                loadStopOnExceptions(xml, "stopOnExceptions.exception");
-        setStopOnExceptions(defaultIfEmpty(
-                stopExceptions, getStopOnExceptions()));
-        
-        //--- Reference Filters ------------------------------------------------
-        IReferenceFilter[] refFilters = 
-                loadReferenceFilters(xml, "referenceFilters.filter");
-        setReferenceFilters(defaultIfEmpty(
-                refFilters, getReferenceFilters()));
-        
-        //--- Metadata Filters ---------------------------------------------
-        IMetadataFilter[] metaFilters = 
-                loadMetadataFilters(xml, "metadataFilters.filter");
-        setMetadataFilters(defaultIfEmpty(metaFilters, getMetadataFilters()));
-        
-        //--- Document Filters -------------------------------------------------
-        IDocumentFilter[] docFilters = 
-                loadDocumentFilters(xml, "documentFilters.filter");
-        setDocumentFilters(defaultIfEmpty(docFilters, getDocumentFilters()));
-        
-        //--- Crawler Listeners ------------------------------------------------
-        ICrawlerEventListener[] cEventListeners = 
-                loadListeners(xml, "crawlerListeners.listener");
-        setCrawlerListeners(
-                defaultIfEmpty(cEventListeners, getCrawlerListeners()));
-
-        //--- IMPORTER ---------------------------------------------------------
-        XMLConfiguration importerNode = 
-                XMLConfigurationUtil.getXmlAt(xml, "importer");
-        if (importerNode != null) {
-            setImporterConfig(
-                    ImporterConfigLoader.loadImporterConfig(importerNode));
+        //TODO Make it so importer can be null (importing is then skipped)
+        XML importerXML = xml.getXML("importer");
+        if (importerXML != null) {
+            setImporterConfig(ImporterConfigLoader.loadImporterConfig(
+                    importerXML, false)); //TODO handle ignore errors
         } else if (getImporterConfig() == null) {
             setImporterConfig(new ImporterConfig());
         }
 
-        //--- Data Store -------------------------------------------------------
-        setCrawlDataStoreFactory(XMLConfigurationUtil.newInstance(xml,
-                "crawlDataStoreFactory", getCrawlDataStoreFactory()));
 
-        //--- Document Committer -----------------------------------------------
-        setCommitter(XMLConfigurationUtil.newInstance(
-                xml, "committer", getCommitter()));
-        
-        //--- Document Checksummer ---------------------------------------------
-        setDocumentChecksummer(XMLConfigurationUtil.newInstance(
-                xml, "documentChecksummer", getDocumentChecksummer()));
+        setCrawlDataStoreFactory(xml.getObject(
+                "crawlDataStoreFactory", crawlDataStoreFactory));
+        setCommitter(xml.getObject("committer", committer));
+        setDocumentChecksummer(xml.getObject(
+                "documentChecksummer", documentChecksummer));
+        setSpoiledReferenceStrategizer(xml.getObject(
+                "spoiledReferenceStrategizer", spoiledReferenceStrategizer));
 
-        //--- Spoiled State Strategy Resolver ----------------------------------
-        setSpoiledReferenceStrategizer(XMLConfigurationUtil.newInstance(
-                xml, "spoiledReferenceStrategizer", 
-                        getSpoiledReferenceStrategizer()));
-        
         loadCrawlerConfigFromXML(xml);
     }
-    protected abstract void loadCrawlerConfigFromXML(XMLConfiguration xml)
-            throws IOException;
-    
+    protected abstract void loadCrawlerConfigFromXML(XML xml);
 
-    @SuppressWarnings("unchecked")
-    private Class<? extends Exception>[] loadStopOnExceptions(
-            XMLConfiguration xml, String xmlPath) {
-        List<Class<? extends Exception>> exceptions = new ArrayList<>();
-        List<HierarchicalConfiguration> exceptionNodes = 
-                xml.configurationsAt(xmlPath);
-        for (HierarchicalConfiguration exNode : exceptionNodes) {
-            Class<? extends Exception> exception = (Class<? extends Exception>) 
-                    XMLConfigurationUtil.getNullableClass(exNode, "", null);
-            if (exception != null) {
-                exceptions.add(exception);
-                LOG.info("Stop on exception class loaded: " + exception);
-            }
-        }
-        return exceptions.toArray(new Class[] {});
-    }    
-    
-    private ICrawlerEventListener[] loadListeners(XMLConfiguration xml,
-            String xmlPath) {
-        List<ICrawlerEventListener> listeners = new ArrayList<>();
-        List<HierarchicalConfiguration> listenerNodes = xml
-                .configurationsAt(xmlPath);
-        for (HierarchicalConfiguration listenerNode : listenerNodes) {
-            ICrawlerEventListener listener = 
-                    XMLConfigurationUtil.newInstance(listenerNode);
-            listeners.add(listener);
-            LOG.info("Crawler event listener loaded: " + listener);
-        }
-        return listeners.toArray(new ICrawlerEventListener[] {});
-    }
-    
-    private IReferenceFilter[] loadReferenceFilters(
-            XMLConfiguration xml, String xmlPath) {
-        List<IReferenceFilter> refFilters = new ArrayList<>();
-        List<HierarchicalConfiguration> filterNodes = 
-                xml.configurationsAt(xmlPath);
-        for (HierarchicalConfiguration filterNode : filterNodes) {
-            IReferenceFilter refFilter = 
-                    XMLConfigurationUtil.newInstance(filterNode);
-            if (refFilter != null) {
-                refFilters.add(refFilter);
-                LOG.info("Reference filter loaded: " + refFilter);
-            } else {
-                LOG.error("Problem loading filter, "
-                        + "please check for other log messages.");
-            }
-        }
-        return refFilters.toArray(new IReferenceFilter[] {});
-    }
-    
-    private IMetadataFilter[] loadMetadataFilters(XMLConfiguration xml,
-            String xmlPath) {
-        List<IMetadataFilter> filters = new ArrayList<>();
-        List<HierarchicalConfiguration> filterNodes = xml
-                .configurationsAt(xmlPath);
-        for (HierarchicalConfiguration filterNode : filterNodes) {
-            IMetadataFilter filter = 
-                    XMLConfigurationUtil.newInstance(filterNode);
-            filters.add(filter);
-            LOG.info("Matadata filter loaded: " + filter);
-        }
-        return filters.toArray(new IMetadataFilter[] {});
-    }
-    
-    private IDocumentFilter[] loadDocumentFilters(
-            XMLConfiguration xml, String xmlPath) {
-        List<IDocumentFilter> filters = new ArrayList<>();
-        List<HierarchicalConfiguration> filterNodes = 
-                xml.configurationsAt(xmlPath);
-        for (HierarchicalConfiguration filterNode : filterNodes) {
-            IDocumentFilter filter = 
-                    XMLConfigurationUtil.newInstance(filterNode);
-            filters.add(filter);
-            LOG.info("Document filter loaded: " + filter);
-        }
-        return filters.toArray(new IDocumentFilter[] {});
-    }
-    
-    protected void writeObject(
-            Writer out, String tagName, Object object) throws IOException {
-        writeObject(out, tagName, object, false);
-    }
-    
-    protected void writeObject(
-            Writer out, String tagName, Object object, boolean ignore) 
-                    throws IOException {
-        out.flush();
-        if (object == null) {
-            if (ignore) {
-                out.write("<" + tagName + " ignore=\"" + ignore + "\" />");
-            }
-            return;
-        }
-        StringWriter w = new StringWriter();
-        if (object instanceof IXMLConfigurable) {
-            ((IXMLConfigurable) object).saveToXML(w);
-        } else {
-            w.write("<" + tagName + " class=\"" 
-                    + object.getClass().getCanonicalName() + "\" />");
-        }
-        String xml = w.toString();
-        if (ignore) {
-            xml = xml.replace("<" + tagName + " class=\"" , 
-                    "<" + tagName + " ignore=\"true\" class=\"" );
-        }
-        out.write(xml);
-        out.flush();
-    }
-    protected void writeArray(Writer out, String listTagName, 
-            String objectTagName, Object[] array) throws IOException {
-        if (ArrayUtils.isEmpty(array)) {
-            return;
-        }
-        out.write("<" + listTagName + ">"); 
-        for (Object obj : array) {
-            writeObject(out, objectTagName, obj);
-        }
-        out.write("</" + listTagName + ">"); 
-        out.flush();
-    }
-    
-    protected <T> T[] defaultIfEmpty(T[] array, T[] defaultArray) {
-        if (ArrayUtils.isEmpty(array)) {
-            return defaultArray;
-        }
-        return array;
-    }
+
+//    @SuppressWarnings("unchecked")
+//    private Class<? extends Exception>[] loadStopOnExceptions(
+//            XMLConfiguration xml, String xmlPath) {
+//        List<Class<? extends Exception>> exceptions = new ArrayList<>();
+//        List<HierarchicalConfiguration> exceptionNodes =
+//                xml.configurationsAt(xmlPath);
+//        for (HierarchicalConfiguration exNode : exceptionNodes) {
+//            Class<? extends Exception> exception = (Class<? extends Exception>)
+//                    XMLConfigurationUtil.getNullableClass(exNode, "", null);
+//            if (exception != null) {
+//                exceptions.add(exception);
+//                LOG.info("Stop on exception class loaded: " + exception);
+//            }
+//        }
+//        return exceptions.toArray(new Class[] {});
+//    }
+//
+//    private ICrawlerEventListener[] loadListeners(XMLConfiguration xml,
+//            String xmlPath) {
+//        List<ICrawlerEventListener> listeners = new ArrayList<>();
+//        List<HierarchicalConfiguration> listenerNodes = xml
+//                .configurationsAt(xmlPath);
+//        for (HierarchicalConfiguration listenerNode : listenerNodes) {
+//            ICrawlerEventListener listener =
+//                    XMLConfigurationUtil.newInstance(listenerNode);
+//            listeners.add(listener);
+//            LOG.info("Crawler event listener loaded: " + listener);
+//        }
+//        return listeners.toArray(new ICrawlerEventListener[] {});
+//    }
+//
+//    private IReferenceFilter[] loadReferenceFilters(
+//            XMLConfiguration xml, String xmlPath) {
+//        List<IReferenceFilter> refFilters = new ArrayList<>();
+//        List<HierarchicalConfiguration> filterNodes =
+//                xml.configurationsAt(xmlPath);
+//        for (HierarchicalConfiguration filterNode : filterNodes) {
+//            IReferenceFilter refFilter =
+//                    XMLConfigurationUtil.newInstance(filterNode);
+//            if (refFilter != null) {
+//                refFilters.add(refFilter);
+//                LOG.info("Reference filter loaded: " + refFilter);
+//            } else {
+//                LOG.error("Problem loading filter, "
+//                        + "please check for other log messages.");
+//            }
+//        }
+//        return refFilters.toArray(new IReferenceFilter[] {});
+//    }
+//
+//    private IMetadataFilter[] loadMetadataFilters(XMLConfiguration xml,
+//            String xmlPath) {
+//        List<IMetadataFilter> filters = new ArrayList<>();
+//        List<HierarchicalConfiguration> filterNodes = xml
+//                .configurationsAt(xmlPath);
+//        for (HierarchicalConfiguration filterNode : filterNodes) {
+//            IMetadataFilter filter =
+//                    XMLConfigurationUtil.newInstance(filterNode);
+//            filters.add(filter);
+//            LOG.info("Matadata filter loaded: " + filter);
+//        }
+//        return filters.toArray(new IMetadataFilter[] {});
+//    }
+//
+//    private IDocumentFilter[] loadDocumentFilters(
+//            XMLConfiguration xml, String xmlPath) {
+//        List<IDocumentFilter> filters = new ArrayList<>();
+//        List<HierarchicalConfiguration> filterNodes =
+//                xml.configurationsAt(xmlPath);
+//        for (HierarchicalConfiguration filterNode : filterNodes) {
+//            IDocumentFilter filter =
+//                    XMLConfigurationUtil.newInstance(filterNode);
+//            filters.add(filter);
+//            LOG.info("Document filter loaded: " + filter);
+//        }
+//        return filters.toArray(new IDocumentFilter[] {});
+//    }
+//
+//    protected void writeObject(
+//            Writer out, String tagName, Object object) throws IOException {
+//        writeObject(out, tagName, object, false);
+//    }
+//
+//    protected void writeObject(
+//            Writer out, String tagName, Object object, boolean ignore)
+//                    throws IOException {
+//        out.flush();
+//        if (object == null) {
+//            if (ignore) {
+//                out.write("<" + tagName + " ignore=\"" + ignore + "\" />");
+//            }
+//            return;
+//        }
+//        StringWriter w = new StringWriter();
+//        if (object instanceof IXMLConfigurable) {
+//            ((IXMLConfigurable) object).saveToXML(w);
+//        } else {
+//            w.write("<" + tagName + " class=\""
+//                    + object.getClass().getCanonicalName() + "\" />");
+//        }
+//        String xml = w.toString();
+//        if (ignore) {
+//            xml = xml.replace("<" + tagName + " class=\"" ,
+//                    "<" + tagName + " ignore=\"true\" class=\"" );
+//        }
+//        out.write(xml);
+//        out.flush();
+//    }
+//    protected void writeArray(Writer out, String listTagName,
+//            String objectTagName, Object[] array) throws IOException {
+//        if (ArrayUtils.isEmpty(array)) {
+//            return;
+//        }
+//        out.write("<" + listTagName + ">");
+//        for (Object obj : array) {
+//            writeObject(out, objectTagName, obj);
+//        }
+//        out.write("</" + listTagName + ">");
+//        out.flush();
+//    }
+//
+//    protected <T> T[] defaultIfEmpty(T[] array, T[] defaultArray) {
+//        if (ArrayUtils.isEmpty(array)) {
+//            return defaultArray;
+//        }
+//        return array;
+//    }
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof AbstractCrawlerConfig)) {
-            return false;
-        }
-        AbstractCrawlerConfig castOther = (AbstractCrawlerConfig) other;
-        return new EqualsBuilder()
-                .append(id, castOther.id)
-                .append(numThreads, castOther.numThreads)
-                .append(workDir, castOther.workDir)
-                .append(maxDocuments, castOther.maxDocuments)
-                .append(stopOnExceptions, castOther.stopOnExceptions)
-                .append(orphansStrategy, castOther.orphansStrategy)
-                .append(crawlDataStoreFactory, castOther.crawlDataStoreFactory)
-                .append(referenceFilters, castOther.referenceFilters)
-                .append(metadataFilters, castOther.metadataFilters)
-                .append(documentFilters, castOther.documentFilters)
-                .append(crawlerListeners, castOther.crawlerListeners)
-                .append(importerConfig, castOther.importerConfig)
-                .append(committer, castOther.committer)
-                .append(documentChecksummer, castOther.documentChecksummer)
-                .append(spoiledReferenceStrategizer, 
-                        castOther.spoiledReferenceStrategizer)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(id)
-                .append(numThreads)
-                .append(workDir)
-                .append(maxDocuments)
-                .append(stopOnExceptions)
-                .append(orphansStrategy)
-                .append(crawlDataStoreFactory)
-                .append(referenceFilters)
-                .append(metadataFilters)
-                .append(documentFilters)
-                .append(crawlerListeners)
-                .append(importerConfig)
-                .append(committer)
-                .append(documentChecksummer)
-                .append(spoiledReferenceStrategizer)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("id", id)
-                .append("numThreads", numThreads)
-                .append("workDir", workDir)
-                .append("maxDocuments", maxDocuments)
-                .append("stopOnExceptions", stopOnExceptions)
-                .append("orphansStrategy", orphansStrategy)
-                .append("crawlDataStoreFactory", crawlDataStoreFactory)
-                .append("referenceFilters", referenceFilters)
-                .append("metadataFilters", metadataFilters)
-                .append("documentFilters", documentFilters)
-                .append("crawlerListeners", crawlerListeners)
-                .append("importerConfig", importerConfig)
-                .append("committer", committer)
-                .append("documentChecksummer", documentChecksummer)
-                .append("spoiledReferenceStrategizer", 
-                        spoiledReferenceStrategizer)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

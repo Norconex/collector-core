@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.apache.commons.configuration.XMLConfiguration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,6 +36,7 @@ import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.commons.lang.file.ContentType;
+import com.norconex.commons.lang.xml.XML;
 
 /**
  * Base class that includes all tests that an implementation of
@@ -48,7 +46,7 @@ public abstract class BaseCrawlDataStoreTest {
 
     @Rule
     public final TemporaryFolder tempFolder = new TemporaryFolder();
-    
+
     private ICrawlDataStore crawlStore;
     private ICrawlerConfig crawlerConfig;
 
@@ -74,7 +72,7 @@ public abstract class BaseCrawlDataStoreTest {
         // the tempFolder is re-created at each test
         crawlStore = createCrawlDataStore(crawlerConfig, tempFolder, false);
     }
-    
+
     @After
     public void tearDown() throws Exception {
         if (crawlStore != null) {
@@ -86,25 +84,23 @@ public abstract class BaseCrawlDataStoreTest {
             String crawlerId, TemporaryFolder tempFolder) {
         AbstractCrawlerConfig config = new AbstractCrawlerConfig() {
             @Override
-            protected void saveCrawlerConfigToXML(Writer out)
-                    throws IOException {
+            protected void saveCrawlerConfigToXML(XML xml) {
             }
             @Override
-            protected void loadCrawlerConfigFromXML(XMLConfiguration xml)
-                    throws IOException {
+            protected void loadCrawlerConfigFromXML(XML xml) {
             }
         };
         config.setId(crawlerId);
         config.setWorkDir(tempFolder.getRoot());
         return config;
     }
-    
+
     protected void resetDatabase(boolean resume) {
         if (crawlStore != null) {
             crawlStore.close();
         }
         crawlStore = createCrawlDataStore(getCrawlerConfig(), getTempfolder(), resume);
-    }    
+    }
     protected void cacheReference(String ref) {
         ICrawlData crawlData = createCrawlData(ref);
         crawlStore.processed(crawlData);
@@ -130,22 +126,22 @@ public abstract class BaseCrawlDataStoreTest {
     }
     protected void setCrawlState(ICrawlData crawlData, CrawlState crawlState) {
         ((BaseCrawlData) crawlData).setState(crawlState);
-        
+
     }
-    
+
     protected abstract ICrawlDataStore createCrawlDataStore(
             ICrawlerConfig config, TemporaryFolder tempFolder, boolean resume);
 
 
     //--- Tests ----------------------------------------------------------------
-    
+
     @Test
     public void testWriteReadNulls() throws Exception {
         String ref = "http://testrefnulls.com";
         ICrawlData dataIn = createCrawlData(ref);
         crawlStore.processed(dataIn);
         moveProcessedToCache();
-        ICrawlData dataOut = (ICrawlData) crawlStore.getCached(ref);
+        ICrawlData dataOut = crawlStore.getCached(ref);
         assertEquals(dataIn, dataOut);
     }
     @Test
@@ -164,7 +160,7 @@ public abstract class BaseCrawlDataStoreTest {
         ICrawlData dataOut = crawlStore.getCached(ref);
         assertEquals(dataIn, dataOut);
     }
-    
+
     @Test
     public void testQueue() throws Exception {
         String ref = "https://www.norconex.com/";
@@ -316,7 +312,7 @@ public abstract class BaseCrawlDataStoreTest {
         resetDatabase(false);
         assertTrue(crawlStore.isCacheEmpty());
     }
-    
+
     /**
      * When instantiating a new impl with the resume option set to false, the
      * previous cache is deleted and the previous processed becomes the cache.

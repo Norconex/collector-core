@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,34 +14,29 @@
  */
 package com.norconex.collector.core;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.crawler.CrawlerConfigLoader;
 import com.norconex.collector.core.crawler.ICrawlerConfig;
-import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
-import com.norconex.jef4.job.IJobErrorListener;
-import com.norconex.jef4.job.IJobLifeCycleListener;
-import com.norconex.jef4.suite.ISuiteLifeCycleListener;
+import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.xml.XML;
+//import com.norconex.jef5.job.IJobErrorListener;
+//import com.norconex.jef5.job.IJobLifeCycleListener;
+//import com.norconex.jef5.suite.ISuiteLifeCycleListener;
 
 /**
  * Base Collector configuration.
@@ -49,44 +44,47 @@ import com.norconex.jef4.suite.ISuiteLifeCycleListener;
  */
 public abstract class AbstractCollectorConfig implements ICollectorConfig {
 
-    private static final Logger LOG = LogManager.getLogger(
+    private static final Logger LOG = LoggerFactory.getLogger(
             AbstractCollectorConfig.class);
-    
+
     /** Default relative directory where logs from Log4j are stored. */
-    public static final String DEFAULT_LOGS_DIR = "./logs";
+    public static final Path DEFAULT_LOGS_DIR = Paths.get("./logs");
     /** Default relative directory where progress files are stored. */
-    public static final String DEFAULT_PROGRESS_DIR = "./progress";
-    
+    public static final Path DEFAULT_PROGRESS_DIR = Paths.get("./progress");
+
+    //TODO still needed?
     private final Class<? extends ICrawlerConfig> crawlerConfigClass;
-    private final String xmlConfigRootTag;
-    
+    //private final String xmlConfigRootTag;
+
     private String id;
-    private ICrawlerConfig[] crawlerConfigs;
-    private String progressDir = DEFAULT_PROGRESS_DIR;
-    private String logsDir = DEFAULT_LOGS_DIR;
-    private ICollectorLifeCycleListener[] collectorListeners;
-    private IJobLifeCycleListener[] jobLifeCycleListeners;
-    private IJobErrorListener[] jobErrorListeners;
-    private ISuiteLifeCycleListener[] suiteLifeCycleListeners;
+    private final List<ICrawlerConfig> crawlerConfigs = new ArrayList<>();
+    private Path progressDir = DEFAULT_PROGRESS_DIR;
+    private Path logsDir = DEFAULT_LOGS_DIR;
+    private final List<ICollectorLifeCycleListener> collectorListeners =
+            new ArrayList<>();
+//    private IJobLifeCycleListener[] jobLifeCycleListeners;
+//    private IJobErrorListener[] jobErrorListeners;
+//    private ISuiteLifeCycleListener[] suiteLifeCycleListeners;
 
     public AbstractCollectorConfig() {
         this((Class<? extends ICrawlerConfig>) null);
     }
     public AbstractCollectorConfig(
             Class<? extends ICrawlerConfig> crawlerConfigClass) {
-        this(crawlerConfigClass, "collector");
-    }
-    public AbstractCollectorConfig(String xmlConfigRootTag) {
-        this(null, xmlConfigRootTag);
-    }
-    public AbstractCollectorConfig(
-            Class<? extends ICrawlerConfig> crawlerConfigClass, 
-            String xmlConfigRootTag) {
-        super();
         this.crawlerConfigClass = crawlerConfigClass;
-        this.xmlConfigRootTag = xmlConfigRootTag;
+//        this(crawlerConfigClass, "collector");
     }
-    
+//    public AbstractCollectorConfig(String xmlConfigRootTag) {
+//        this(null, xmlConfigRootTag);
+//    }
+//    public AbstractCollectorConfig(
+//            Class<? extends ICrawlerConfig> crawlerConfigClass,
+//            String xmlConfigRootTag) {
+//        super();
+//        this.crawlerConfigClass = crawlerConfigClass;
+//        this.xmlConfigRootTag = xmlConfigRootTag;
+//    }
+
 
 	/**
 	 * Gets this collector unique identifier.
@@ -108,15 +106,23 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
     }
 
     @Override
-    public ICrawlerConfig[] getCrawlerConfigs() {
-        return ArrayUtils.clone(crawlerConfigs);
+    public List<ICrawlerConfig> getCrawlerConfigs() {
+        return Collections.unmodifiableList(crawlerConfigs);
     }
     /**
      * Sets crawler configurations.
      * @param crawlerConfigs crawler configurations
      */
     public void setCrawlerConfigs(ICrawlerConfig... crawlerConfigs) {
-        this.crawlerConfigs = ArrayUtils.clone(crawlerConfigs);
+        setCrawlerConfigs(Arrays.asList(crawlerConfigs));
+    }
+    /**
+     * Sets crawler configurations.
+     * @param crawlerConfigs crawler configurations
+     * @since 2.0.0
+     */
+    public void setCrawlerConfigs(List<ICrawlerConfig> crawlerConfigs) {
+        CollectionUtil.setAll(this.crawlerConfigs, crawlerConfigs);
     }
 
     /**
@@ -125,7 +131,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
      * @return progress directory path
      */
     @Override
-    public String getProgressDir() {
+    public Path getProgressDir() {
         return progressDir;
     }
     /**
@@ -133,7 +139,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
      * are stored.
      * @param progressDir progress directory path
      */
-    public void setProgressDir(String progressDir) {
+    public void setProgressDir(Path progressDir) {
         this.progressDir = progressDir;
     }
 
@@ -142,167 +148,149 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
      * @return logs directory path
      */
     @Override
-    public String getLogsDir() {
+    public Path getLogsDir() {
         return logsDir;
     }
     /**
      * Sets the directory location of generated log files.
      * @param logsDir logs directory path
      */
-    public void setLogsDir(String logsDir) {
+    public void setLogsDir(Path logsDir) {
         this.logsDir = logsDir;
     }
 
-    @Override    
-    public ICollectorLifeCycleListener[] getCollectorListeners() {
+    @Override
+    public List<ICollectorLifeCycleListener> getCollectorListeners() {
         return collectorListeners;
     }
     /**
-     * Sets collector life cycle listeners. 
-     * @param collectorListeners collector life cycle listeners. 
+     * Sets collector life cycle listeners.
+     * @param collectorListeners collector life cycle listeners.
      * @since 1.8.0
-     */    
+     */
     public void setCollectorListeners(
             ICollectorLifeCycleListener... collectorListeners) {
-        this.collectorListeners = collectorListeners;
-    }
-
-    @Override
-    public IJobLifeCycleListener[] getJobLifeCycleListeners() {
-        return jobLifeCycleListeners;
+        setCollectorListeners(Arrays.asList(collectorListeners));
     }
     /**
-     * Sets JEF job life cycle listeners. A job typically represents a 
-     * crawler instance. Interacting directly
-     * with the <a href="https://www.norconex.com/jef/api/">JEF API</a>
-     * is normally reserved for more advanced use. 
-     * @param jobLifeCycleListeners JEF job life cycle listeners. 
-     * @since 1.7.0
-     */    
-    public void setJobLifeCycleListeners(
-            IJobLifeCycleListener... jobLifeCycleListeners) {
-        this.jobLifeCycleListeners = jobLifeCycleListeners;
+     * Sets collector life cycle listeners.
+     * @param collectorListeners collector life cycle listeners.
+     * @since 2.0.0
+     */
+    public void setCollectorListeners(
+            List<ICollectorLifeCycleListener> collectorListeners) {
+        CollectionUtil.setAll(this.collectorListeners, collectorListeners);
     }
 
-    @Override
-    public IJobErrorListener[] getJobErrorListeners() {
-        return jobErrorListeners;
-    }
-    /**
-     * Sets JEF error listeners. Interacting directly
-     * with the <a href="https://www.norconex.com/jef/api/">JEF API</a>
-     * is normally reserved for more advanced use. 
-     * @param errorListeners JEF job error listeners
-     * @since 1.7.0
-     */    
-    public void setJobErrorListeners(IJobErrorListener... errorListeners) {
-        this.jobErrorListeners = errorListeners;
-    }
+//    @Override
+//    public IJobLifeCycleListener[] getJobLifeCycleListeners() {
+//        return jobLifeCycleListeners;
+//    }
+//    /**
+//     * Sets JEF job life cycle listeners. A job typically represents a
+//     * crawler instance. Interacting directly
+//     * with the <a href="https://www.norconex.com/jef/api/">JEF API</a>
+//     * is normally reserved for more advanced use.
+//     * @param jobLifeCycleListeners JEF job life cycle listeners.
+//     * @since 1.7.0
+//     */
+//    public void setJobLifeCycleListeners(
+//            IJobLifeCycleListener... jobLifeCycleListeners) {
+//        this.jobLifeCycleListeners = jobLifeCycleListeners;
+//    }
+//
+//    @Override
+//    public IJobErrorListener[] getJobErrorListeners() {
+//        return jobErrorListeners;
+//    }
+//    /**
+//     * Sets JEF error listeners. Interacting directly
+//     * with the <a href="https://www.norconex.com/jef/api/">JEF API</a>
+//     * is normally reserved for more advanced use.
+//     * @param errorListeners JEF job error listeners
+//     * @since 1.7.0
+//     */
+//    public void setJobErrorListeners(IJobErrorListener... errorListeners) {
+//        this.jobErrorListeners = errorListeners;
+//    }
+//
+//    @Override
+//    public ISuiteLifeCycleListener[] getSuiteLifeCycleListeners() {
+//        return suiteLifeCycleListeners;
+//    }
+//    /**
+//     * Sets JEF job suite life cycle listeners.
+//     * A job suite typically represents a collector instance.
+//     * Interacting directly
+//     * with the <a href="https://www.norconex.com/jef/api/">JEF API</a>
+//     * is normally reserved for more advanced use.
+//     * @param suiteLifeCycleListeners JEF suite life cycle listeners
+//     * @since 1.7.0
+//     */
+//    public void setSuiteLifeCycleListeners(
+//            ISuiteLifeCycleListener... suiteLifeCycleListeners) {
+//        this.suiteLifeCycleListeners = suiteLifeCycleListeners;
+//    }
 
     @Override
-    public ISuiteLifeCycleListener[] getSuiteLifeCycleListeners() {
-        return suiteLifeCycleListeners;
-    }
-    /**
-     * Sets JEF job suite life cycle listeners. 
-     * A job suite typically represents a collector instance. 
-     * Interacting directly
-     * with the <a href="https://www.norconex.com/jef/api/">JEF API</a>
-     * is normally reserved for more advanced use. 
-     * @param suiteLifeCycleListeners JEF suite life cycle listeners 
-     * @since 1.7.0
-     */    
-    public void setSuiteLifeCycleListeners(
-            ISuiteLifeCycleListener... suiteLifeCycleListeners) {
-        this.suiteLifeCycleListeners = suiteLifeCycleListeners;
-    }
-    
-    @Override
-    public void saveToXML(Writer out) throws IOException {
-        try {
-            out.flush();
-            EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
-            writer.writeStartElement(xmlConfigRootTag);
-            writer.writeAttributeClass("class", getClass());
-            writer.writeAttribute("id", getId());
-            writer.writeAttributeString("xml:space", "preserve");
-            
-            writer.writeElementString("logsDir", getLogsDir());
-            writer.writeElementString("progressDir", getProgressDir());
-            writer.flush();
+    public void saveToXML(XML xml) {
+        xml.setAttribute("id", getId());
 
-            writeArray(out, "collectorListeners", 
-                    "listener", getCollectorListeners());
-            writeArray(out, "jobLifeCycleListeners", 
-                    "listener", getJobLifeCycleListeners());
-            writeArray(out, "jobErrorListeners", 
-                    "listener", getJobErrorListeners());
-            writeArray(out, "suiteLifeCycleListeners", 
-                    "listener", getSuiteLifeCycleListeners());
-            
-            out.write("<crawlers>");
-            out.flush();
-            if (crawlerConfigs != null) {
-                for (ICrawlerConfig crawlerConfig : crawlerConfigs) {
-                    crawlerConfig.saveToXML(out);
-                    out.flush();
-                }
-            }
-            out.write("</crawlers>");
-            out.flush();
-            
-            saveCollectorConfigToXML(out);
-            
-            writer.writeEndElement();
-            writer.flush();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
-        }   
-        
+        xml.addElement("logsDir", getLogsDir());
+        xml.addElement("progressDir", getProgressDir());
+        xml.addElementList(
+                "collectorListeners", "listener", getCollectorListeners());
+//        writeArray(out, "jobLifeCycleListeners",
+//                "listener", getJobLifeCycleListeners());
+//        writeArray(out, "jobErrorListeners",
+//                "listener", getJobErrorListeners());
+//        writeArray(out, "suiteLifeCycleListeners",
+//                "listener", getSuiteLifeCycleListeners());
+
+        xml.addElementList("crawlers", "crawler", getCrawlerConfigs());
+
+        saveCollectorConfigToXML(xml);
+
+//        System.out.println("XML:\n" + xml.toString(4));
     }
-    protected abstract void saveCollectorConfigToXML(Writer out);
-    
+    protected abstract void saveCollectorConfigToXML(XML xml);
+
     @Override
-    public final void loadFromXML(Reader in) throws IOException {
-        
-        XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
-        String collectorId = xml.getString("[@id]", null);
+    public final void loadFromXML(XML xml) {
+
+        String collectorId = xml.getString("@id", null);
         if (StringUtils.isBlank(collectorId)) {
             throw new CollectorException(
                     "Collector id attribute is mandatory.");
         }
         setId(collectorId);
-        setLogsDir(xml.getString("logsDir", getLogsDir()));
-        setProgressDir(xml.getString("progressDir", getProgressDir()));
-        
-        // Collector listeners
-        ICollectorLifeCycleListener[] collListeners = loadCollectorListeners(
-                xml, "collectorListeners.listener");
-        setCollectorListeners(defaultIfEmpty(collListeners,
-                getCollectorListeners()));
-        
-        // JEF Job listeners
-        IJobLifeCycleListener[] jlcListeners = loadJobLifeCycleListeners(
-                xml, "jobLifeCycleListeners.listener");
-        setJobLifeCycleListeners(defaultIfEmpty(jlcListeners,
-                getJobLifeCycleListeners()));
+        setLogsDir(xml.getPath("logsDir", getLogsDir()));
+        setProgressDir(xml.getPath("progressDir", getProgressDir()));
+        setCollectorListeners(xml.getObjectList(
+                "collectorListeners/listener", getCollectorListeners()));
 
-        // JEF error listeners
-        IJobErrorListener[] jeListeners = loadJobErrorListeners(
-                xml, "jobErrorListeners.listener");
-        setJobErrorListeners(defaultIfEmpty(jeListeners,
-                getJobErrorListeners()));
-
-        // JEF suite listeners
-        ISuiteLifeCycleListener[] suiteListeners = loadSuiteLifeCycleListeners(
-                xml, "suiteLifeCycleListeners.listener");
-        setSuiteLifeCycleListeners(defaultIfEmpty(suiteListeners,
-                getSuiteLifeCycleListeners()));
+//        // JEF Job listeners
+//        IJobLifeCycleListener[] jlcListeners = loadJobLifeCycleListeners(
+//                xml, "jobLifeCycleListeners.listener");
+//        setJobLifeCycleListeners(defaultIfEmpty(jlcListeners,
+//                getJobLifeCycleListeners()));
+//
+//        // JEF error listeners
+//        IJobErrorListener[] jeListeners = loadJobErrorListeners(
+//                xml, "jobErrorListeners.listener");
+//        setJobErrorListeners(defaultIfEmpty(jeListeners,
+//                getJobErrorListeners()));
+//
+//        // JEF suite listeners
+//        ISuiteLifeCycleListener[] suiteListeners = loadSuiteLifeCycleListeners(
+//                xml, "suiteLifeCycleListeners.listener");
+//        setSuiteLifeCycleListeners(defaultIfEmpty(suiteListeners,
+//                getSuiteLifeCycleListeners()));
 
         if (crawlerConfigClass != null) {
-            ICrawlerConfig[] cfgs = new CrawlerConfigLoader(
+            List<ICrawlerConfig> cfgs = new CrawlerConfigLoader(
                     crawlerConfigClass).loadCrawlerConfigs(xml);
-            if (ArrayUtils.isNotEmpty(cfgs)) {
+            if (CollectionUtils.isNotEmpty(cfgs)) {
                 setCrawlerConfigs(cfgs);
             }
         }
@@ -315,165 +303,128 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         }
     }
 
-    private ICollectorLifeCycleListener[] loadCollectorListeners(
-            XMLConfiguration xml, String xmlPath) {
-        List<ICollectorLifeCycleListener> listeners = new ArrayList<>();
-        List<HierarchicalConfiguration> listenerNodes = xml
-                .configurationsAt(xmlPath);
-        for (HierarchicalConfiguration listenerNode : listenerNodes) {
-            ICollectorLifeCycleListener listener = 
-                    XMLConfigurationUtil.newInstance(listenerNode);
-            listeners.add(listener);
-            LOG.info("Collector life cycle listener loaded: " + listener);
-        }
-        return listeners.toArray(new ICollectorLifeCycleListener[] {});
-    }
-    private IJobLifeCycleListener[] loadJobLifeCycleListeners(
-            XMLConfiguration xml, String xmlPath) {
-        List<IJobLifeCycleListener> listeners = new ArrayList<>();
-        List<HierarchicalConfiguration> listenerNodes = xml
-                .configurationsAt(xmlPath);
-        for (HierarchicalConfiguration listenerNode : listenerNodes) {
-            IJobLifeCycleListener listener = 
-                    XMLConfigurationUtil.newInstance(listenerNode);
-            listeners.add(listener);
-            LOG.info("Job life cycle listener loaded: " + listener);
-        }
-        return listeners.toArray(new IJobLifeCycleListener[] {});
-    }
-    private IJobErrorListener[] loadJobErrorListeners(
-            XMLConfiguration xml, String xmlPath) {
-        List<IJobErrorListener> listeners = new ArrayList<>();
-        List<HierarchicalConfiguration> listenerNodes = xml
-                .configurationsAt(xmlPath);
-        for (HierarchicalConfiguration listenerNode : listenerNodes) {
-            IJobErrorListener listener = 
-                    XMLConfigurationUtil.newInstance(listenerNode);
-            listeners.add(listener);
-            LOG.info("Job error listener loaded: " + listener);
-        }
-        return listeners.toArray(new IJobErrorListener[] {});
-    }
-    private ISuiteLifeCycleListener[] loadSuiteLifeCycleListeners(
-            XMLConfiguration xml, String xmlPath) {
-        List<ISuiteLifeCycleListener> listeners = new ArrayList<>();
-        List<HierarchicalConfiguration> listenerNodes = xml
-                .configurationsAt(xmlPath);
-        for (HierarchicalConfiguration listenerNode : listenerNodes) {
-            ISuiteLifeCycleListener listener = 
-                    XMLConfigurationUtil.newInstance(listenerNode);
-            listeners.add(listener);
-            LOG.info("Suite life cycle listener loaded: " + listener);
-        }
-        return listeners.toArray(new ISuiteLifeCycleListener[] {});
-    }    
-    
-    protected abstract void loadCollectorConfigFromXML(XMLConfiguration xml);
+//    private ICollectorLifeCycleListener[] loadCollectorListeners(
+//            XML xml, String xmlPath) {
+//        List<ICollectorLifeCycleListener> listeners = new ArrayList<>();
+//        List<HierarchicalConfiguration> listenerNodes = xml
+//                .configurationsAt(xmlPath);
+//        for (HierarchicalConfiguration listenerNode : listenerNodes) {
+//            ICollectorLifeCycleListener listener =
+//                    XMLConfigurationUtil.newInstance(listenerNode);
+//            listeners.add(listener);
+//            LOG.info("Collector life cycle listener loaded: " + listener);
+//        }
+//        return listeners.toArray(new ICollectorLifeCycleListener[] {});
+//    }
+//    private IJobLifeCycleListener[] loadJobLifeCycleListeners(
+//            XMLConfiguration xml, String xmlPath) {
+//        List<IJobLifeCycleListener> listeners = new ArrayList<>();
+//        List<HierarchicalConfiguration> listenerNodes = xml
+//                .configurationsAt(xmlPath);
+//        for (HierarchicalConfiguration listenerNode : listenerNodes) {
+//            IJobLifeCycleListener listener =
+//                    XMLConfigurationUtil.newInstance(listenerNode);
+//            listeners.add(listener);
+//            LOG.info("Job life cycle listener loaded: " + listener);
+//        }
+//        return listeners.toArray(new IJobLifeCycleListener[] {});
+//    }
+//    private IJobErrorListener[] loadJobErrorListeners(
+//            XMLConfiguration xml, String xmlPath) {
+//        List<IJobErrorListener> listeners = new ArrayList<>();
+//        List<HierarchicalConfiguration> listenerNodes = xml
+//                .configurationsAt(xmlPath);
+//        for (HierarchicalConfiguration listenerNode : listenerNodes) {
+//            IJobErrorListener listener =
+//                    XMLConfigurationUtil.newInstance(listenerNode);
+//            listeners.add(listener);
+//            LOG.info("Job error listener loaded: " + listener);
+//        }
+//        return listeners.toArray(new IJobErrorListener[] {});
+//    }
+//    private ISuiteLifeCycleListener[] loadSuiteLifeCycleListeners(
+//            XMLConfiguration xml, String xmlPath) {
+//        List<ISuiteLifeCycleListener> listeners = new ArrayList<>();
+//        List<HierarchicalConfiguration> listenerNodes = xml
+//                .configurationsAt(xmlPath);
+//        for (HierarchicalConfiguration listenerNode : listenerNodes) {
+//            ISuiteLifeCycleListener listener =
+//                    XMLConfigurationUtil.newInstance(listenerNode);
+//            listeners.add(listener);
+//            LOG.info("Suite life cycle listener loaded: " + listener);
+//        }
+//        return listeners.toArray(new ISuiteLifeCycleListener[] {});
+//    }
 
-    //TODO transfer to utility method in (Nx Commons Lang?) since it is
-    //duplicated code from AbstractCrawlerConfig. 
-    protected void writeObject(
-            Writer out, String tagName, Object object) throws IOException {
-        writeObject(out, tagName, object, false);
-    }
-    //TODO transfer to utility method in (Nx Commons Lang?) since it is
-    //duplicated code from AbstractCrawlerConfig. 
-    protected void writeObject(
-            Writer out, String tagName, Object object, boolean ignore) 
-                    throws IOException {
-        out.flush();
-        if (object == null) {
-            if (ignore) {
-                out.write("<" + tagName + " ignore=\"" + ignore + "\" />");
-            }
-            return;
-        }
-        StringWriter w = new StringWriter();
-        if (object instanceof IXMLConfigurable) {
-            ((IXMLConfigurable) object).saveToXML(w);
-        } else {
-            w.write("<" + tagName + " class=\"" 
-                    + object.getClass().getCanonicalName() + "\" />");
-        }
-        String xml = w.toString();
-        if (ignore) {
-            xml = xml.replace("<" + tagName + " class=\"" , 
-                    "<" + tagName + " ignore=\"true\" class=\"" );
-        }
-        out.write(xml);
-        out.flush();
-    }
-    //TODO transfer to utility method in (Nx Commons Lang?) since it is
-    //duplicated code from AbstractCrawlerConfig. 
-    protected void writeArray(Writer out, String listTagName, 
-            String objectTagName, Object[] array) throws IOException {
-        if (ArrayUtils.isEmpty(array)) {
-            return;
-        }
-        out.write("<" + listTagName + ">"); 
-        for (Object obj : array) {
-            writeObject(out, objectTagName, obj);
-        }
-        out.write("</" + listTagName + ">"); 
-        out.flush();
-    }
-    //TODO transfer to utility method in (Nx Commons Lang?) since it is
-    //duplicated code from AbstractCrawlerConfig. 
-    protected <T> T[] defaultIfEmpty(T[] array, T[] defaultArray) {
-        if (ArrayUtils.isEmpty(array)) {
-            return defaultArray;
-        }
-        return array;
-    }
-    
-    
+    protected abstract void loadCollectorConfigFromXML(XML xml);
+
+//    //TODO transfer to utility method in (Nx Commons Lang?) since it is
+//    //duplicated code from AbstractCrawlerConfig.
+//    protected void writeObject(
+//            Writer out, String tagName, Object object) throws IOException {
+//        writeObject(out, tagName, object, false);
+//    }
+//    //TODO transfer to utility method in (Nx Commons Lang?) since it is
+//    //duplicated code from AbstractCrawlerConfig.
+//    protected void writeObject(
+//            Writer out, String tagName, Object object, boolean ignore)
+//                    throws IOException {
+//        out.flush();
+//        if (object == null) {
+//            if (ignore) {
+//                out.write("<" + tagName + " ignore=\"" + ignore + "\" />");
+//            }
+//            return;
+//        }
+//        StringWriter w = new StringWriter();
+//        if (object instanceof IXMLConfigurable) {
+//            ((IXMLConfigurable) object).saveToXML(w);
+//        } else {
+//            w.write("<" + tagName + " class=\""
+//                    + object.getClass().getCanonicalName() + "\" />");
+//        }
+//        String xml = w.toString();
+//        if (ignore) {
+//            xml = xml.replace("<" + tagName + " class=\"" ,
+//                    "<" + tagName + " ignore=\"true\" class=\"" );
+//        }
+//        out.write(xml);
+//        out.flush();
+//    }
+//    //TODO transfer to utility method in (Nx Commons Lang?) since it is
+//    //duplicated code from AbstractCrawlerConfig.
+//    protected void writeArray(Writer out, String listTagName,
+//            String objectTagName, Object[] array) throws IOException {
+//        if (ArrayUtils.isEmpty(array)) {
+//            return;
+//        }
+//        out.write("<" + listTagName + ">");
+//        for (Object obj : array) {
+//            writeObject(out, objectTagName, obj);
+//        }
+//        out.write("</" + listTagName + ">");
+//        out.flush();
+//    }
+//    //TODO transfer to utility method in (Nx Commons Lang?) since it is
+//    //duplicated code from AbstractCrawlerConfig.
+//    protected <T> T[] defaultIfEmpty(T[] array, T[] defaultArray) {
+//        if (ArrayUtils.isEmpty(array)) {
+//            return defaultArray;
+//        }
+//        return array;
+//    }
+
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof AbstractCollectorConfig)) {
-            return false;
-        }
-        AbstractCollectorConfig castOther = (AbstractCollectorConfig) other;
-        return new EqualsBuilder()
-                .append(crawlerConfigClass, castOther.crawlerConfigClass)
-                .append(id, castOther.id)
-                .append(crawlerConfigs, castOther.crawlerConfigs)
-                .append(progressDir, castOther.progressDir)
-                .append(logsDir, castOther.logsDir)
-                .append(collectorListeners, castOther.collectorListeners)
-                .append(jobLifeCycleListeners, castOther.jobLifeCycleListeners)
-                .append(jobErrorListeners, castOther.jobErrorListeners)
-                .append(suiteLifeCycleListeners, 
-                        castOther.suiteLifeCycleListeners)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(crawlerConfigClass)
-                .append(id)
-                .append(crawlerConfigs)
-                .append(progressDir)
-                .append(logsDir)
-                .append(collectorListeners)
-                .append(jobLifeCycleListeners)
-                .append(jobErrorListeners)
-                .append(suiteLifeCycleListeners)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("crawlerConfigClass", crawlerConfigClass)
-                .append("id", id)
-                .append("crawlerConfigs", crawlerConfigs)
-                .append("progressDir", progressDir)
-                .append("logsDir", logsDir)
-                .append("collectorListeners", collectorListeners)
-                .append("jobLifeCycleListeners", jobLifeCycleListeners)
-                .append("jobErrorListeners", jobErrorListeners)
-                .append("suiteLifeCycleListeners", suiteLifeCycleListeners)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

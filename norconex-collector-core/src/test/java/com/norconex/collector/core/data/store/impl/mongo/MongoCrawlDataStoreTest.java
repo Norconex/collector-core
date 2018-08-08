@@ -1,4 +1,4 @@
-/* Copyright 2013-2017 Norconex Inc.
+/* Copyright 2013-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,14 @@ import com.norconex.collector.core.TestUtil;
 import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.impl.BaseCrawlDataStoreTest;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
+
 
 public class MongoCrawlDataStoreTest extends BaseCrawlDataStoreTest {
 
     private Fongo fongo;
-    
+
+    @Override
     @Before
     public void setup() throws Exception {
         fongo = new Fongo("mongo server 1");
@@ -51,20 +53,20 @@ public class MongoCrawlDataStoreTest extends BaseCrawlDataStoreTest {
 //    @Override
 //    protected ICrawlDataStore createCrawlDataStore(
 //            ICrawlerConfig config, TemporaryFolder tempFolder, boolean resume) {
-//        
+//
 //        MongoConnectionDetails conn = new MongoConnectionDetails();
 //        conn.setDatabaseName("testdb");
 //        conn.setHost("localhost");
 //        conn.setPort(27017);
-//        return new MongoCrawlDataStore("crawl-test", resume, 
+//        return new MongoCrawlDataStore("crawl-test", resume,
 //                conn, new BaseMongoSerializer());
 //    }
 
-    
+
     @Override
     protected ICrawlDataStore createCrawlDataStore(
             ICrawlerConfig config, TemporaryFolder tempFolder, boolean resume) {
-        return new MongoCrawlDataStore(resume, 
+        return new MongoCrawlDataStore(resume,
                 fongo.getMongo(), "crawl-test", new BaseMongoSerializer());
     }
 
@@ -82,12 +84,12 @@ public class MongoCrawlDataStoreTest extends BaseCrawlDataStoreTest {
         assertTrue(crawlStore.isQueued(ref));
         assertEquals(ref, crawlStore.nextQueued().getReference());
     }
-    
+
     @Test
     public void testValidation() throws IOException {
         TestUtil.testValidation(getClass());
     }
-    
+
     @Test
     public void testWriteRead() throws IOException {
         MockMongoCrawlDataStoreFactory f = new MockMongoCrawlDataStoreFactory();
@@ -99,7 +101,6 @@ public class MongoCrawlDataStoreTest extends BaseCrawlDataStoreTest {
         f.getConnectionDetails().setMechanism("MONGODB-CR");
         f.setCachedCollectionName("mycache");
         f.setReferencesCollectionName("myrefs");
-        System.out.println("Writing/Reading this: " + f);
-        XMLConfigurationUtil.assertWriteRead(f);
+        XML.assertWriteRead(f, "crawlDataStoreFactory");
     }
 }

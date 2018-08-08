@@ -38,8 +38,11 @@
         <xs:simpleType>
           <xs:restriction base="xs:string">
             <xs:enumeration value="DELETE"/>
+            <xs:enumeration value="delete"/>
             <xs:enumeration value="PROCESS"/>
+            <xs:enumeration value="process"/>
             <xs:enumeration value="IGNORE"/>
+            <xs:enumeration value="ignore"/>
           </xs:restriction>
         </xs:simpleType>
       </xs:element>

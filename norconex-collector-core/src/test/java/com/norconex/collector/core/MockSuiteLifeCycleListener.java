@@ -1,4 +1,4 @@
-/* Copyright 2016 Norconex Inc.
+/* Copyright 2016-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,36 +14,33 @@
  */
 package com.norconex.collector.core;
 
-import com.norconex.jef4.suite.ISuiteLifeCycleListener;
-import com.norconex.jef4.suite.JobSuite;
+public class MockSuiteLifeCycleListener { // implements ISuiteLifeCycleListener {
 
-public class MockSuiteLifeCycleListener implements ISuiteLifeCycleListener {
+    private final String test = "MockSuiteLifeCycleListener";
 
-    private String test = "MockSuiteLifeCycleListener";
-    
-    @Override
-    public void suiteStopped(JobSuite suite) {
-    }
-
-    @Override
-    public void suiteStopping(JobSuite suite) {
-    }
-
-    @Override
-    public void suiteStarted(JobSuite suite) {
-    }
-
-    @Override
-    public void suiteAborted(JobSuite suite) {
-    }
-
-    @Override
-    public void suiteTerminatedPrematuraly(JobSuite suite) {
-    }
-
-    @Override
-    public void suiteCompleted(JobSuite suite) {
-    }
+//    @Override
+//    public void suiteStopped(JobSuite suite) {
+//    }
+//
+//    @Override
+//    public void suiteStopping(JobSuite suite) {
+//    }
+//
+//    @Override
+//    public void suiteStarted(JobSuite suite) {
+//    }
+//
+//    @Override
+//    public void suiteAborted(JobSuite suite) {
+//    }
+//
+//    @Override
+//    public void suiteTerminatedPrematuraly(JobSuite suite) {
+//    }
+//
+//    @Override
+//    public void suiteCompleted(JobSuite suite) {
+//    }
 
     @Override
     public int hashCode() {
@@ -55,18 +52,23 @@ public class MockSuiteLifeCycleListener implements ISuiteLifeCycleListener {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         MockSuiteLifeCycleListener other = (MockSuiteLifeCycleListener) obj;
         if (test == null) {
-            if (other.test != null)
+            if (other.test != null) {
                 return false;
-        } else if (!test.equals(other.test))
+            }
+        } else if (!test.equals(other.test)) {
             return false;
+        }
         return true;
     }
 

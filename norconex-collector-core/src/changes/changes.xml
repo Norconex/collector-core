@@ -7,6 +7,26 @@
   </properties>
   <body>
 
+    <release version="2.0.0-SNAPSHOT" date="2018-??-??" description="Major release">
+      <action dev="essiembre" type="update">
+        Now using XML class from Norconex Commons lang for loading/saving
+        configuration.
+      </action>
+      <action dev="essiembre" type="update">
+        Lists are now replacing arrays in most places.
+      </action>
+      <action dev="essiembre" type="update">
+        Now using SLF4J for logging.
+      </action>
+      <action dev="essiembre" type="update">
+        Dependency updates: Norconex Importer 3.0.0, Norconex JEF 5.0.0, 
+        Norconex Commons Lang 2.0.0, Norconex Committer 3.0.0. 
+      </action>
+      <action dev="essiembre" type="remove">
+        Removed some of the deprecated code from 1.x. 
+      </action>
+    </release>
+
     <release version="1.9.1" date="2018-07-29" description="Maintenance release">
       <action dev="jmrichardson,essiembre" type="update">
         Significant performance improvement on 

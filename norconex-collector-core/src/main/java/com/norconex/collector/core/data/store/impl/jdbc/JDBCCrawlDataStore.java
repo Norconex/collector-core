@@ -32,8 +32,8 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ArrayListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.AbstractCrawlDataStore;
@@ -42,7 +42,7 @@ import com.norconex.collector.core.data.store.CrawlDataStoreException;
 public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
 
     private static final Logger LOG = 
-            LogManager.getLogger(JDBCCrawlDataStore.class);
+            LoggerFactory.getLogger(JDBCCrawlDataStore.class);
     
     public static final String TABLE_QUEUE = "queue";
     public static final String TABLE_ACTIVE = "active";

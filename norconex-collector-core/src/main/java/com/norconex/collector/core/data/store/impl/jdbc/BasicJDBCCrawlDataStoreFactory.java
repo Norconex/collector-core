@@ -14,12 +14,6 @@
  */
 package com.norconex.collector.core.data.store.impl.jdbc;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -30,7 +24,7 @@ import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.file.FileUtil;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 
 /**
  * <p>
@@ -38,22 +32,22 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  * </p>
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;crawlDataStoreFactory 
+ *  &lt;crawlDataStoreFactory
  *          class="com.norconex.collector.core.data.store.impl.jdbc.BasicJDBCCrawlDataStoreFactory"/&gt;
  * </pre>
- * 
+ *
  * <h4>Usage example:</h4>
  * <p>
  * The following changes the default to use an H2 database.
- * </p> 
+ * </p>
  * <pre>
- *  &lt;crawlDataStoreFactory 
+ *  &lt;crawlDataStoreFactory
  *          class="com.norconex.collector.core.data.store.impl.jdbc.BasicJDBCCrawlDataStoreFactory"/&gt;
  * </pre>
  * @author Pascal Essiembre
  * @since 1.5.0
  */
-public class BasicJDBCCrawlDataStoreFactory 
+public class BasicJDBCCrawlDataStoreFactory
         implements ICrawlDataStoreFactory, IXMLConfigurable {
 
     public BasicJDBCCrawlDataStoreFactory() {
@@ -63,40 +57,41 @@ public class BasicJDBCCrawlDataStoreFactory
     protected IJDBCSerializer createJDBCSerializer() {
         return new BasicJDBCSerializer();
     }
-    
+
     @Override
     public ICrawlDataStore createCrawlDataStore(
             ICrawlerConfig config, boolean resume) {
-        String storeDir = config.getWorkDir().getPath() + "/crawlstore/jdbc/" 
+        String storeDir = config.getWorkDir().getPath() + "/crawlstore/jdbc/"
                 + FileUtil.toSafeFileName(config.getId()) + "/";
         return new JDBCCrawlDataStore(
                 storeDir, resume, createJDBCSerializer());
     }
 
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        // NOOP
+    public void loadFromXML(XML xml) {
+        //NOOP
     }
 
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        try {
-            EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
-            writer.writeStartElement("crawlDataStoreFactory");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
-        }
+    public void saveToXML(XML xml) {
+        //NOOP
+//        try {
+//            EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
+//            writer.writeStartElement("crawlDataStoreFactory");
+//            xml.setAttribute("class", getClass().getCanonicalName());
+//            writer.flush();
+//            writer.close();
+//        } catch (XMLStreamException e) {
+//            throw new IOException("Cannot save as XML.", e);
+//        }
     }
-    
+
     @Override
     public boolean equals(final Object other) {
         if (!(other instanceof BasicJDBCCrawlDataStoreFactory)) {
             return false;
         }
-        BasicJDBCCrawlDataStoreFactory castOther = 
+        BasicJDBCCrawlDataStoreFactory castOther =
                 (BasicJDBCCrawlDataStoreFactory) other;
         return new EqualsBuilder()
                 .append(getClass(), castOther.getClass())
@@ -114,6 +109,6 @@ public class BasicJDBCCrawlDataStoreFactory
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .toString();
-    }    
+    }
 }
 

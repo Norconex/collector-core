@@ -1,4 +1,4 @@
-/* Copyright 2016-2017 Norconex Inc.
+/* Copyright 2016-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.log4j.Level;
+import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Test;
 
 import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.collector.core.crawler.MockCrawlerConfig;
 import com.norconex.collector.core.filter.impl.ExtensionReferenceFilter;
 import com.norconex.committer.core.impl.FileSystemCommitter;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
-import com.norconex.commons.lang.log.CountingConsoleAppender;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.transformer.impl.ReplaceTransformer;
 
 /**
@@ -45,71 +43,64 @@ public class AbstractCollectorTest {
         MockCollectorConfig config = new MockCollectorConfig();
         config.setId("test-collector");
         config.setCollectorListeners(new MockCollectorLifeCycleListener());
-        config.setJobErrorListeners(new MockJobErrorListener());
-        config.setJobLifeCycleListeners(new MockJobLifeCycleListener());
-        config.setSuiteLifeCycleListeners(new MockSuiteLifeCycleListener());
-        
+//        config.setJobErrorListeners(new MockJobErrorListener());
+//        config.setJobLifeCycleListeners(new MockJobLifeCycleListener());
+//        config.setSuiteLifeCycleListeners(new MockSuiteLifeCycleListener());
+
         MockCrawlerConfig crawlerCfg = new MockCrawlerConfig();
         crawlerCfg.setId("myCrawler");
         crawlerCfg.setCommitter(new FileSystemCommitter());
-        
+
         config.setCrawlerConfigs(new ICrawlerConfig[] {crawlerCfg});
-        
-        
-        System.out.println("Writing/Reading this: " + config);
-        XMLConfigurationUtil.assertWriteRead(config);
+
+        XML.assertWriteRead(config, "collector");
     }
-    
+
     @Test
     public void testOverwriteCrawlerDefaults() throws IOException {
         MockCollectorConfig cfg = new MockCollectorConfig();
         try (Reader r = new InputStreamReader(getClass().getResourceAsStream(
                 "overwrite-crawlerDefaults.xml"))) {
-            XMLConfigurationUtil.loadFromXML(cfg, r);
+            new XML(r).configure(cfg);
         }
 
-        MockCrawlerConfig crawlA = 
-                (MockCrawlerConfig) cfg.getCrawlerConfigs()[0];
+        MockCrawlerConfig crawlA =
+                (MockCrawlerConfig) cfg.getCrawlerConfigs().get(0);
         assertEquals("crawlA", 22, crawlA.getNumThreads());
         assertEquals("crawlA", new File("crawlAWorkdir"), crawlA.getWorkDir());
         assertEquals("crawlA", "crawlAFilter", ((ExtensionReferenceFilter)
-                crawlA.getReferenceFilters()[0]).getExtensions());
+                crawlA.getReferenceFilters().get(0)).getExtensions());
         assertEquals("crawlA", "F", ((ReplaceTransformer)
-                crawlA.getImporterConfig().getPreParseHandlers()[0])
+                crawlA.getImporterConfig().getPreParseHandlers().get(0))
                         .getReplacements().get("E"));
-        assertTrue("crawlA", ArrayUtils.isEmpty( 
+        assertTrue("crawlA", CollectionUtils.isEmpty(
                 crawlA.getImporterConfig().getPostParseHandlers()));
         assertEquals("crawlA", "crawlACommitter", ((FileSystemCommitter)
                 crawlA.getCommitter()).getDirectory());
-        
-        MockCrawlerConfig crawlB = 
-                (MockCrawlerConfig) cfg.getCrawlerConfigs()[1];
+
+        MockCrawlerConfig crawlB =
+                (MockCrawlerConfig) cfg.getCrawlerConfigs().get(1);
         assertEquals("crawlB", 1, crawlB.getNumThreads());
         assertEquals("crawlB", new File("defaultWorkdir"), crawlB.getWorkDir());
         assertEquals("crawlB", "defaultFilter", ((ExtensionReferenceFilter)
-                crawlB.getReferenceFilters()[0]).getExtensions());
+                crawlB.getReferenceFilters().get(0)).getExtensions());
         assertEquals("crawlB", "B", ((ReplaceTransformer)
-                crawlB.getImporterConfig().getPreParseHandlers()[0])
+                crawlB.getImporterConfig().getPreParseHandlers().get(0))
                         .getReplacements().get("A"));
         assertEquals("crawlB", "D", ((ReplaceTransformer)
-                crawlB.getImporterConfig().getPostParseHandlers()[0])
+                crawlB.getImporterConfig().getPostParseHandlers().get(0))
                         .getReplacements().get("C"));
         assertEquals("crawlB", "defaultCommitter", ((FileSystemCommitter)
                 crawlB.getCommitter()).getDirectory());
     }
-    
-    
+
+
     @Test
     public void testValidation() throws IOException {
-        CountingConsoleAppender appender = new CountingConsoleAppender();
-        appender.startCountingFor(XMLConfigurationUtil.class, Level.WARN);
         try (Reader r = new InputStreamReader(getClass().getResourceAsStream(
                 "/validation/collector-core-full.xml"))) {
-            XMLConfigurationUtil.loadFromXML(new MockCollectorConfig(), r);
-        } finally {
-            appender.stopCountingFor(XMLConfigurationUtil.class);
+            assertEquals("Validation warnings/errors were found.",
+                    0, new XML(r).configure(new MockCollectorConfig()).size());
         }
-        assertEquals("Validation warnings/errors were found.", 
-                0, appender.getCount());
     }
 }

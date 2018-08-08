@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,64 +14,56 @@
  */
 package com.norconex.collector.core.filter.impl;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.filter.IDocumentFilter;
 import com.norconex.collector.core.filter.IMetadataFilter;
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.handler.filter.AbstractOnMatchFilter;
+import com.norconex.importer.handler.filter.IOnMatchFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 /**
  * <p>
- * Accepts or rejects a reference using regular expression to match 
+ * Accepts or rejects a reference using regular expression to match
  * a metadata field value.
  * </p>
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;filter class="com.norconex.collector.core.filter.impl.RegexMetadataFilter"
- *          onMatch="[include|exclude]" 
+ *          onMatch="[include|exclude]"
  *          caseSensitive="[false|true]"
  *          field="(metadata field to holding the value to match)"&gt;
  *      (regular expression of value to match)
  *  &lt;/filter&gt;
  * </pre>
- * 
+ *
  * <h4>Usage example:</h4>
  * <p>
  * Used in a web context, the following example filters out Zip documents base
- * on HTTP metadata "Content-Type". 
- * </p> 
+ * on HTTP metadata "Content-Type".
+ * </p>
  * <pre>
  *  &lt;filter class="com.norconex.collector.core.filter.impl.RegexMetadataFilter"
  *          onMatch="exclude" field="Content-Type"&gt;
  *      application/zip
- *  &lt;/filter&gt; 
- * </pre> 
- * 
+ *  &lt;/filter&gt;
+ * </pre>
+ *
  * @author Pascal Essiembre
  * @see Pattern
  */
-public class RegexMetadataFilter extends AbstractOnMatchFilter
-        implements IMetadataFilter, IDocumentFilter, IXMLConfigurable {
+public class RegexMetadataFilter implements IOnMatchFilter, IMetadataFilter,
+        IDocumentFilter, IXMLConfigurable {
 
     //TODO use Importer RegexMetadataFilter here?  Catching import exception
 
@@ -79,6 +71,7 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
     private String field;
     private String regex;
     private Pattern cachedPattern;
+    private OnMatch onMatch;
 
     public RegexMetadataFilter() {
         this(null, null, OnMatch.INCLUDE);
@@ -90,7 +83,7 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
         this(header, regex, onMatch, false);
     }
     public RegexMetadataFilter(
-            String header, String regex, 
+            String header, String regex,
             OnMatch onMatch, boolean caseSensitive) {
         super();
         setCaseSensitive(caseSensitive);
@@ -98,7 +91,15 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
         setOnMatch(onMatch);
         setRegex(regex);
     }
-    
+
+    @Override
+    public OnMatch getOnMatch() {
+        return onMatch;
+    }
+    public void setOnMatch(OnMatch onMatch) {
+        this.onMatch = onMatch;
+    }
+
     public String getRegex() {
         return regex;
     }
@@ -151,8 +152,8 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
         }
         cachedPattern = p;
         return p;
-    }    
-    
+    }
+
     @Override
     public boolean acceptDocument(ImporterDocument document) {
         if (document == null) {
@@ -160,74 +161,37 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
         }
         return acceptMetadata(document.getReference(), document.getMetadata());
     }
-    
-    @Override
-    public void loadFromXML(Reader in) {
-        XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
-        setField(xml.getString("[@field]"));
-        setRegex(xml.getString(""));
-        super.loadFromXML(xml);
-        setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
-    }
-    @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("filter");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-            super.saveToXML(writer);
-            writer.writeAttribute("caseSensitive", 
-                    Boolean.toString(caseSensitive));
-            writer.writeAttribute("field", field); 
-            writer.writeCharacters(regex == null ? "" : regex);
-            writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
-        }
-    }
-    
 
     @Override
-    public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-            .appendSuper(super.toString())
-            .append("caseSensitive", caseSensitive)
-            .append("field", field)
-            .append("regex", regex)
-            .toString();
+    public void loadFromXML(XML xml) {
+        setField(xml.getString("@field"));
+        setOnMatch(xml.getEnum(OnMatch.class, "@onMatch", onMatch));
+        setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
+        setRegex(xml.getString("."));
     }
-    
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof RegexMetadataFilter)) {
-            return false;
-        }
-        RegexMetadataFilter other = (RegexMetadataFilter) obj;
-        return new EqualsBuilder()
-            .appendSuper(super.equals(obj))
-            .append(caseSensitive, other.caseSensitive)
-            .append(field, other.field)
-            .append(regex, other.regex)
-            .isEquals();
+    public void saveToXML(XML xml) {
+        xml.setAttribute("field", field);
+        xml.setAttribute("onMatch", onMatch);
+        xml.setAttribute("caseSensitive", caseSensitive);
+        xml.setTextContent(regex);
+        cachedPattern = null;
     }
-    
+
+    @Override
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other, "cachedPattern");
+    }
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-            .appendSuper(super.hashCode())
-            .append(caseSensitive)
-            .append(field)
-            .append(regex)
-            .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this, "cachedPattern");
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .setExcludeFieldNames("cachedPattern")
+                .toString();
     }
 }
 

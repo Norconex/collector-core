@@ -34,8 +34,11 @@
   <xs:simpleType name="strategyType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="DELETE"/>
+      <xs:enumeration value="delete"/>
       <xs:enumeration value="GRACE_ONCE"/>
+      <xs:enumeration value="grace_once"/>
       <xs:enumeration value="IGNORE"/>
+      <xs:enumeration value="ignore"/>
     </xs:restriction>
   </xs:simpleType>
 

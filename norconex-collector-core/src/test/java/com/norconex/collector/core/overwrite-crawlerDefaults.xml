@@ -30,14 +30,14 @@
     </referenceFilters>
     <importer>
       <preParseHandlers>
-        <transformer class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer">
+        <handler class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer">
           <replace><fromValue>A</fromValue><toValue>B</toValue></replace>
-        </transformer>  
+        </handler>  
       </preParseHandlers>
       <postParseHandlers>
-        <transformer class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer">
+        <handler class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer">
           <replace><fromValue>C</fromValue><toValue>D</toValue></replace>
-        </transformer>  
+        </handler>  
       </postParseHandlers>    
     </importer>
     <committer class="com.norconex.committer.core.impl.FileSystemCommitter">
@@ -56,9 +56,9 @@
       </referenceFilters>
       <importer>
         <preParseHandlers>
-          <transformer class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer">
+          <handler class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer">
             <replace><fromValue>E</fromValue><toValue>F</toValue></replace>
-          </transformer>  
+          </handler>  
         </preParseHandlers>
       </importer>
       <committer class="com.norconex.committer.core.impl.FileSystemCommitter">

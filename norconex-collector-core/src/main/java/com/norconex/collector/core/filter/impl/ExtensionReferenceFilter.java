@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,55 +14,47 @@
  */
 package com.norconex.collector.core.filter.impl;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.filter.IDocumentFilter;
 import com.norconex.collector.core.filter.IMetadataFilter;
 import com.norconex.collector.core.filter.IReferenceFilter;
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.handler.filter.AbstractOnMatchFilter;
+import com.norconex.importer.handler.filter.IOnMatchFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 
 /**
  * <p>
  * Filters a reference based on a comma-separated list of extensions.
- * Extensions are typically the last characters of a file name, after the 
+ * Extensions are typically the last characters of a file name, after the
  * last dot.
  * </p>
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;filter class="com.norconex.collector.core.filter.impl.ExtensionReferenceFilter"
- *          onMatch="[include|exclude]" 
+ *          onMatch="[include|exclude]"
  *          caseSensitive="[false|true]" &gt;
  *      (comma-separated list of extensions)
  *  &lt;/filter&gt;
  * </pre>
- * 
+ *
  * <h4>Usage example:</h4>
  * <p>
- * The following example will only accept references with the following 
- * extensions: .html, .htm, .php, and .asp. 
- * </p> 
+ * The following example will only accept references with the following
+ * extensions: .html, .htm, .php, and .asp.
+ * </p>
  * <pre>
  *  &lt;filter class="com.norconex.collector.core.filter.impl.ExtensionReferenceFilter"&gt;
  *      html,htm,php,asp
@@ -70,12 +62,17 @@ import com.norconex.importer.handler.filter.OnMatch;
  * </pre>
  * @author Pascal Essiembre
  */
-public class ExtensionReferenceFilter extends AbstractOnMatchFilter implements 
-        IReferenceFilter, IDocumentFilter, IMetadataFilter, IXMLConfigurable {
+public class ExtensionReferenceFilter implements
+        IOnMatchFilter,
+        IReferenceFilter,
+        IDocumentFilter,
+        IMetadataFilter,
+        IXMLConfigurable {
 
     private boolean caseSensitive;
     private String extensions;
     private String[] extensionParts;
+    private OnMatch onMatch;
 
     public ExtensionReferenceFilter() {
         this(null, OnMatch.INCLUDE, false);
@@ -95,9 +92,19 @@ public class ExtensionReferenceFilter extends AbstractOnMatchFilter implements
     }
 
     @Override
+    public OnMatch getOnMatch() {
+        return onMatch;
+    }
+    public void setOnMatch(OnMatch onMatch) {
+        this.onMatch = onMatch;
+    }
+
+    @Override
     public boolean acceptReference(String reference) {
+        OnMatch safeOnMatch = OnMatch.includeIfNull(onMatch);
+
         if (StringUtils.isBlank(extensions)) {
-            return getOnMatch() == OnMatch.INCLUDE;
+            return safeOnMatch == OnMatch.INCLUDE;
         }
         String referencePath;
         try {
@@ -111,16 +118,16 @@ public class ExtensionReferenceFilter extends AbstractOnMatchFilter implements
 
         for (String ext : extensionParts) {
             if (!isCaseSensitive() && ext.equalsIgnoreCase(refExtension)) {
-                return getOnMatch() == OnMatch.INCLUDE;
+                return safeOnMatch == OnMatch.INCLUDE;
             }
             if (isCaseSensitive() && ext.equals(refExtension)) {
-                return getOnMatch() == OnMatch.INCLUDE;
+                return safeOnMatch == OnMatch.INCLUDE;
             }
         }
-        return getOnMatch() == OnMatch.EXCLUDE;
+        return safeOnMatch == OnMatch.EXCLUDE;
     }
 
-    
+
     /**
      * @return the extensions
      */
@@ -148,31 +155,18 @@ public class ExtensionReferenceFilter extends AbstractOnMatchFilter implements
         }
     }
     @Override
-    public void loadFromXML(Reader in)  {
-        XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
-        setExtensions(xml.getString(""));
-        loadFromXML(xml);
-        setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
+    public void loadFromXML(XML xml)  {
+        setExtensions(xml.getString("."));
+        setOnMatch(xml.getEnum(OnMatch.class, "@onMatch", onMatch));
+        setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
     }
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("filter");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-            saveToXML(writer);
-            writer.writeAttribute("caseSensitive", 
-                    Boolean.toString(caseSensitive));
-            writer.writeCharacters(extensions);
-            writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
-        }
+    public void saveToXML(XML xml) {
+        xml.setAttribute("onMatch", onMatch);
+        xml.setAttribute("caseSensitive", caseSensitive);
+        xml.setTextContent(extensions);
     }
-    
+
     @Override
     public boolean acceptDocument(ImporterDocument document) {
         return acceptReference(document.getReference());
@@ -181,39 +175,18 @@ public class ExtensionReferenceFilter extends AbstractOnMatchFilter implements
     public boolean acceptMetadata(String reference, Properties metadata) {
         return acceptReference(reference);
     }
-    
+
     @Override
-    public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-            .appendSuper(super.toString())
-            .append("extensions", extensions)
-            .append("caseSensitive", caseSensitive)
-            .toString();
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
     }
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-            .appendSuper(super.hashCode())
-            .append(caseSensitive)
-            .append(extensions)
-            .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof ExtensionReferenceFilter)) {
-            return false;
-        }
-        ExtensionReferenceFilter other = (ExtensionReferenceFilter) obj;
-        return new EqualsBuilder()
-            .appendSuper(super.equals(obj))
-            .append(caseSensitive, other.caseSensitive)
-            .append(extensions, other.extensions)
-            .isEquals();
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

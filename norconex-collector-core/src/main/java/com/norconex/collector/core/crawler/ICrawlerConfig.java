@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.norconex.collector.core.crawler;
 
 import java.io.File;
+import java.util.List;
 
 import com.norconex.collector.core.checksum.IDocumentChecksummer;
 import com.norconex.collector.core.crawler.event.ICrawlerEventListener;
@@ -28,21 +29,21 @@ import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.importer.ImporterConfig;
 
 /**
- * Crawler configuration.  Crawlers usually read this configuration just before 
+ * Crawler configuration.  Crawlers usually read this configuration just before
  * they start their execution.  Once execution has started, it is not
  * recommended to change it.
  * @author Pascal Essiembre
  */
 public interface ICrawlerConfig extends IXMLConfigurable {
 
-    enum OrphansStrategy { 
+    enum OrphansStrategy {
         /**
-         * Deleting orphans sends them to the Committer for deletions and 
+         * Deleting orphans sends them to the Committer for deletions and
          * they are removed from the internal reference cache.
          */
         DELETE,
         /**
-         * Processing orphans tries to obtain and process them again, 
+         * Processing orphans tries to obtain and process them again,
          * normally.
          */
         PROCESS,
@@ -52,7 +53,7 @@ public interface ICrawlerConfig extends IXMLConfigurable {
          */
         IGNORE
     }
-    
+
     /**
      * Gets this crawler unique identifier.  Using usual names is
      * perfectly fine (non-alphanumeric characters are OK).
@@ -61,7 +62,7 @@ public interface ICrawlerConfig extends IXMLConfigurable {
     String getId();
 
     /**
-     * Gets the crawler working directory where many files created at 
+     * Gets the crawler working directory where many files created at
      * execution time are stored.
      * @return working directory
      */
@@ -78,7 +79,7 @@ public interface ICrawlerConfig extends IXMLConfigurable {
      * @return maximum number of documents that can be processed
      */
     int getMaxDocuments();
-    
+
     /**
      * Gets the exceptions we want to stop the crawler on.
      * By default the crawler will log exceptions from processing
@@ -91,8 +92,8 @@ public interface ICrawlerConfig extends IXMLConfigurable {
      * @return exceptions that will stop the crawler when encountered
      * @since 1.9.0
      */
-    Class<? extends Exception>[] getStopOnExceptions();
-    
+    List<Class<? extends Exception>> getStopOnExceptions();
+
     /**
      * <p>Gets the strategy to adopt when there are orphans.  Orphans are
      * references that were processed in a previous run, but were not in the
@@ -100,18 +101,18 @@ public interface ICrawlerConfig extends IXMLConfigurable {
      * that were not re-encountered in the current.
      * </p><p>
      * Unless explicitly stated otherwise by an implementing class, the default
-     * strategy is to <code>PROCESS</code> orphans. 
-     * Setting a <code>null</code> value is the same as setting 
+     * strategy is to <code>PROCESS</code> orphans.
+     * Setting a <code>null</code> value is the same as setting
      * <code>IGNORE</code>.
      * </p><p>
-     * Since 1.2.0, unless otherwise stated in implementing classes, 
+     * Since 1.2.0, unless otherwise stated in implementing classes,
      * the default orphan strategy is now <code>PROCESS</code>.
      * </p><p>
      * <b>Be careful:</b> Setting the orphan strategy to <code>DELETE</code>
      * is NOT recommended in most cases. With some collectors, a temporary
      * failure such as a network outage or a web page timing out, may cause
      * some documents not to be crawled. When this happens, unreachable
-     * documents would be considered "orphans" and be deleted while under 
+     * documents would be considered "orphans" and be deleted while under
      * normal circumstances, they should be kept.  Re-processing them
      * (default), is usually the safest approach to confirm they still
      * exist before deleting or updating them.
@@ -119,25 +120,25 @@ public interface ICrawlerConfig extends IXMLConfigurable {
      * @return orphans strategy
      */
     OrphansStrategy getOrphansStrategy();
-    
+
     /**
      * Gets the crawl data store factory a crawler should use.
      * @return crawl data store factory.
      */
     ICrawlDataStoreFactory getCrawlDataStoreFactory();
-    
+
     /**
      * Gets crawler event listeners.
      * @return crawler evetn listeners
      */
-    ICrawlerEventListener[] getCrawlerListeners();
+    List<ICrawlerEventListener> getCrawlerListeners();
 
     /**
      * Gets the Importer module configuration.
      * @return Importer module configuration
      */
     ImporterConfig getImporterConfig();
-    
+
     /**
      * Gets the Committer module configuration.
      * @return Committer module configuration
@@ -148,26 +149,26 @@ public interface ICrawlerConfig extends IXMLConfigurable {
      * Gets the reference filters.
      * @return reference filters
      */
-    IReferenceFilter[] getReferenceFilters();
+    List<IReferenceFilter> getReferenceFilters();
 
     /**
      * Gets the document filters.
      * @return document filters
      */
-    IDocumentFilter[] getDocumentFilters();
+    List<IDocumentFilter> getDocumentFilters();
 
     /**
      * Gets the metadata filters.
      * @return metadata filters
      */
-    IMetadataFilter[] getMetadataFilters();
+    List<IMetadataFilter> getMetadataFilters();
 
     /**
      * Gets the document checksummer.
      * @return document checksummer
      */
     IDocumentChecksummer getDocumentChecksummer();
-    
+
     /**
      * Gets the spoiled state strategy resolver.
      * @return spoiled state strategy resolver

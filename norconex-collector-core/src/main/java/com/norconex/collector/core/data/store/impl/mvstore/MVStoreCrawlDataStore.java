@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 
@@ -36,7 +36,7 @@ import com.norconex.collector.core.data.store.ICrawlDataStore;
 public class MVStoreCrawlDataStore extends AbstractCrawlDataStore {
     
     private static final Logger LOG = 
-            LogManager.getLogger(MVStoreCrawlDataStore.class);
+            LoggerFactory.getLogger(MVStoreCrawlDataStore.class);
     
     private final MVStore store;
     

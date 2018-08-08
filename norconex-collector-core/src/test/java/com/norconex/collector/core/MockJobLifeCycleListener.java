@@ -1,4 +1,4 @@
-/* Copyright 2016 Norconex Inc.
+/* Copyright 2016-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,44 +14,41 @@
  */
 package com.norconex.collector.core;
 
-import com.norconex.jef4.job.IJobLifeCycleListener;
-import com.norconex.jef4.status.IJobStatus;
+public class MockJobLifeCycleListener { //implements IJobLifeCycleListener {
 
-public class MockJobLifeCycleListener implements IJobLifeCycleListener {
+    private final String test = "MockJobLifeCycleListener";
 
-    private String test = "MockJobLifeCycleListener";
-    
-    @Override
-    public void jobStopping(IJobStatus status) {
-    }
-
-    @Override
-    public void jobStopped(IJobStatus status) {
-    }
-
-    @Override
-    public void jobStarted(IJobStatus status) {
-    }
-
-    @Override
-    public void jobResumed(IJobStatus status) {
-    }
-
-    @Override
-    public void jobSkipped(IJobStatus status) {
-    }
-
-    @Override
-    public void jobProgressed(IJobStatus status) {
-    }
-
-    @Override
-    public void jobTerminatedPrematuraly(IJobStatus status) {
-    }
-
-    @Override
-    public void jobCompleted(IJobStatus status) {
-    }
+//    @Override
+//    public void jobStopping(JobStatus status) {
+//    }
+//
+//    @Override
+//    public void jobStopped(JobStatus status) {
+//    }
+//
+//    @Override
+//    public void jobStarted(JobStatus status) {
+//    }
+//
+//    @Override
+//    public void jobResumed(JobStatus status) {
+//    }
+//
+//    @Override
+//    public void jobSkipped(JobStatus status) {
+//    }
+//
+//    @Override
+//    public void jobProgressed(JobStatus status) {
+//    }
+//
+//    @Override
+//    public void jobTerminatedPrematuraly(JobStatus status) {
+//    }
+//
+//    @Override
+//    public void jobCompleted(JobStatus status) {
+//    }
 
     @Override
     public int hashCode() {
@@ -63,18 +60,23 @@ public class MockJobLifeCycleListener implements IJobLifeCycleListener {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         MockJobLifeCycleListener other = (MockJobLifeCycleListener) obj;
         if (test == null) {
-            if (other.test != null)
+            if (other.test != null) {
                 return false;
-        } else if (!test.equals(other.test))
+            }
+        } else if (!test.equals(other.test)) {
             return false;
+        }
         return true;
     }
 

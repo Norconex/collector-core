@@ -17,8 +17,8 @@ package com.norconex.collector.core.pipeline;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import com.norconex.collector.core.crawler.event.CrawlerEvent;
 import com.norconex.collector.core.data.BaseCrawlData;
@@ -31,7 +31,7 @@ import com.norconex.collector.core.data.CrawlState;
 public final class ChecksumStageUtil {
 
     private static final Logger LOG = 
-            LogManager.getLogger(ChecksumStageUtil.class);
+            LoggerFactory.getLogger(ChecksumStageUtil.class);
     
     private ChecksumStageUtil() {
         super();

@@ -14,13 +14,6 @@
  */
 package com.norconex.collector.core.data.store.impl.mongo;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-
-import javax.xml.stream.XMLStreamException;
-
-import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -31,10 +24,9 @@ import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 
 /**
  * <p>Mongo implementation of {@link ICrawlDataStore}.</p>
@@ -104,7 +96,7 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  * </p>
  * <h3>Authentication mechanism</h3>
  * <p>
- * As of 1.8.1, it is now possible to specify the MongoDB authentication 
+ * As of 1.8.1, it is now possible to specify the MongoDB authentication
  * mechanism to use.  The following are supported:
  * </p>
  * <ul>
@@ -112,9 +104,9 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  *  <li>SCRAM-SHA-1</li>
  * </ul>
  * <p>
- * When no mechanism is specified, the default mechanism will be 
- * the Challenge Response (MONGODB-CR) for MongoDB 2 and and 
- * SCRAM SHA1 (SCRAM-SHA-1) for MongoDB 3+. 
+ * When no mechanism is specified, the default mechanism will be
+ * the Challenge Response (MONGODB-CR) for MongoDB 2 and and
+ * SCRAM SHA1 (SCRAM-SHA-1) for MongoDB 3+.
  * The following is an example forcing MONGODB-CR authentication:
  * <pre>
  *      &lt;username&gt;joe_user&lt;/username&gt;
@@ -123,8 +115,8 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  * </pre>
  *
  * <p>
- * As of 1.9.0, you can define your own collection names with 
- * {@link #setReferencesCollectionName(String)} and 
+ * As of 1.9.0, you can define your own collection names with
+ * {@link #setReferencesCollectionName(String)} and
  * {@link #setCachedCollectionName(String)}.
  * </p>
  *
@@ -136,11 +128,11 @@ public abstract class AbstractMongoCrawlDataStoreFactory
 
     private final MongoConnectionDetails connDetails =
             new MongoConnectionDetails();
-    private String referencesCollectionName = 
+    private String referencesCollectionName =
             MongoCrawlDataStore.DEFAULT_REFERENCES_COL_NAME;
-    private String cachedCollectionName = 
+    private String cachedCollectionName =
             MongoCrawlDataStore.DEFAULT_CACHED_COL_NAME;
-    
+
     @Override
     public ICrawlDataStore createCrawlDataStore(
             ICrawlerConfig config, boolean resume) {
@@ -193,9 +185,8 @@ public abstract class AbstractMongoCrawlDataStoreFactory
     protected abstract IMongoSerializer createMongoSerializer();
 
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
-        connDetails.setPort(xml.getInt("port", connDetails.getPort()));
+    public void loadFromXML(XML xml) {
+        connDetails.setPort(xml.getInteger("port", connDetails.getPort()));
         connDetails.setHost(xml.getString("host", connDetails.getHost()));
         connDetails.setDatabaseName(
                 xml.getString("dbname", connDetails.getDatabaseName()));
@@ -223,38 +214,35 @@ public abstract class AbstractMongoCrawlDataStoreFactory
     }
 
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        try {
-            EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
-            writer.writeStartElement("crawlDataStoreFactory");
-            writer.writeAttribute("class", getClass().getCanonicalName());
+    public void saveToXML(XML xml) {
+//    try {
+//            EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
+//            writer.writeStartElement("crawlDataStoreFactory");
+//            xml.setAttribute("class", getClass().getCanonicalName());
 
-            writer.writeElementInteger("port", connDetails.getPort());
-            writer.writeElementString("host", connDetails.getHost());
-            writer.writeElementString("dbname", connDetails.getDatabaseName());
-            writer.writeElementString("username", connDetails.getUsername());
-            writer.writeElementString("password", connDetails.getPassword());
-            writer.writeElementString("mechanism", connDetails.getMechanism());
-            writer.writeElementString(
-                    "cachedCollectionName", getCachedCollectionName());
-            writer.writeElementString(
-                    "referencesCollectionName", getReferencesCollectionName());
+        xml.addElement("port", connDetails.getPort());
+        xml.addElement("host", connDetails.getHost());
+        xml.addElement("dbname", connDetails.getDatabaseName());
+        xml.addElement("username", connDetails.getUsername());
+        xml.addElement("password", connDetails.getPassword());
+        xml.addElement("mechanism", connDetails.getMechanism());
+        xml.addElement(
+                "cachedCollectionName", getCachedCollectionName());
+        xml.addElement(
+                "referencesCollectionName", getReferencesCollectionName());
 
-            // Encrypted password:
-            EncryptionKey key = connDetails.getPasswordKey();
-            if (key != null) {
-                writer.writeElementString("passwordKey", key.getValue());
-                if (key.getSource() != null) {
-                    writer.writeElementString("passwordKeySource",
-                            key.getSource().name().toLowerCase());
-                }
+        // Encrypted password:
+        EncryptionKey key = connDetails.getPasswordKey();
+        if (key != null) {
+            xml.addElement("passwordKey", key.getValue());
+            if (key.getSource() != null) {
+                xml.addElement("passwordKeySource",
+                        key.getSource().name().toLowerCase());
             }
-
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
         }
+//        } catch (XMLStreamException e) {
+//            throw new IOException("Cannot save as XML.", e);
+//        }
     }
 
     @Override
@@ -266,7 +254,7 @@ public abstract class AbstractMongoCrawlDataStoreFactory
                 (AbstractMongoCrawlDataStoreFactory) other;
         return new EqualsBuilder()
                 .append(connDetails, castOther.connDetails)
-                .append(referencesCollectionName, 
+                .append(referencesCollectionName,
                         castOther.referencesCollectionName)
                 .append(cachedCollectionName, castOther.cachedCollectionName)
                 .isEquals();

@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -37,12 +38,12 @@ import javax.management.ObjectName;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.CollectorException;
 import com.norconex.collector.core.crawler.ICrawlerConfig.OrphansStrategy;
@@ -62,57 +63,59 @@ import com.norconex.committer.core.ICommitter;
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory;
-import com.norconex.commons.lang.time.DurationUtil;
+import com.norconex.commons.lang.time.DurationFormatter;
 import com.norconex.importer.Importer;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.response.ImporterResponse;
-import com.norconex.jef4.job.AbstractResumableJob;
-import com.norconex.jef4.status.IJobStatus;
-import com.norconex.jef4.status.JobStatusUpdater;
-import com.norconex.jef4.suite.JobSuite;
+import com.norconex.jef5.job.AbstractResumableJob;
+import com.norconex.jef5.status.JobStatus;
+import com.norconex.jef5.status.JobStatusUpdater;
+import com.norconex.jef5.suite.JobSuite;
 
 /**
  * <p>Abstract crawler implementation providing a common base to building
  * crawlers.</p>
- * 
+ *
  * <p>As of 1.6.1, JMX support is disabled by default.  To enable it,
  * set the system property "enableJMX" to <code>true</code>.  You can do so
- * by adding this to your Java launch command: 
+ * by adding this to your Java launch command:
  * </p>
  * <pre>
  *     -DenableJMX=true
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  */
-public abstract class AbstractCrawler 
+//TODO document that logger should have thread name instead of explicitely
+// adding id everywhere when logging?
+public abstract class AbstractCrawler
         extends AbstractResumableJob implements ICrawler {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(AbstractCrawler.class);
+    private static final Logger LOG =
+            LoggerFactory.getLogger(AbstractCrawler.class);
 
     private static final int DOUBLE_PROGRESS_SCALE = 4;
     private static final int DOUBLE_PERCENT_SCALE = -2;
     private static final int MINIMUM_DELAY = 1;
-    private static final long STATUS_LOGGING_INTERVAL = 
+    private static final long STATUS_LOGGING_INTERVAL =
             TimeUnit.SECONDS.toMillis(5);
-    
-    private final CopyIfNullBeanUtilsBean nullAwareBeanUtils = 
+
+    private final CopyIfNullBeanUtilsBean nullAwareBeanUtils =
             new CopyIfNullBeanUtilsBean();
     private final ICrawlerConfig config;
     private CrawlerEventManager crawlerEventManager;
     private Importer importer;
     private CachedStreamFactory streamFactory;
-    
+
     private boolean stopped;
     // This processedCount does not take into account alternate references such
-    // as redirects. It is a cleaner representation for end-users and speed 
-    // things a bit bit not having to obtain that value from the database at 
+    // as redirects. It is a cleaner representation for end-users and speed
+    // things a bit bit not having to obtain that value from the database at
     // every progress change.,
     private int processedCount;
     private long lastStatusLoggingTime;
-    
+
     /**
      * Constructor.
      * @param config crawler configuration
@@ -125,7 +128,7 @@ public abstract class AbstractCrawler
     public String getId() {
         return config.getId();
     }
-    
+
     /**
      * Whether the crawler job was stopped.
      * @return <code>true</code> if stopped
@@ -133,23 +136,23 @@ public abstract class AbstractCrawler
     public boolean isStopped() {
         return stopped;
     }
-    
+
     @Override
-    public void stop(IJobStatus jobStatus, JobSuite suite) {
+    public void stop(JobStatus jobStatus, JobSuite suite) {
         fireCrawlerEvent(CrawlerEvent.CRAWLER_STOPPING, null, this);
         stopped = true;
-        LOG.info(getId() + ": Stopping the crawler.");
+        LOG.info("{}: Stopping the crawler.", getId());
     }
-    
+
     @Override
     public Importer getImporter() {
         return importer;
     }
-    
+
     public CachedStreamFactory getStreamFactory() {
         return streamFactory;
     }
-    
+
     /**
      * Gets the crawler configuration
      * @return the crawler configuration
@@ -172,12 +175,12 @@ public abstract class AbstractCrawler
     public File getCrawlerDownloadDir() {
         return new File(getBaseDownloadDir(), getCrawlerConfig().getId());
     }
-    
+
     @Override
     public CrawlerEventManager getCrawlerEventManager() {
         return crawlerEventManager;
     }
-    
+
     @Override
     protected void startExecution(
             JobStatusUpdater statusUpdater, JobSuite suite) {
@@ -198,11 +201,11 @@ public abstract class AbstractCrawler
             throw new CollectorException("Cannot create working directory: "
                     + config.getWorkDir(), e);
         }
-        
+
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         ICrawlDataStore crawlDataStore = createCrawlDataStore(resume);
-        
+
         this.crawlerEventManager = new CrawlerEventManager(
                 this, getCrawlerConfig().getCrawlerListeners());
         importer = new Importer(getCrawlerConfig().getImporterConfig());
@@ -211,7 +214,7 @@ public abstract class AbstractCrawler
         if (Boolean.getBoolean("enableJMX")) {
             registerMonitoringMbean(crawlDataStore);
         }
-        
+
         try {
             prepareExecution(statusUpdater, suite, crawlDataStore, resume);
             //TODO move this code to a config validator class?
@@ -228,9 +231,11 @@ public abstract class AbstractCrawler
             execute(statusUpdater, suite, crawlDataStore);
         } finally {
             stopWatch.stop();
-            LOG.info(getId() + ": Crawler executed in "
-                    + DurationUtil.formatLong(
-                            Locale.ENGLISH, stopWatch.getTime()) + ".");
+            if (LOG.isInfoEnabled()) {
+                LOG.info("{}: Crawler executed in {}.",
+                        getId(), DurationFormatter.FULL.withLocale(
+                                Locale.ENGLISH).format(stopWatch.getTime()));
+            }
             try {
                 cleanupExecution(statusUpdater, suite, crawlDataStore);
             } finally {
@@ -238,45 +243,44 @@ public abstract class AbstractCrawler
             }
         }
     }
-    
+
     protected ICrawlDataStore createCrawlDataStore(boolean resume) {
         return config.getCrawlDataStoreFactory().createCrawlDataStore(
                 config, resume);
     }
-    
+
     protected abstract void prepareExecution(
-            JobStatusUpdater statusUpdater, JobSuite suite, 
+            JobStatusUpdater statusUpdater, JobSuite suite,
             ICrawlDataStore refStore, boolean resume);
 
     protected abstract void cleanupExecution(
-            JobStatusUpdater statusUpdater, JobSuite suite, 
+            JobStatusUpdater statusUpdater, JobSuite suite,
             ICrawlDataStore refStore);
 
-    
+
     protected void execute(JobStatusUpdater statusUpdater,
             JobSuite suite, ICrawlDataStore crawlDataStore) {
 
         //--- Process start/queued references ----------------------------------
-        LOG.info(getId() + ": Crawling references...");
-        ImporterPipelineContext contextPrototype = 
+        LOG.info("{}: Crawling references...", getId());
+        ImporterPipelineContext contextPrototype =
                 new ImporterPipelineContext(this, crawlDataStore);
         processReferences(statusUpdater, suite, contextPrototype);
 
         if (!isStopped()) {
             handleOrphans(crawlDataStore, statusUpdater, suite);
         }
-        
+
         ICommitter committer = getCrawlerConfig().getCommitter();
         if (committer != null) {
-            LOG.info(getId() + ": Crawler " 
-                    + (isStopped() ? "stopping" : "finishing")
-                    + ": committing documents.");
+            LOG.info("{}: Crawler {}: committing documents.",
+                    getId(), (isStopped() ? "stopping" : "finishing"));
             committer.commit();
         }
 
-        LOG.info(getId() + ": " + processedCount + " reference(s) processed.");
+        LOG.info("{}: {} reference(s) processed.", getId(), processedCount);
 
-        LOG.debug(getId() + ": Removing empty directories");
+        LOG.debug("{}: Removing empty directories", getId());
         FileUtil.deleteEmptyDirs(getCrawlerDownloadDir());
 
         if (!isStopped()) {
@@ -287,17 +291,17 @@ public abstract class AbstractCrawler
         LOG.info(getId() + ": Crawler "
                 + (isStopped() ? "stopped." : "completed."));
     }
-    
+
     protected void handleOrphans(ICrawlDataStore crawlStore,
             JobStatusUpdater statusUpdater, JobSuite suite) {
-        
+
         OrphansStrategy strategy = config.getOrphansStrategy();
         if (strategy == null) {
             // null is same as ignore
             strategy = OrphansStrategy.IGNORE;
         }
 
-        // If PROCESS, we do not care to validate if really orphan since 
+        // If PROCESS, we do not care to validate if really orphan since
         // all cache items will be reprocessed regardless
         if (strategy == OrphansStrategy.PROCESS) {
             reprocessCacheOrphans(crawlStore, statusUpdater, suite);
@@ -310,22 +314,22 @@ public abstract class AbstractCrawler
         // else, ignore (i.e. don't do anything)
         //TODO log how many where ignored (cache count)
     }
-    
+
     protected boolean isMaxDocuments() {
-        return getCrawlerConfig().getMaxDocuments() > -1 
+        return getCrawlerConfig().getMaxDocuments() > -1
                 && processedCount >= getCrawlerConfig().getMaxDocuments();
     }
 
     protected void reprocessCacheOrphans(
-            ICrawlDataStore crawlDataStore, 
+            ICrawlDataStore crawlDataStore,
             JobStatusUpdater statusUpdater, JobSuite suite) {
         if (isMaxDocuments()) {
             LOG.info(getId() + ": Max documents reached. "
                     + "Not reprocessing orphans (if any).");
             return;
         }
-        LOG.info(getId() + ": Reprocessing any cached/orphan references...");
-        
+        LOG.info("{}: Reprocessing any cached/orphan references...", getId());
+
         long count = 0;
         Iterator<ICrawlData> it = crawlDataStore.getCacheIterator();
         if (it != null) {
@@ -334,21 +338,21 @@ public abstract class AbstractCrawler
                 executeQueuePipeline(crawlData, crawlDataStore);
                 count++;
             }
-            ImporterPipelineContext contextPrototype = 
+            ImporterPipelineContext contextPrototype =
                     new ImporterPipelineContext(this, crawlDataStore);
             contextPrototype.setOrphan(true);
             processReferences(statusUpdater, suite, contextPrototype);
         }
-        LOG.debug(getId() + ": Reprocessed " + count 
-                + " cached/orphan references...");
+        LOG.debug("{}: Reprocessed {} cached/orphan references.",
+                getId(), count);
     }
-    
+
     protected abstract void executeQueuePipeline(
             ICrawlData crawlData, ICrawlDataStore crawlDataStore);
-    
-    protected void deleteCacheOrphans(ICrawlDataStore crawlDataStore, 
+
+    protected void deleteCacheOrphans(ICrawlDataStore crawlDataStore,
             JobStatusUpdater statusUpdater, JobSuite suite) {
-        LOG.info(getId() + ": Deleting orphan references (if any)...");
+        LOG.info("{}: Deleting orphan references (if any)...", getId());
         long count = 0;
         Iterator<ICrawlData> it = crawlDataStore.getCacheIterator();
         if (it != null && it.hasNext()) {
@@ -356,29 +360,28 @@ public abstract class AbstractCrawler
                 crawlDataStore.queue(it.next());
                 count++;
             }
-            ImporterPipelineContext contextPrototype = 
+            ImporterPipelineContext contextPrototype =
                     new ImporterPipelineContext(this, crawlDataStore);
             contextPrototype.setDelete(true);
             processReferences(statusUpdater, suite, contextPrototype);
         }
-        LOG.info(getId() + ": Deleted " + count + " orphan references...");
+        LOG.info("{}: Deleted {} orphan references.", getId(), count);
     }
-    
-    
+
+
     protected void processReferences(
-            final JobStatusUpdater statusUpdater, 
+            final JobStatusUpdater statusUpdater,
             final JobSuite suite,
             final ImporterPipelineContext contextPrototype) {
 
-    
+
         int numThreads = getCrawlerConfig().getNumThreads();
         final CountDownLatch latch = new CountDownLatch(numThreads);
         ExecutorService pool = Executors.newFixedThreadPool(numThreads);
 
         for (int i = 0; i < numThreads; i++) {
             final int threadIndex = i + 1;
-            LOG.debug(getId() 
-                    + ": Crawler thread #" + threadIndex + " started.");
+            LOG.debug("{}: Crawler thread #{} started.", getId(), threadIndex);
             pool.execute(new ProcessReferencesRunnable(
                     suite, statusUpdater, latch, contextPrototype));
         }
@@ -391,23 +394,23 @@ public abstract class AbstractCrawler
              throw new CollectorException(e);
         }
     }
- 
+
     // return <code>true</code> if more references to process
     protected boolean processNextReference(
-            final JobStatusUpdater statusUpdater, 
+            final JobStatusUpdater statusUpdater,
             final ImporterPipelineContext context) {
         if (!context.isDelete() && isMaxDocuments()) {
-            LOG.info(getId() + ": Maximum documents reached: " 
-                    + getCrawlerConfig().getMaxDocuments());
+            LOG.info("{}: Maximum documents reached: {}",
+                    getId(), getCrawlerConfig().getMaxDocuments());
             return false;
         }
         ICrawlDataStore crawlStore = context.getCrawlDataStore();
-        
+
         BaseCrawlData queuedCrawlData = (BaseCrawlData) crawlStore.nextQueued();
         context.setCrawlData(queuedCrawlData);
-        
+
         if (LOG.isTraceEnabled()) {
-            LOG.trace(getId() + " Processing next reference from Queue: " 
+            LOG.trace(getId() + " Processing next reference from Queue: "
                     + queuedCrawlData);
         }
         if (queuedCrawlData != null) {
@@ -420,17 +423,17 @@ public abstract class AbstractCrawler
             setProgress(statusUpdater, crawlStore);
             if (LOG.isDebugEnabled()) {
                 watch.stop();
-                LOG.debug(getId() + ": " + watch.toString() 
+                LOG.debug(getId() + ": " + watch.toString()
                         + " to process: " + queuedCrawlData.getReference());
             }
         } else {
             int activeCount = crawlStore.getActiveCount();
             boolean queueEmpty = crawlStore.isQueueEmpty();
             if (LOG.isTraceEnabled()) {
-                LOG.trace(getId() 
-                        + " Number of references currently being processed: "
-                        + activeCount);
-                LOG.trace(getId() + " Is reference queue empty? " + queueEmpty);
+                LOG.trace("{} Number of references currently being "
+                        + "processed: {}", getId(), activeCount);
+                LOG.trace("{} Is reference queue empty? {}",
+                        getId(), queueEmpty);
             }
             if (activeCount == 0 && queueEmpty) {
                 return false;
@@ -439,35 +442,35 @@ public abstract class AbstractCrawler
         }
         return true;
     }
-    
+
     private void registerMonitoringMbean(ICrawlDataStore crawlDataStore) {
         try {
             MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-            String objName = "com.norconex.collector.crawler:type=" + 
+            String objName = "com.norconex.collector.crawler:type=" +
                     getCrawlerConfig().getId();
-            LOG.info("Adding MBean for JMX monitoring: " + objName);
-            ObjectName name = new ObjectName(objName); 
-            Monitoring mbean = new Monitoring(crawlDataStore); 
+            LOG.info("Adding MBean for JMX monitoring: {}", objName);
+            ObjectName name = new ObjectName(objName);
+            Monitoring mbean = new Monitoring(crawlDataStore);
             mbs.registerMBean(mbean, name);
-        } catch (MalformedObjectNameException | 
-                 InstanceAlreadyExistsException | 
-                 MBeanRegistrationException | 
+        } catch (MalformedObjectNameException |
+                 InstanceAlreadyExistsException |
+                 MBeanRegistrationException |
                  NotCompliantMBeanException e) {
             throw new CollectorException(e);
         }
     }
-    
+
     private void setProgress(
             JobStatusUpdater statusUpdater, ICrawlDataStore db) {
         int queued = db.getQueueSize();
         int processed = processedCount;
         int total = queued + processed;
-        
+
         double progress = 0;
-        
+
         if (total != 0) {
             progress = BigDecimal.valueOf(processed)
-                    .divide(BigDecimal.valueOf(total), 
+                    .divide(BigDecimal.valueOf(total),
                             DOUBLE_PROGRESS_SCALE, RoundingMode.DOWN)
                     .doubleValue();
         }
@@ -477,49 +480,49 @@ public abstract class AbstractCrawler
                 NumberFormat.getIntegerInstance().format(processed)
                 + " references processed out of "
                 + NumberFormat.getIntegerInstance().format(total));
-        
+
         if (LOG.isInfoEnabled()) {
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastStatusLoggingTime > STATUS_LOGGING_INTERVAL) {
                 lastStatusLoggingTime = currentTime;
                 int percent = BigDecimal.valueOf(progress).movePointLeft(
                         DOUBLE_PERCENT_SCALE).intValue();
-                LOG.info(getId() + ": " + percent + "% completed (" 
+                LOG.info(getId() + ": " + percent + "% completed ("
                         + processed + " processed/" + total + " total)");
             }
         }
     }
-    
+
     //TODO given latest changes in implementing methods, shall we only consider
     //using generics instead of having this wrapping method?
     protected abstract ImporterDocument wrapDocument(
             ICrawlData crawlData, ImporterDocument document);
     protected void initCrawlData(
-            ICrawlData crawlData, 
-            ICrawlData cachedCrawlData, 
+            ICrawlData crawlData,
+            ICrawlData cachedCrawlData,
             ImporterDocument document) {
-        // default does nothing 
+        // default does nothing
     }
-    
+
     private void processNextQueuedCrawlData(ImporterPipelineContext context) {
-        
+
         BaseCrawlData crawlData = context.getCrawlData();
         ICrawlDataStore crawlDataStore = context.getCrawlDataStore();
-        
+
         String reference = crawlData.getReference();
         ImporterDocument doc = wrapDocument(crawlData, new ImporterDocument(
                 crawlData.getReference(), getStreamFactory().newInputStream()));
         context.setDocument(doc);
-        
+
         //TODO create a composite object that has crawler, crawlData,
         // cachedCrawlData, ... To reduce the number of arguments passed around.
         // It could potentially be a base class for pipeline contexts too.
-        BaseCrawlData cachedCrawlData = 
+        BaseCrawlData cachedCrawlData =
                 (BaseCrawlData) crawlDataStore.getCached(reference);
         context.setCachedCrawlData(cachedCrawlData);
-        
+
         doc.getMetadata().setBoolean(
-                CollectorMetadata.COLLECTOR_IS_CRAWL_NEW, 
+                CollectorMetadata.COLLECTOR_IS_CRAWL_NEW,
                 cachedCrawlData == null);
 
         initCrawlData(crawlData, cachedCrawlData, doc);
@@ -532,7 +535,7 @@ public abstract class AbstractCrawler
                 return;
             }
             if (LOG.isDebugEnabled()) {
-                LOG.debug(getId() + ": Processing reference: " + reference);
+                LOG.debug("{}: Processing reference: {}", getId(), reference);
             }
 
             ImporterResponse response = executeImporterPipeline(context);
@@ -544,11 +547,11 @@ public abstract class AbstractCrawler
                 if (crawlData.getState().isNewOrModified()) {
                     crawlData.setState(CrawlState.REJECTED);
                 }
-                //TODO Fire an event here? If we get here, the importer did 
+                //TODO Fire an event here? If we get here, the importer did
                 //not kick in,
-                //so do not fire REJECTED_IMPORT (like it used to). 
+                //so do not fire REJECTED_IMPORT (like it used to).
                 //Errors should have fired
-                //something already so do not fire two REJECTED... but 
+                //something already so do not fire two REJECTED... but
                 //what if a previous issue did not fire a REJECTED_*?
                 //This should not happen, but keep an eye on that.
                 //OR do we want to always fire REJECTED_IMPORT on import failure
@@ -558,25 +561,25 @@ public abstract class AbstractCrawler
                         crawlData, crawlDataStore, doc, cachedCrawlData);
             }
         } catch (Throwable e) {
-            //TODO do we really want to catch anything other than 
-            // HTTPFetchException?  In case we want special treatment to the 
+            //TODO do we really want to catch anything other than
+            // HTTPFetchException?  In case we want special treatment to the
             // class?
             crawlData.setState(CrawlState.ERROR);
             fireCrawlerEvent(CrawlerEvent.REJECTED_ERROR, crawlData, e);
             if (LOG.isDebugEnabled()) {
-                LOG.info(getId() + ": Could not process document: " + reference
-                        + " (" + e.getMessage() + ")", e);
+                LOG.info("{}: Could not process document: {} ({})",
+                        getId(), reference, e.getMessage(), e);
             } else {
-                LOG.info(getId() + ": Could not process document: " + reference
-                        + " (" + e.getMessage() + ")");
+                LOG.info("{}: Could not process document: {} ({})",
+                        getId(), reference, e.getMessage());
             }
             finalizeDocumentProcessing(
                     crawlData, crawlDataStore, doc, cachedCrawlData);
 
             // Rethrow exception is we want the crawler to stop
-            Class<? extends Exception>[] exceptionClasses = 
+            List<Class<? extends Exception>> exceptionClasses =
                     config.getStopOnExceptions();
-            if (ArrayUtils.isNotEmpty(exceptionClasses)) {
+            if (CollectionUtils.isNotEmpty(exceptionClasses)) {
                 for (Class<? extends Exception> c : exceptionClasses) {
                     if (c.isAssignableFrom(e.getClass())) {
                         throw e;
@@ -587,25 +590,25 @@ public abstract class AbstractCrawler
     }
 
     private void processImportResponse(
-            ImporterResponse response, 
+            ImporterResponse response,
             ICrawlDataStore crawlDataStore,
             BaseCrawlData crawlData,
             BaseCrawlData cachedCrawlData) {
-        
+
         ImporterDocument doc = response.getDocument();
         if (response.isSuccess()) {
             fireCrawlerEvent(
                     CrawlerEvent.DOCUMENT_IMPORTED, crawlData, response);
             ImporterDocument wrappedDoc = wrapDocument(crawlData, doc);
-            executeCommitterPipeline(this, wrappedDoc, 
+            executeCommitterPipeline(this, wrappedDoc,
                     crawlDataStore, crawlData, cachedCrawlData);
         } else {
             crawlData.setState(CrawlState.REJECTED);
             fireCrawlerEvent(
                     CrawlerEvent.REJECTED_IMPORT, crawlData, response);
-            LOG.debug(getId() + ": Importing unsuccessful for \"" 
-                    + crawlData.getReference() + "\": "
-                    + response.getImporterStatus().getDescription());
+            LOG.debug("{}: Importing unsuccessful for \"{}\": {}",
+                    getId(), crawlData.getReference(),
+                    response.getImporterStatus().getDescription());
         }
         finalizeDocumentProcessing(
                 crawlData, crawlDataStore, doc, cachedCrawlData);
@@ -613,32 +616,32 @@ public abstract class AbstractCrawler
         for (ImporterResponse child : children) {
             BaseCrawlData embeddedCrawlData = createEmbeddedCrawlData(
                     child.getReference(), crawlData);
-            BaseCrawlData embeddedCachedCrawlData = 
+            BaseCrawlData embeddedCachedCrawlData =
                     (BaseCrawlData) crawlDataStore.getCached(
-                            child.getReference());            
-            processImportResponse(child, crawlDataStore, 
+                            child.getReference());
+            processImportResponse(child, crawlDataStore,
                     embeddedCrawlData, embeddedCachedCrawlData);
         }
     }
-    
-   
+
+
     private void finalizeDocumentProcessing(BaseCrawlData crawlData,
             ICrawlDataStore store, ImporterDocument doc,
             ICrawlData cached) {
 
         //--- Ensure we have a state -------------------------------------------
         if (crawlData.getState() == null) {
-            LOG.warn(getId() + ": reference status is unknown for \"" 
-                    + crawlData.getReference() + "\". This should not "
-                    + "happen. Assuming bad status.");
+            LOG.warn("{}: reference status is unknown for \"{}\". "
+                    + "This should not happen. Assuming bad status.",
+                    getId(), crawlData.getReference());
             crawlData.setState(CrawlState.BAD_STATUS);
         }
-        
+
         try {
-            
+
             // important to call this before copying properties further down
             beforeFinalizeDocumentProcessing(crawlData, store, doc, cached);
-            
+
             //--- If doc crawl was incomplete, set missing info from cache -----
             // If document is not new or modified, it did not go through
             // the entire crawl life cycle for a document so maybe not all info
@@ -646,11 +649,11 @@ public abstract class AbstractCrawler
             // previous information when the crawl was effective/good
             // we copy it all that is non-null from cache.
             if (!crawlData.getState().isNewOrModified() && cached != null) {
-                //TODO maybe new CrawlData instances should be initialized with 
+                //TODO maybe new CrawlData instances should be initialized with
                 // some of cache data available instead?
                 nullAwareBeanUtils.copyProperties(crawlData, cached);
             }
-            
+
             //--- Deal with bad states (if not already deleted) ----------------
             if (!crawlData.getState().isGoodState()
                     && !crawlData.getState().isOneOf(CrawlState.DELETED)) {
@@ -659,59 +662,57 @@ public abstract class AbstractCrawler
                 // exists in a good state.
                 // This involves elaborating the concept of duplicate
                 // or "reference change" in this core project. Otherwise there
-                // is the slim possibility right now that a Collector 
-                // implementation marking references as duplicate may 
+                // is the slim possibility right now that a Collector
+                // implementation marking references as duplicate may
                 // generate orphans (which may be caught later based
                 // on how orphans are handled, but they should not be ever
                 // considered orphans in the first place).
-                // This could remove the need for the 
+                // This could remove the need for the
                 // markReferenceVariationsAsProcessed(...) method
-                
-                SpoiledReferenceStrategy strategy = 
+
+                SpoiledReferenceStrategy strategy =
                         getSpoiledStateStrategy(crawlData);
-                
+
                 if (strategy == SpoiledReferenceStrategy.IGNORE) {
-                    LOG.debug(getId() + ": ignoring spoiled reference: "
-                            + crawlData.getReference());
+                    LOG.debug("{}: ignoring spoiled reference: {}",
+                            getId(), crawlData.getReference());
                 } else if (strategy == SpoiledReferenceStrategy.DELETE) {
-                    // Delete if previous state exists and is not already 
+                    // Delete if previous state exists and is not already
                     // marked as deleted.
-                    if (cached != null 
+                    if (cached != null
                             && !cached.getState().isOneOf(CrawlState.DELETED)) {
                         deleteReference(crawlData, doc);
                     }
                 } else {
                     // GRACE_ONCE:
-                    // Delete if previous state exists and is a bad state, 
+                    // Delete if previous state exists and is a bad state,
                     // but not already marked as deleted.
-                    if (cached != null 
+                    if (cached != null
                             && !cached.getState().isOneOf(CrawlState.DELETED)) {
                         if (!cached.getState().isGoodState()) {
                             deleteReference(crawlData, doc);
                         } else {
-                            LOG.debug(getId() + ": this spoiled reference is "
+                            LOG.debug("{}: this spoiled reference is "
                                     + "being graced once (will be deleted "
-                                    + "next time if still spoiled): "
-                                    + crawlData.getReference());
+                                    + "next time if still spoiled): {}",
+                                    getId(), crawlData.getReference());
                         }
                     }
                 }
             }
         } catch (Exception e) {
-            LOG.error(getId() + ": Could not finalize processing of "
-                    + crawlData.getReference()
-                    + " (" + e.getMessage() + ")", e);
+            LOG.error("{}: Could not finalize processing of: {} ({})",
+                    getId(), crawlData.getReference(), e.getMessage(), e);
         }
-        
+
         //--- Mark reference as Processed --------------------------------------
         try {
             processedCount++;
             store.processed(crawlData);
             markReferenceVariationsAsProcessed(crawlData, store);
         } catch (Exception e) {
-            LOG.error(getId() + ": Could not mark reference as processed: " 
-                    + crawlData.getReference()
-                    + " (" + e.getMessage() + ")", e);
+            LOG.error("{}: Could not mark reference as processed: {} ({})",
+                    getId(), crawlData.getReference(), e.getMessage(), e);
         }
 
         try {
@@ -719,19 +720,19 @@ public abstract class AbstractCrawler
                 doc.getContent().dispose();
             }
         } catch (Exception e) {
-            LOG.error(getId() + ": Could not dispose of resources.", e);
+            LOG.error("{}: Could not dispose of resources.", getId(), e);
         }
     }
-    
+
     /**
-     * Gives implementors a change to take action on a document before 
+     * Gives implementors a change to take action on a document before
      * its processing is being finalized (cycle end-of-life for a crawled
      * reference). Default implementation does nothing.
-     * @param crawlData crawl data with data the crawler was able to obtain, 
+     * @param crawlData crawl data with data the crawler was able to obtain,
      *                  guaranteed to have a non-null state
      * @param store crawl store
      * @param doc the document
-     * @param cachedCrawlData cached crawl data 
+     * @param cachedCrawlData cached crawl data
      *        (<code>null</code> if document was not crawled before)
      */
     protected void beforeFinalizeDocumentProcessing(BaseCrawlData crawlData,
@@ -739,17 +740,17 @@ public abstract class AbstractCrawler
             ICrawlData cachedCrawlData) {
         //NOOP
     }
-    
+
     protected abstract void markReferenceVariationsAsProcessed(
             BaseCrawlData crawlData, ICrawlDataStore refStore);
-    
-    
+
+
     protected abstract BaseCrawlData createEmbeddedCrawlData(
             String embeddedReference, ICrawlData parentCrawlData);
-    
+
     protected abstract ImporterResponse executeImporterPipeline(
             ImporterPipelineContext context);
-    
+
     //TODO, replace with DocumentPipelineContext?
     protected abstract void executeCommitterPipeline(
             ICrawler crawler,
@@ -764,12 +765,12 @@ public abstract class AbstractCrawler
         }
         return doc.getMetadata();
     }
-    
+
     private SpoiledReferenceStrategy getSpoiledStateStrategy(
             BaseCrawlData crawlData) {
-        ISpoiledReferenceStrategizer strategyResolver = 
+        ISpoiledReferenceStrategizer strategyResolver =
                 config.getSpoiledReferenceStrategizer();
-        SpoiledReferenceStrategy strategy = 
+        SpoiledReferenceStrategy strategy =
                 strategyResolver.resolveSpoiledReferenceStrategy(
                         crawlData.getReference(), crawlData.getState());
         if (strategy == null) {
@@ -779,11 +780,11 @@ public abstract class AbstractCrawler
         }
         return strategy;
     }
-    
+
     private void deleteReference(
             BaseCrawlData crawlData, ImporterDocument doc) {
-        LOG.debug(getId() + ": Deleting reference: " 
-                + crawlData.getReference());
+        LOG.debug("{}: Deleting reference: {}",
+                getId(), crawlData.getReference());
         ICommitter committer = getCrawlerConfig().getCommitter();
         crawlData.setState(CrawlState.DELETED);
         if (committer != null) {
@@ -793,7 +794,7 @@ public abstract class AbstractCrawler
         fireCrawlerEvent(
                 CrawlerEvent.DOCUMENT_COMMITTED_REMOVE, crawlData, doc);
     }
-    
+
     private final class ProcessReferencesRunnable implements Runnable {
         private final ImporterPipelineContext importerContextPrototype;
         private final JobSuite suite;
@@ -801,7 +802,7 @@ public abstract class AbstractCrawler
         private final CountDownLatch latch;
 
         private ProcessReferencesRunnable(
-                JobSuite suite, 
+                JobSuite suite,
                 JobStatusUpdater statusUpdater,
                 CountDownLatch latch,
                 ImporterPipelineContext importerContextPrototype) {
@@ -809,35 +810,36 @@ public abstract class AbstractCrawler
             this.statusUpdater = statusUpdater;
             this.latch = latch;
             this.importerContextPrototype = importerContextPrototype;
-        }        
-        
+        }
+
         @Override
         public void run() {
             JobSuite.setCurrentJobId(statusUpdater.getJobId());
             try {
                 while (!isStopped()) {
                     try {
-                        if (!processNextReference(statusUpdater, 
+                        if (!processNextReference(statusUpdater,
                                 new ImporterPipelineContext(
                                         importerContextPrototype))) {
                             break;
                         }
                     } catch (Exception e) {
-                        LOG.fatal(getId() + ": "
+                        LOG.error("{}: "
                             + "An error occured that could compromise "
                             + "the stability of the crawler. Stopping "
-                            + "excution to avoid further issues...", e);
+                            + "excution to avoid further issues...",
+                            getId(), e);
                         stop(suite.getJobStatus(suite.getRootJob()), suite);
                     }
                 }
             } catch (Exception e) {
-                LOG.error(getId() + ": Problem in thread execution.", e);
+                LOG.error("{}: Problem in thread execution.", getId(), e);
             } finally {
                 latch.countDown();
             }
         }
     }
-    
+
     public class CopyIfNullBeanUtilsBean extends BeanUtilsBean{
         @Override
         public void copyProperty(Object dest, String name, Object value)
@@ -847,7 +849,7 @@ public abstract class AbstractCrawler
                     return;
                 }
             } catch (NoSuchMethodException e) {
-                throw new InvocationTargetException(e, 
+                throw new InvocationTargetException(e,
                         "Could not get property '" + name + "' for " + dest);
             }
             super.copyProperty(dest, name, value);

@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,10 @@
  */
 package com.norconex.collector.core.pipeline.importer;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.crawler.event.CrawlerEvent;
 import com.norconex.collector.core.data.CrawlState;
@@ -26,17 +28,17 @@ import com.norconex.importer.handler.filter.OnMatch;
 
 /**
  * @author Pascal Essiembre
- * 
+ *
  */
-public class DocumentFiltersStage 
+public class DocumentFiltersStage
         implements IPipelineStage<ImporterPipelineContext> {
 
-    private static final Logger LOG = LogManager
-            .getLogger(DocumentFiltersStage.class);
+    private static final Logger LOG =
+            LoggerFactory.getLogger(DocumentFiltersStage.class);
 
     @Override
     public boolean execute(ImporterPipelineContext ctx) {
-        IDocumentFilter[] filters = ctx.getConfig().getDocumentFilters();
+        List<IDocumentFilter> filters = ctx.getConfig().getDocumentFilters();
         if (filters == null) {
             return true;
         }
@@ -63,15 +65,15 @@ public class DocumentFiltersStage
                                     .getCrawlData().getReference(), filter));
                 }
             } else {
-                ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_FILTER, 
+                ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_FILTER,
                         ctx.getCrawlData(), filter);
                 ctx.getCrawlData().setState(CrawlState.REJECTED);
                 return false;
             }
         }
         if (hasIncludes && !atLeastOneIncludeMatch) {
-            ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_FILTER, 
-                    ctx.getCrawlData(), 
+            ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_FILTER,
+                    ctx.getCrawlData(),
                     "No \"include\" document filters matched.");
             ctx.getCrawlData().setState(CrawlState.REJECTED);
             return false;
@@ -80,7 +82,11 @@ public class DocumentFiltersStage
     }
 
     private boolean isIncludeFilter(IDocumentFilter filter) {
-        return filter instanceof IOnMatchFilter
-                && OnMatch.INCLUDE == ((IOnMatchFilter) filter).getOnMatch();
+        if (filter instanceof IOnMatchFilter) {
+            OnMatch onMatch = OnMatch.includeIfNull(
+                    ((IOnMatchFilter) filter).getOnMatch());
+            return OnMatch.INCLUDE == onMatch;
+        }
+        return false;
     }
 }

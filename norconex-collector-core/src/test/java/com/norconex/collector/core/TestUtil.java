@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,16 @@
  */
 package com.norconex.collector.core;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
 import org.apache.commons.lang3.ClassUtils;
-import org.apache.log4j.Level;
-import org.junit.Assert;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
-import com.norconex.commons.lang.log.CountingConsoleAppender;
+import com.norconex.commons.lang.xml.XML;
 
 
 /**
@@ -32,32 +31,28 @@ import com.norconex.commons.lang.log.CountingConsoleAppender;
  * @since 1.8.0
  */
 public final class TestUtil {
-    
+
     private TestUtil() {
         super();
     }
     public static void testValidation(String xmlResource) throws IOException {
         testValidation(TestUtil.class.getResourceAsStream(xmlResource));
-        
+
     }
     public static void testValidation(Class<?> clazz) throws IOException {
         testValidation(clazz, ClassUtils.getShortClassName(clazz) + ".xml");
     }
-    public static void testValidation(Class<?> clazz, String xmlResource) 
+    public static void testValidation(Class<?> clazz, String xmlResource)
             throws IOException {
         testValidation(clazz.getResourceAsStream(xmlResource));
-        
+
     }
     public static void testValidation(
             InputStream xmlStream) throws IOException {
-        CountingConsoleAppender appender = new CountingConsoleAppender();
-        appender.startCountingFor(XMLConfigurationUtil.class, Level.WARN);
+
         try (Reader r = new InputStreamReader(xmlStream)) {
-            XMLConfigurationUtil.newInstance(r);
-        } finally {
-            appender.stopCountingFor(XMLConfigurationUtil.class);
+            assertEquals("Validation warnings/errors were found.",
+                    0, new XML(r).validate().size());
         }
-        Assert.assertEquals("Validation warnings/errors were found.", 
-                0, appender.getCount());
     }
 }

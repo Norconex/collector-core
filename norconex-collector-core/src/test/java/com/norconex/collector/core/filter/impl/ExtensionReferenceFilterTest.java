@@ -19,7 +19,7 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.filter.OnMatch;
 
 public class ExtensionReferenceFilterTest {
@@ -64,7 +64,7 @@ public class ExtensionReferenceFilterTest {
 
         Assert.assertTrue(
                 filter.acceptReference("http://example.com/file.subtype.xml"));
-        
+
         Assert.assertTrue(
                 filter.acceptReference("http://example.com/dir.com/file.com"));
 
@@ -99,14 +99,13 @@ public class ExtensionReferenceFilterTest {
         filter.setExtensions(extensions);
         return filter;
     }
-    
+
     @Test
     public void testWriteRead() throws IOException {
         ExtensionReferenceFilter f = new ExtensionReferenceFilter();
         f.setCaseSensitive(true);
         f.setExtensions("com,pdf");
         f.setOnMatch(OnMatch.EXCLUDE);
-        System.out.println("Writing/Reading this: " + f);
-        XMLConfigurationUtil.assertWriteRead(f);
+        XML.assertWriteRead(f, "filter");
     }
 }
