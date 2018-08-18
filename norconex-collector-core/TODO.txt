@@ -1,3 +1,8 @@
+- Rename RegexReferenceFilter here or the one in Importer module
+  to avoid sharing same name.
+
+- Extract out crawl store implementations to reduce dependencies 
+  (only keep one). and potentially redesign as well.
 
 - Make sure validation reporting works fine (ignore vs throw exception)
 

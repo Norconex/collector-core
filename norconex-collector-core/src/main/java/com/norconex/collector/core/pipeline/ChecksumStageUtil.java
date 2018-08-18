@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package com.norconex.collector.core.pipeline;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.norconex.collector.core.crawler.event.CrawlerEvent;
+import com.norconex.collector.core.crawler.CrawlerEvent;
 import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.CrawlState;
 
@@ -30,14 +30,14 @@ import com.norconex.collector.core.data.CrawlState;
  */
 public final class ChecksumStageUtil {
 
-    private static final Logger LOG = 
+    private static final Logger LOG =
             LoggerFactory.getLogger(ChecksumStageUtil.class);
-    
+
     private ChecksumStageUtil() {
         super();
     }
 
-    
+
     public static boolean resolveMetaChecksum(
             String newChecksum, DocumentPipelineContext ctx, Object subject) {
         return resolveChecksum(true, newChecksum, ctx, subject);
@@ -47,9 +47,9 @@ public final class ChecksumStageUtil {
         return resolveChecksum(false, newChecksum, ctx, subject);
     }
 
-    
+
     // return false if checksum is rejected/unmodified
-    private static boolean resolveChecksum(boolean isMeta, String newChecksum, 
+    private static boolean resolveChecksum(boolean isMeta, String newChecksum,
             DocumentPipelineContext ctx, Object subject) {
         BaseCrawlData crawlData = ctx.getCrawlData();
 
@@ -73,28 +73,27 @@ public final class ChecksumStageUtil {
                 oldChecksum = cachedCrawlData.getContentChecksum();
             }
         } else {
-            LOG.debug("ACCEPTED " + type + " checkum (new): Reference=" 
-                    + crawlData.getReference());
+            LOG.debug("ACCEPTED {} checkum (new): Reference={}",
+                    type, crawlData.getReference());
             return true;
         }
-        
+
         // Compare checksums
-        if (StringUtils.isNotBlank(newChecksum) 
+        if (StringUtils.isNotBlank(newChecksum)
                 && Objects.equals(newChecksum, oldChecksum)) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("REJECTED " + type 
-                        + " checkum (unmodified): Reference=" 
-                        + crawlData.getReference());
+                LOG.debug("REJECTED {} checkum (unmodified): Reference={}", 
+                        type, crawlData.getReference());
             }
             crawlData.setState(CrawlState.UNMODIFIED);
-            ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_UNMODIFIED, 
+            ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_UNMODIFIED,
                     ctx.getCrawlData(), subject);
             return false;
         }
-        
+
         crawlData.setState(CrawlState.MODIFIED);
-        LOG.debug("ACCEPTED " + type + " checksum (modified): Reference=" 
-                + crawlData.getReference());
+        LOG.debug("ACCEPTED {} checksum (modified): Reference={}",
+                type, crawlData.getReference());
         return true;
     }
 }

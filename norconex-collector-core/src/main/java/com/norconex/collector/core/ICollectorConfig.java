@@ -19,6 +19,7 @@ import java.util.List;
 
 import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.event.IEventListener;
 
 /**
  * @author Pascal Essiembre
@@ -46,12 +47,21 @@ public interface ICollectorConfig extends IXMLConfigurable {
     Path getLogsDir();
 
     /**
-     * Gets collector life cycle listeners.
-     * @return collector life cycle listeners.
-     * @since 1.8.0
+     * Gets event listeners explicitly set for this collector.  Those
+     * are in addition to listeners found in this config which can be
+     * automatically detected.
+     * @return event listeners.
+     * @since 2.0.0
      */
-    List<ICollectorLifeCycleListener> getCollectorListeners();
+    List<IEventListener<?>> getEventListeners();
 
+//    /**
+//     * Gets collector life cycle listeners.
+//     * @return collector life cycle listeners.
+//     * @since 1.8.0
+//     */
+//    List<ICollectorLifeCycleListener> getCollectorListeners();
+//
 //    /**
 //     * Gets JEF job life cycle listeners. A job typically represents a
 //     * crawler instance. Interacting directly

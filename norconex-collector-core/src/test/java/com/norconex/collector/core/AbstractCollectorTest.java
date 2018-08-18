@@ -42,7 +42,8 @@ public class AbstractCollectorTest {
     public void testWriteRead() throws IOException {
         MockCollectorConfig config = new MockCollectorConfig();
         config.setId("test-collector");
-        config.setCollectorListeners(new MockCollectorLifeCycleListener());
+        config.setEventListeners(new MockCollectorEventListener());
+//        config.setCollectorListeners(new MockCollectorLifeCycleListener());
 //        config.setJobErrorListeners(new MockJobErrorListener());
 //        config.setJobLifeCycleListeners(new MockJobLifeCycleListener());
 //        config.setSuiteLifeCycleListeners(new MockSuiteLifeCycleListener());

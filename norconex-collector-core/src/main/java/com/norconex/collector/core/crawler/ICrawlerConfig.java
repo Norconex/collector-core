@@ -18,7 +18,6 @@ import java.io.File;
 import java.util.List;
 
 import com.norconex.collector.core.checksum.IDocumentChecksummer;
-import com.norconex.collector.core.crawler.event.ICrawlerEventListener;
 import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
 import com.norconex.collector.core.filter.IDocumentFilter;
 import com.norconex.collector.core.filter.IMetadataFilter;
@@ -127,11 +126,11 @@ public interface ICrawlerConfig extends IXMLConfigurable {
      */
     ICrawlDataStoreFactory getCrawlDataStoreFactory();
 
-    /**
-     * Gets crawler event listeners.
-     * @return crawler evetn listeners
-     */
-    List<ICrawlerEventListener> getCrawlerListeners();
+//    /**
+//     * Gets crawler event listeners.
+//     * @return crawler evetn listeners
+//     */
+//    List<ICrawlerEventListener> getCrawlerListeners();
 
     /**
      * Gets the Importer module configuration.

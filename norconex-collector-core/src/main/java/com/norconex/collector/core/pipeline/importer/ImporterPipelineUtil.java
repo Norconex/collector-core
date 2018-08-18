@@ -14,12 +14,13 @@
  */
 package com.norconex.collector.core.pipeline.importer;
 
+import static com.norconex.collector.core.crawler.CrawlerEvent.REJECTED_FILTER;
+
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.collector.core.crawler.event.CrawlerEvent;
 import com.norconex.collector.core.filter.IMetadataFilter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.filter.IOnMatchFilter;
@@ -67,14 +68,13 @@ public final class ImporterPipelineUtil {
                             ctx.getCrawlData().getReference(), filter));
                 }
             } else {
-                ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_FILTER,
-                        ctx.getCrawlData(), filter);
+                ctx.fireCrawlerEvent(
+                        REJECTED_FILTER, ctx.getCrawlData(), filter);
                 return true;
             }
         }
         if (hasIncludes && !atLeastOneIncludeMatch) {
-            ctx.fireCrawlerEvent(
-                    CrawlerEvent.REJECTED_FILTER, ctx.getCrawlData(),
+            ctx.fireCrawlerEvent(REJECTED_FILTER, ctx.getCrawlData(),
                     "No \"include\" metadata filters matched.");
             return true;
         }

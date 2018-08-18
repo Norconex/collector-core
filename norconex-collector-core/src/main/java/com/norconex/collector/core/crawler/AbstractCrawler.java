@@ -14,6 +14,16 @@
  */
 package com.norconex.collector.core.crawler;
 
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_FINISHED;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_RESUMED;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_STARTED;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_STOPPED;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_STOPPING;
+import static com.norconex.collector.core.crawler.CrawlerEvent.DOCUMENT_COMMITTED_REMOVE;
+import static com.norconex.collector.core.crawler.CrawlerEvent.DOCUMENT_IMPORTED;
+import static com.norconex.collector.core.crawler.CrawlerEvent.REJECTED_ERROR;
+import static com.norconex.collector.core.crawler.CrawlerEvent.REJECTED_IMPORT;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -47,8 +57,6 @@ import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.CollectorException;
 import com.norconex.collector.core.crawler.ICrawlerConfig.OrphansStrategy;
-import com.norconex.collector.core.crawler.event.CrawlerEvent;
-import com.norconex.collector.core.crawler.event.CrawlerEventManager;
 import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.data.ICrawlData;
@@ -61,6 +69,7 @@ import com.norconex.collector.core.spoil.SpoiledReferenceStrategy;
 import com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer;
 import com.norconex.committer.core.ICommitter;
 import com.norconex.commons.lang.Sleeper;
+import com.norconex.commons.lang.event.EventManager;
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.time.DurationFormatter;
@@ -104,7 +113,7 @@ public abstract class AbstractCrawler
     private final CopyIfNullBeanUtilsBean nullAwareBeanUtils =
             new CopyIfNullBeanUtilsBean();
     private final ICrawlerConfig config;
-    private CrawlerEventManager crawlerEventManager;
+    private final EventManager eventManager;
     private Importer importer;
     private CachedStreamFactory streamFactory;
 
@@ -119,9 +128,20 @@ public abstract class AbstractCrawler
     /**
      * Constructor.
      * @param config crawler configuration
+     * @param eventManager event manager
      */
-    public AbstractCrawler(ICrawlerConfig config) {
+    public AbstractCrawler(ICrawlerConfig config, EventManager eventManager) {
         this.config = config;
+        this.eventManager = eventManager;
+    }
+
+    /**
+     * Gets the event manager.
+     * @return event manager
+     * @since 2.0.0
+     */
+    public EventManager getEventManager() {
+        return eventManager;
     }
 
     @Override
@@ -139,7 +159,7 @@ public abstract class AbstractCrawler
 
     @Override
     public void stop(JobStatus jobStatus, JobSuite suite) {
-        fireCrawlerEvent(CrawlerEvent.CRAWLER_STOPPING, null, this);
+        eventManager.fire(CrawlerEvent.create(CRAWLER_STOPPING, this));
         stopped = true;
         LOG.info("{}: Stopping the crawler.", getId());
     }
@@ -162,11 +182,11 @@ public abstract class AbstractCrawler
         return config;
     }
 
-    public void fireCrawlerEvent(
-            String eventType, ICrawlData crawlData, Object subject) {
-        crawlerEventManager.fireCrawlerEvent(
-                new CrawlerEvent(eventType, crawlData, subject));
-    }
+//    public void fireCrawlerEvent(
+//            String eventType, ICrawlData crawlData, Object subject) {
+//        crawlerEventManager.fireCrawlerEvent(
+//                new CrawlerEvent(eventType, crawlData, subject));
+//    }
 
     public File getBaseDownloadDir() {
         return new File(
@@ -176,10 +196,10 @@ public abstract class AbstractCrawler
         return new File(getBaseDownloadDir(), getCrawlerConfig().getId());
     }
 
-    @Override
-    public CrawlerEventManager getCrawlerEventManager() {
-        return crawlerEventManager;
-    }
+//    @Override
+//    public CrawlerEventManager getCrawlerEventManager() {
+//        return crawlerEventManager;
+//    }
 
     @Override
     protected void startExecution(
@@ -206,8 +226,8 @@ public abstract class AbstractCrawler
         stopWatch.start();
         ICrawlDataStore crawlDataStore = createCrawlDataStore(resume);
 
-        this.crawlerEventManager = new CrawlerEventManager(
-                this, getCrawlerConfig().getCrawlerListeners());
+//        this.crawlerEventManager = new CrawlerEventManager(
+//                this, getCrawlerConfig().getCrawlerListeners());
         importer = new Importer(getCrawlerConfig().getImporterConfig());
         streamFactory = importer.getStreamFactory();
         processedCount = crawlDataStore.getProcessedCount();
@@ -223,9 +243,9 @@ public abstract class AbstractCrawler
                         + "a unique identifier (id).");
             }
             if (resume) {
-                fireCrawlerEvent(CrawlerEvent.CRAWLER_RESUMED, null, this);
+                eventManager.fire(CrawlerEvent.create(CRAWLER_RESUMED, this));
             } else {
-                fireCrawlerEvent(CrawlerEvent.CRAWLER_STARTED, null, this);
+                eventManager.fire(CrawlerEvent.create(CRAWLER_STARTED, this));
             }
             lastStatusLoggingTime = System.currentTimeMillis();
             execute(statusUpdater, suite, crawlDataStore);
@@ -284,9 +304,9 @@ public abstract class AbstractCrawler
         FileUtil.deleteEmptyDirs(getCrawlerDownloadDir());
 
         if (!isStopped()) {
-            fireCrawlerEvent(CrawlerEvent.CRAWLER_FINISHED, null, this);
+            eventManager.fire(CrawlerEvent.create(CRAWLER_FINISHED, this));
         } else {
-            fireCrawlerEvent(CrawlerEvent.CRAWLER_STOPPED, null, this);
+            eventManager.fire(CrawlerEvent.create(CRAWLER_STOPPED, this));
         }
         LOG.info(getId() + ": Crawler "
                 + (isStopped() ? "stopped." : "completed."));
@@ -565,7 +585,8 @@ public abstract class AbstractCrawler
             // HTTPFetchException?  In case we want special treatment to the
             // class?
             crawlData.setState(CrawlState.ERROR);
-            fireCrawlerEvent(CrawlerEvent.REJECTED_ERROR, crawlData, e);
+            eventManager.fire(
+                    CrawlerEvent.create(REJECTED_ERROR, this, crawlData, e));
             if (LOG.isDebugEnabled()) {
                 LOG.info("{}: Could not process document: {} ({})",
                         getId(), reference, e.getMessage(), e);
@@ -597,15 +618,15 @@ public abstract class AbstractCrawler
 
         ImporterDocument doc = response.getDocument();
         if (response.isSuccess()) {
-            fireCrawlerEvent(
-                    CrawlerEvent.DOCUMENT_IMPORTED, crawlData, response);
+            eventManager.fire(CrawlerEvent.create(
+                    DOCUMENT_IMPORTED, this, crawlData, response));
             ImporterDocument wrappedDoc = wrapDocument(crawlData, doc);
             executeCommitterPipeline(this, wrappedDoc,
                     crawlDataStore, crawlData, cachedCrawlData);
         } else {
             crawlData.setState(CrawlState.REJECTED);
-            fireCrawlerEvent(
-                    CrawlerEvent.REJECTED_IMPORT, crawlData, response);
+            eventManager.fire(CrawlerEvent.create(
+                    REJECTED_IMPORT, this, crawlData, response));
             LOG.debug("{}: Importing unsuccessful for \"{}\": {}",
                     getId(), crawlData.getReference(),
                     response.getImporterStatus().getDescription());
@@ -791,8 +812,8 @@ public abstract class AbstractCrawler
             committer.remove(
                     crawlData.getReference(), getNullSafeMetadata(doc));
         }
-        fireCrawlerEvent(
-                CrawlerEvent.DOCUMENT_COMMITTED_REMOVE, crawlData, doc);
+        eventManager.fire(CrawlerEvent.create(
+                DOCUMENT_COMMITTED_REMOVE, this, crawlData, doc));
     }
 
     private final class ProcessReferencesRunnable implements Runnable {

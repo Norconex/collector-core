@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,15 @@
 package com.norconex.collector.core.crawler;
 
 import com.norconex.collector.core.ICollector;
-import com.norconex.collector.core.crawler.event.CrawlerEventManager;
+import com.norconex.commons.lang.event.EventManager;
 import com.norconex.importer.Importer;
 import com.norconex.jef5.job.IJob;
 
 /**
- * A document crawler.  Crawlers are part of a {@link ICollector} and 
+ * A document crawler.  Crawlers are part of a {@link ICollector} and
  * are responsible for fetching, parsing, manipulating and sending data
- * to a target repository.  It typically does so with the help of 
- * Norconex Importer and Norconex Committer.  
+ * to a target repository.  It typically does so with the help of
+ * Norconex Importer and Norconex Committer.
  * @author Pascal Essiembre
  */
 public interface ICrawler extends IJob {
@@ -33,13 +33,13 @@ public interface ICrawler extends IJob {
      * @return the crawler configuration
      */
     ICrawlerConfig getCrawlerConfig();
-    
+
     /**
      * Gets the crawler events manager.
      * @return the events manager
      */
-    CrawlerEventManager getCrawlerEventManager();
-    
+    EventManager getEventManager();
+
     /**
      * Gets the crawler Importer module.
      * @return the Importer

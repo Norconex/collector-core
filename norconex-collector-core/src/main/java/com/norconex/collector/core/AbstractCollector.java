@@ -14,13 +14,16 @@
  */
 package com.norconex.collector.core;
 
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_ENDED;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STARTED;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +32,7 @@ import com.norconex.collector.core.crawler.ICrawler;
 import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.committer.core.ICommitter;
 import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.event.EventManager;
 import com.norconex.importer.Importer;
 import com.norconex.jef5.job.IJob;
 import com.norconex.jef5.job.group.AsyncJobGroup;
@@ -58,34 +62,30 @@ public abstract class AbstractCollector implements ICollector {
     private final List<ICrawler> crawlers = new ArrayList<>();
     private JobSuite jobSuite;
 
+    private final EventManager eventManager = new EventManager();
+
+
 	/**
 	 * Creates and configure a Collector with the provided
 	 * configuration.
 	 * @param collectorConfig Collector configuration
 	 */
     public AbstractCollector(ICollectorConfig collectorConfig) {
+        //TODO have an init method instead?  Or make it implement
+        // IEvent listener and listen for start?
+
         //TODO clone config so modifications no longer apply.
-        if (collectorConfig == null) {
-            throw new IllegalArgumentException(
-                    "Collector Configuration cannot be null.");
-        }
+        Objects.requireNonNull(
+                collectorConfig, "Collector Configuration cannot be null.");
 
         this.collectorConfig = collectorConfig;
 
         List<ICrawlerConfig> crawlerConfigs =
                 this.collectorConfig.getCrawlerConfigs();
         if (crawlerConfigs != null) {
-//            ICrawler[] newCrawlers = new ICrawler[crawlerConfigs.length];
             for (ICrawlerConfig crawlerConfig : crawlerConfigs) {
                 crawlers.add(createCrawler(crawlerConfig));
             }
-//            for (int i = 0; i < crawlerConfigs.length; i++) {
-//                ICrawlerConfig crawlerConfig = crawlerConfigs[i];
-//                newCrawlers[i] = createCrawler(crawlerConfig);
-//            }
-//            this.crawlers = newCrawlers;
-//        } else {
-//            this.crawlers = Collections.emptyList();
         }
     }
 
@@ -120,23 +120,41 @@ public abstract class AbstractCollector implements ICollector {
         }
         jobSuite = createJobSuite();
 
-        List<ICollectorLifeCycleListener> listeners =
-                collectorConfig.getCollectorListeners();
+        eventManager.addListenersFromScan(this.collectorConfig);
+
+        printReleaseVersions();
+
+//        List<ICollectorLifeCycleListener> listeners =
+//                collectorConfig.getCollectorListeners();
         try {
-            if (CollectionUtils.isNotEmpty(listeners)) {
-                for (ICollectorLifeCycleListener l : listeners) {
-                    l.onCollectorStart(this);
-                }
-            }
+            eventManager.fire(CollectorEvent.create(COLLECTOR_STARTED, this));
+//            if (CollectionUtils.isNotEmpty(listeners)) {
+//                for (ICollectorLifeCycleListener l : listeners) {
+//                    l.onCollectorStart(this);
+//                }
+//            }
             jobSuite.execute(resumeNonCompleted);
         } finally {
-            if (CollectionUtils.isNotEmpty(listeners)) {
-                for (ICollectorLifeCycleListener l : listeners) {
-                    l.onCollectorFinish(this);
-                }
-            }
+//            if (CollectionUtils.isNotEmpty(listeners)) {
+//                for (ICollectorLifeCycleListener l : listeners) {
+//                    l.onCollectorFinish(this);
+//                }
+//            }
+            eventManager.fire(CollectorEvent.create(COLLECTOR_ENDED, this));
+
             jobSuite = null;
         }
+    }
+
+    public JobState getState() {
+        JobSuite suite = getJobSuite();
+        if (suite != null) {
+            JobStatus status = suite.getRootStatus();
+            if (status != null) {
+                return status.getState();
+            }
+        }
+        return JobState.UNKNOWN;
     }
 
     /**
@@ -227,6 +245,15 @@ public abstract class AbstractCollector implements ICollector {
     }
 
     /**
+     * Gets the event manager.
+     * @return event manager
+     * @since 2.0.0
+     */
+    public EventManager getEventManager() {
+        return eventManager;
+    }
+
+    /**
      * Creates a new crawler instance.
      * @param config crawler configuration
      * @return new crawler
@@ -262,7 +289,7 @@ public abstract class AbstractCollector implements ICollector {
         return Collections.unmodifiableList(crawlers);
     }
 
-    private void printReleaseVersion() {
+    private void printReleaseVersions() {
         printReleaseVersion("Collector", getClass().getPackage());
         printReleaseVersion("Collector Core",
                 AbstractCollector.class.getPackage());

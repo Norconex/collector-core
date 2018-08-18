@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-   Copyright 2017 Norconex Inc.
+   Copyright 2017-2018 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,13 +22,7 @@
                     type="xs:string" minOccurs="0" maxOccurs="1"/>
         <xs:element name="logsDir" 
                     type="xs:string" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="collectorListeners"
-                    type="listenersType" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="jobLifeCycleListeners"
-                    type="listenersType" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="jobErrorListeners"
-                    type="listenersType" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="suiteLifeCycleListeners"
+        <xs:element name="eventListeners"
                     type="listenersType" minOccurs="0" maxOccurs="1"/>
         <xs:element name="crawlerDefaults"
                     type="anyComplexType" minOccurs="0" maxOccurs="1"/>                  

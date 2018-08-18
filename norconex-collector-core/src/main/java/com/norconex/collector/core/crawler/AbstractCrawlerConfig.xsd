@@ -52,14 +52,6 @@
           type="filterType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="documentFilters" 
           type="filterType" minOccurs="0" maxOccurs="1"/>
-      <xs:element name="crawlerListeners" minOccurs="0" maxOccurs="1">
-        <xs:complexType>
-          <xs:all>
-            <xs:element name="listener" type="anyComplexRequiredClassType" 
-                minOccurs="1" maxOccurs="unbounded"/>
-          </xs:all>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="importer" type="anyComplexType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="crawlDataStoreFactory" 
           type="anyComplexOptionalClassType" minOccurs="0" maxOccurs="1"/>

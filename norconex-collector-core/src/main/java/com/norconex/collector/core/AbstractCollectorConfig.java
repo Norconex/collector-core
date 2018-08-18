@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import com.norconex.collector.core.crawler.CrawlerConfigLoader;
 import com.norconex.collector.core.crawler.ICrawlerConfig;
 import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.event.IEventListener;
 import com.norconex.commons.lang.xml.XML;
 //import com.norconex.jef5.job.IJobErrorListener;
 //import com.norconex.jef5.job.IJobLifeCycleListener;
@@ -60,8 +61,11 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
     private final List<ICrawlerConfig> crawlerConfigs = new ArrayList<>();
     private Path progressDir = DEFAULT_PROGRESS_DIR;
     private Path logsDir = DEFAULT_LOGS_DIR;
-    private final List<ICollectorLifeCycleListener> collectorListeners =
-            new ArrayList<>();
+
+    private final List<IEventListener<?>> eventListeners = new ArrayList<>();
+
+//    private final List<ICollectorLifeCycleListener> collectorListeners =
+//            new ArrayList<>();
 //    private IJobLifeCycleListener[] jobLifeCycleListeners;
 //    private IJobErrorListener[] jobErrorListeners;
 //    private ISuiteLifeCycleListener[] suiteLifeCycleListeners;
@@ -159,29 +163,91 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         this.logsDir = logsDir;
     }
 
-    @Override
-    public List<ICollectorLifeCycleListener> getCollectorListeners() {
-        return collectorListeners;
-    }
     /**
-     * Sets collector life cycle listeners.
-     * @param collectorListeners collector life cycle listeners.
-     * @since 1.8.0
-     */
-    public void setCollectorListeners(
-            ICollectorLifeCycleListener... collectorListeners) {
-        setCollectorListeners(Arrays.asList(collectorListeners));
-    }
-    /**
-     * Sets collector life cycle listeners.
-     * @param collectorListeners collector life cycle listeners.
+     * Gets event listeners.
+     * Those are considered additions to automatically
+     * detected configuration objects implementing {@link IEventListener}.
+     * @return event listeners.
      * @since 2.0.0
      */
-    public void setCollectorListeners(
-            List<ICollectorLifeCycleListener> collectorListeners) {
-        CollectionUtil.setAll(this.collectorListeners, collectorListeners);
+    @Override
+    public List<IEventListener<?>> getEventListeners() {
+        return Collections.unmodifiableList(eventListeners);
+    }
+    /**
+     * Sets event listeners.
+     * Those are considered additions to automatically
+     * detected configuration objects implementing {@link IEventListener}.
+     * @param eventListeners event listeners.
+     * @since 2.0.0
+     */
+    public void setEventListeners(IEventListener<?>... eventListeners) {
+        setEventListeners(Arrays.asList(eventListeners));
+    }
+    /**
+     * Sets event listeners.
+     * Those are considered additions to automatically
+     * detected configuration objects implementing {@link IEventListener}.
+     * @param eventListeners event listeners.
+     * @since 2.0.0
+     */
+    public void setEventListeners(List<IEventListener<?>> eventListeners) {
+        CollectionUtil.setAll(this.eventListeners, eventListeners);
+    }
+    /**
+     * Adds event listeners.
+     * Those are considered additions to automatically
+     * detected configuration objects implementing {@link IEventListener}.
+     * @param eventListeners event listeners.
+     * @since 2.0.0
+     */
+    public void addEventListeners(IEventListener<?>... eventListeners) {
+        addEventListeners(Arrays.asList(eventListeners));
+    }
+    /**
+     * Adds event listeners.
+     * Those are considered additions to automatically
+     * detected configuration objects implementing {@link IEventListener}.
+     * @param eventListeners event listeners.
+     * @since 2.0.0
+     */
+    public void addEventListeners(List<IEventListener<?>> eventListeners) {
+        this.eventListeners.addAll(eventListeners);
+    }
+    /**
+     * Clears all event listeners. The automatically
+     * detected configuration objects implementing {@link IEventListener}
+     * are not cleared.
+     * @since 2.0.0
+     */
+    public void clearEventListeners() {
+        this.eventListeners.clear();
     }
 
+
+//    @Override
+//    public List<ICollectorLifeCycleListener> getCollectorListeners() {
+//        return collectorListeners;
+//    }
+//    /**
+//     * Sets collector life cycle listeners.
+//     * @param collectorListeners collector life cycle listeners.
+//     * @since 1.8.0
+//     */
+//    public void setCollectorListeners(
+//            ICollectorLifeCycleListener... collectorListeners) {
+//        setCollectorListeners(Arrays.asList(collectorListeners));
+//    }
+//    /**
+//     * Sets collector life cycle listeners.
+//     * @param collectorListeners collector life cycle listeners.
+//     * @since 2.0.0
+//     */
+//    public void setCollectorListeners(
+//            List<ICollectorLifeCycleListener> collectorListeners) {
+//        CollectionUtil.setAll(this.collectorListeners, collectorListeners);
+//    }
+//
 //    @Override
 //    public IJobLifeCycleListener[] getJobLifeCycleListeners() {
 //        return jobLifeCycleListeners;
@@ -238,8 +304,9 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
 
         xml.addElement("logsDir", getLogsDir());
         xml.addElement("progressDir", getProgressDir());
-        xml.addElementList(
-                "collectorListeners", "listener", getCollectorListeners());
+        xml.addElementList("eventListeners", "listener", getEventListeners());
+//        xml.addElementList(
+//                "collectorListeners", "listener", getCollectorListeners());
 //        writeArray(out, "jobLifeCycleListeners",
 //                "listener", getJobLifeCycleListeners());
 //        writeArray(out, "jobErrorListeners",
@@ -266,9 +333,11 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         setId(collectorId);
         setLogsDir(xml.getPath("logsDir", getLogsDir()));
         setProgressDir(xml.getPath("progressDir", getProgressDir()));
-        setCollectorListeners(xml.getObjectList(
-                "collectorListeners/listener", getCollectorListeners()));
+        setEventListeners(xml.getObjectList(
+                "eventListeners/listener", getEventListeners()));
 
+//        setCollectorListeners(xml.getObjectList(
+//                "collectorListeners/listener", getCollectorListeners()));
 //        // JEF Job listeners
 //        IJobLifeCycleListener[] jlcListeners = loadJobLifeCycleListeners(
 //                xml, "jobLifeCycleListeners.listener");

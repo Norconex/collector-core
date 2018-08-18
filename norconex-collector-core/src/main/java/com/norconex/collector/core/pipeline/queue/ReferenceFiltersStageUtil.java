@@ -14,13 +14,14 @@
  */
 package com.norconex.collector.core.pipeline.queue;
 
+import static com.norconex.collector.core.crawler.CrawlerEvent.REJECTED_FILTER;
+
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.collector.core.crawler.event.CrawlerEvent;
 import com.norconex.collector.core.filter.IReferenceFilter;
 import com.norconex.collector.core.pipeline.BasePipelineContext;
 import com.norconex.importer.handler.filter.IOnMatchFilter;
@@ -101,8 +102,7 @@ public final class ReferenceFiltersStageUtil {
 
     private static void fireDocumentRejected(
             Object subject, BasePipelineContext ctx) {
-        ctx.fireCrawlerEvent(
-                CrawlerEvent.REJECTED_FILTER, ctx.getCrawlData(), subject);
+        ctx.fireCrawlerEvent(REJECTED_FILTER, ctx.getCrawlData(), subject);
 
     }
 

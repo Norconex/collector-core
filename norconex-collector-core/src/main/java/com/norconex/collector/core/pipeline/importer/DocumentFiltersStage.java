@@ -19,7 +19,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.collector.core.crawler.event.CrawlerEvent;
+import com.norconex.collector.core.crawler.CrawlerEvent;
 import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.filter.IDocumentFilter;
 import com.norconex.commons.lang.pipeline.IPipelineStage;

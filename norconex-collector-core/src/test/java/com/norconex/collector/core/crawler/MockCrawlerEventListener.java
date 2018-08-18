@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,14 +12,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.collector.core.crawler.event;
+package com.norconex.collector.core.crawler;
 
 import com.norconex.collector.core.crawler.ICrawler;
+import com.norconex.commons.lang.event.Event;
+import com.norconex.commons.lang.event.IEventListener;
 
-public class MockCrawlerEventListener implements ICrawlerEventListener {
+public class MockCrawlerEventListener
+        implements IEventListener<Event<ICrawler>> {
 
     @Override
-    public void crawlerEvent(ICrawler crawler, CrawlerEvent event) {
-        //NOOP
+    public void accept(Event<ICrawler> t) {
     }
 }

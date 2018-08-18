@@ -8,6 +8,9 @@
   <body>
 
     <release version="2.0.0-SNAPSHOT" date="2018-??-??" description="Major release">
+      <action dev="essiembre" type="add">
+        New CollectorEvent.
+      </action>
       <action dev="essiembre" type="update">
         Now using XML class from Norconex Commons lang for loading/saving
         configuration.
@@ -19,11 +22,26 @@
         Now using SLF4J for logging.
       </action>
       <action dev="essiembre" type="update">
+        Path is used in addition/instead of File in many places.
+      </action>
+      <action dev="essiembre" type="update">
+        Configurable CollectorLifeCycleListener, IJobLifeCycleListener,
+        IJobErrorListener, ISuiteLifeCycleListener, ICrawlerEventListener
+        all replaced with IEventListener.  These new listeners can be set on 
+        the collector configuration, or be implemented on configuration objects
+        and automatically be detected.
+      </action>
+      <action dev="essiembre" type="update">
         Dependency updates: Norconex Importer 3.0.0, Norconex JEF 5.0.0, 
         Norconex Commons Lang 2.0.0, Norconex Committer 3.0.0. 
       </action>
       <action dev="essiembre" type="remove">
         Removed some of the deprecated code from 1.x. 
+      </action>
+      <action dev="essiembre" type="remove">
+        Removed CollectorConfigLoader, CollectorLifeCycleListener, 
+        IJobLifeCycleListener, IJobErrorListener, ISuiteLifeCycleListener, 
+        ICrawlerEventListener (replaced by IEventListener).
       </action>
     </release>
 

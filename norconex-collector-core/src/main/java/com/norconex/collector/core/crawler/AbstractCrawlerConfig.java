@@ -27,7 +27,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.checksum.IDocumentChecksummer;
 import com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer;
-import com.norconex.collector.core.crawler.event.ICrawlerEventListener;
 import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
 import com.norconex.collector.core.data.store.impl.mvstore.MVStoreCrawlDataStoreFactory;
 import com.norconex.collector.core.filter.IDocumentFilter;
@@ -65,8 +64,8 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     private final List<IMetadataFilter> metadataFilters = new ArrayList<>();
     private final List<IDocumentFilter> documentFilters = new ArrayList<>();
 
-    private final List<ICrawlerEventListener> crawlerListeners =
-            new ArrayList<>();
+//    private final List<ICrawlerEventListener> crawlerListeners =
+//            new ArrayList<>();
     private ImporterConfig importerConfig = new ImporterConfig();
     private ICommitter committer;
 
@@ -173,23 +172,23 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         this.crawlDataStoreFactory = crawlDataStoreFactory;
     }
 
-    @Override
-    public List<ICrawlerEventListener> getCrawlerListeners() {
-        return Collections.unmodifiableList(crawlerListeners);
-    }
-    public void setCrawlerListeners(ICrawlerEventListener... crawlerListeners) {
-        setCrawlerListeners(Arrays.asList(crawlerListeners));
-    }
-    /**
-     * Sets crawler listeners.
-     * @param crawlerListeners
-     * @since 2.0.0
-     */
-    // Keep this or replace with JEF events??
-    public void setCrawlerListeners(
-            List<ICrawlerEventListener> crawlerListeners) {
-        CollectionUtil.setAll(this.crawlerListeners, crawlerListeners);
-    }
+//    @Override
+//    public List<ICrawlerEventListener> getCrawlerListeners() {
+//        return Collections.unmodifiableList(crawlerListeners);
+//    }
+//    public void setCrawlerListeners(ICrawlerEventListener... crawlerListeners) {
+//        setCrawlerListeners(Arrays.asList(crawlerListeners));
+//    }
+//    /**
+//     * Sets crawler listeners.
+//     * @param crawlerListeners
+//     * @since 2.0.0
+//     */
+//    // Keep this or replace with JEF events??
+//    public void setCrawlerListeners(
+//            List<ICrawlerEventListener> crawlerListeners) {
+//        CollectionUtil.setAll(this.crawlerListeners, crawlerListeners);
+//    }
 
 
     @Override
@@ -293,7 +292,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         xml.addElementList("referenceFilters", "filter", referenceFilters);
         xml.addElementList("metadataFilters", "filter", metadataFilters);
         xml.addElementList("documentFilters", "filter", documentFilters);
-        xml.addElementList("crawlerListeners", "listener", crawlerListeners);
+//        xml.addElementList("crawlerListeners", "listener", crawlerListeners);
         if (importerConfig != null) {
             xml.addElement("importer").configure(importerConfig);
         }
@@ -325,8 +324,8 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
                 "metadataFilters/filter", metadataFilters));
         setDocumentFilters(xml.getObjectList(
                 "documentFilters/filter", documentFilters));
-        setCrawlerListeners(xml.getObjectList(
-                "crawlerListeners/listener", crawlerListeners));
+//        setCrawlerListeners(xml.getObjectList(
+//                "crawlerListeners/listener", crawlerListeners));
 
 
         //TODO Make it so importer can be null (importing is then skipped)

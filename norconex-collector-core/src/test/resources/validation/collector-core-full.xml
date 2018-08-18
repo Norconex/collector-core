@@ -24,11 +24,15 @@
   <progressDir>/progress</progressDir>
   <logsDir>/logs</logsDir>
 
-  <collectorListeners>
-    <listener class="com.norconex.collector.core.MockCollectorLifeCycleListener">
+  <eventListeners>
+    <listener class="com.norconex.collector.core.MockCollectorEventListener">
       <sample sample="sample">sample</sample>
     </listener>
-  </collectorListeners>
+    <listener class="com.norconex.collector.core.crawler.MockCrawlerEventListener">
+      <sample sample="sample">sample</sample>
+    </listener>
+  </eventListeners>
+  <!--
   <jobLifeCycleListeners>
     <listener class="com.norconex.collector.core.MockJobLifeCycleListener">
       <sample sample="sample">sample</sample>
@@ -44,6 +48,7 @@
       <sample sample="sample">sample</sample>
     </listener>
   </suiteLifeCycleListeners>
+  -->
 
   <crawlerDefaults>
     <numThreads>1</numThreads>
@@ -73,11 +78,13 @@
       <filter class="com.norconex.collector.core.filter.impl.RegexMetadataFilter"
           onMatch="include" caseSensitive="false" field="title">Blah.*</filter>
     </documentFilters>
+    <!-- 
     <crawlerListeners>
-      <listener class="com.norconex.collector.core.crawler.event.MockCrawlerEventListener">
+      <listener class="com.norconex.collector.core.crawler.MockCrawlerEventListener">
         <sample sample="sample">sample</sample>
       </listener>
     </crawlerListeners>
+     -->
 
     <!-- Importer is purposely slim since the full config is tested in
          Importer project. -->

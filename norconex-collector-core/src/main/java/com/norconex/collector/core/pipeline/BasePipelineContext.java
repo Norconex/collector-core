@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,9 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.collector.core.crawler.CrawlerEvent;
 import com.norconex.collector.core.crawler.ICrawler;
 import com.norconex.collector.core.crawler.ICrawlerConfig;
-import com.norconex.collector.core.crawler.event.CrawlerEvent;
-import com.norconex.collector.core.crawler.event.CrawlerEventManager;
 import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
@@ -49,7 +48,7 @@ public class BasePipelineContext {
             ICrawler crawler, ICrawlDataStore crawlDataStore) {
         this(crawler, crawlDataStore, null);
     }
-    
+
     /**
      * Constructor.
      * @param crawler the crawler
@@ -57,7 +56,7 @@ public class BasePipelineContext {
      * @param crawlData current crawl data
      */
     public BasePipelineContext(
-            ICrawler crawler, ICrawlDataStore crawlDataStore, 
+            ICrawler crawler, ICrawlDataStore crawlDataStore,
             BaseCrawlData crawlData) {
         this.crawler = crawler;
         this.crawlDataStore = crawlDataStore;
@@ -71,7 +70,7 @@ public class BasePipelineContext {
     public ICrawlerConfig getConfig() {
         return crawler.getCrawlerConfig();
     }
-    
+
     public BaseCrawlData getCrawlData() {
         return crawlData;
     }
@@ -83,20 +82,19 @@ public class BasePipelineContext {
     public void setCrawlData(BaseCrawlData crawlData) {
         this.crawlData = crawlData;
     }
-    
+
     public ICrawlDataStore getCrawlDataStore() {
         return crawlDataStore;
     }
-    
+
+    //TODO really have this?  Un-deprecate or remove calls to it
+    @Deprecated
     public void fireCrawlerEvent(
             String event, ICrawlData crawlData, Object subject) {
-        CrawlerEventManager eventManager = crawler.getCrawlerEventManager();
-        if (eventManager != null) {
-            crawler.getCrawlerEventManager().fireCrawlerEvent(new CrawlerEvent(
-                    event, crawlData, subject));
-        }
+        crawler.getEventManager().fire(CrawlerEvent.create(
+                event, crawler, crawlData, subject));
     }
-    
+
     @Override
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
@@ -107,7 +105,7 @@ public class BasePipelineContext {
     }
     @Override
     public String toString() {
-        return new ReflectionToStringBuilder(this, 
+        return new ReflectionToStringBuilder(this,
                 ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }
