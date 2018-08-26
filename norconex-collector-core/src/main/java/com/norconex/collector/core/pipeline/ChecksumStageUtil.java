@@ -82,7 +82,7 @@ public final class ChecksumStageUtil {
         if (StringUtils.isNotBlank(newChecksum)
                 && Objects.equals(newChecksum, oldChecksum)) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("REJECTED {} checkum (unmodified): Reference={}", 
+                LOG.debug("REJECTED {} checkum (unmodified): Reference={}",
                         type, crawlData.getReference());
             }
             crawlData.setState(CrawlState.UNMODIFIED);

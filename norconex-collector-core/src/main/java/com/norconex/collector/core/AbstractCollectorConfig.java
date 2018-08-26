@@ -48,10 +48,12 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
     private static final Logger LOG = LoggerFactory.getLogger(
             AbstractCollectorConfig.class);
 
-    /** Default relative directory where logs from Log4j are stored. */
-    public static final Path DEFAULT_LOGS_DIR = Paths.get("./logs");
+//    /** Default relative directory where logs from Log4j are stored. */
+//    public static final Path DEFAULT_LOGS_DIR = Paths.get("./logs");
+//    /** Default relative directory where progress files are stored. */
+//    public static final Path DEFAULT_PROGRESS_DIR = Paths.get("./progress");
     /** Default relative directory where progress files are stored. */
-    public static final Path DEFAULT_PROGRESS_DIR = Paths.get("./progress");
+    public static final Path DEFAULT_WORK_DIR = Paths.get("./work");
 
     //TODO still needed?
     private final Class<? extends ICrawlerConfig> crawlerConfigClass;
@@ -59,8 +61,11 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
 
     private String id;
     private final List<ICrawlerConfig> crawlerConfigs = new ArrayList<>();
-    private Path progressDir = DEFAULT_PROGRESS_DIR;
-    private Path logsDir = DEFAULT_LOGS_DIR;
+
+    private Path workDir = DEFAULT_WORK_DIR;
+
+//    private Path progressDir = DEFAULT_PROGRESS_DIR;
+//    private Path logsDir = DEFAULT_LOGS_DIR;
 
     private final List<IEventListener<?>> eventListeners = new ArrayList<>();
 
@@ -129,39 +134,51 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         CollectionUtil.setAll(this.crawlerConfigs, crawlerConfigs);
     }
 
-    /**
-     * Gets the directory location where progress files (from JEF API)
-     * are stored.
-     * @return progress directory path
-     */
     @Override
-    public Path getProgressDir() {
-        return progressDir;
+    public Path getWorkDir() {
+        return workDir;
     }
     /**
-     * Sets the directory location where progress files (from JEF API)
-     * are stored.
-     * @param progressDir progress directory path
+     * Sets the directory location where files created during execution
+     * are created.
+     * @param workDir working directory path
      */
-    public void setProgressDir(Path progressDir) {
-        this.progressDir = progressDir;
+    public void setWorkDir(Path workDir) {
+        this.workDir = workDir;
     }
-
-    /**
-     * Gets the directory location of generated log files.
-     * @return logs directory path
-     */
-    @Override
-    public Path getLogsDir() {
-        return logsDir;
-    }
-    /**
-     * Sets the directory location of generated log files.
-     * @param logsDir logs directory path
-     */
-    public void setLogsDir(Path logsDir) {
-        this.logsDir = logsDir;
-    }
+//    /**
+//     * Gets the directory location where progress files (from JEF API)
+//     * are stored.
+//     * @return progress directory path
+//     */
+//    @Override
+//    public Path getProgressDir() {
+//        return progressDir;
+//    }
+//    /**
+//     * Sets the directory location where progress files (from JEF API)
+//     * are stored.
+//     * @param progressDir progress directory path
+//     */
+//    public void setProgressDir(Path progressDir) {
+//        this.progressDir = progressDir;
+//    }
+//
+//    /**
+//     * Gets the directory location of generated log files.
+//     * @return logs directory path
+//     */
+//    @Override
+//    public Path getLogsDir() {
+//        return logsDir;
+//    }
+//    /**
+//     * Sets the directory location of generated log files.
+//     * @param logsDir logs directory path
+//     */
+//    public void setLogsDir(Path logsDir) {
+//        this.logsDir = logsDir;
+//    }
 
     /**
      * Gets event listeners.
@@ -302,8 +319,10 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
     public void saveToXML(XML xml) {
         xml.setAttribute("id", getId());
 
-        xml.addElement("logsDir", getLogsDir());
-        xml.addElement("progressDir", getProgressDir());
+        xml.addElement("workDir", getWorkDir());
+
+//        xml.addElement("logsDir", getLogsDir());
+//        xml.addElement("progressDir", getProgressDir());
         xml.addElementList("eventListeners", "listener", getEventListeners());
 //        xml.addElementList(
 //                "collectorListeners", "listener", getCollectorListeners());
@@ -331,8 +350,9 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
                     "Collector id attribute is mandatory.");
         }
         setId(collectorId);
-        setLogsDir(xml.getPath("logsDir", getLogsDir()));
-        setProgressDir(xml.getPath("progressDir", getProgressDir()));
+        setWorkDir(xml.getPath("workDir", getWorkDir()));
+//        setLogsDir(xml.getPath("logsDir", getLogsDir()));
+//        setProgressDir(xml.getPath("progressDir", getProgressDir()));
         setEventListeners(xml.getObjectList(
                 "eventListeners/listener", getEventListeners()));
 
@@ -366,10 +386,8 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
 
         loadCollectorConfigFromXML(xml);
 
-        if (LOG.isInfoEnabled()) {
-            LOG.info("Configuration loaded: id=" + collectorId + "; logsDir="
-                    + getLogsDir() + "; progressDir=" + getProgressDir());
-        }
+        LOG.info("Configuration loaded: id={}; workDir={};",
+                collectorId, workDir);
     }
 
 //    private ICollectorLifeCycleListener[] loadCollectorListeners(

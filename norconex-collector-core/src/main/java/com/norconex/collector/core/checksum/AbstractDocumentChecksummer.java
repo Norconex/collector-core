@@ -66,7 +66,7 @@ public abstract class AbstractDocumentChecksummer
             if (StringUtils.isBlank(field)) {
                 field = CollectorMetadata.COLLECTOR_CHECKSUM_DOC;
             }
-            document.getMetadata().addString(field, checksum);
+            document.getMetadata().add(field, checksum);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Document checksum stored in {}", field);
             }

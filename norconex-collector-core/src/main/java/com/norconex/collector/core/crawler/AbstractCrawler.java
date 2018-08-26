@@ -140,6 +140,7 @@ public abstract class AbstractCrawler
      * @return event manager
      * @since 2.0.0
      */
+    @Override
     public EventManager getEventManager() {
         return eventManager;
     }
@@ -541,7 +542,7 @@ public abstract class AbstractCrawler
                 (BaseCrawlData) crawlDataStore.getCached(reference);
         context.setCachedCrawlData(cachedCrawlData);
 
-        doc.getMetadata().setBoolean(
+        doc.getMetadata().set(
                 CollectorMetadata.COLLECTOR_IS_CRAWL_NEW,
                 cachedCrawlData == null);
 

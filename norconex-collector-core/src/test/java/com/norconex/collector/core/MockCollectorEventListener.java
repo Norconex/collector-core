@@ -28,9 +28,9 @@ public class MockCollectorEventListener
 
     @Override
     public void accept(CollectorEvent<ICollector> t) {
-        if (t.nameEquals(CollectorEvent.COLLECTOR_STARTED)) {
+        if (t.is(CollectorEvent.COLLECTOR_STARTED)) {
 
-        } else if (t.nameEquals(CollectorEvent.COLLECTOR_ENDED)) {
+        } else if (t.is(CollectorEvent.COLLECTOR_ENDED)) {
 
         }
     }

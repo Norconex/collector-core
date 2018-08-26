@@ -87,13 +87,35 @@ public class BasePipelineContext {
         return crawlDataStore;
     }
 
-    //TODO really have this?  Un-deprecate or remove calls to it
-    @Deprecated
+    /**
+     * Fires an event.
+     * @param event the event name
+     * @param crawlData crawl data
+     * @param subject subject triggering the event
+     */
     public void fireCrawlerEvent(
             String event, ICrawlData crawlData, Object subject) {
         crawler.getEventManager().fire(CrawlerEvent.create(
                 event, crawler, crawlData, subject));
     }
+//    /**
+//     * Fires an event.
+//     * @param event the event to fire
+//     * @since 2.0.0
+//     */
+//    public void fire(Event<?> event) {
+//        crawler.getEventManager().fire(event);
+//    }
+//    /**
+//     * Fires an event.
+//     * @param event the event to fire
+//     * @param level level at which to log the event
+//     * @since 2.0.0
+//     */
+//    public void fire(Event<?> event, Level level) {
+//        crawler.getEventManager().fire(event, level);
+//    }
+
 
     @Override
     public boolean equals(final Object other) {

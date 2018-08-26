@@ -33,18 +33,24 @@ public interface ICollectorConfig extends IXMLConfigurable {
      */
     String getId();
 
+//    /**
+//     * Gets the directory location where progress files (from JEF API)
+//     * are stored.
+//     * @return progress directory path
+//     */
+//    Path getProgressDir();
+//
+//    /**
+//     * Gets the directory location of generated log files.
+//     * @return logs directory path
+//     */
+//    Path getLogsDir();
     /**
-     * Gets the directory location where progress files (from JEF API)
-     * are stored.
-     * @return progress directory path
+     * Gets the directory location where files created during execution
+     * are created.
+     * @return working directory path
      */
-    Path getProgressDir();
-
-    /**
-     * Gets the directory location of generated log files.
-     * @return logs directory path
-     */
-    Path getLogsDir();
+    Path getWorkDir();
 
     /**
      * Gets event listeners explicitly set for this collector.  Those

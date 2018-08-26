@@ -65,7 +65,7 @@ public abstract class AbstractMetadataChecksummer
             if (StringUtils.isBlank(field)) {
                 field = CollectorMetadata.COLLECTOR_CHECKSUM_METADATA;
             }
-            metadata.addString(field, checksum);
+            metadata.add(field, checksum);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Meta checksum stored in {}", field);
             }

@@ -51,8 +51,8 @@ public class MD5DocumentChecksummerTest {
         CachedInputStream is =
                 new CachedStreamFactory(1024, 1024).newInputStream();
         ImporterDocument doc = new ImporterDocument("N/A", is);
-        doc.getMetadata().addString("field1", "value1.1", "value1.2");
-        doc.getMetadata().addString("field2", "value2");
+        doc.getMetadata().add("field1", "value1.1", "value1.2");
+        doc.getMetadata().add("field2", "value2");
         MD5DocumentChecksummer cs = new MD5DocumentChecksummer();
 
         // 2 matching fields
@@ -105,8 +105,8 @@ public class MD5DocumentChecksummerTest {
         CachedInputStream is =
                 new CachedStreamFactory(1024, 1024).newInputStream("Content");
         ImporterDocument doc = new ImporterDocument("N/A", is);
-        doc.getMetadata().addString("field1", "value1.1", "value1.2");
-        doc.getMetadata().addString("field2", "value2");
+        doc.getMetadata().add("field1", "value1.1", "value1.2");
+        doc.getMetadata().add("field2", "value2");
         MD5DocumentChecksummer cs = new MD5DocumentChecksummer();
 
         // With no source fields, should use content only.

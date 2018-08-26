@@ -62,23 +62,36 @@ public abstract class AbstractCollector implements ICollector {
     private final List<ICrawler> crawlers = new ArrayList<>();
     private JobSuite jobSuite;
 
-    private final EventManager eventManager = new EventManager();
+    private final EventManager eventManager;
 
+
+    /**
+     * Creates and configure a Collector with the provided
+     * configuration.
+     * @param collectorConfig Collector configuration
+     */
+    public AbstractCollector(ICollectorConfig collectorConfig) {
+        this(collectorConfig, new EventManager());
+    }
 
 	/**
 	 * Creates and configure a Collector with the provided
 	 * configuration.
 	 * @param collectorConfig Collector configuration
+	 * @param eventManager event manager
 	 */
-    public AbstractCollector(ICollectorConfig collectorConfig) {
+    public AbstractCollector(
+            ICollectorConfig collectorConfig, EventManager eventManager) {
         //TODO have an init method instead?  Or make it implement
         // IEvent listener and listen for start?
 
         //TODO clone config so modifications no longer apply.
         Objects.requireNonNull(
-                collectorConfig, "Collector Configuration cannot be null.");
+                collectorConfig, "collectorConfig cannot be null.");
+        Objects.requireNonNull(eventManager, "eventManager cannot be null.");
 
         this.collectorConfig = collectorConfig;
+        this.eventManager = eventManager;
 
         List<ICrawlerConfig> crawlerConfigs =
                 this.collectorConfig.getCrawlerConfigs();
@@ -215,7 +228,7 @@ public abstract class AbstractCollector implements ICollector {
 //        suiteConfig.setLogManager(new FileLogManager(collConfig.getLogsDir()));
 //        suiteConfig.setJobStatusStore(
 //                new FileJobStatusStore(collConfig.getProgressDir()));
-        suiteConfig.setWorkdir(collConfig.getProgressDir());
+        suiteConfig.setWorkdir(collConfig.getWorkDir());
 
         // Add JEF listeners
 //        if (collConfig.getJobLifeCycleListeners() != null) {

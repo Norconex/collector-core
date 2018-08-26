@@ -46,9 +46,6 @@ import com.norconex.importer.ImporterConfigLoader;
  */
 public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
 
-//    private static final Logger LOG = LoggerFactory.getLogger(
-//            AbstractCrawlerConfig.class);
-
     private String id;
     private int numThreads = 2;
     private File workDir = new File("./work");
