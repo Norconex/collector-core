@@ -157,7 +157,7 @@ public class ExtensionReferenceFilter implements
     @Override
     public void loadFromXML(XML xml)  {
         setExtensions(xml.getString("."));
-        setOnMatch(xml.getEnum(OnMatch.class, "@onMatch", onMatch));
+        setOnMatch(xml.getEnum("@onMatch", OnMatch.class, onMatch));
         setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
     }
     @Override

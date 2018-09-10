@@ -141,7 +141,7 @@ public class RegexReferenceFilter implements
 
     @Override
     public void loadFromXML(XML xml) {
-        setOnMatch(xml.getEnum(OnMatch.class, "@onMatch", onMatch));
+        setOnMatch(xml.getEnum("@onMatch", OnMatch.class, onMatch));
         setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
         setRegex(xml.getString("."));
         cachedPattern = null;

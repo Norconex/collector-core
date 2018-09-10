@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,14 @@
  */
 package com.norconex.collector.core.data;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.collector.core.CollectorException;
+import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.file.ContentType;
 
 
@@ -43,7 +41,7 @@ public class BaseCrawlData implements ICrawlData {
     private String contentChecksum;
     private ContentType contentType;
     private Date crawlDate;
-    
+
     /**
      * Constructor.
      */
@@ -51,12 +49,12 @@ public class BaseCrawlData implements ICrawlData {
         super();
         setState(CrawlState.NEW);
     }
-    
+
     public BaseCrawlData(String reference) {
         this();
         this.reference = reference;
     }
-    
+
     @Override
     public String getReference() {
         return reference;
@@ -88,7 +86,7 @@ public class BaseCrawlData implements ICrawlData {
     public void setState(CrawlState state) {
         this.state = state;
     }
-    
+
     @Override
     public String getMetaChecksum() {
         return metaChecksum;
@@ -112,7 +110,7 @@ public class BaseCrawlData implements ICrawlData {
     public void setContentChecksum(String contentChecksum) {
         this.contentChecksum = contentChecksum;
     }
-    
+
     /**
      * Gets the content type.
      * @return content type
@@ -130,7 +128,7 @@ public class BaseCrawlData implements ICrawlData {
     public void setContentType(ContentType contentType) {
         this.contentType = contentType;
     }
-    
+
     /**
      * Gets the crawl date.
      * @return the crawl date
@@ -150,55 +148,20 @@ public class BaseCrawlData implements ICrawlData {
 
     @Override
     public ICrawlData clone() {
-        try {
-            return (ICrawlData) BeanUtils.cloneBean(this);
-        } catch (IllegalAccessException | InstantiationException
-                | InvocationTargetException | NoSuchMethodException e) {
-            throw new CollectorException(
-                    "Cannot clone HttpDocReference: " + this, e);
-        }
+        return BeanUtil.clone(this);
     }
 
     @Override
-    public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("reference", reference)
-                .append("parentRootReference", parentRootReference)
-                .append("isRootParentReference", isRootParentReference)
-                .append("state", state)
-                .append("metaChecksum", metaChecksum)
-                .append("contentChecksum", contentChecksum)
-                .append("contentType", contentType)
-                .append("crawlDate", crawlDate)
-                .toString();
-    }
-    @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof BaseCrawlData)) {
-            return false;
-        }
-        BaseCrawlData castOther = (BaseCrawlData) other;
-        return new EqualsBuilder().append(reference, castOther.reference)
-                .append(parentRootReference, castOther.parentRootReference)
-                .append(isRootParentReference, castOther.isRootParentReference)
-                .append(state, castOther.state)
-                .append(metaChecksum, castOther.metaChecksum)
-                .append(contentChecksum, castOther.contentChecksum)
-                .append(contentType, castOther.contentType)
-                .append(crawlDate, castOther.crawlDate)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(reference)
-                .append(parentRootReference)
-                .append(isRootParentReference)
-                .append(state)
-                .append(metaChecksum)
-                .append(contentChecksum)
-                .append(contentType)
-                .append(crawlDate)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

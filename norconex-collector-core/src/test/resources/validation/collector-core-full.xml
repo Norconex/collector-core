@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xml>
 <!-- 
-   Copyright 2017 Norconex Inc.
+   Copyright 2017-2018 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,9 +21,12 @@
      -->
 <collector id="Test Collector Core Config">
 
+  <workDir>/wordir</workDir>
+<!-- 
   <progressDir>/progress</progressDir>
   <logsDir>/logs</logsDir>
 
+ -->
   <eventListeners>
     <listener class="com.norconex.collector.core.MockCollectorEventListener">
       <sample sample="sample">sample</sample>

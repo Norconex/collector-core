@@ -28,12 +28,12 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  */
 public class CrawlState implements Serializable {
 
-    private static final Map<String, CrawlState> STATUSES = 
+    private static final Map<String, CrawlState> STATUSES =
             new HashMap<>();
-    
+
     //TODO make default state UNKNOWN/UNPROCESSED, or equivalent that means
     // TBD/IN_PROGRESS????
-    // Because NEW is misleading in the case where it exists in the cache but 
+    // Because NEW is misleading in the case where it exists in the cache but
     // no checksum defined... then it is nether new nor modified.
     private static final long serialVersionUID = 6542269270632505768L;
 
@@ -46,17 +46,17 @@ public class CrawlState implements Serializable {
     public static final CrawlState DELETED    = new CrawlState("DELETED");
     public static final CrawlState NOT_FOUND  = new CrawlState("NOT_FOUND");
     /**
-     * For collectors that support it, this state indicates a previously 
+     * For collectors that support it, this state indicates a previously
      * crawled document is not yet ready to be re-crawled.  It may or may not
      * be re-crawled in the next crawl session (if ready).
      * @since 1.5.0
      */
     public static final CrawlState PREMATURE  = new CrawlState("PREMATURE");
-    
-    
+
+
     private final String state;
 
-    
+
     /**
      * Constructor.
      * @param state state code
@@ -69,9 +69,9 @@ public class CrawlState implements Serializable {
     /**
      * Returns whether a reference should be considered "good" (the
      * corresponding document is not in a "bad" state, such as being rejected
-     * or produced an error.  
+     * or produced an error.
      * This implementation will consider as good these reference statuses:
-     * {@link #NEW}, {@link #MODIFIED}, {@link #UNMODIFIED}, 
+     * {@link #NEW}, {@link #MODIFIED}, {@link #UNMODIFIED},
      * and {@link #PREMATURE}.
      * This method can be overridden to provide different logic for a valid
      * reference.
@@ -88,10 +88,10 @@ public class CrawlState implements Serializable {
     public boolean isNewOrModified() {
         return isOneOf(NEW, MODIFIED);
     }
-    
+
     /**
      * Returns whether a state indicate the document is to be skipped
-     * ({@link #UNMODIFIED} or {@link #PREMATURE}). 
+     * ({@link #UNMODIFIED} or {@link #PREMATURE}).
      * @return <code>true</code> if skipped
      * @since 1.6.0
      */
@@ -99,7 +99,7 @@ public class CrawlState implements Serializable {
         return isOneOf(UNMODIFIED, PREMATURE);
     }
 
-    
+
     public boolean isOneOf(CrawlState... states) {
         if (ArrayUtils.isEmpty(states)) {
             return false;
@@ -111,7 +111,7 @@ public class CrawlState implements Serializable {
         }
         return false;
     }
-    
+
     public static synchronized CrawlState valueOf(String state) {
         CrawlState refState = STATUSES.get(state);
         if (refState == null) {
@@ -119,28 +119,17 @@ public class CrawlState implements Serializable {
         }
         return refState;
     }
-    
+
     @Override
     public String toString() {
         return state;
     }
-
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof CrawlState)) {
-            return false;
-        }
-        CrawlState castOther = (CrawlState) other;
-        return new EqualsBuilder().append(state, castOther.state).isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
-    private transient int hashCode;
     @Override
     public int hashCode() {
-        if (hashCode == 0) {
-            hashCode = new HashCodeBuilder().append(state).toHashCode();
-        }
-        return hashCode;
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-    
 }

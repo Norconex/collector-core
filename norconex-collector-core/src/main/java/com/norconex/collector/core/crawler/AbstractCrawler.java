@@ -27,7 +27,6 @@ import static com.norconex.collector.core.crawler.CrawlerEvent.REJECTED_IMPORT;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
@@ -46,8 +45,6 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
-import org.apache.commons.beanutils.BeanUtilsBean;
-import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -69,6 +66,7 @@ import com.norconex.collector.core.spoil.SpoiledReferenceStrategy;
 import com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer;
 import com.norconex.committer.core.ICommitter;
 import com.norconex.commons.lang.Sleeper;
+import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.event.EventManager;
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory;
@@ -110,8 +108,6 @@ public abstract class AbstractCrawler
     private static final long STATUS_LOGGING_INTERVAL =
             TimeUnit.SECONDS.toMillis(5);
 
-    private final CopyIfNullBeanUtilsBean nullAwareBeanUtils =
-            new CopyIfNullBeanUtilsBean();
     private final ICrawlerConfig config;
     private final EventManager eventManager;
     private Importer importer;
@@ -673,7 +669,7 @@ public abstract class AbstractCrawler
             if (!crawlData.getState().isNewOrModified() && cached != null) {
                 //TODO maybe new CrawlData instances should be initialized with
                 // some of cache data available instead?
-                nullAwareBeanUtils.copyProperties(crawlData, cached);
+                BeanUtil.copyPropertiesOverNulls(cached, crawlData);
             }
 
             //--- Deal with bad states (if not already deleted) ----------------
@@ -860,22 +856,5 @@ public abstract class AbstractCrawler
                 latch.countDown();
             }
         }
-    }
-
-    public class CopyIfNullBeanUtilsBean extends BeanUtilsBean{
-        @Override
-        public void copyProperty(Object dest, String name, Object value)
-                throws IllegalAccessException, InvocationTargetException {
-            try {
-                if (PropertyUtils.getProperty(dest, name) != null) {
-                    return;
-                }
-            } catch (NoSuchMethodException e) {
-                throw new InvocationTargetException(e,
-                        "Could not get property '" + name + "' for " + dest);
-            }
-            super.copyProperty(dest, name, value);
-        }
-
     }
 }

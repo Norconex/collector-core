@@ -126,8 +126,8 @@ public class GenericSpoiledReferenceStrategizer implements
     @Override
     public void loadFromXML(XML xml) {
         SpoiledReferenceStrategy fallback = xml.getEnum(
-                SpoiledReferenceStrategy.class,
-                "@fallbackStrategy", fallbackStrategy);
+                "@fallbackStrategy",
+                SpoiledReferenceStrategy.class, fallbackStrategy);
         if (fallback != null) {
             setFallbackStrategy(fallback);
         }
@@ -135,7 +135,7 @@ public class GenericSpoiledReferenceStrategizer implements
         for (XML node : xml.getXMLList("mapping")) {
             String attribState = node.getString("@state", null);
             SpoiledReferenceStrategy strategy = node.getEnum(
-                    SpoiledReferenceStrategy.class, "@strategy");
+                    "@strategy", SpoiledReferenceStrategy.class);
             if (StringUtils.isBlank(attribState) || strategy == null) {
                 continue;
             }

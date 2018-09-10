@@ -310,7 +310,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         setId(xml.getString("@id", id));
         setNumThreads(xml.getInteger("numThreads", numThreads));
         setOrphansStrategy(xml.getEnum(
-                OrphansStrategy.class, "orphansStrategy", orphansStrategy));
+                "orphansStrategy", OrphansStrategy.class, orphansStrategy));
         setWorkDir(xml.getFile("workDir", workDir));
         setMaxDocuments(xml.getInteger("maxDocuments", maxDocuments));
         setStopOnExceptions(xml.getClassList(

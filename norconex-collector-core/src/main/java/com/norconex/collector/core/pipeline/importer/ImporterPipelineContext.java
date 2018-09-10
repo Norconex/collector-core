@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,16 @@
  */
 package com.norconex.collector.core.pipeline.importer;
 
-import java.lang.reflect.InvocationTargetException;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
-import org.apache.commons.beanutils.BeanUtils;
-
-import com.norconex.collector.core.CollectorException;
 import com.norconex.collector.core.crawler.ICrawler;
 import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.pipeline.DocumentPipelineContext;
+import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 import com.norconex.commons.lang.pipeline.Pipeline;
 import com.norconex.importer.doc.ImporterDocument;
@@ -47,13 +48,9 @@ public class ImporterPipelineContext extends DocumentPipelineContext {
      */
     public ImporterPipelineContext(ImporterPipelineContext copiable) {
         this(copiable.getCrawler(), copiable.getCrawlDataStore());
-        try {
-            BeanUtils.copyProperties(this, copiable);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new CollectorException("Could not copy importer context.", e);
-        }
+        BeanUtil.copyProperties(copiable, this);
     }
-    
+
     /**
      * Constructor.
      * @param crawler the crawler
@@ -72,13 +69,13 @@ public class ImporterPipelineContext extends DocumentPipelineContext {
      * @since 1.9.0
      */
     public ImporterPipelineContext(
-            ICrawler crawler, ICrawlDataStore crawlDataStore, 
+            ICrawler crawler, ICrawlDataStore crawlDataStore,
             BaseCrawlData crawlData) {
         super(crawler, crawlDataStore, crawlData);
     }
     public ImporterPipelineContext(
-            ICrawler crawler, ICrawlDataStore crawlDataStore, 
-            BaseCrawlData crawlData, BaseCrawlData cachedCrawlData, 
+            ICrawler crawler, ICrawlDataStore crawlDataStore,
+            BaseCrawlData crawlData, BaseCrawlData cachedCrawlData,
             ImporterDocument document) {
         super(crawler, crawlDataStore, crawlData, cachedCrawlData, document);
     }
@@ -122,5 +119,19 @@ public class ImporterPipelineContext extends DocumentPipelineContext {
      */
     public void setOrphan(boolean orphan) {
         this.orphan = orphan;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
+    }
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

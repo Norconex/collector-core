@@ -165,7 +165,7 @@ public class RegexMetadataFilter implements IOnMatchFilter, IMetadataFilter,
     @Override
     public void loadFromXML(XML xml) {
         setField(xml.getString("@field"));
-        setOnMatch(xml.getEnum(OnMatch.class, "@onMatch", onMatch));
+        setOnMatch(xml.getEnum("@onMatch", OnMatch.class, onMatch));
         setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
         setRegex(xml.getString("."));
     }

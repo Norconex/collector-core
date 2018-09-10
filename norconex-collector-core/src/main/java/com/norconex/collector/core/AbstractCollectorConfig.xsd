@@ -18,10 +18,14 @@
 
   <xs:complexType name="AbstractCollectorConfig" abstract="true">
     <xs:all>
+        <xs:element name="workDir" 
+                    type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <!-- 
         <xs:element name="progressDir" 
                     type="xs:string" minOccurs="0" maxOccurs="1"/>
         <xs:element name="logsDir" 
                     type="xs:string" minOccurs="0" maxOccurs="1"/>
+         -->
         <xs:element name="eventListeners"
                     type="listenersType" minOccurs="0" maxOccurs="1"/>
         <xs:element name="crawlerDefaults"
