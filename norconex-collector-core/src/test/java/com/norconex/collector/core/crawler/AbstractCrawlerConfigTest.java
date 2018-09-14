@@ -14,8 +14,8 @@
  */
 package com.norconex.collector.core.crawler;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 import org.junit.Test;
 
@@ -35,7 +35,7 @@ public class AbstractCrawlerConfigTest {
         c.setMaxDocuments(33);
         c.setNumThreads(3);
         c.setOrphansStrategy(OrphansStrategy.IGNORE);
-        c.setWorkDir(new File("c:\temp"));
+        c.setWorkDir(Paths.get("c:\\temp"));
         XML.assertWriteRead(c, "crawler");
     }
 }

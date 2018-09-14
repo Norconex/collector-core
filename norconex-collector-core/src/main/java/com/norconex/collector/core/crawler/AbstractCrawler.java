@@ -24,11 +24,12 @@ import static com.norconex.collector.core.crawler.CrawlerEvent.DOCUMENT_IMPORTED
 import static com.norconex.collector.core.crawler.CrawlerEvent.REJECTED_ERROR;
 import static com.norconex.collector.core.crawler.CrawlerEvent.REJECTED_IMPORT;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.List;
@@ -46,7 +47,6 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
@@ -185,12 +185,15 @@ public abstract class AbstractCrawler
 //                new CrawlerEvent(eventType, crawlData, subject));
 //    }
 
-    public File getBaseDownloadDir() {
-        return new File(
-                getCrawlerConfig().getWorkDir().getAbsolutePath(), "downloads");
+    public Path getBaseDownloadDir() {
+        return getCrawlerConfig().getWorkDir()
+                .toAbsolutePath().resolve("downloads");
+//        return new File(
+//                getCrawlerConfig().getWorkDir().getAbsolutePath(), "downloads");
     }
-    public File getCrawlerDownloadDir() {
-        return new File(getBaseDownloadDir(), getCrawlerConfig().getId());
+    public Path getCrawlerDownloadDir() {
+        return getBaseDownloadDir().resolve(FileUtil.toSafeFileName(
+                getCrawlerConfig().getId()));
     }
 
 //    @Override
@@ -212,8 +215,9 @@ public abstract class AbstractCrawler
 
     private void doExecute(JobStatusUpdater statusUpdater,
             JobSuite suite, boolean resume) {
+
         try {
-            FileUtils.forceMkdir(config.getWorkDir());
+            Files.createDirectories(config.getWorkDir());
         } catch (IOException e) {
             throw new CollectorException("Cannot create working directory: "
                     + config.getWorkDir(), e);
@@ -298,7 +302,7 @@ public abstract class AbstractCrawler
         LOG.info("{}: {} reference(s) processed.", getId(), processedCount);
 
         LOG.debug("{}: Removing empty directories", getId());
-        FileUtil.deleteEmptyDirs(getCrawlerDownloadDir());
+        FileUtil.deleteEmptyDirs(getCrawlerDownloadDir().toFile());
 
         if (!isStopped()) {
             eventManager.fire(CrawlerEvent.create(CRAWLER_FINISHED, this));
@@ -669,7 +673,7 @@ public abstract class AbstractCrawler
             if (!crawlData.getState().isNewOrModified() && cached != null) {
                 //TODO maybe new CrawlData instances should be initialized with
                 // some of cache data available instead?
-                BeanUtil.copyPropertiesOverNulls(cached, crawlData);
+                BeanUtil.copyPropertiesOverNulls(crawlData, cached);
             }
 
             //--- Deal with bad states (if not already deleted) ----------------

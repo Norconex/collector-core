@@ -25,17 +25,17 @@ import com.norconex.commons.lang.file.FileUtil;
 
 /**
  * <p>
- * H2 MVStore crawl data store factory 
+ * H2 MVStore crawl data store factory
  * (<a href="http://h2database.com/html/mvstore.html"
  * >http://h2database.com/html/mvstore.html</a>).
  * </p>
- * 
+ *
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;crawlDataStoreFactory 
+ *  &lt;crawlDataStoreFactory
  *          class="com.norconex.collector.core.data.store.impl.mvstore.MVStoreCrawlDataStoreFactory" /&gt;
  * </pre>
- * 
+ *
  * @author Pascal Dimassimo
  */
 public class MVStoreCrawlDataStoreFactory implements ICrawlDataStoreFactory {
@@ -43,7 +43,7 @@ public class MVStoreCrawlDataStoreFactory implements ICrawlDataStoreFactory {
     @Override
     public ICrawlDataStore createCrawlDataStore(ICrawlerConfig config,
             boolean resume) {
-        String storeDir = config.getWorkDir().getPath()
+        String storeDir = config.getWorkDir().toString()
                 + "/crawlstore/mvstore/"
                 + FileUtil.toSafeFileName(config.getId()) + "/";
         return new MVStoreCrawlDataStore(storeDir, resume);

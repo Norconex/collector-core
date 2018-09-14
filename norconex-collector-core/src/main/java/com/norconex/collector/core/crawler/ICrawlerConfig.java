@@ -14,7 +14,7 @@
  */
 package com.norconex.collector.core.crawler;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 import com.norconex.collector.core.checksum.IDocumentChecksummer;
@@ -65,7 +65,7 @@ public interface ICrawlerConfig extends IXMLConfigurable {
      * execution time are stored.
      * @return working directory
      */
-    File getWorkDir();
+    Path getWorkDir();
 
     /**
      * Gets the number of threads (maximum) a crawler should use.

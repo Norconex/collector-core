@@ -17,10 +17,10 @@ package com.norconex.collector.core;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.file.Paths;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Test;
@@ -68,7 +68,7 @@ public class AbstractCollectorTest {
         MockCrawlerConfig crawlA =
                 (MockCrawlerConfig) cfg.getCrawlerConfigs().get(0);
         assertEquals("crawlA", 22, crawlA.getNumThreads());
-        assertEquals("crawlA", new File("crawlAWorkdir"), crawlA.getWorkDir());
+        assertEquals("crawlA", Paths.get("crawlAWorkdir"), crawlA.getWorkDir());
         assertEquals("crawlA", "crawlAFilter", ((ExtensionReferenceFilter)
                 crawlA.getReferenceFilters().get(0)).getExtensions());
         assertEquals("crawlA", "F", ((ReplaceTransformer)
@@ -82,7 +82,8 @@ public class AbstractCollectorTest {
         MockCrawlerConfig crawlB =
                 (MockCrawlerConfig) cfg.getCrawlerConfigs().get(1);
         assertEquals("crawlB", 1, crawlB.getNumThreads());
-        assertEquals("crawlB", new File("defaultWorkdir"), crawlB.getWorkDir());
+        assertEquals("crawlB",
+                Paths.get("defaultWorkdir"), crawlB.getWorkDir());
         assertEquals("crawlB", "defaultFilter", ((ExtensionReferenceFilter)
                 crawlB.getReferenceFilters().get(0)).getExtensions());
         assertEquals("crawlB", "B", ((ReplaceTransformer)

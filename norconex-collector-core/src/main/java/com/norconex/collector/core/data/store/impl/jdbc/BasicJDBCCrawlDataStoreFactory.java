@@ -61,7 +61,7 @@ public class BasicJDBCCrawlDataStoreFactory
     @Override
     public ICrawlDataStore createCrawlDataStore(
             ICrawlerConfig config, boolean resume) {
-        String storeDir = config.getWorkDir().getPath() + "/crawlstore/jdbc/"
+        String storeDir = config.getWorkDir().toString() + "/crawlstore/jdbc/"
                 + FileUtil.toSafeFileName(config.getId()) + "/";
         return new JDBCCrawlDataStore(
                 storeDir, resume, createJDBCSerializer());

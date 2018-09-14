@@ -91,7 +91,7 @@ public abstract class BaseCrawlDataStoreTest {
             }
         };
         config.setId(crawlerId);
-        config.setWorkDir(tempFolder.getRoot());
+        config.setWorkDir(tempFolder.getRoot().toPath());
         return config;
     }
 

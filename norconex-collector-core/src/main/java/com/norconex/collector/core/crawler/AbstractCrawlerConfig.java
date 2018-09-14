@@ -14,7 +14,8 @@
  */
 package com.norconex.collector.core.crawler;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,7 +49,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
 
     private String id;
     private int numThreads = 2;
-    private File workDir = new File("./work");
+    private Path workDir = Paths.get("./work");
     private int maxDocuments = -1;
     private OrphansStrategy orphansStrategy = OrphansStrategy.PROCESS;
     private final List<Class<? extends Exception>> stopOnExceptions =
@@ -107,10 +108,10 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     }
 
     @Override
-    public File getWorkDir() {
+    public Path getWorkDir() {
         return workDir;
     }
-    public void setWorkDir(File workDir) {
+    public void setWorkDir(Path workDir) {
         this.workDir = workDir;
     }
 
@@ -311,7 +312,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         setNumThreads(xml.getInteger("numThreads", numThreads));
         setOrphansStrategy(xml.getEnum(
                 "orphansStrategy", OrphansStrategy.class, orphansStrategy));
-        setWorkDir(xml.getFile("workDir", workDir));
+        setWorkDir(xml.getPath("workDir", workDir));
         setMaxDocuments(xml.getInteger("maxDocuments", maxDocuments));
         setStopOnExceptions(xml.getClassList(
                 "stopOnExceptions/exception", stopOnExceptions));

@@ -48,7 +48,7 @@ public class ImporterPipelineContext extends DocumentPipelineContext {
      */
     public ImporterPipelineContext(ImporterPipelineContext copiable) {
         this(copiable.getCrawler(), copiable.getCrawlDataStore());
-        BeanUtil.copyProperties(copiable, this);
+        BeanUtil.copyProperties(this, copiable);
     }
 
     /**

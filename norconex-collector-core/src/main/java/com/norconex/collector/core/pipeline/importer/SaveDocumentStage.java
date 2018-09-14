@@ -19,6 +19,8 @@ import static com.norconex.collector.core.crawler.CrawlerEvent.DOCUMENT_SAVED;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,11 +51,11 @@ public class SaveDocumentStage
     public boolean execute(ImporterPipelineContext ctx) {
         //TODO have an interface for how to store downloaded files
         //(i.e., location, directory structure, file naming)
-        File workdir = ctx.getConfig().getWorkDir();
-        File downloadDir = new File(workdir, "/downloads");
-        if (!downloadDir.exists()) {
+        Path workdir = ctx.getConfig().getWorkDir();
+        Path downloadDir = workdir.resolve("downloads");
+        if (!downloadDir.toFile().exists()) {
             try {
-                FileUtils.forceMkdir(downloadDir);
+                Files.createDirectories(downloadDir);
             } catch (IOException e) {
                 throw new CollectorException(
                         "Cannot create download directory: " + downloadDir, e);
@@ -61,13 +63,12 @@ public class SaveDocumentStage
         }
         String path = urlToPath(ctx.getCrawlData().getReference());
 
-        File downloadFile = new File(downloadDir, path);
+        Path downloadFile = downloadDir.resolve(path);
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Saved file: " + downloadFile);
-        }
+        LOG.debug("Saved file: {}", downloadFile);
         try {
-            OutputStream out = FileUtils.openOutputStream(downloadFile);
+            OutputStream out =
+                    FileUtils.openOutputStream(downloadFile.toFile());
             IOUtils.copy(ctx.getDocument().getContent(), out);
             IOUtils.closeQuietly(out);
 
@@ -84,10 +85,10 @@ public class SaveDocumentStage
         if (url == null) {
             return null;
         }
-        String sep = File.separator;
-        if (sep.equals("\\")) {
-            sep = "\\" + sep;
-        }
+//        String sep = File.separator;
+//        if (sep.equals("\\")) {
+//            sep = "\\" + sep;
+//        }
 
         String domain = url.replaceFirst("(.*?)(://)(.*?)(/)(.*)", "$1_$3");
         domain = domain.replaceAll("[\\W]+", "_");
