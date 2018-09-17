@@ -14,10 +14,10 @@
  */
 package com.norconex.collector.core.crawler;
 
+import java.util.Objects;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.commons.lang.event.Event;
@@ -182,7 +182,17 @@ public class CrawlerEvent<T extends ICrawler> extends Event<T> {
     }
     @Override
     public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+        StringBuilder b = new StringBuilder();
+        if (crawlData != null) {
+            b.append(crawlData.getReference()).append(" - ");
+        }
+        if (subject != null) {
+            b.append(subject.toString());
+        } else {
+            b.append(Objects.toString(source));
+        }
+        return b.toString();
+//        return new ReflectionToStringBuilder(
+//                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

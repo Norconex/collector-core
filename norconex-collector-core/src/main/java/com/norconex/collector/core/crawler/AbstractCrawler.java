@@ -127,6 +127,8 @@ public abstract class AbstractCrawler
      * @param eventManager event manager
      */
     public AbstractCrawler(ICrawlerConfig config, EventManager eventManager) {
+        //TODO pass Collector instead and grab eventManager from it?
+        // That could give is other useful init info
         this.config = config;
         this.eventManager = eventManager;
     }
@@ -860,5 +862,10 @@ public abstract class AbstractCrawler
                 latch.countDown();
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return getId();
     }
 }

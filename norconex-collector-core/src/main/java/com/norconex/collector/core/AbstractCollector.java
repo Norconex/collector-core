@@ -343,4 +343,8 @@ public abstract class AbstractCollector implements ICollector {
                 + " (" + p.getImplementationVendor() + ")");
     }
 
+    @Override
+    public String toString() {
+        return getId();
+    }
 }
