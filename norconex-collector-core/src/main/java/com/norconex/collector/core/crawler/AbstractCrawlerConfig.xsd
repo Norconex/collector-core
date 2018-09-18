@@ -92,7 +92,9 @@
     <xs:all>
       <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
     </xs:all>
-    <xs:attribute name="class" type="xs:string" use="required"/>
+    <!-- Should be "required" but leaving as optional since it is OK to
+         not have one on self-closing tags. -->
+    <xs:attribute name="class" type="xs:string" use="optional"/>
     <xs:anyAttribute processContents="lax"/>
   </xs:complexType>
 

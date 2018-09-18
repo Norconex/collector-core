@@ -1,3 +1,6 @@
+- AbstractCrawlerConfig.xsd has the anyComplexRequiredClassType "class" being
+  optional. See if we can make it required, except for self-closing tags.
+
 - Rename RegexReferenceFilter here or the one in Importer module
   to avoid sharing same name.
 

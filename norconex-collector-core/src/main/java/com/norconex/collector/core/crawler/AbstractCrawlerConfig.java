@@ -327,6 +327,8 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
 
 
         //TODO Make it so importer can be null (importing is then skipped)
+//        setImporterConfig(xml.getObject("importer", importerConfig));
+
         XML importerXML = xml.getXML("importer");
         if (importerXML != null) {
             setImporterConfig(ImporterConfigLoader.loadImporterConfig(
