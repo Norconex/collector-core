@@ -292,7 +292,9 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         xml.addElementList("documentFilters", "filter", documentFilters);
 //        xml.addElementList("crawlerListeners", "listener", crawlerListeners);
         if (importerConfig != null) {
-            xml.addElement("importer").configure(importerConfig);
+            xml.addElement("importer", importerConfig);//.configure(importerConfig);
+
+//            xml.addElement("importer").configure(importerConfig);
         }
 //        xml.addElement("importer", importerConfig);
         if (committer != null) {
