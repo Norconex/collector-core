@@ -19,7 +19,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.collector.core.crawler.ICrawler;
+import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.pipeline.DocumentPipelineContext;
@@ -58,7 +58,7 @@ public class ImporterPipelineContext extends DocumentPipelineContext {
      * @since 1.9.0
      */
     public ImporterPipelineContext(
-            ICrawler crawler, ICrawlDataStore crawlDataStore) {
+            Crawler crawler, ICrawlDataStore crawlDataStore) {
         super(crawler, crawlDataStore, null);
     }
     /**
@@ -69,12 +69,12 @@ public class ImporterPipelineContext extends DocumentPipelineContext {
      * @since 1.9.0
      */
     public ImporterPipelineContext(
-            ICrawler crawler, ICrawlDataStore crawlDataStore,
+            Crawler crawler, ICrawlDataStore crawlDataStore,
             BaseCrawlData crawlData) {
         super(crawler, crawlDataStore, crawlData);
     }
     public ImporterPipelineContext(
-            ICrawler crawler, ICrawlDataStore crawlDataStore,
+            Crawler crawler, ICrawlDataStore crawlDataStore,
             BaseCrawlData crawlData, BaseCrawlData cachedCrawlData,
             ImporterDocument document) {
         super(crawler, crawlDataStore, crawlData, cachedCrawlData, document);

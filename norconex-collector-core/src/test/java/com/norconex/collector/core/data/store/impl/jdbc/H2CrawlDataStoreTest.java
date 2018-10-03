@@ -20,7 +20,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.norconex.collector.core.TestUtil;
-import com.norconex.collector.core.crawler.ICrawlerConfig;
+import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.impl.BaseCrawlDataStoreTest;
 import com.norconex.commons.lang.xml.XML;
@@ -30,9 +30,11 @@ public class H2CrawlDataStoreTest extends BaseCrawlDataStoreTest {
 
     @Override
     protected ICrawlDataStore createCrawlDataStore(
-            ICrawlerConfig config, TemporaryFolder tempFolder, boolean resume) {
-        return new BasicJDBCCrawlDataStoreFactory().createCrawlDataStore(
-                config, resume);
+            CrawlerConfig config, TemporaryFolder tempFolder, boolean resume) {
+
+        BasicJDBCCrawlDataStoreFactory f = new BasicJDBCCrawlDataStoreFactory();
+        f.setStoreDir(tempFolder.getRoot().toPath());
+        return f.createCrawlDataStore(config, resume);
     }
 
     @Test

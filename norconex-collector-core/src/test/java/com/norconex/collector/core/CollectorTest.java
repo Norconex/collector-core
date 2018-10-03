@@ -20,12 +20,11 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.file.Paths;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Test;
 
-import com.norconex.collector.core.crawler.ICrawlerConfig;
+import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.crawler.MockCrawlerConfig;
 import com.norconex.collector.core.filter.impl.ExtensionReferenceFilter;
 import com.norconex.committer.core.impl.FileSystemCommitter;
@@ -36,7 +35,7 @@ import com.norconex.importer.handler.transformer.impl.ReplaceTransformer;
  * @author Pascal Essiembre
  * @since 1.7.0
  */
-public class AbstractCollectorTest {
+public class CollectorTest {
 
     @Test
     public void testWriteRead() throws IOException {
@@ -52,7 +51,7 @@ public class AbstractCollectorTest {
         crawlerCfg.setId("myCrawler");
         crawlerCfg.setCommitter(new FileSystemCommitter());
 
-        config.setCrawlerConfigs(new ICrawlerConfig[] {crawlerCfg});
+        config.setCrawlerConfigs(new CrawlerConfig[] {crawlerCfg});
 
         XML.assertWriteRead(config, "collector");
     }
@@ -68,7 +67,7 @@ public class AbstractCollectorTest {
         MockCrawlerConfig crawlA =
                 (MockCrawlerConfig) cfg.getCrawlerConfigs().get(0);
         assertEquals("crawlA", 22, crawlA.getNumThreads());
-        assertEquals("crawlA", Paths.get("crawlAWorkdir"), crawlA.getWorkDir());
+//        assertEquals("crawlA", Paths.get("crawlAWorkdir"), crawlA.getWorkDir());
         assertEquals("crawlA", "crawlAFilter", ((ExtensionReferenceFilter)
                 crawlA.getReferenceFilters().get(0)).getExtensions());
         assertEquals("crawlA", "F", ((ReplaceTransformer)
@@ -82,8 +81,8 @@ public class AbstractCollectorTest {
         MockCrawlerConfig crawlB =
                 (MockCrawlerConfig) cfg.getCrawlerConfigs().get(1);
         assertEquals("crawlB", 1, crawlB.getNumThreads());
-        assertEquals("crawlB",
-                Paths.get("defaultWorkdir"), crawlB.getWorkDir());
+//        assertEquals("crawlB",
+//                Paths.get("defaultWorkdir"), crawlB.getWorkDir());
         assertEquals("crawlB", "defaultFilter", ((ExtensionReferenceFilter)
                 crawlB.getReferenceFilters().get(0)).getExtensions());
         assertEquals("crawlB", "B", ((ReplaceTransformer)

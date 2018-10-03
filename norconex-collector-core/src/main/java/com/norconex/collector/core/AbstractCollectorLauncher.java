@@ -90,9 +90,9 @@ public abstract class AbstractCollectorLauncher {
             }
 
             // Proceed
-            ICollectorConfig config =
+            CollectorConfig config =
                     loadCommandLineConfig(cmd, configFile, varFile);
-            ICollector collector = createCollector(config);
+            Collector collector = createCollector(config);
             if (ARG_ACTION_START.equalsIgnoreCase(action)) {
                 collector.start(false);
             } else if (ARG_ACTION_RESUME.equalsIgnoreCase(action)) {
@@ -130,9 +130,9 @@ public abstract class AbstractCollectorLauncher {
     }
 
     //TODO have a public method that accepts files as well (when embedding)
-    private ICollectorConfig loadCommandLineConfig(
+    private CollectorConfig loadCommandLineConfig(
             CommandLine cmd, Path configFile, Path varFile) {
-        ICollectorConfig config = null;
+        CollectorConfig config = null;
 //        CountingConsoleAppender appender = null;
 //            if (cmd.hasOption(ARG_CHECKCFG)) {
 //                appender = new CountingConsoleAppender();
@@ -151,7 +151,7 @@ public abstract class AbstractCollectorLauncher {
 
                 errors = xml.configure(config);
 
-    //                ICollectorConfig collectorConfig =
+    //                CollectorConfig collectorConfig =
     //                        collectorConfigClass.newInstance();
     //                collectorConfig.loadFromXML(XMLConfigurationUtil.newReader(xml));
     //                return collectorConfig;
@@ -249,8 +249,8 @@ public abstract class AbstractCollectorLauncher {
                 ARG_ACTION_START, ARG_ACTION_RESUME, ARG_ACTION_STOP);
     }
 
-    protected abstract Class<? extends AbstractCollectorConfig>
+    protected abstract Class<? extends CollectorConfig>
             getCollectorConfigClass();
-    protected abstract ICollector createCollector(
-            ICollectorConfig config);
+    protected abstract Collector createCollector(
+            CollectorConfig config);
 }

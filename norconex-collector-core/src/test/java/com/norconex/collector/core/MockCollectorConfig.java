@@ -17,7 +17,7 @@ package com.norconex.collector.core;
 import com.norconex.collector.core.crawler.MockCrawlerConfig;
 import com.norconex.commons.lang.xml.XML;
 
-public class MockCollectorConfig extends AbstractCollectorConfig {
+public class MockCollectorConfig extends CollectorConfig {
 
     public MockCollectorConfig() {
         super(MockCrawlerConfig.class);

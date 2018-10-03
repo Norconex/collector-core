@@ -22,12 +22,12 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.norconex.commons.lang.event.IEventListener;
 
 public class MockCollectorEventListener
-        implements IEventListener<CollectorEvent<ICollector>> {
+        implements IEventListener<CollectorEvent<Collector>> {
 
 //    private final String test = "MockCollectorEventListener";
 
     @Override
-    public void accept(CollectorEvent<ICollector> t) {
+    public void accept(CollectorEvent<Collector> t) {
         if (t.is(CollectorEvent.COLLECTOR_STARTED)) {
 
         } else if (t.is(CollectorEvent.COLLECTOR_ENDED)) {

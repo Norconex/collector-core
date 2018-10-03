@@ -20,8 +20,8 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.crawler.CrawlerEvent;
-import com.norconex.collector.core.crawler.ICrawler;
-import com.norconex.collector.core.crawler.ICrawlerConfig;
+import com.norconex.collector.core.crawler.Crawler;
+import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
@@ -34,7 +34,7 @@ import com.norconex.commons.lang.pipeline.Pipeline;
  */
 public class BasePipelineContext {
 
-    private final ICrawler crawler;
+    private final Crawler crawler;
     private final ICrawlDataStore crawlDataStore;
     private BaseCrawlData crawlData;
 
@@ -45,7 +45,7 @@ public class BasePipelineContext {
      * @since 1.9.0
      */
     public BasePipelineContext(
-            ICrawler crawler, ICrawlDataStore crawlDataStore) {
+            Crawler crawler, ICrawlDataStore crawlDataStore) {
         this(crawler, crawlDataStore, null);
     }
 
@@ -56,18 +56,18 @@ public class BasePipelineContext {
      * @param crawlData current crawl data
      */
     public BasePipelineContext(
-            ICrawler crawler, ICrawlDataStore crawlDataStore,
+            Crawler crawler, ICrawlDataStore crawlDataStore,
             BaseCrawlData crawlData) {
         this.crawler = crawler;
         this.crawlDataStore = crawlDataStore;
         this.crawlData = crawlData;
     }
 
-    public ICrawler getCrawler() {
+    public Crawler getCrawler() {
         return crawler;
     }
 
-    public ICrawlerConfig getConfig() {
+    public CrawlerConfig getConfig() {
         return crawler.getCrawlerConfig();
     }
 

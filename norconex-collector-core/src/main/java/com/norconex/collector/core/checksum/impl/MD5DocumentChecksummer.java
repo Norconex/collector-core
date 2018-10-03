@@ -138,7 +138,8 @@ public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
         // document
         if (isCombineFieldsAndContent() || !isSourceFieldsSet) {
             try {
-                b.append(ChecksumUtil.checksumMD5(document.getContent()));
+                b.append(ChecksumUtil.checksumMD5(
+                        document.getInputStream()));
             } catch (IOException e) {
                 throw new CollectorException(
                         "Cannot create document checksum on : "

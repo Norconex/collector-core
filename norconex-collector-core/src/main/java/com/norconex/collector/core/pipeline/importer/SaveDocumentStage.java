@@ -51,7 +51,7 @@ public class SaveDocumentStage
     public boolean execute(ImporterPipelineContext ctx) {
         //TODO have an interface for how to store downloaded files
         //(i.e., location, directory structure, file naming)
-        Path workdir = ctx.getConfig().getWorkDir();
+        Path workdir = ctx.getCrawler().getWorkDir();
         Path downloadDir = workdir.resolve("downloads");
         if (!downloadDir.toFile().exists()) {
             try {
@@ -69,7 +69,7 @@ public class SaveDocumentStage
         try {
             OutputStream out =
                     FileUtils.openOutputStream(downloadFile.toFile());
-            IOUtils.copy(ctx.getDocument().getContent(), out);
+            IOUtils.copy(ctx.getDocument().getInputStream(), out);
             IOUtils.closeQuietly(out);
 
             ctx.fireCrawlerEvent(

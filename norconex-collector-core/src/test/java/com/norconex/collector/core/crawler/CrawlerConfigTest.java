@@ -15,18 +15,17 @@
 package com.norconex.collector.core.crawler;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 
 import org.junit.Test;
 
-import com.norconex.collector.core.crawler.ICrawlerConfig.OrphansStrategy;
+import com.norconex.collector.core.crawler.CrawlerConfig.OrphansStrategy;
 import com.norconex.commons.lang.xml.XML;
 
 
 /**
  * @author Pascal Essiembre
  */
-public class AbstractCrawlerConfigTest {
+public class CrawlerConfigTest {
 
     @Test
     public void testWriteRead() throws IOException {
@@ -35,7 +34,7 @@ public class AbstractCrawlerConfigTest {
         c.setMaxDocuments(33);
         c.setNumThreads(3);
         c.setOrphansStrategy(OrphansStrategy.IGNORE);
-        c.setWorkDir(Paths.get("c:\\temp"));
+//        c.setWorkDir(Paths.get("c:\\temp"));
         XML.assertWriteRead(c, "crawler");
     }
 }

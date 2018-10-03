@@ -14,16 +14,18 @@
  */
 package com.norconex.collector.core.data.store.impl.jdbc;
 
+import java.nio.file.Path;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.collector.core.crawler.ICrawlerConfig;
+import com.norconex.collector.core.crawler.Crawler;
+import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
-import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.file.FileUtil;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 /**
@@ -47,8 +49,10 @@ import com.norconex.commons.lang.xml.XML;
  * @author Pascal Essiembre
  * @since 1.5.0
  */
-public class BasicJDBCCrawlDataStoreFactory
+public class BasicJDBCCrawlDataStoreFactory //extends CrawlerLifeCycleListener
         implements ICrawlDataStoreFactory, IXMLConfigurable {
+
+    private Path storeDir;
 
     public BasicJDBCCrawlDataStoreFactory() {
         super();
@@ -58,13 +62,36 @@ public class BasicJDBCCrawlDataStoreFactory
         return new BasicJDBCSerializer();
     }
 
+    public Path getStoreDir() {
+        return storeDir;
+    }
+    public void setStoreDir(Path storeDir) {
+        this.storeDir = storeDir;
+    }
+//
+//    @Override
+//    protected void crawlerStartup(CrawlerEvent<Crawler> event) {
+//        if (storeDir == null) {
+//            storeDir = event.getSource().getWorkDir().resolve(
+//                    "/crawlstore-jdbc");
+//        }
+//    }
+//    @Override
+//    protected void crawlerShutdown(CrawlerEvent<Crawler> event) {
+//    }
+
     @Override
     public ICrawlDataStore createCrawlDataStore(
-            ICrawlerConfig config, boolean resume) {
-        String storeDir = config.getWorkDir().toString() + "/crawlstore/jdbc/"
-                + FileUtil.toSafeFileName(config.getId()) + "/";
+            CrawlerConfig config, boolean resume) {
+
+        if (storeDir == null) {
+            storeDir = Crawler.get().getWorkDir().resolve(
+                    "crawlstore-jdbc");
+        }
+//        String storeDir = config.getWorkDir().toString() + "/crawlstore/jdbc/"
+//                + FileUtil.toSafeFileName(config.getId()) + "/";
         return new JDBCCrawlDataStore(
-                storeDir, resume, createJDBCSerializer());
+                 storeDir.toString(), resume, createJDBCSerializer());
     }
 
     @Override

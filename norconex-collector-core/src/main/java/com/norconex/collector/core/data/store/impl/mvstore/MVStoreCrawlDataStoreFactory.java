@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,16 @@
  */
 package com.norconex.collector.core.data.store.impl.mvstore;
 
+import java.nio.file.Path;
+
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.collector.core.crawler.ICrawlerConfig;
+import com.norconex.collector.core.crawler.Crawler;
+import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
-import com.norconex.commons.lang.file.FileUtil;
 
 /**
  * <p>
@@ -36,18 +38,45 @@ import com.norconex.commons.lang.file.FileUtil;
  *          class="com.norconex.collector.core.data.store.impl.mvstore.MVStoreCrawlDataStoreFactory" /&gt;
  * </pre>
  *
- * @author Pascal Dimassimo
+ * @author Pascal Essiembre
  */
-public class MVStoreCrawlDataStoreFactory implements ICrawlDataStoreFactory {
+public class MVStoreCrawlDataStoreFactory //extends CrawlerLifeCycleListener
+        implements ICrawlDataStoreFactory {
+
+    private Path storeDir;
+
+    public Path getStoreDir() {
+        return storeDir;
+    }
+    public void setStoreDir(Path storeDir) {
+        this.storeDir = storeDir;
+    }
 
     @Override
-    public ICrawlDataStore createCrawlDataStore(ICrawlerConfig config,
+    public ICrawlDataStore createCrawlDataStore(CrawlerConfig config,
             boolean resume) {
-        String storeDir = config.getWorkDir().toString()
-                + "/crawlstore/mvstore/"
-                + FileUtil.toSafeFileName(config.getId()) + "/";
-        return new MVStoreCrawlDataStore(storeDir, resume);
+
+        if (storeDir == null) {
+            storeDir = Crawler.get().getWorkDir().resolve(
+                    "crawlstore-mvstore");
+        }
+//        String storeDir = config.getWorkDir().toString()
+//                + "/crawlstore/mvstore/"
+//                + FileUtil.toSafeFileName(config.getId()) + "/";
+        return new MVStoreCrawlDataStore(storeDir.toString(), resume);
     }
+
+//    @Override
+//    protected void crawlerStartup(CrawlerEvent<Crawler> event) {
+//        if (storeDir == null) {
+//            storeDir = event.getSource().getWorkDir().resolve(
+//                    "/crawlstore-mvstore");
+//        }
+//    }
+//    @Override
+//    protected void crawlerShutdown(CrawlerEvent<Crawler> event) {
+//    }
+//
 
     @Override
     public boolean equals(final Object other) {

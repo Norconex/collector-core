@@ -32,7 +32,7 @@ public class CommitModuleStage
         if (committer != null) {
             ImporterDocument doc = ctx.getDocument();
             committer.add(doc.getReference(),
-                    doc.getContent(), doc.getMetadata());
+                    doc.getInputStream(), doc.getMetadata());
         }
         ctx.fireCrawlerEvent(
                 CrawlerEvent.DOCUMENT_COMMITTED_ADD,

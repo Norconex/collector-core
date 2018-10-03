@@ -14,8 +14,6 @@
  */
 package com.norconex.collector.core.crawler;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,19 +35,40 @@ import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
 import com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer;
 import com.norconex.committer.core.ICommitter;
 import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterConfigLoader;
 
 /**
- * Base Collector configuration.
+ * Base Crawler configuration. Crawlers usually read this configuration upon
+ * starting up.  Once execution has started, it should not be changed
+ * to avoid unexpected behaviors.
  * @author Pascal Essiembre
  */
-public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
+public abstract class CrawlerConfig implements IXMLConfigurable {
+
+    enum OrphansStrategy {
+        /**
+         * Deleting orphans sends them to the Committer for deletions and
+         * they are removed from the internal reference cache.
+         */
+        DELETE,
+        /**
+         * Processing orphans tries to obtain and process them again,
+         * normally.
+         */
+        PROCESS,
+        /**
+         * Ignoring orphans effectively does nothing with them
+         * (not deleted, not processed).
+         */
+        IGNORE
+    }
 
     private String id;
     private int numThreads = 2;
-    private Path workDir = Paths.get("./work");
+//    private final Path workDir = Paths.get("./work");
     private int maxDocuments = -1;
     private OrphansStrategy orphansStrategy = OrphansStrategy.PROCESS;
     private final List<Class<? extends Exception>> stopOnExceptions =
@@ -76,7 +95,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     /**
      * Creates a new crawler configuration.
      */
-	public AbstractCrawlerConfig() {
+	public CrawlerConfig() {
         super();
     }
 
@@ -84,57 +103,115 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
 	 * Gets this crawler unique identifier.
 	 * @return unique identifier
 	 */
-	@Override
     public String getId() {
         return id;
     }
     /**
-     * Sets this crawler unique identifier. It is important
-     * the id of the crawler is unique amongst your collector crawlers.  This
-     * facilitates integration with different systems and facilitates
-     * tracking.
+     * Sets this crawler unique identifier.
+     * Using usual names is perfectly fine (non-alphanumeric characters are OK).
+     * It is important for this crawler ID to be unique amongst your
+     * collector crawlers.  This facilitates integration with different
+     * systems and facilitates tracking.
      * @param id unique identifier
      */
     public void setId(String id) {
         this.id = id;
     }
 
-    @Override
+    /**
+     * Gets the maximum number of threads a crawler can use.
+     * @return number of threads
+     */
     public int getNumThreads() {
         return numThreads;
     }
+    /**
+     * Sets the maximum number of threads a crawler can use.
+     * @param numThreads number of threads
+     */
     public void setNumThreads(int numThreads) {
         this.numThreads = numThreads;
     }
 
-    @Override
-    public Path getWorkDir() {
-        return workDir;
-    }
-    public void setWorkDir(Path workDir) {
-        this.workDir = workDir;
-    }
+//    /**
+//     * Gets the crawler base directory where many files created at
+//     * execution time are stored. Default is <code>null</code>, which
+//     * will use the collector working directory
+//     * @return working directory
+//     */
+//    public Path getWorkDir() {
+//        return workDir;
+//    }
+//    public void setWorkDir(Path workDir) {
+//        this.workDir = workDir;
+//    }
 
-    @Override
+    /**
+     * Gets the maximum number of documents that can be processed. It is
+     * normal not all "processed" documents make it to your Committer
+     * as some can be rejected.
+     * @return maximum number of documents that can be processed
+     */
     public int getMaxDocuments() {
         return maxDocuments;
     }
+    /**
+     * Sets the maximum number of documents that can be processed.
+     * @param maxDocuments maximum number of documents that can be processed
+     */
     public void setMaxDocuments(int maxDocuments) {
         this.maxDocuments = maxDocuments;
     }
 
-    @Override
+    /**
+     * <p>Gets the strategy to adopt when there are orphans.  Orphans are
+     * references that were processed in a previous run, but were not in the
+     * current run.  In other words, they are leftovers from a previous run
+     * that were not re-encountered in the current.
+     * </p><p>
+     * Unless explicitly stated otherwise by an implementing class, the default
+     * strategy is to <code>PROCESS</code> orphans.
+     * Setting a <code>null</code> value is the same as setting
+     * <code>IGNORE</code>.
+     * </p><p>
+     * Since 1.2.0, unless otherwise stated in implementing classes,
+     * the default orphan strategy is now <code>PROCESS</code>.
+     * </p><p>
+     * <b>Be careful:</b> Setting the orphan strategy to <code>DELETE</code>
+     * is NOT recommended in most cases. With some collectors, a temporary
+     * failure such as a network outage or a web page timing out, may cause
+     * some documents not to be crawled. When this happens, unreachable
+     * documents would be considered "orphans" and be deleted while under
+     * normal circumstances, they should be kept.  Re-processing them
+     * (default), is usually the safest approach to confirm they still
+     * exist before deleting or updating them.
+     * </p>
+     * @return orphans strategy
+     */
     public OrphansStrategy getOrphansStrategy() {
         return orphansStrategy;
     }
+    /**
+     * <p>Sets the strategy to adopt when there are orphans.</p>
+     * @param orphansStrategy orphans strategy
+     * @see #getOrphansStrategy()
+     */
     public void setOrphansStrategy(OrphansStrategy orphansStrategy) {
         this.orphansStrategy = orphansStrategy;
     }
 
     /**
+     * Gets the exceptions we want to stop the crawler on.
+     * By default the crawler will log exceptions from processing
+     * a document and try to move on to the next without stopping.
+     * Even if no exceptions are returned by this method,
+     * the crawler can sometimes stop regardless if it cannot recover
+     * safely from an exception.
+     * To capture more exceptions, use a parent class (e.g., Exception
+     * should catch them all).
+     * @return exceptions that will stop the crawler when encountered
      * @since 1.9.0
      */
-    @Override
     public List<Class<? extends Exception>> getStopOnExceptions() {
         return Collections.unmodifiableList(stopOnExceptions);
     }
@@ -156,15 +233,35 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
             Class<? extends Exception>... stopOnExceptions) {
         setStopOnExceptions(Arrays.asList(stopOnExceptions));
     }
+    /**
+     * Sets the exceptions we want to stop the crawler on.
+     * By default the crawler will log exceptions from processing
+     * a document and try to move on to the next without stopping.
+     * Even if no exceptions are returned by this method,
+     * the crawler can sometimes stop regardless if it cannot recover
+     * safely from an exception.
+     * To capture more exceptions, use a parent class (e.g., Exception
+     * should catch them all).
+     * @param stopOnExceptions exceptions that will stop the crawler when
+     *         encountered
+     * @since 1.9.0
+     */
     public void setStopOnExceptions(
             List<Class<? extends Exception>> stopOnExceptions) {
         CollectionUtil.setAll(this.stopOnExceptions, stopOnExceptions);
     }
 
-    @Override
+    /**
+     * Gets the crawl data store factory.
+     * @return crawl data store factory.
+     */
     public ICrawlDataStoreFactory getCrawlDataStoreFactory() {
         return crawlDataStoreFactory;
     }
+    /**
+     * Sets the crawl data store factory.
+     * @param crawlDataStoreFactory crawl data store factory.
+     */
     public void setCrawlDataStoreFactory(
             ICrawlDataStoreFactory crawlDataStoreFactory) {
         this.crawlDataStoreFactory = crawlDataStoreFactory;
@@ -189,42 +286,58 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
 //    }
 
 
-    @Override
+    /**
+     * Gets the spoiled state strategy resolver.
+     * @return spoiled state strategy resolver
+     * @since 1.2.0
+     */
     public ISpoiledReferenceStrategizer getSpoiledReferenceStrategizer() {
         return spoiledReferenceStrategizer;
     }
+    /**
+     * Sets the spoiled state strategy resolver.
+     * @param spoiledReferenceStrategizer spoiled state strategy resolver
+     * @since 1.2.0
+     */
     public void setSpoiledReferenceStrategizer(
             ISpoiledReferenceStrategizer spoiledReferenceStrategizer) {
         this.spoiledReferenceStrategizer = spoiledReferenceStrategizer;
     }
 
     /**
-     * Gets the reference filters
-     * @return the referenceFilters
+     * Gets reference filters
+     * @return reference filters
      */
-    @Override
     public List<IReferenceFilter> getReferenceFilters() {
         return Collections.unmodifiableList(referenceFilters);
     }
     /**
-     * Sets the reference filters.
-     * @param referenceFilters the referenceFilters to set
+     * Sets reference filters.
+     * @param referenceFilters reference filters to set
      */
     public void setReferenceFilters(IReferenceFilter... referenceFilters) {
         setReferenceFilters(Arrays.asList(referenceFilters));
     }
     /**
-     * Sets the reference filters.
+     * Sets reference filters.
      * @param referenceFilters the referenceFilters to set
      * @since 2.0.0
      */
     public void setReferenceFilters(List<IReferenceFilter> referenceFilters) {
         CollectionUtil.setAll(this.referenceFilters, referenceFilters);
     }
-    @Override
+
+    /**
+     * Gets the document filters.
+     * @return document filters
+     */
     public List<IDocumentFilter> getDocumentFilters() {
         return Collections.unmodifiableList(documentFilters);
     }
+    /**
+     * Sets document filters.
+     * @param documentfilters document filters
+     */
     public void setDocumentFilters(IDocumentFilter... documentfilters) {
         setDocumentFilters(Arrays.asList(documentfilters));
     }
@@ -237,10 +350,17 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         CollectionUtil.setAll(this.documentFilters, documentFilters);
     }
 
-    @Override
+    /**
+     * Gets metadata filters.
+     * @return metadata filters
+     */
     public List<IMetadataFilter> getMetadataFilters() {
         return Collections.unmodifiableList(metadataFilters);
     }
+    /**
+     * Sets metadata filters.
+     * @param metadataFilters metadata filters
+     */
     public void setMetadataFilters(IMetadataFilter... metadataFilters) {
         setMetadataFilters(Arrays.asList(metadataFilters));
     }
@@ -253,27 +373,48 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         CollectionUtil.setAll(this.metadataFilters, metadataFilters);
     }
 
-    @Override
+    /**
+     * Gets the document checksummer.
+     * @return document checksummer
+     */
     public IDocumentChecksummer getDocumentChecksummer() {
         return documentChecksummer;
     }
+    /**
+     * Sets the document checksummer.
+     * @param documentChecksummer document checksummer
+     */
     public void setDocumentChecksummer(
             IDocumentChecksummer documentChecksummer) {
         this.documentChecksummer = documentChecksummer;
     }
 
-    @Override
+    /**
+     * Gets the Importer module configuration.
+     * @return Importer module configuration
+     */
     public ImporterConfig getImporterConfig() {
         return importerConfig;
     }
+    /**
+     * Sets the Importer module configuration.
+     * @param importerConfig Importer module configuration
+     */
     public void setImporterConfig(ImporterConfig importerConfig) {
         this.importerConfig = importerConfig;
     }
 
-    @Override
+    /**
+     * Gets the Committer module configuration.
+     * @return Committer module configuration
+     */
     public ICommitter getCommitter() {
         return committer;
     }
+    /**
+     * Sets the Committer module configuration.
+     * @param committer Committer module configuration
+     */
     public void setCommitter(ICommitter committer) {
         this.committer = committer;
     }
@@ -282,7 +423,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
     public void saveToXML(XML xml) {
         xml.setAttribute("id", id);
         xml.addElement("numThreads", numThreads);
-        xml.addElement("workDir", workDir);
+//        xml.addElement("workDir", workDir);
         xml.addElement("maxDocuments", maxDocuments);
         xml.addElementList("stopOnExceptions", "exception", stopOnExceptions);
         xml.addElement("orphansStrategy", orphansStrategy);
@@ -314,7 +455,7 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
         setNumThreads(xml.getInteger("numThreads", numThreads));
         setOrphansStrategy(xml.getEnum(
                 "orphansStrategy", OrphansStrategy.class, orphansStrategy));
-        setWorkDir(xml.getPath("workDir", workDir));
+//        setWorkDir(xml.getPath("workDir", workDir));
         setMaxDocuments(xml.getInteger("maxDocuments", maxDocuments));
         setStopOnExceptions(xml.getClassList(
                 "stopOnExceptions/exception", stopOnExceptions));
@@ -333,6 +474,11 @@ public abstract class AbstractCrawlerConfig implements ICrawlerConfig {
 
         XML importerXML = xml.getXML("importer");
         if (importerXML != null) {
+
+
+            //TODO new ImporterConfig()  .setCachedConfigParams as defaults... then call XML configure
+
+
             setImporterConfig(ImporterConfigLoader.loadImporterConfig(
                     importerXML, false)); //TODO handle ignore errors
         } else if (getImporterConfig() == null) {

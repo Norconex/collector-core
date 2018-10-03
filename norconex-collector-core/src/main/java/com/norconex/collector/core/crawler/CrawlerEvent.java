@@ -28,7 +28,7 @@ import com.norconex.commons.lang.event.Event;
  * @param <T> Collector for this event
  * @since 2.0.0
  */
-public class CrawlerEvent<T extends ICrawler> extends Event<T> {
+public class CrawlerEvent<T extends Crawler> extends Event<T> {
 
     private static final long serialVersionUID = 1L;
 
@@ -142,18 +142,18 @@ public class CrawlerEvent<T extends ICrawler> extends Event<T> {
         this.subject = subject;
     }
 
-    public static CrawlerEvent<ICrawler> create(String name, ICrawler crawler) {
+    public static CrawlerEvent<Crawler> create(String name, Crawler crawler) {
         return create(name, crawler, null);
     }
-    public static CrawlerEvent<ICrawler> create(
-            String name, ICrawler crawler, ICrawlData crawlData) {
+    public static CrawlerEvent<Crawler> create(
+            String name, Crawler crawler, ICrawlData crawlData) {
         return create(name, crawler, crawlData, null, null);
     }
-    public static CrawlerEvent<ICrawler> create(String name, ICrawler crawler,
+    public static CrawlerEvent<Crawler> create(String name, Crawler crawler,
             ICrawlData crawlData, Object subject) {
         return create(name, crawler, crawlData, subject, null);
     }
-    public static CrawlerEvent<ICrawler> create(String name, ICrawler crawler,
+    public static CrawlerEvent<Crawler> create(String name, Crawler crawler,
             ICrawlData crawlData, Object subject, Throwable exception) {
         return new CrawlerEvent<>(name, crawler, crawlData, subject, exception);
     }

@@ -34,6 +34,7 @@ import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -52,8 +53,9 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.collector.core.Collector;
 import com.norconex.collector.core.CollectorException;
-import com.norconex.collector.core.crawler.ICrawlerConfig.OrphansStrategy;
+import com.norconex.collector.core.crawler.CrawlerConfig.OrphansStrategy;
 import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.data.ICrawlData;
@@ -96,22 +98,29 @@ import com.norconex.jef5.suite.JobSuite;
  */
 //TODO document that logger should have thread name instead of explicitely
 // adding id everywhere when logging?
-public abstract class AbstractCrawler
-        extends AbstractResumableJob implements ICrawler {
+public abstract class Crawler extends AbstractResumableJob {
 
     private static final Logger LOG =
-            LoggerFactory.getLogger(AbstractCrawler.class);
+            LoggerFactory.getLogger(Crawler.class);
 
     private static final int DOUBLE_PROGRESS_SCALE = 4;
     private static final int DOUBLE_PERCENT_SCALE = -2;
     private static final int MINIMUM_DELAY = 1;
     private static final long STATUS_LOGGING_INTERVAL =
             TimeUnit.SECONDS.toMillis(5);
+    private static final InheritableThreadLocal<Crawler> INSTANCE =
+            new InheritableThreadLocal<>();
 
-    private final ICrawlerConfig config;
-    private final EventManager eventManager;
+    private final CrawlerConfig config;
+    private final Collector collector;
+//    private final EventManager eventManager;
     private Importer importer;
-    private CachedStreamFactory streamFactory;
+
+    private Path workDir;
+    private Path tempDir;
+    private Path downloadDir;
+
+//    private CachedStreamFactory streamFactory;
 
     private boolean stopped;
     // This processedCount does not take into account alternate references such
@@ -121,16 +130,39 @@ public abstract class AbstractCrawler
     private int processedCount;
     private long lastStatusLoggingTime;
 
+//    private final EventManager eventManager;
+
+//    /**
+//     * Constructor.
+//     * @param config crawler configuration
+//     * @param eventManager event manager
+//     */
+//    public Crawler(CrawlerConfig config, EventManager eventManager) {
+//        //TODO pass Collector instead and grab eventManager from it?
+//        // That could give is other useful init info
+//        this.config = config;
+//        this.eventManager = eventManager;
+//        INSTANCE.set(this);
+//    }
     /**
      * Constructor.
      * @param config crawler configuration
-     * @param eventManager event manager
+     * @param collector the collector this crawler is attached to
      */
-    public AbstractCrawler(ICrawlerConfig config, EventManager eventManager) {
+    public Crawler(CrawlerConfig config, Collector collector) {
+        Objects.requireNonNull(config, "'config' must not be null");
+        Objects.requireNonNull(config, "'collector' must not be null");
+
         //TODO pass Collector instead and grab eventManager from it?
         // That could give is other useful init info
         this.config = config;
-        this.eventManager = eventManager;
+        this.collector = collector;
+//        this.eventManager = new EventManager(collector.getEventManager());
+        INSTANCE.set(this);
+    }
+
+    public static Crawler get() {
+        return INSTANCE.get();
     }
 
     /**
@@ -138,9 +170,9 @@ public abstract class AbstractCrawler
      * @return event manager
      * @since 2.0.0
      */
-    @Override
     public EventManager getEventManager() {
-        return eventManager;
+        return collector.getEventManager();
+//        return eventManager;
     }
 
     @Override
@@ -158,26 +190,28 @@ public abstract class AbstractCrawler
 
     @Override
     public void stop(JobStatus jobStatus, JobSuite suite) {
-        eventManager.fire(CrawlerEvent.create(CRAWLER_STOPPING, this));
+        getEventManager().fire(CrawlerEvent.create(CRAWLER_STOPPING, this));
         stopped = true;
         LOG.info("{}: Stopping the crawler.", getId());
     }
 
-    @Override
+    /**
+     * Gets the crawler Importer module.
+     * @return the Importer
+     */
     public Importer getImporter() {
         return importer;
     }
 
     public CachedStreamFactory getStreamFactory() {
-        return streamFactory;
+        return collector.getStreamFactory();
     }
 
     /**
-     * Gets the crawler configuration
+     * Gets the crawler configuration.
      * @return the crawler configuration
      */
-    @Override
-    public ICrawlerConfig getCrawlerConfig() {
+    public CrawlerConfig getCrawlerConfig() {
         return config;
     }
 
@@ -187,16 +221,57 @@ public abstract class AbstractCrawler
 //                new CrawlerEvent(eventType, crawlData, subject));
 //    }
 
-    public Path getBaseDownloadDir() {
-        return getCrawlerConfig().getWorkDir()
-                .toAbsolutePath().resolve("downloads");
-//        return new File(
-//                getCrawlerConfig().getWorkDir().getAbsolutePath(), "downloads");
+    protected Collector getCollector() {
+        return collector;
     }
-    public Path getCrawlerDownloadDir() {
-        return getBaseDownloadDir().resolve(FileUtil.toSafeFileName(
-                getCrawlerConfig().getId()));
+
+    public Path getWorkDir() {
+        if (workDir != null) {
+            return workDir;
+        }
+
+        String fileSafeId = FileUtil.toSafeFileName(getId());
+        Path dir = collector.getWorkDir().resolve(fileSafeId);
+        try {
+            Files.createDirectories(dir);
+        } catch (IOException e) {
+            throw new CollectorException(
+                    "Could not create crawler working directory.", e);
+        }
+        workDir = dir;
+        return workDir;
     }
+    public Path getTempDir() {
+        if (tempDir != null) {
+            return tempDir;
+        }
+
+        String fileSafeId = FileUtil.toSafeFileName(getId());
+        Path dir = collector.getTempDir().resolve(fileSafeId);
+        try {
+            Files.createDirectories(dir);
+        } catch (IOException e) {
+            throw new CollectorException(
+                    "Could not create crawler temp directory.", e);
+        }
+        tempDir = dir;
+        return tempDir;
+    }
+
+
+//    public Path getBaseDownloadDir() {
+//        return getCrawlerConfig().getWorkDir()
+//                .toAbsolutePath().resolve("downloads");
+////        return new File(
+////                getCrawlerConfig().getWorkDir().getAbsolutePath(), "downloads");
+//    }
+    public Path getDownloadDir() {
+        return downloadDir;
+//        return getBaseDownloadDir().resolve(FileUtil.toSafeFileName(
+//                getCrawlerConfig().getId()));
+    }
+
+
 
 //    @Override
 //    public CrawlerEventManager getCrawlerEventManager() {
@@ -206,24 +281,28 @@ public abstract class AbstractCrawler
     @Override
     protected void startExecution(
             JobStatusUpdater statusUpdater, JobSuite suite) {
+        getEventManager().fire(CrawlerEvent.create(CRAWLER_STARTED, this));
         doExecute(statusUpdater, suite, false);
     }
 
     @Override
     protected void resumeExecution(
             JobStatusUpdater statusUpdater, JobSuite suite) {
+        getEventManager().fire(CrawlerEvent.create(CRAWLER_RESUMED, this));
         doExecute(statusUpdater, suite, true);
     }
 
     private void doExecute(JobStatusUpdater statusUpdater,
             JobSuite suite, boolean resume) {
 
-        try {
-            Files.createDirectories(config.getWorkDir());
-        } catch (IOException e) {
-            throw new CollectorException("Cannot create working directory: "
-                    + config.getWorkDir(), e);
-        }
+//        try {
+//            Files.createDirectories(config.getWorkDir());
+//        } catch (IOException e) {
+//            throw new CollectorException("Cannot create working directory: "
+//                    + config.getWorkDir(), e);
+//        }
+
+        initCrawler();
 
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
@@ -232,39 +311,94 @@ public abstract class AbstractCrawler
 //        this.crawlerEventManager = new CrawlerEventManager(
 //                this, getCrawlerConfig().getCrawlerListeners());
         importer = new Importer(getCrawlerConfig().getImporterConfig());
-        streamFactory = importer.getStreamFactory();
+//        streamFactory = importer.getStreamFactory();
         processedCount = crawlDataStore.getProcessedCount();
         if (Boolean.getBoolean("enableJMX")) {
             registerMonitoringMbean(crawlDataStore);
         }
 
         try {
+            //TODO rename "beforeExecution and afterExecution"?
             prepareExecution(statusUpdater, suite, crawlDataStore, resume);
+
             //TODO move this code to a config validator class?
             if (StringUtils.isBlank(getCrawlerConfig().getId())) {
                 throw new CollectorException("Crawler must be given "
                         + "a unique identifier (id).");
             }
-            if (resume) {
-                eventManager.fire(CrawlerEvent.create(CRAWLER_RESUMED, this));
-            } else {
-                eventManager.fire(CrawlerEvent.create(CRAWLER_STARTED, this));
-            }
+
             lastStatusLoggingTime = System.currentTimeMillis();
             execute(statusUpdater, suite, crawlDataStore);
         } finally {
-            stopWatch.stop();
-            if (LOG.isInfoEnabled()) {
-                LOG.info("{}: Crawler executed in {}.",
-                        getId(), DurationFormatter.FULL.withLocale(
-                                Locale.ENGLISH).format(stopWatch.getTime()));
-            }
             try {
+                stopWatch.stop();
+                if (LOG.isInfoEnabled()) {
+                    LOG.info("Crawler executed in {}.",
+                            DurationFormatter.FULL.withLocale(
+                                   Locale.ENGLISH).format(stopWatch.getTime()));
+                }
                 cleanupExecution(statusUpdater, suite, crawlDataStore);
+                cleanupCrawler();
             } finally {
                 crawlDataStore.close();
             }
         }
+
+    }
+
+    protected void initCrawler() {
+        //--- Ensure good state/config ---
+        if (StringUtils.isBlank(config.getId())) {
+            throw new CollectorException("Crawler must be given "
+                    + "a unique identifier (id).");
+        }
+
+        //--- Directories ---
+//        String fileSafeId = FileUtil.toSafeFileName(getId());
+//        workDir = collector.getWorkDir().resolve(fileSafeId);
+//        tempDir = collector.getTempDir().resolve(fileSafeId);
+        downloadDir = getWorkDir().resolve("downloads");
+//        try {
+//            Files.createDirectories(workDir);
+//            Files.createDirectories(tempDir);
+//        } catch (IOException e) {
+//            throw new CollectorException(
+//                    "Could not create crawler directory.", e);
+//        }
+    }
+
+//    private Path createWorkDir() {
+//        String fileSafeId = FileUtil.toSafeFileName(getId());
+//        Path dir = collector.getWorkDir().resolve(fileSafeId);
+//        try {
+//            Files.createDirectories(workDir);
+//            Files.createDirectories(tempDir);
+//        } catch (IOException e) {
+//            throw new CollectorException(
+//                    "Could not create crawler working directory.", e);
+//        }
+//
+//    }
+//    private Path createTempDir() {
+//        Path dir;
+//        if (collectorConfig.getTempDir() == null) {
+//            dir = workDir.resolve("temp");
+//        } else {
+//            String fileSafeId = FileUtil.toSafeFileName(getId());
+//            dir = collectorConfig.getTempDir().resolve(fileSafeId);
+//        }
+//        try {
+//            Files.createDirectories(dir);
+//        } catch (IOException e) {
+//            throw new CollectorException(
+//                    "Could not create temp directory: " + dir, e);
+//        }
+//        return dir;
+//    }
+
+    protected void cleanupCrawler() {
+        //TODO shall we, or leave to collector to clean all?
+        // eventManager.clearListeners();
     }
 
     protected ICrawlDataStore createCrawlDataStore(boolean resume) {
@@ -304,12 +438,12 @@ public abstract class AbstractCrawler
         LOG.info("{}: {} reference(s) processed.", getId(), processedCount);
 
         LOG.debug("{}: Removing empty directories", getId());
-        FileUtil.deleteEmptyDirs(getCrawlerDownloadDir().toFile());
+        FileUtil.deleteEmptyDirs(getDownloadDir().toFile());
 
         if (!isStopped()) {
-            eventManager.fire(CrawlerEvent.create(CRAWLER_FINISHED, this));
+            getEventManager().fire(CrawlerEvent.create(CRAWLER_FINISHED, this));
         } else {
-            eventManager.fire(CrawlerEvent.create(CRAWLER_STOPPED, this));
+            getEventManager().fire(CrawlerEvent.create(CRAWLER_STOPPED, this));
         }
         LOG.info(getId() + ": Crawler "
                 + (isStopped() ? "stopped." : "completed."));
@@ -588,7 +722,7 @@ public abstract class AbstractCrawler
             // HTTPFetchException?  In case we want special treatment to the
             // class?
             crawlData.setState(CrawlState.ERROR);
-            eventManager.fire(
+            getEventManager().fire(
                     CrawlerEvent.create(REJECTED_ERROR, this, crawlData, e));
             if (LOG.isDebugEnabled()) {
                 LOG.info("{}: Could not process document: {} ({})",
@@ -621,14 +755,14 @@ public abstract class AbstractCrawler
 
         ImporterDocument doc = response.getDocument();
         if (response.isSuccess()) {
-            eventManager.fire(CrawlerEvent.create(
+            getEventManager().fire(CrawlerEvent.create(
                     DOCUMENT_IMPORTED, this, crawlData, response));
             ImporterDocument wrappedDoc = wrapDocument(crawlData, doc);
             executeCommitterPipeline(this, wrappedDoc,
                     crawlDataStore, crawlData, cachedCrawlData);
         } else {
             crawlData.setState(CrawlState.REJECTED);
-            eventManager.fire(CrawlerEvent.create(
+            getEventManager().fire(CrawlerEvent.create(
                     REJECTED_IMPORT, this, crawlData, response));
             LOG.debug("{}: Importing unsuccessful for \"{}\": {}",
                     getId(), crawlData.getReference(),
@@ -741,7 +875,7 @@ public abstract class AbstractCrawler
 
         try {
             if (doc != null) {
-                doc.getContent().dispose();
+                doc.getInputStream().dispose();
             }
         } catch (Exception e) {
             LOG.error("{}: Could not dispose of resources.", getId(), e);
@@ -777,7 +911,7 @@ public abstract class AbstractCrawler
 
     //TODO, replace with DocumentPipelineContext?
     protected abstract void executeCommitterPipeline(
-            ICrawler crawler,
+            Crawler crawler,
             ImporterDocument doc,
             ICrawlDataStore crawlDataStore,
             BaseCrawlData crawlData,
@@ -815,7 +949,7 @@ public abstract class AbstractCrawler
             committer.remove(
                     crawlData.getReference(), getNullSafeMetadata(doc));
         }
-        eventManager.fire(CrawlerEvent.create(
+        getEventManager().fire(CrawlerEvent.create(
                 DOCUMENT_COMMITTED_REMOVE, this, crawlData, doc));
     }
 

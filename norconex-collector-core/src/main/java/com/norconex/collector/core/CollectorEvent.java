@@ -25,11 +25,9 @@ import com.norconex.commons.lang.event.Event;
  * @param <T> Collector for this event
  * @since 2.0.0
  */
-public class CollectorEvent<T extends ICollector> extends Event<T> {
+public class CollectorEvent<T extends Collector> extends Event<T> {
 
     private static final long serialVersionUID = 1L;
-
-
 
     public static final String COLLECTOR_STARTED = "COLLECTOR_STARTED";
     public static final String COLLECTOR_ENDED = "COLLECTOR_ENDED";
@@ -56,12 +54,12 @@ public class CollectorEvent<T extends ICollector> extends Event<T> {
         super(name, source, exception);
     }
 
-    public static CollectorEvent<ICollector> create(
-            String name, ICollector collector) {
+    public static CollectorEvent<Collector> create(
+            String name, Collector collector) {
         return create(name, collector, null);
     }
-    public static CollectorEvent<ICollector> create(
-            String name, ICollector collector, Throwable exception) {
+    public static CollectorEvent<Collector> create(
+            String name, Collector collector, Throwable exception) {
         return new CollectorEvent<>(name, collector, exception);
     }
 

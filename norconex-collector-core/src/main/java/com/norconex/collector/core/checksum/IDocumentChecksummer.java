@@ -14,7 +14,7 @@
  */
 package com.norconex.collector.core.checksum;
 
-import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.importer.doc.ImporterDocument;
 
 /**

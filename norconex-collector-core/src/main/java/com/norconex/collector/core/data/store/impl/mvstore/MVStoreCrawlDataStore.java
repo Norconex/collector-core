@@ -19,10 +19,10 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.AbstractCrawlDataStore;
@@ -34,34 +34,35 @@ import com.norconex.collector.core.data.store.ICrawlDataStore;
  * @author Pascal Dimassimo
  */
 public class MVStoreCrawlDataStore extends AbstractCrawlDataStore {
-    
-    private static final Logger LOG = 
+
+    private static final Logger LOG =
             LoggerFactory.getLogger(MVStoreCrawlDataStore.class);
-    
+
     private final MVStore store;
-    
+
     private final MVMap<String, ICrawlData> mapQueued;
     private final MVMap<String, ICrawlData> mapActive;
     private final MVMap<String, ICrawlData> mapProcessedValid;
     private final MVMap<String, ICrawlData> mapProcessedInvalid;
     private final MVMap<String, ICrawlData> mapCached;
-    
+
     public MVStoreCrawlDataStore(String path, boolean resume) {
-        
+
         try {
             FileUtils.forceMkdir(new File(path));
         } catch (IOException e) {
             throw new CrawlDataStoreException(
                     "Cannot create crawl data store directory: " + path, e);
         }
+
         store = MVStore.open(path + "/mvstore");
-        
+
         mapQueued = store.openMap("queued");
         mapActive = store.openMap("active");
         mapProcessedValid = store.openMap("processedValid");
         mapProcessedInvalid = store.openMap("processedInvalid");
         mapCached = store.openMap("cached");
-        
+
         if (resume) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Active count: " + mapActive.size());
@@ -75,7 +76,7 @@ public class MVStoreCrawlDataStore extends AbstractCrawlDataStore {
             for (String key : mapActive.keySet()) {
                 mapQueued.put(key, mapActive.remove(key));
             }
-            
+
         } else {
             mapCached.clear();
             mapActive.clear();

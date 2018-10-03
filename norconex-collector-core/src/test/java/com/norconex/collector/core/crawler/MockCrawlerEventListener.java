@@ -14,14 +14,14 @@
  */
 package com.norconex.collector.core.crawler;
 
-import com.norconex.collector.core.crawler.ICrawler;
+import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.commons.lang.event.Event;
 import com.norconex.commons.lang.event.IEventListener;
 
 public class MockCrawlerEventListener
-        implements IEventListener<Event<ICrawler>> {
+        implements IEventListener<Event<Crawler>> {
 
     @Override
-    public void accept(Event<ICrawler> t) {
+    public void accept(Event<Crawler> t) {
     }
 }

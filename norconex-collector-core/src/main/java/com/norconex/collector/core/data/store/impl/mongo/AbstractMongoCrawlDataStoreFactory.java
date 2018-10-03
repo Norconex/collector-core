@@ -20,12 +20,12 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.collector.core.crawler.ICrawlerConfig;
+import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.ICrawlDataStoreFactory;
-import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 /**
@@ -135,7 +135,7 @@ public abstract class AbstractMongoCrawlDataStoreFactory
 
     @Override
     public ICrawlDataStore createCrawlDataStore(
-            ICrawlerConfig config, boolean resume) {
+            CrawlerConfig config, boolean resume) {
         return new MongoCrawlDataStore(
                 config.getId(),
                 resume,

@@ -25,17 +25,17 @@ import com.norconex.importer.response.ImporterResponse;
  */
 public class ImportModuleStage
             implements IPipelineStage<ImporterPipelineContext> {
-        
+
     @Override
     public boolean execute(ImporterPipelineContext ctx) {
         Importer importer = ctx.getCrawler().getImporter();
-            
+
         ImporterDocument doc = ctx.getDocument();
-        
+
         boolean isContentTypeSet = doc.getContentType() != null;
-        
+
         ImporterResponse response = importer.importDocument(
-                doc.getContent(),
+                doc.getInputStream(),
                 doc.getContentType(),
                 doc.getContentEncoding(),
                 doc.getMetadata(),
@@ -49,7 +49,7 @@ public class ImportModuleStage
             ctx.getCrawlData().setContentType(
                     response.getDocument().getContentType());
         }
-        
+
         return true;
     }
 }

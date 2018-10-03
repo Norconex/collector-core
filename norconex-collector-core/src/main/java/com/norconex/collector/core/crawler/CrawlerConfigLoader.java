@@ -38,11 +38,11 @@ public class CrawlerConfigLoader {
     private static final Logger LOG = LoggerFactory.getLogger(
             CrawlerConfigLoader.class);
 
-    private final Class<? extends ICrawlerConfig> crawlerConfigClass;
+    private final Class<? extends CrawlerConfig> crawlerConfigClass;
 
 
     public CrawlerConfigLoader(
-            Class<? extends ICrawlerConfig> crawlerConfigClass) {
+            Class<? extends CrawlerConfig> crawlerConfigClass) {
         super();
         this.crawlerConfigClass = crawlerConfigClass;
     }
@@ -54,7 +54,7 @@ public class CrawlerConfigLoader {
      * @deprecated Since 2.0.0, use {@link #loadCrawlerConfigs(Path)} instead
      */
     @Deprecated
-    public List<ICrawlerConfig> loadCrawlerConfigs(File configFile) {
+    public List<CrawlerConfig> loadCrawlerConfigs(File configFile) {
         return loadCrawlerConfigs(configFile, null);
     }
     /**
@@ -63,7 +63,7 @@ public class CrawlerConfigLoader {
      * @return crawler configs
      * @since 2.0.0
      */
-    public List<ICrawlerConfig> loadCrawlerConfigs(Path configFile) {
+    public List<CrawlerConfig> loadCrawlerConfigs(Path configFile) {
         return loadCrawlerConfigs(configFile, null);
     }
     /**
@@ -75,7 +75,7 @@ public class CrawlerConfigLoader {
      *             instead
      */
     @Deprecated
-    public List<ICrawlerConfig> loadCrawlerConfigs(
+    public List<CrawlerConfig> loadCrawlerConfigs(
             File configFile, File configVariables) {
         Path cfg = null;
         Path vars = null;
@@ -94,20 +94,20 @@ public class CrawlerConfigLoader {
      * @return crawler configs
      * @since 2.0.0
      */
-    public List<ICrawlerConfig> loadCrawlerConfigs(
+    public List<CrawlerConfig> loadCrawlerConfigs(
             Path configFile, Path configVariables) {
         ConfigurationLoader configLoader = new ConfigurationLoader();
         XML xml = configLoader.loadXML(configFile, configVariables);
         return loadCrawlerConfigs(xml);
     }
-    public List<ICrawlerConfig> loadCrawlerConfigs(XML xml) {
+    public List<CrawlerConfig> loadCrawlerConfigs(XML xml) {
         try {
             XML crawlerDefaultsXML = xml.getXML("crawlerDefaults");
 
             List<XML> crawlersXML = xml.getXMLList("crawlers/crawler");
-            List<ICrawlerConfig> configs = new ArrayList<>();
+            List<CrawlerConfig> configs = new ArrayList<>();
             for (XML crawlerXML : crawlersXML) {
-                ICrawlerConfig  config = crawlerConfigClass.newInstance();
+                CrawlerConfig  config = crawlerConfigClass.newInstance();
                 if (crawlerDefaultsXML != null) {
                     loadCrawlerConfig(config, crawlerDefaultsXML);
                     if (LOG.isDebugEnabled()) {
@@ -138,7 +138,7 @@ public class CrawlerConfigLoader {
      * @throws IOException problem loading crawler configuration
      */
     public void loadCrawlerConfig(
-            ICrawlerConfig config, XML xml) throws IOException {
+            CrawlerConfig config, XML xml) throws IOException {
         if (xml == null) {
             LOG.warn("Passing a null configuration for "
                     + config.getId() + ", skipping.");

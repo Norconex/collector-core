@@ -27,7 +27,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
 import com.norconex.collector.core.spoil.SpoiledReferenceStrategy;
-import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
 /**

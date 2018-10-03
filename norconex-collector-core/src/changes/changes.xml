@@ -16,10 +16,17 @@
         configuration.
       </action>
       <action dev="essiembre" type="update">
+        Now using SLF4J for logging.
+      </action>
+      <action dev="essiembre" type="update">
         Lists are now replacing arrays in most places.
       </action>
       <action dev="essiembre" type="update">
-        Now using SLF4J for logging.
+        ICollector, ICollectorConfig, ICrawler, ICrawlerConfig were all 
+        replaced with Collector, CollectorConfig, Crawler, and CrawlerConfig.
+      </action>
+      <action dev="essiembre" type="update">
+        Default working directory structure has been modified.
       </action>
       <action dev="essiembre" type="update">
         Path is used in addition/instead of File in many places.
@@ -33,7 +40,7 @@
       </action>
       <action dev="essiembre" type="update">
         Dependency updates: Norconex Importer 3.0.0, Norconex JEF 5.0.0, 
-        Norconex Commons Lang 2.0.0, Norconex Committer 3.0.0. 
+        Norconex Commons Lang 2.0.0, Norconex Committer 3.0.0, H2 1.4.197. 
       </action>
       <action dev="essiembre" type="update">
         Now requires Java 8 or higher.

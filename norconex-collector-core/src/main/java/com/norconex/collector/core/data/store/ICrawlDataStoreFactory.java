@@ -14,7 +14,7 @@
  */
 package com.norconex.collector.core.data.store;
 
-import com.norconex.collector.core.crawler.ICrawlerConfig;
+import com.norconex.collector.core.crawler.CrawlerConfig;
 
 /**
  * Factory responsible for creating new crawl data stores.
@@ -40,5 +40,5 @@ public interface ICrawlDataStoreFactory {
      * @return new crawl data store
      */
     ICrawlDataStore createCrawlDataStore(
-            ICrawlerConfig config, boolean resume);
+            CrawlerConfig config, boolean resume);
 }

@@ -29,8 +29,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import com.norconex.collector.core.crawler.AbstractCrawlerConfig;
-import com.norconex.collector.core.crawler.ICrawlerConfig;
+import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.data.ICrawlData;
@@ -48,7 +47,7 @@ public abstract class BaseCrawlDataStoreTest {
     public final TemporaryFolder tempFolder = new TemporaryFolder();
 
     private ICrawlDataStore crawlStore;
-    private ICrawlerConfig crawlerConfig;
+    private CrawlerConfig crawlerConfig;
 
     public ICrawlDataStore getCrawlDataStore() {
         return crawlStore;
@@ -56,10 +55,10 @@ public abstract class BaseCrawlDataStoreTest {
     public void setCrawlDataStore(ICrawlDataStore db) {
         this.crawlStore = db;
     }
-    public ICrawlerConfig getCrawlerConfig() {
+    public CrawlerConfig getCrawlerConfig() {
         return crawlerConfig;
     }
-    public void setCrawlerConfig(ICrawlerConfig crawlerConfig) {
+    public void setCrawlerConfig(CrawlerConfig crawlerConfig) {
         this.crawlerConfig = crawlerConfig;
     }
     public TemporaryFolder getTempfolder() {
@@ -80,9 +79,10 @@ public abstract class BaseCrawlDataStoreTest {
         }
     }
 
-    protected ICrawlerConfig createCrawlerConfig(
+    protected CrawlerConfig createCrawlerConfig(
             String crawlerId, TemporaryFolder tempFolder) {
-        AbstractCrawlerConfig config = new AbstractCrawlerConfig() {
+
+        CrawlerConfig config = new CrawlerConfig() {
             @Override
             protected void saveCrawlerConfigToXML(XML xml) {
             }
@@ -91,7 +91,8 @@ public abstract class BaseCrawlDataStoreTest {
             }
         };
         config.setId(crawlerId);
-        config.setWorkDir(tempFolder.getRoot().toPath());
+//        config.setWorkDir(tempFolder.getRoot().toPath());
+
         return config;
     }
 
@@ -130,7 +131,7 @@ public abstract class BaseCrawlDataStoreTest {
     }
 
     protected abstract ICrawlDataStore createCrawlDataStore(
-            ICrawlerConfig config, TemporaryFolder tempFolder, boolean resume);
+            CrawlerConfig config, TemporaryFolder tempFolder, boolean resume);
 
 
     //--- Tests ----------------------------------------------------------------

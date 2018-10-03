@@ -16,7 +16,7 @@ package com.norconex.collector.core.crawler;
 
 import com.norconex.commons.lang.xml.XML;
 
-public class MockCrawlerConfig extends AbstractCrawlerConfig {
+public class MockCrawlerConfig extends CrawlerConfig {
 
     @Override
     protected void saveCrawlerConfigToXML(XML out) {

@@ -28,7 +28,7 @@ import org.junit.rules.TemporaryFolder;
 
 import com.github.fakemongo.Fongo;
 import com.norconex.collector.core.TestUtil;
-import com.norconex.collector.core.crawler.ICrawlerConfig;
+import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.impl.BaseCrawlDataStoreTest;
 import com.norconex.commons.lang.xml.XML;
@@ -52,7 +52,7 @@ public class MongoCrawlDataStoreTest extends BaseCrawlDataStoreTest {
 
 //    @Override
 //    protected ICrawlDataStore createCrawlDataStore(
-//            ICrawlerConfig config, TemporaryFolder tempFolder, boolean resume) {
+//            CrawlerConfig config, TemporaryFolder tempFolder, boolean resume) {
 //
 //        MongoConnectionDetails conn = new MongoConnectionDetails();
 //        conn.setDatabaseName("testdb");
@@ -65,7 +65,7 @@ public class MongoCrawlDataStoreTest extends BaseCrawlDataStoreTest {
 
     @Override
     protected ICrawlDataStore createCrawlDataStore(
-            ICrawlerConfig config, TemporaryFolder tempFolder, boolean resume) {
+            CrawlerConfig config, TemporaryFolder tempFolder, boolean resume) {
         return new MongoCrawlDataStore(resume,
                 fongo.getMongo(), "crawl-test", new BaseMongoSerializer());
     }

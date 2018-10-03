@@ -19,7 +19,7 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.rules.TemporaryFolder;
 
-import com.norconex.collector.core.crawler.ICrawlerConfig;
+import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.impl.BaseCrawlDataStoreTest;
 
@@ -34,7 +34,7 @@ public class MVStoreCrawlDataStoreTest extends BaseCrawlDataStoreTest {
     }
     @Override
     protected ICrawlDataStore createCrawlDataStore(
-            ICrawlerConfig config, TemporaryFolder tempFolder, boolean resume) {
+            CrawlerConfig config, TemporaryFolder tempFolder, boolean resume) {
         return new MVStoreCrawlDataStore(store.getPath(), resume);
     }
 }
