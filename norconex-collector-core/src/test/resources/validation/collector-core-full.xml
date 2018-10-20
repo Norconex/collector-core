@@ -81,13 +81,21 @@
       <filter class="com.norconex.collector.core.filter.impl.RegexMetadataFilter"
           onMatch="include" caseSensitive="false" field="title">Blah.*</filter>
     </documentFilters>
-    <!-- 
+    <!-- DEPRECATED: 
     <crawlerListeners>
       <listener class="com.norconex.collector.core.crawler.MockCrawlerEventListener">
         <sample sample="sample">sample</sample>
       </listener>
     </crawlerListeners>
      -->
+    <eventListeners>
+      <listener class="com.norconex.collector.core.MockCollectorEventListener">
+        <sample sample="sample">sample</sample>
+      </listener>
+      <listener class="com.norconex.collector.core.crawler.MockCrawlerEventListener">
+        <sample sample="sample">sample</sample>
+      </listener>
+    </eventListeners>
 
     <!-- Importer is purposely slim since the full config is tested in
          Importer project. -->

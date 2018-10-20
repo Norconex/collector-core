@@ -1,3 +1,6 @@
+- Add support for event listeners at crawler level, which would only
+  get events for that crawler (since events are bubbling up, not down/sideways).
+
 - AbstractCrawlerConfig.xsd has the anyComplexRequiredClassType "class" being
   optional. See if we can make it required, except for self-closing tags.
 

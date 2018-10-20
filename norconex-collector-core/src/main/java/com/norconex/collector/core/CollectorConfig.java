@@ -362,7 +362,7 @@ public abstract class CollectorConfig implements IXMLConfigurable {
 
 //        xml.addElement("logsDir", getLogsDir());
 //        xml.addElement("progressDir", getProgressDir());
-        xml.addElementList("eventListeners", "listener", getEventListeners());
+        xml.addElementList("eventListeners", "listener", eventListeners);
 //        xml.addElementList(
 //                "collectorListeners", "listener", getCollectorListeners());
 //        writeArray(out, "jobLifeCycleListeners",
@@ -393,7 +393,7 @@ public abstract class CollectorConfig implements IXMLConfigurable {
 //        setLogsDir(xml.getPath("logsDir", getLogsDir()));
 //        setProgressDir(xml.getPath("progressDir", getProgressDir()));
         setEventListeners(xml.getObjectList(
-                "eventListeners/listener", getEventListeners()));
+                "eventListeners/listener", eventListeners));
 
 //        setCollectorListeners(xml.getObjectList(
 //                "collectorListeners/listener", getCollectorListeners()));

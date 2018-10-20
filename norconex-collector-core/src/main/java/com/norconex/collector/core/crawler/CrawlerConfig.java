@@ -35,6 +35,7 @@ import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
 import com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer;
 import com.norconex.committer.core.ICommitter;
 import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.event.IEventListener;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterConfig;
@@ -91,6 +92,8 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
 
     private ISpoiledReferenceStrategizer spoiledReferenceStrategizer =
             new GenericSpoiledReferenceStrategizer();
+
+    private final List<IEventListener<?>> eventListeners = new ArrayList<>();
 
     /**
      * Creates a new crawler configuration.
@@ -419,6 +422,66 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
         this.committer = committer;
     }
 
+    /**
+     * Gets event listeners.
+     * Those are considered additions to automatically
+     * detected configuration objects implementing {@link IEventListener}.
+     * @return event listeners.
+     * @since 2.0.0
+     */
+    public List<IEventListener<?>> getEventListeners() {
+        return Collections.unmodifiableList(eventListeners);
+    }
+    /**
+     * Sets event listeners.
+     * Those are considered additions to automatically
+     * detected configuration objects implementing {@link IEventListener}.
+     * @param eventListeners event listeners.
+     * @since 2.0.0
+     */
+    public void setEventListeners(IEventListener<?>... eventListeners) {
+        setEventListeners(Arrays.asList(eventListeners));
+    }
+    /**
+     * Sets event listeners.
+     * Those are considered additions to automatically
+     * detected configuration objects implementing {@link IEventListener}.
+     * @param eventListeners event listeners.
+     * @since 2.0.0
+     */
+    public void setEventListeners(List<IEventListener<?>> eventListeners) {
+        CollectionUtil.setAll(this.eventListeners, eventListeners);
+    }
+    /**
+     * Adds event listeners.
+     * Those are considered additions to automatically
+     * detected configuration objects implementing {@link IEventListener}.
+     * @param eventListeners event listeners.
+     * @since 2.0.0
+     */
+    public void addEventListeners(IEventListener<?>... eventListeners) {
+        addEventListeners(Arrays.asList(eventListeners));
+    }
+    /**
+     * Adds event listeners.
+     * Those are considered additions to automatically
+     * detected configuration objects implementing {@link IEventListener}.
+     * @param eventListeners event listeners.
+     * @since 2.0.0
+     */
+    public void addEventListeners(List<IEventListener<?>> eventListeners) {
+        this.eventListeners.addAll(eventListeners);
+    }
+    /**
+     * Clears all event listeners. The automatically
+     * detected configuration objects implementing {@link IEventListener}
+     * are not cleared.
+     * @since 2.0.0
+     */
+    public void clearEventListeners() {
+        this.eventListeners.clear();
+    }
+
     @Override
     public void saveToXML(XML xml) {
         xml.setAttribute("id", id);
@@ -444,6 +507,8 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
         xml.addElement("documentChecksummer", documentChecksummer);
         xml.addElement(
                 "spoiledReferenceStrategizer", spoiledReferenceStrategizer);
+
+        xml.addElementList("eventListeners", "listener", eventListeners);
 
         saveCrawlerConfigToXML(xml);
     }
@@ -493,6 +558,9 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
                 "documentChecksummer", documentChecksummer));
         setSpoiledReferenceStrategizer(xml.getObject(
                 "spoiledReferenceStrategizer", spoiledReferenceStrategizer));
+
+        setEventListeners(xml.getObjectList(
+                "eventListeners/listener", eventListeners));
 
         loadCrawlerConfigFromXML(xml);
     }

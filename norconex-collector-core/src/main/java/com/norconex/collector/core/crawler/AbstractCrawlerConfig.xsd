@@ -61,9 +61,18 @@
           type="anyComplexRequiredClassType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="spoiledReferenceStrategizer"
           type="anyComplexOptionalClassType" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="eventListeners"
+          type="listenersType" minOccurs="0" maxOccurs="1"/>
     </xs:all>
     <xs:attribute name="class" type="xs:string"/>
     <xs:attribute name="id" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="listenersType">
+    <xs:all>
+      <xs:element name="listener" 
+          type="anyComplexRequiredClassType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:all>
   </xs:complexType>
 
   <xs:complexType name="filterType">

@@ -23,20 +23,8 @@
       <xs:complexContent> 
         <xs:extension base="AbstractDocumentChecksummer">
           <xs:all>
-            <xs:element name="sourceFields" minOccurs="0" maxOccurs="1">
-              <xs:simpleType>
-                <xs:restriction base="xs:string">
-                  <xs:minLength value="1"/>
-                </xs:restriction>
-              </xs:simpleType>        
-            </xs:element>
-            <xs:element name="sourceFieldsRegex" minOccurs="0" maxOccurs="1">
-              <xs:simpleType>
-                <xs:restriction base="xs:string">
-                  <xs:minLength value="1"/>
-                </xs:restriction>
-              </xs:simpleType>        
-            </xs:element>
+            <xs:element name="sourceFields" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="sourceFieldsRegex" type="xs:string" minOccurs="0" maxOccurs="1"/>
           </xs:all>
           <xs:attribute name="disabled" type="xs:boolean"/>
           <xs:attribute name="combineFieldsAndContent" type="xs:boolean"/>

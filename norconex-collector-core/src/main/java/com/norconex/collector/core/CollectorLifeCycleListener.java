@@ -39,18 +39,23 @@ public class CollectorLifeCycleListener
         }
     }
     public static final boolean isCollectorStartup(Event<?> event) {
-        if (event.getSource() == Collector.get()) {
+        //XXX check we filter on current instance?  No longer needed
+        // since we have parent event managers... it would prevent
+        // a parent to listen for many children at once using this class
+        // where as when set on a collector, only the collector events
+        // will be receive as desired (provided a dedicated instance).
+//        if (event.getSource() == Collector.get()) {
             return event instanceof CollectorEvent
                     && event.is(COLLECTOR_STARTED);
-        }
-        return false;
+//        }
+//        return false;
     }
     public static final boolean isCollectorShutdown(Event<?> event) {
-        if (event.getSource() == Collector.get()) {
+//        if (event.getSource() == Collector.get()) {
             return event instanceof CollectorEvent && event.is(
                     COLLECTOR_ENDED, COLLECTOR_ERROR, COLLECTOR_STOPPED);
-        }
-        return false;
+//        }
+//        return false;
     }
     protected void collectorStartup(CollectorEvent<Collector> event) {
         //NOOP
