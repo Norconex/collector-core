@@ -7,6 +7,13 @@
   </properties>
   <body>
 
+    <release version="1.9.2-SNAPSHOT" date="201?-??-??" description="Maintenance release">
+      <action dev="rustyx" type="fix" issue="24">
+        Add a retry to MongoDB upserts to fix getting a constraint violation
+        on concurrent upserts.
+      </action>
+    </release>
+
     <release version="1.9.1" date="2018-07-29" description="Maintenance release">
       <action dev="jmrichardson,essiembre" type="update">
         Significant performance improvement on 
