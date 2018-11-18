@@ -12,6 +12,9 @@
         Add a retry to MongoDB upserts to fix getting a constraint violation
         on concurrent upserts.
       </action>
+      <action dev="essiembre" type="add">
+        New AbstractCollector#getState() method.
+      </action>
     </release>
 
     <release version="1.9.1" date="2018-07-29" description="Maintenance release">
