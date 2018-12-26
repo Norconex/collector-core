@@ -11,6 +11,12 @@
       <action dev="essiembre" type="add">
         New CollectorEvent.
       </action>
+      <action dev="essiembre" type="add">
+        New methods on CrawlerEvent: isCrawlerStartup and isCrawlerShutdown.
+      </action>
+      <action dev="essiembre" type="add">
+        New UNSUPPORTED crawl state.
+      </action>
       <action dev="essiembre" type="update">
         Now using XML class from Norconex Commons Lang for loading/saving
         configuration.
@@ -50,8 +56,9 @@
       </action>
       <action dev="essiembre" type="remove">
         Removed CollectorConfigLoader, CollectorLifeCycleListener, 
-        IJobLifeCycleListener, IJobErrorListener, ISuiteLifeCycleListener, 
-        ICrawlerEventListener (replaced by IEventListener).
+        CrawlerLifeCycleListener, IJobLifeCycleListener, IJobErrorListener, 
+        ISuiteLifeCycleListener, ICrawlerEventListener 
+        (replaced by IEventListener).
       </action>
     </release>
 

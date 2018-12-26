@@ -54,6 +54,15 @@ public class CrawlState implements Serializable {
     public static final CrawlState PREMATURE  = new CrawlState("PREMATURE");
 
 
+    //TODO testing this... remove if not used:
+    /**
+     * Typically when an HttpFetcher does not support downloading a URL
+     * or its HTTP headers.
+     * @since 3.0.0
+     */
+    public static final CrawlState UNSUPPORTED = new CrawlState("UNSUPPORTED");
+
+
     private final String state;
 
 

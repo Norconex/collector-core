@@ -172,6 +172,13 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
         return subject;
     }
 
+    public boolean isCrawlerStartup() {
+        return is(CRAWLER_STARTED, CRAWLER_RESUMED);
+    }
+    public boolean isCrawlerShutdown() {
+        return is(CRAWLER_FINISHED, CRAWLER_STOPPED);
+    }
+
     @Override
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
@@ -192,7 +199,5 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
             b.append(Objects.toString(source));
         }
         return b.toString();
-//        return new ReflectionToStringBuilder(
-//                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }
