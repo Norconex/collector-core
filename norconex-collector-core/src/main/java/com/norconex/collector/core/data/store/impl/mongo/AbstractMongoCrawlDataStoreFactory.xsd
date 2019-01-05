@@ -45,6 +45,8 @@
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
+      <xs:element name="sslEnabled" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="sslInvalidHostNameAllowed" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
     </xs:all>
     <xs:attribute name="class" type="xs:string"/>
   </xs:complexType>

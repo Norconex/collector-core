@@ -25,13 +25,16 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
 
 /**
+ * <p>
  * Hold Mongo connection details.
+ * </p>
  * @author Pascal Essiembre
  */
 public class MongoConnectionDetails implements Serializable {
@@ -45,6 +48,8 @@ public class MongoConnectionDetails implements Serializable {
     private String password;
     private String mechanism;
     private EncryptionKey passwordKey;
+    private boolean sslEnabled;
+    private boolean sslInvalidHostNameAllowed;
 
     public int getPort() {
         return port;
@@ -76,6 +81,44 @@ public class MongoConnectionDetails implements Serializable {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    /**
+     * Gets whether to use SSL.
+     * @return <code>true</code> if SSL should be used
+     * @since 1.9.2
+     */
+    public boolean isSslEnabled() {
+        return sslEnabled;
+    }
+    /**
+     * Sets whether to use SSL.
+     * @param sslEnabled <code>true</code> if SSL should be used
+     * @since 1.9.2
+     */
+    public void setSslEnabled(boolean sslEnabled) {
+        this.sslEnabled = sslEnabled;
+    }
+
+    /**
+     * Gets whether invalid host names should be allowed if SSL is enabled.
+     * @return <code>true</code> if invalid host names are allowed
+     * @since 1.9.2
+     */
+    public boolean isSslInvalidHostNameAllowed() {
+        return sslInvalidHostNameAllowed;
+    }
+    /**
+     * Sets whether invalid host names should be allowed if SSL is enabled.
+     * Use caution before allowing invalid hosts.
+     * @param sslInvalidHostNameAllowed <code>true</code> if invalid host
+     *         names are allowed
+     * @since 1.9.2
+     */
+    public void setSslInvalidHostNameAllowed(
+            boolean sslInvalidHostNameAllowed) {
+        this.sslInvalidHostNameAllowed = sslInvalidHostNameAllowed;
+    }
+
     /**
      * Gets the authentication mechanism to use (<code>MONGODB-CR</code>,
      * <code>SCRAM-SHA-1</code> or <code>null</code> to use default).
@@ -115,7 +158,7 @@ public class MongoConnectionDetails implements Serializable {
         this.passwordKey = passwordKey;
     }
     /**
-     * Gets a safe database name using MongoUtil, and treating a crawlerId as 
+     * Gets a safe database name using MongoUtil, and treating a crawlerId as
      * the default.
      *
      * @param crawlerId crawler id from collector configuration
@@ -147,7 +190,7 @@ public class MongoConnectionDetails implements Serializable {
         List<MongoCredential> credentialsList = new ArrayList<>();
         if (StringUtils.isNoneBlank(getUsername())) {
             // password may be encrypted, decrypt properly
-            String password = 
+            String password =
                     EncryptionUtil.decrypt(getPassword(), getPasswordKey());
 
             // build credential and add to list
@@ -155,7 +198,12 @@ public class MongoConnectionDetails implements Serializable {
                     dbName, password.toCharArray(), getMechanism());
             credentialsList.add(credential);
         }
-        return new MongoClient(server, credentialsList);
+
+        return new MongoClient(server, credentialsList,
+                MongoClientOptions.builder()
+                    .sslEnabled(sslEnabled)
+                    .sslInvalidHostNameAllowed(sslInvalidHostNameAllowed)
+                    .build());
     }
     /**
      * Builds a MongoCredential object based on these connection details.
@@ -194,6 +242,9 @@ public class MongoConnectionDetails implements Serializable {
                 .append(password, castOther.password)
                 .append(mechanism, castOther.mechanism)
                 .append(passwordKey, castOther.passwordKey)
+                .append(sslEnabled, castOther.sslEnabled)
+                .append(sslInvalidHostNameAllowed,
+                        castOther.sslInvalidHostNameAllowed)
                 .isEquals();
     }
     @Override
@@ -206,6 +257,8 @@ public class MongoConnectionDetails implements Serializable {
                 .append(password)
                 .append(mechanism)
                 .append(passwordKey)
+                .append(sslEnabled)
+                .append(sslInvalidHostNameAllowed)
                 .toHashCode();
     }
     @Override
@@ -218,6 +271,8 @@ public class MongoConnectionDetails implements Serializable {
                 .append("password", password)
                 .append("mechanism", mechanism)
                 .append("passwordKey", passwordKey)
+                .append("sslEnabled", sslEnabled)
+                .append("sslInvalidHostNameAllowed", sslInvalidHostNameAllowed)
                 .toString();
     }
 }

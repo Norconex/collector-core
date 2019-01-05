@@ -9,6 +9,9 @@
 
     <release version="1.9.2-SNAPSHOT" date="201?-??-??" description="Maintenance release">
       <action dev="essiembre" type="add">
+        Added SSL support to MongoDB crawl data store. 
+      </action>
+      <action dev="essiembre" type="add">
         New AbstractCollector#getState() method.
       </action>
       <action dev="essiembre" type="update">

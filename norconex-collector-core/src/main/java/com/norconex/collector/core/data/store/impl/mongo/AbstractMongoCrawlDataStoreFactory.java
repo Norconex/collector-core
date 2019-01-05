@@ -92,6 +92,9 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  *      &lt;cachedCollectionName&gt;(Custom "cached" collection name)&lt;/cachedCollectionName&gt;
  *      &lt;referencesCollectionName&gt;(Custom "references" collection name)&lt;/referencesCollectionName&gt;
  *      &lt;mechanism&gt;(Optional authentication mechanism)&lt;/mechanism&gt;
+ *      &lt;sslEnabled&gt;[false|true]&lt;/sslEnabled&gt;
+ *      &lt;sslInvalidHostNameAllowed&gt;[false|true]&lt;/sslInvalidHostNameAllowed&gt;
+ *
  *      &lt;!-- Use the following if password is encrypted. --&gt;
  *      &lt;passwordKey&gt;(the encryption key or a reference to it)&lt;/passwordKey&gt;
  *      &lt;passwordKeySource&gt;[key|file|environment|property]&lt;/passwordKeySource&gt;
@@ -104,7 +107,7 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  * </p>
  * <h3>Authentication mechanism</h3>
  * <p>
- * As of 1.8.1, it is now possible to specify the MongoDB authentication 
+ * As of 1.8.1, it is now possible to specify the MongoDB authentication
  * mechanism to use.  The following are supported:
  * </p>
  * <ul>
@@ -112,9 +115,9 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  *  <li>SCRAM-SHA-1</li>
  * </ul>
  * <p>
- * When no mechanism is specified, the default mechanism will be 
- * the Challenge Response (MONGODB-CR) for MongoDB 2 and and 
- * SCRAM SHA1 (SCRAM-SHA-1) for MongoDB 3+. 
+ * When no mechanism is specified, the default mechanism will be
+ * the Challenge Response (MONGODB-CR) for MongoDB 2 and and
+ * SCRAM SHA1 (SCRAM-SHA-1) for MongoDB 3+.
  * The following is an example forcing MONGODB-CR authentication:
  * <pre>
  *      &lt;username&gt;joe_user&lt;/username&gt;
@@ -123,9 +126,13 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
  * </pre>
  *
  * <p>
- * As of 1.9.0, you can define your own collection names with 
- * {@link #setReferencesCollectionName(String)} and 
+ * As of 1.9.0, you can define your own collection names with
+ * {@link #setReferencesCollectionName(String)} and
  * {@link #setCachedCollectionName(String)}.
+ * </p>
+ *
+ * <p>
+ * As of 1.9.2, you can enable SSL.
  * </p>
  *
  * @author Pascal Essiembre
@@ -136,11 +143,11 @@ public abstract class AbstractMongoCrawlDataStoreFactory
 
     private final MongoConnectionDetails connDetails =
             new MongoConnectionDetails();
-    private String referencesCollectionName = 
+    private String referencesCollectionName =
             MongoCrawlDataStore.DEFAULT_REFERENCES_COL_NAME;
-    private String cachedCollectionName = 
+    private String cachedCollectionName =
             MongoCrawlDataStore.DEFAULT_CACHED_COL_NAME;
-    
+
     @Override
     public ICrawlDataStore createCrawlDataStore(
             ICrawlerConfig config, boolean resume) {
@@ -220,6 +227,13 @@ public abstract class AbstractMongoCrawlDataStoreFactory
             }
             connDetails.setPasswordKey(new EncryptionKey(xmlKey, source));
         }
+
+        // SSL
+        connDetails.setSslEnabled(
+                xml.getBoolean("sslEnabled", connDetails.isSslEnabled()));
+        connDetails.setSslInvalidHostNameAllowed(
+                xml.getBoolean("sslInvalidHostNameAllowed",
+                        connDetails.isSslInvalidHostNameAllowed()));
     }
 
     @Override
@@ -237,8 +251,8 @@ public abstract class AbstractMongoCrawlDataStoreFactory
             writer.writeElementString("mechanism", connDetails.getMechanism());
             writer.writeElementString(
                     "cachedCollectionName", getCachedCollectionName());
-            writer.writeElementString(
-                    "referencesCollectionName", getReferencesCollectionName());
+            writer.writeElementString("referencesCollectionName",
+                    getReferencesCollectionName());
 
             // Encrypted password:
             EncryptionKey key = connDetails.getPasswordKey();
@@ -249,6 +263,12 @@ public abstract class AbstractMongoCrawlDataStoreFactory
                             key.getSource().name().toLowerCase());
                 }
             }
+
+            // SSL
+            writer.writeElementBoolean(
+                    "sslEnabled", connDetails.isSslEnabled());
+            writer.writeElementBoolean("sslInvalidHostNameAllowed",
+                    connDetails.isSslInvalidHostNameAllowed());
 
             writer.flush();
             writer.close();
@@ -266,7 +286,7 @@ public abstract class AbstractMongoCrawlDataStoreFactory
                 (AbstractMongoCrawlDataStoreFactory) other;
         return new EqualsBuilder()
                 .append(connDetails, castOther.connDetails)
-                .append(referencesCollectionName, 
+                .append(referencesCollectionName,
                         castOther.referencesCollectionName)
                 .append(cachedCollectionName, castOther.cachedCollectionName)
                 .isEquals();
