@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,12 +66,9 @@ public class SaveDocumentStage
         Path downloadFile = downloadDir.resolve(path);
 
         LOG.debug("Saved file: {}", downloadFile);
-        try {
-            OutputStream out =
-                    FileUtils.openOutputStream(downloadFile.toFile());
+        try (OutputStream out =
+                FileUtils.openOutputStream(downloadFile.toFile())) {
             IOUtils.copy(ctx.getDocument().getInputStream(), out);
-            IOUtils.closeQuietly(out);
-
             ctx.fireCrawlerEvent(
                     DOCUMENT_SAVED, ctx.getCrawlData(), downloadFile);
         } catch (IOException e) {
