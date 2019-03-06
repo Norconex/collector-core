@@ -48,6 +48,7 @@ public class AbstractCollectorTest {
         config.setJobErrorListeners(new MockJobErrorListener());
         config.setJobLifeCycleListeners(new MockJobLifeCycleListener());
         config.setSuiteLifeCycleListeners(new MockSuiteLifeCycleListener());
+        config.setMaxParallelCrawlers(100);
         
         MockCrawlerConfig crawlerCfg = new MockCrawlerConfig();
         crawlerCfg.setId("myCrawler");

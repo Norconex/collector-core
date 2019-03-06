@@ -24,6 +24,8 @@
   <progressDir>/progress</progressDir>
   <logsDir>/logs</logsDir>
 
+  <maxParallelCrawlers>50</maxParallelCrawlers>
+
   <collectorListeners>
     <listener class="com.norconex.collector.core.MockCollectorLifeCycleListener">
       <sample sample="sample">sample</sample>

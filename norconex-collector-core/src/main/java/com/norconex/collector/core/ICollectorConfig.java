@@ -90,4 +90,10 @@ public interface ICollectorConfig extends IXMLConfigurable {
      */
     ICrawlerConfig[] getCrawlerConfigs();
 
+    /**
+     * Gets the value, how much crawlers should be executed in parallel
+     * @return how much crawlers should be executed in parallel
+     * @since 1.9.2
+     */
+    int getMaxParallelCrawlers();
 }

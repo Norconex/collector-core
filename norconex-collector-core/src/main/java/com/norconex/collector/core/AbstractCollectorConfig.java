@@ -64,6 +64,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
     private ICrawlerConfig[] crawlerConfigs;
     private String progressDir = DEFAULT_PROGRESS_DIR;
     private String logsDir = DEFAULT_LOGS_DIR;
+    private int maxParallelCrawlers = Integer.MAX_VALUE;
     private ICollectorLifeCycleListener[] collectorListeners;
     private IJobLifeCycleListener[] jobLifeCycleListeners;
     private IJobErrorListener[] jobErrorListeners;
@@ -153,7 +154,25 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         this.logsDir = logsDir;
     }
 
-    @Override    
+
+    /**
+     * Gets the value, how much crawlers should be executed in parallel
+     * @return how much crawlers should be executed in parallel
+     */
+    @Override
+    public int getMaxParallelCrawlers() {
+        return maxParallelCrawlers;
+    }
+
+    /**
+     *  set the number of max parallel executed crawlers
+     * @param maxParallelCrawlers   max parallel executed crawlers
+     */
+    public void setMaxParallelCrawlers(int maxParallelCrawlers) {
+        this.maxParallelCrawlers = maxParallelCrawlers;
+    }
+
+    @Override
     public ICollectorLifeCycleListener[] getCollectorListeners() {
         return collectorListeners;
     }
@@ -229,6 +248,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
             
             writer.writeElementString("logsDir", getLogsDir());
             writer.writeElementString("progressDir", getProgressDir());
+            writer.writeElementInteger("maxParallelCrawlers", getMaxParallelCrawlers());
             writer.flush();
 
             writeArray(out, "collectorListeners", 
@@ -274,7 +294,8 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         setId(collectorId);
         setLogsDir(xml.getString("logsDir", getLogsDir()));
         setProgressDir(xml.getString("progressDir", getProgressDir()));
-        
+        setMaxParallelCrawlers(xml.getInt("maxParallelCrawlers", Integer.MAX_VALUE));
+
         // Collector listeners
         ICollectorLifeCycleListener[] collListeners = loadCollectorListeners(
                 xml, "collectorListeners.listener");
