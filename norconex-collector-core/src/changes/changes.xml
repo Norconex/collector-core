@@ -8,6 +8,11 @@
   <body>
 
     <release version="1.9.2-SNAPSHOT" date="201?-??-??" description="Maintenance release">
+      <action dev="martin-huber" type="add" issue="25">
+        New "getMaxParallelCrawlers" collector configuration option. 
+        Allows to run only a maximum number of crawlers at any given time,
+        queuing the others. 
+      </action>
       <action dev="essiembre" type="add">
         Added SSL support to MongoDB crawl data store. 
       </action>

@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,8 +91,10 @@ public interface ICollectorConfig extends IXMLConfigurable {
     ICrawlerConfig[] getCrawlerConfigs();
 
     /**
-     * Gets the value, how much crawlers should be executed in parallel
-     * @return how much crawlers should be executed in parallel
+     * Gets the maximum number of crawlers that can be executed in parallel at
+     * any given time.
+     * Default is <code>-1</code>, which means no maximum.
+     * @return maximum crawlers to be executed in parallel
      * @since 1.9.2
      */
     int getMaxParallelCrawlers();

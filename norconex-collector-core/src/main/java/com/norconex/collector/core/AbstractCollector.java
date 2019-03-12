@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -199,15 +199,19 @@ public abstract class AbstractCollector implements ICollector {
 
     @Override
     public JobSuite createJobSuite() {
-        ICrawler[] crawlers = getCrawlers();
+        ICollectorConfig collConfig = getCollectorConfig();
+        ICrawler[] crawlersCopy = getCrawlers();
 
         IJob rootJob = null;
-        if (crawlers.length > 1) {
-            rootJob = new AsyncJobGroup(
-                    getId(), getCollectorConfig().getMaxParallelCrawlers(), crawlers
-            );
-        } else if (crawlers.length == 1) {
-            rootJob = crawlers[0];
+        if (crawlersCopy.length > 1) {
+            int maxCrawlers = crawlersCopy.length;
+            if (collConfig.getMaxParallelCrawlers() > 0) {
+                maxCrawlers = Math.min(
+                        maxCrawlers, collConfig.getMaxParallelCrawlers());
+            }
+            rootJob = new AsyncJobGroup(getId(), maxCrawlers, crawlersCopy);
+        } else if (crawlersCopy.length == 1) {
+            rootJob = crawlersCopy[0];
         }
 
         JobSuiteConfig suiteConfig = new JobSuiteConfig();
@@ -215,7 +219,6 @@ public abstract class AbstractCollector implements ICollector {
         //TODO have a base workdir, which is used to figure out where to put
         // everything (log, progress), and make log and progress overwritable.
 
-        ICollectorConfig collConfig = getCollectorConfig();
         suiteConfig.setLogManager(new FileLogManager(collConfig.getLogsDir()));
         suiteConfig.setJobStatusStore(
                 new FileJobStatusStore(collConfig.getProgressDir()));
@@ -244,7 +247,7 @@ public abstract class AbstractCollector implements ICollector {
                 suiteListeners.toArray(new ISuiteLifeCycleListener[]{}));
 
         JobSuite suite = new JobSuite(rootJob, suiteConfig);
-        LOG.info("Suite of " + crawlers.length + " crawler jobs created.");
+        LOG.info("Suite of " + crawlersCopy.length + " crawler jobs created.");
         return suite;
     }
 

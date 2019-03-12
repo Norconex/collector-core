@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,20 +51,20 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
 
     private static final Logger LOG = LogManager.getLogger(
             AbstractCollectorConfig.class);
-    
+
     /** Default relative directory where logs from Log4j are stored. */
     public static final String DEFAULT_LOGS_DIR = "./logs";
     /** Default relative directory where progress files are stored. */
     public static final String DEFAULT_PROGRESS_DIR = "./progress";
-    
+
     private final Class<? extends ICrawlerConfig> crawlerConfigClass;
     private final String xmlConfigRootTag;
-    
+
     private String id;
     private ICrawlerConfig[] crawlerConfigs;
     private String progressDir = DEFAULT_PROGRESS_DIR;
     private String logsDir = DEFAULT_LOGS_DIR;
-    private int maxParallelCrawlers = Integer.MAX_VALUE;
+    private int maxParallelCrawlers = -1;
     private ICollectorLifeCycleListener[] collectorListeners;
     private IJobLifeCycleListener[] jobLifeCycleListeners;
     private IJobErrorListener[] jobErrorListeners;
@@ -81,13 +81,13 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         this(null, xmlConfigRootTag);
     }
     public AbstractCollectorConfig(
-            Class<? extends ICrawlerConfig> crawlerConfigClass, 
+            Class<? extends ICrawlerConfig> crawlerConfigClass,
             String xmlConfigRootTag) {
         super();
         this.crawlerConfigClass = crawlerConfigClass;
         this.xmlConfigRootTag = xmlConfigRootTag;
     }
-    
+
 
 	/**
 	 * Gets this collector unique identifier.
@@ -154,19 +154,23 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         this.logsDir = logsDir;
     }
 
-
     /**
-     * Gets the value, how much crawlers should be executed in parallel
-     * @return how much crawlers should be executed in parallel
+     * Gets the maximum number of crawlers that can be executed in parallel at
+     * any given time.
+     * Default is <code>-1</code>, which means no maximum.
+     * @return maximum crawlers to be executed in parallel
+     * @since 1.9.2
      */
     @Override
     public int getMaxParallelCrawlers() {
         return maxParallelCrawlers;
     }
-
     /**
-     *  set the number of max parallel executed crawlers
-     * @param maxParallelCrawlers   max parallel executed crawlers
+     * Sets the maximum number of crawlers that can be executed in parallel at
+     * any given time.
+     * Use <code>-1</code> for no maximum.
+     * @param maxParallelCrawlers number of maximum parallel crawlers
+     * @since 1.9.2
      */
     public void setMaxParallelCrawlers(int maxParallelCrawlers) {
         this.maxParallelCrawlers = maxParallelCrawlers;
@@ -177,10 +181,10 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         return collectorListeners;
     }
     /**
-     * Sets collector life cycle listeners. 
-     * @param collectorListeners collector life cycle listeners. 
+     * Sets collector life cycle listeners.
+     * @param collectorListeners collector life cycle listeners.
      * @since 1.8.0
-     */    
+     */
     public void setCollectorListeners(
             ICollectorLifeCycleListener... collectorListeners) {
         this.collectorListeners = collectorListeners;
@@ -191,13 +195,13 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         return jobLifeCycleListeners;
     }
     /**
-     * Sets JEF job life cycle listeners. A job typically represents a 
+     * Sets JEF job life cycle listeners. A job typically represents a
      * crawler instance. Interacting directly
      * with the <a href="https://www.norconex.com/jef/api/">JEF API</a>
-     * is normally reserved for more advanced use. 
-     * @param jobLifeCycleListeners JEF job life cycle listeners. 
+     * is normally reserved for more advanced use.
+     * @param jobLifeCycleListeners JEF job life cycle listeners.
      * @since 1.7.0
-     */    
+     */
     public void setJobLifeCycleListeners(
             IJobLifeCycleListener... jobLifeCycleListeners) {
         this.jobLifeCycleListeners = jobLifeCycleListeners;
@@ -210,10 +214,10 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
     /**
      * Sets JEF error listeners. Interacting directly
      * with the <a href="https://www.norconex.com/jef/api/">JEF API</a>
-     * is normally reserved for more advanced use. 
+     * is normally reserved for more advanced use.
      * @param errorListeners JEF job error listeners
      * @since 1.7.0
-     */    
+     */
     public void setJobErrorListeners(IJobErrorListener... errorListeners) {
         this.jobErrorListeners = errorListeners;
     }
@@ -223,19 +227,19 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         return suiteLifeCycleListeners;
     }
     /**
-     * Sets JEF job suite life cycle listeners. 
-     * A job suite typically represents a collector instance. 
+     * Sets JEF job suite life cycle listeners.
+     * A job suite typically represents a collector instance.
      * Interacting directly
      * with the <a href="https://www.norconex.com/jef/api/">JEF API</a>
-     * is normally reserved for more advanced use. 
-     * @param suiteLifeCycleListeners JEF suite life cycle listeners 
+     * is normally reserved for more advanced use.
+     * @param suiteLifeCycleListeners JEF suite life cycle listeners
      * @since 1.7.0
-     */    
+     */
     public void setSuiteLifeCycleListeners(
             ISuiteLifeCycleListener... suiteLifeCycleListeners) {
         this.suiteLifeCycleListeners = suiteLifeCycleListeners;
     }
-    
+
     @Override
     public void saveToXML(Writer out) throws IOException {
         try {
@@ -245,21 +249,22 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
             writer.writeAttributeClass("class", getClass());
             writer.writeAttribute("id", getId());
             writer.writeAttributeString("xml:space", "preserve");
-            
+
             writer.writeElementString("logsDir", getLogsDir());
             writer.writeElementString("progressDir", getProgressDir());
-            writer.writeElementInteger("maxParallelCrawlers", getMaxParallelCrawlers());
+            writer.writeElementInteger(
+                    "maxParallelCrawlers", getMaxParallelCrawlers());
             writer.flush();
 
-            writeArray(out, "collectorListeners", 
+            writeArray(out, "collectorListeners",
                     "listener", getCollectorListeners());
-            writeArray(out, "jobLifeCycleListeners", 
+            writeArray(out, "jobLifeCycleListeners",
                     "listener", getJobLifeCycleListeners());
-            writeArray(out, "jobErrorListeners", 
+            writeArray(out, "jobErrorListeners",
                     "listener", getJobErrorListeners());
-            writeArray(out, "suiteLifeCycleListeners", 
+            writeArray(out, "suiteLifeCycleListeners",
                     "listener", getSuiteLifeCycleListeners());
-            
+
             out.write("<crawlers>");
             out.flush();
             if (crawlerConfigs != null) {
@@ -270,21 +275,21 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
             }
             out.write("</crawlers>");
             out.flush();
-            
+
             saveCollectorConfigToXML(out);
-            
+
             writer.writeEndElement();
             writer.flush();
         } catch (XMLStreamException e) {
             throw new IOException("Cannot save as XML.", e);
-        }   
-        
+        }
+
     }
     protected abstract void saveCollectorConfigToXML(Writer out);
-    
+
     @Override
     public final void loadFromXML(Reader in) throws IOException {
-        
+
         XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
         String collectorId = xml.getString("[@id]", null);
         if (StringUtils.isBlank(collectorId)) {
@@ -294,14 +299,15 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         setId(collectorId);
         setLogsDir(xml.getString("logsDir", getLogsDir()));
         setProgressDir(xml.getString("progressDir", getProgressDir()));
-        setMaxParallelCrawlers(xml.getInt("maxParallelCrawlers", Integer.MAX_VALUE));
+        setMaxParallelCrawlers(
+                xml.getInt("maxParallelCrawlers", getMaxParallelCrawlers()));
 
         // Collector listeners
         ICollectorLifeCycleListener[] collListeners = loadCollectorListeners(
                 xml, "collectorListeners.listener");
         setCollectorListeners(defaultIfEmpty(collListeners,
                 getCollectorListeners()));
-        
+
         // JEF Job listeners
         IJobLifeCycleListener[] jlcListeners = loadJobLifeCycleListeners(
                 xml, "jobLifeCycleListeners.listener");
@@ -342,7 +348,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         List<HierarchicalConfiguration> listenerNodes = xml
                 .configurationsAt(xmlPath);
         for (HierarchicalConfiguration listenerNode : listenerNodes) {
-            ICollectorLifeCycleListener listener = 
+            ICollectorLifeCycleListener listener =
                     XMLConfigurationUtil.newInstance(listenerNode);
             listeners.add(listener);
             LOG.info("Collector life cycle listener loaded: " + listener);
@@ -355,7 +361,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         List<HierarchicalConfiguration> listenerNodes = xml
                 .configurationsAt(xmlPath);
         for (HierarchicalConfiguration listenerNode : listenerNodes) {
-            IJobLifeCycleListener listener = 
+            IJobLifeCycleListener listener =
                     XMLConfigurationUtil.newInstance(listenerNode);
             listeners.add(listener);
             LOG.info("Job life cycle listener loaded: " + listener);
@@ -368,7 +374,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         List<HierarchicalConfiguration> listenerNodes = xml
                 .configurationsAt(xmlPath);
         for (HierarchicalConfiguration listenerNode : listenerNodes) {
-            IJobErrorListener listener = 
+            IJobErrorListener listener =
                     XMLConfigurationUtil.newInstance(listenerNode);
             listeners.add(listener);
             LOG.info("Job error listener loaded: " + listener);
@@ -381,26 +387,26 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         List<HierarchicalConfiguration> listenerNodes = xml
                 .configurationsAt(xmlPath);
         for (HierarchicalConfiguration listenerNode : listenerNodes) {
-            ISuiteLifeCycleListener listener = 
+            ISuiteLifeCycleListener listener =
                     XMLConfigurationUtil.newInstance(listenerNode);
             listeners.add(listener);
             LOG.info("Suite life cycle listener loaded: " + listener);
         }
         return listeners.toArray(new ISuiteLifeCycleListener[] {});
-    }    
-    
+    }
+
     protected abstract void loadCollectorConfigFromXML(XMLConfiguration xml);
 
     //TODO transfer to utility method in (Nx Commons Lang?) since it is
-    //duplicated code from AbstractCrawlerConfig. 
+    //duplicated code from AbstractCrawlerConfig.
     protected void writeObject(
             Writer out, String tagName, Object object) throws IOException {
         writeObject(out, tagName, object, false);
     }
     //TODO transfer to utility method in (Nx Commons Lang?) since it is
-    //duplicated code from AbstractCrawlerConfig. 
+    //duplicated code from AbstractCrawlerConfig.
     protected void writeObject(
-            Writer out, String tagName, Object object, boolean ignore) 
+            Writer out, String tagName, Object object, boolean ignore)
                     throws IOException {
         out.flush();
         if (object == null) {
@@ -413,41 +419,41 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         if (object instanceof IXMLConfigurable) {
             ((IXMLConfigurable) object).saveToXML(w);
         } else {
-            w.write("<" + tagName + " class=\"" 
+            w.write("<" + tagName + " class=\""
                     + object.getClass().getCanonicalName() + "\" />");
         }
         String xml = w.toString();
         if (ignore) {
-            xml = xml.replace("<" + tagName + " class=\"" , 
+            xml = xml.replace("<" + tagName + " class=\"" ,
                     "<" + tagName + " ignore=\"true\" class=\"" );
         }
         out.write(xml);
         out.flush();
     }
     //TODO transfer to utility method in (Nx Commons Lang?) since it is
-    //duplicated code from AbstractCrawlerConfig. 
-    protected void writeArray(Writer out, String listTagName, 
+    //duplicated code from AbstractCrawlerConfig.
+    protected void writeArray(Writer out, String listTagName,
             String objectTagName, Object[] array) throws IOException {
         if (ArrayUtils.isEmpty(array)) {
             return;
         }
-        out.write("<" + listTagName + ">"); 
+        out.write("<" + listTagName + ">");
         for (Object obj : array) {
             writeObject(out, objectTagName, obj);
         }
-        out.write("</" + listTagName + ">"); 
+        out.write("</" + listTagName + ">");
         out.flush();
     }
     //TODO transfer to utility method in (Nx Commons Lang?) since it is
-    //duplicated code from AbstractCrawlerConfig. 
+    //duplicated code from AbstractCrawlerConfig.
     protected <T> T[] defaultIfEmpty(T[] array, T[] defaultArray) {
         if (ArrayUtils.isEmpty(array)) {
             return defaultArray;
         }
         return array;
     }
-    
-    
+
+
     @Override
     public boolean equals(final Object other) {
         if (!(other instanceof AbstractCollectorConfig)) {
@@ -457,13 +463,14 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         return new EqualsBuilder()
                 .append(crawlerConfigClass, castOther.crawlerConfigClass)
                 .append(id, castOther.id)
+                .append(maxParallelCrawlers, castOther.maxParallelCrawlers)
                 .append(crawlerConfigs, castOther.crawlerConfigs)
                 .append(progressDir, castOther.progressDir)
                 .append(logsDir, castOther.logsDir)
                 .append(collectorListeners, castOther.collectorListeners)
                 .append(jobLifeCycleListeners, castOther.jobLifeCycleListeners)
                 .append(jobErrorListeners, castOther.jobErrorListeners)
-                .append(suiteLifeCycleListeners, 
+                .append(suiteLifeCycleListeners,
                         castOther.suiteLifeCycleListeners)
                 .isEquals();
     }
@@ -473,6 +480,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         return new HashCodeBuilder()
                 .append(crawlerConfigClass)
                 .append(id)
+                .append(maxParallelCrawlers)
                 .append(crawlerConfigs)
                 .append(progressDir)
                 .append(logsDir)
@@ -488,6 +496,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("crawlerConfigClass", crawlerConfigClass)
                 .append("id", id)
+                .append("maxParallelCrawlers", maxParallelCrawlers)
                 .append("crawlerConfigs", crawlerConfigs)
                 .append("progressDir", progressDir)
                 .append("logsDir", logsDir)
