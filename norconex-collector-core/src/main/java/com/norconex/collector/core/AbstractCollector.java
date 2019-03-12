@@ -204,7 +204,7 @@ public abstract class AbstractCollector implements ICollector {
         IJob rootJob = null;
         if (crawlers.length > 1) {
             rootJob = new AsyncJobGroup(
-                    getId(), crawlers
+                    getId(), getCollectorConfig().getMaxParallelCrawlers(), crawlers
             );
         } else if (crawlers.length == 1) {
             rootJob = crawlers[0];
