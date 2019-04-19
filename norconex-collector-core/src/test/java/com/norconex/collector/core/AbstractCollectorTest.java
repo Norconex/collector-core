@@ -49,18 +49,19 @@ public class AbstractCollectorTest {
         config.setJobLifeCycleListeners(new MockJobLifeCycleListener());
         config.setSuiteLifeCycleListeners(new MockSuiteLifeCycleListener());
         config.setMaxParallelCrawlers(100);
-        
+        config.setLogsUnmanaged(true);
+
         MockCrawlerConfig crawlerCfg = new MockCrawlerConfig();
         crawlerCfg.setId("myCrawler");
         crawlerCfg.setCommitter(new FileSystemCommitter());
-        
+
         config.setCrawlerConfigs(new ICrawlerConfig[] {crawlerCfg});
-        
-        
+
+
         System.out.println("Writing/Reading this: " + config);
         XMLConfigurationUtil.assertWriteRead(config);
     }
-    
+
     @Test
     public void testOverwriteCrawlerDefaults() throws IOException {
         MockCollectorConfig cfg = new MockCollectorConfig();
@@ -69,7 +70,7 @@ public class AbstractCollectorTest {
             XMLConfigurationUtil.loadFromXML(cfg, r);
         }
 
-        MockCrawlerConfig crawlA = 
+        MockCrawlerConfig crawlA =
                 (MockCrawlerConfig) cfg.getCrawlerConfigs()[0];
         assertEquals("crawlA", 22, crawlA.getNumThreads());
         assertEquals("crawlA", new File("crawlAWorkdir"), crawlA.getWorkDir());
@@ -78,12 +79,12 @@ public class AbstractCollectorTest {
         assertEquals("crawlA", "F", ((ReplaceTransformer)
                 crawlA.getImporterConfig().getPreParseHandlers()[0])
                         .getReplacements().get("E"));
-        assertTrue("crawlA", ArrayUtils.isEmpty( 
+        assertTrue("crawlA", ArrayUtils.isEmpty(
                 crawlA.getImporterConfig().getPostParseHandlers()));
         assertEquals("crawlA", "crawlACommitter", ((FileSystemCommitter)
                 crawlA.getCommitter()).getDirectory());
-        
-        MockCrawlerConfig crawlB = 
+
+        MockCrawlerConfig crawlB =
                 (MockCrawlerConfig) cfg.getCrawlerConfigs()[1];
         assertEquals("crawlB", 1, crawlB.getNumThreads());
         assertEquals("crawlB", new File("defaultWorkdir"), crawlB.getWorkDir());
@@ -98,8 +99,8 @@ public class AbstractCollectorTest {
         assertEquals("crawlB", "defaultCommitter", ((FileSystemCommitter)
                 crawlB.getCommitter()).getDirectory());
     }
-    
-    
+
+
     @Test
     public void testValidation() throws IOException {
         CountingConsoleAppender appender = new CountingConsoleAppender();
@@ -110,7 +111,7 @@ public class AbstractCollectorTest {
         } finally {
             appender.stopCountingFor(XMLConfigurationUtil.class);
         }
-        assertEquals("Validation warnings/errors were found.", 
+        assertEquals("Validation warnings/errors were found.",
                 0, appender.getCount());
     }
 }

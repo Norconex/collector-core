@@ -33,6 +33,7 @@ import com.norconex.importer.Importer;
 import com.norconex.jef4.job.IJob;
 import com.norconex.jef4.job.group.AsyncJobGroup;
 import com.norconex.jef4.log.FileLogManager;
+import com.norconex.jef4.log.NoLogManager;
 import com.norconex.jef4.status.FileJobStatusStore;
 import com.norconex.jef4.status.IJobStatus;
 import com.norconex.jef4.status.JobState;
@@ -216,10 +217,12 @@ public abstract class AbstractCollector implements ICollector {
 
         JobSuiteConfig suiteConfig = new JobSuiteConfig();
 
-        //TODO have a base workdir, which is used to figure out where to put
-        // everything (log, progress), and make log and progress overwritable.
-
-        suiteConfig.setLogManager(new FileLogManager(collConfig.getLogsDir()));
+        if (collConfig.isLogsUnmanaged()) {
+            suiteConfig.setLogManager(new NoLogManager());
+        } else {
+            suiteConfig.setLogManager(
+                    new FileLogManager(collConfig.getLogsDir()));
+        }
         suiteConfig.setJobStatusStore(
                 new FileJobStatusStore(collConfig.getProgressDir()));
         suiteConfig.setWorkdir(collConfig.getProgressDir());

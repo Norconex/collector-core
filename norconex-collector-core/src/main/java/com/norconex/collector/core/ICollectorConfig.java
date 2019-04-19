@@ -46,43 +46,50 @@ public interface ICollectorConfig extends IXMLConfigurable {
     String getLogsDir();
 
     /**
-     * Gets collector life cycle listeners. 
-     * @return collector life cycle listeners. 
-     * @since 1.8.0
-     */    
-    ICollectorLifeCycleListener[] getCollectorListeners();
-    
+     * Gets whether written logs are managed by the collector.
+     * @return <code>true</code> if unmanaged
+     * @since 1.9.2
+     */
+    boolean isLogsUnmanaged();
+
     /**
-     * Gets JEF job life cycle listeners. A job typically represents a 
+     * Gets collector life cycle listeners.
+     * @return collector life cycle listeners.
+     * @since 1.8.0
+     */
+    ICollectorLifeCycleListener[] getCollectorListeners();
+
+    /**
+     * Gets JEF job life cycle listeners. A job typically represents a
      * crawler instance. Interacting directly
      * with the <a href="https://www.norconex.com/jef/api/">JEF API</a>
-     * is normally reserved for more advanced use. 
-     * This method can safely return <code>null</code>.  
-     * @return JEF job life cycle listeners. 
+     * is normally reserved for more advanced use.
+     * This method can safely return <code>null</code>.
+     * @return JEF job life cycle listeners.
      * @since 1.7.0
-     */    
+     */
     IJobLifeCycleListener[] getJobLifeCycleListeners();
     /**
      * Gets JEF error listeners. Interacting directly
      * with the <a href="https://www.norconex.com/jef/api/">JEF API</a>
-     * is normally reserved for more advanced use. 
-     * This method can safely return <code>null</code>.  
+     * is normally reserved for more advanced use.
+     * This method can safely return <code>null</code>.
      * @return JEF job error listeners
      * @since 1.7.0
-     */    
+     */
     IJobErrorListener[] getJobErrorListeners();
     /**
-     * Gets JEF job suite life cycle listeners. 
-     * A job suite typically represents a collector instance. 
+     * Gets JEF job suite life cycle listeners.
+     * A job suite typically represents a collector instance.
      * Interacting directly
      * with the <a href="https://www.norconex.com/jef/api/">JEF API</a>
-     * is normally reserved for more advanced use. 
-     * This method can safely return <code>null</code>.  
-     * @return JEF suite life cycle listeners 
+     * is normally reserved for more advanced use.
+     * This method can safely return <code>null</code>.
+     * @return JEF suite life cycle listeners
      * @since 1.7.0
-     */    
+     */
     ISuiteLifeCycleListener[] getSuiteLifeCycleListeners();
-    
+
     /**
      * Gets all crawler configurations.
      * @return crawler configurations

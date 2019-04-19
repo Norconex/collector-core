@@ -22,7 +22,7 @@
 <collector id="Test Collector Core Config">
 
   <progressDir>/progress</progressDir>
-  <logsDir>/logs</logsDir>
+  <logsDir unmanaged="true">/logs</logsDir>
 
   <maxParallelCrawlers>50</maxParallelCrawlers>
 

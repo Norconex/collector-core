@@ -64,6 +64,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
     private ICrawlerConfig[] crawlerConfigs;
     private String progressDir = DEFAULT_PROGRESS_DIR;
     private String logsDir = DEFAULT_LOGS_DIR;
+    private boolean logsUnmanaged;
     private int maxParallelCrawlers = -1;
     private ICollectorLifeCycleListener[] collectorListeners;
     private IJobLifeCycleListener[] jobLifeCycleListeners;
@@ -152,6 +153,23 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
      */
     public void setLogsDir(String logsDir) {
         this.logsDir = logsDir;
+    }
+
+    /**
+     * Gets whether written logs are managed by the collector.
+     * @return <code>true</code> if unmanaged
+     * @since 1.9.2
+     */
+    public boolean isLogsUnmanaged() {
+        return logsUnmanaged;
+    }
+    /**
+     * Sets whether written logs are managed by the collector.
+     * @param logsUnmanaged <code>true</code> if unmanaged
+     * @since 1.9.2
+     */
+    public void setLogsUnmanaged(boolean logsUnmanaged) {
+        this.logsUnmanaged = logsUnmanaged;
     }
 
     /**
@@ -250,7 +268,11 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
             writer.writeAttribute("id", getId());
             writer.writeAttributeString("xml:space", "preserve");
 
-            writer.writeElementString("logsDir", getLogsDir());
+            writer.writeStartElement("logsDir");
+            writer.writeAttributeBoolean("unmanaged", isLogsUnmanaged());
+            writer.writeCharacters(getLogsDir());
+            writer.writeEndElement();
+
             writer.writeElementString("progressDir", getProgressDir());
             writer.writeElementInteger(
                     "maxParallelCrawlers", getMaxParallelCrawlers());
@@ -298,6 +320,8 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
         }
         setId(collectorId);
         setLogsDir(xml.getString("logsDir", getLogsDir()));
+        setLogsUnmanaged(
+                xml.getBoolean("logsDir[@unmanaged]", isLogsUnmanaged()));
         setProgressDir(xml.getString("progressDir", getProgressDir()));
         setMaxParallelCrawlers(
                 xml.getInt("maxParallelCrawlers", getMaxParallelCrawlers()));
@@ -467,6 +491,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
                 .append(crawlerConfigs, castOther.crawlerConfigs)
                 .append(progressDir, castOther.progressDir)
                 .append(logsDir, castOther.logsDir)
+                .append(logsUnmanaged, castOther.logsUnmanaged)
                 .append(collectorListeners, castOther.collectorListeners)
                 .append(jobLifeCycleListeners, castOther.jobLifeCycleListeners)
                 .append(jobErrorListeners, castOther.jobErrorListeners)
@@ -484,6 +509,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
                 .append(crawlerConfigs)
                 .append(progressDir)
                 .append(logsDir)
+                .append(logsUnmanaged)
                 .append(collectorListeners)
                 .append(jobLifeCycleListeners)
                 .append(jobErrorListeners)
@@ -500,6 +526,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
                 .append("crawlerConfigs", crawlerConfigs)
                 .append("progressDir", progressDir)
                 .append("logsDir", logsDir)
+                .append("logsUnmanaged", logsUnmanaged)
                 .append("collectorListeners", collectorListeners)
                 .append("jobLifeCycleListeners", jobLifeCycleListeners)
                 .append("jobErrorListeners", jobErrorListeners)

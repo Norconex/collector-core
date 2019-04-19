@@ -86,7 +86,7 @@
     <dependency>
       <groupId>com.norconex.jef</groupId>
       <artifactId>norconex-jef</artifactId>
-      <version>4.1.0</version>
+      <version>4.1.2-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>commons-beanutils</groupId>
