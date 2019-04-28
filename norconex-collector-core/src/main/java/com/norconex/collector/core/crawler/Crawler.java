@@ -218,7 +218,7 @@ public abstract class Crawler extends AbstractResumableJob {
 //    public void fireCrawlerEvent(
 //            String eventType, ICrawlData crawlData, Object subject) {
 //        crawlerEventManager.fireCrawlerEvent(
-//                new CrawlerEvent(eventType, crawlData, subject));
+//                new XMLValidationEvent(eventType, crawlData, subject));
 //    }
 
     protected Collector getCollector() {

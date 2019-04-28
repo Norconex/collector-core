@@ -67,14 +67,14 @@ public class MVStoreCrawlDataStoreFactory //extends CrawlerLifeCycleListener
     }
 
 //    @Override
-//    protected void crawlerStartup(CrawlerEvent<Crawler> event) {
+//    protected void crawlerStartup(XMLValidationEvent<Crawler> event) {
 //        if (storeDir == null) {
 //            storeDir = event.getSource().getWorkDir().resolve(
 //                    "/crawlstore-mvstore");
 //        }
 //    }
 //    @Override
-//    protected void crawlerShutdown(CrawlerEvent<Crawler> event) {
+//    protected void crawlerShutdown(XMLValidationEvent<Crawler> event) {
 //    }
 //
 

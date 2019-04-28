@@ -96,9 +96,13 @@ public class CrawlerConfigLoader {
      */
     public List<CrawlerConfig> loadCrawlerConfigs(
             Path configFile, Path configVariables) {
-        ConfigurationLoader configLoader = new ConfigurationLoader();
-        XML xml = configLoader.loadXML(configFile, configVariables);
-        return loadCrawlerConfigs(xml);
+
+        return loadCrawlerConfigs(new ConfigurationLoader().setVariablesFile(
+                configVariables).loadXML(configFile));
+
+//        ConfigurationLoader configLoader = new ConfigurationLoader();
+//        XML xml = configLoader.loadXML(configFile, configVariables);
+//        return loadCrawlerConfigs(xml);
     }
     public List<CrawlerConfig> loadCrawlerConfigs(XML xml) {
         try {
@@ -155,7 +159,7 @@ public class CrawlerConfigLoader {
             }
         }
 
-        xml.configure(config);
+        xml.populate(config);
 
 //        XMLConfigurationUtil.loadFromXML(config, node);
     }

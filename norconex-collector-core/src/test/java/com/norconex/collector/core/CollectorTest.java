@@ -61,7 +61,7 @@ public class CollectorTest {
         MockCollectorConfig cfg = new MockCollectorConfig();
         try (Reader r = new InputStreamReader(getClass().getResourceAsStream(
                 "overwrite-crawlerDefaults.xml"))) {
-            new XML(r).configure(cfg);
+            new XML(r).populate(cfg);
         }
 
         MockCrawlerConfig crawlA =
@@ -101,7 +101,7 @@ public class CollectorTest {
         try (Reader r = new InputStreamReader(getClass().getResourceAsStream(
                 "/validation/collector-core-full.xml"))) {
             assertEquals("Validation warnings/errors were found.",
-                    0, new XML(r).configure(new MockCollectorConfig()).size());
+                    0, new XML(r).populate(new MockCollectorConfig()).size());
         }
     }
 }

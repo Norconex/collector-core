@@ -38,8 +38,8 @@ import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.event.IEventListener;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.XMLValidationError;
 import com.norconex.importer.ImporterConfig;
-import com.norconex.importer.ImporterConfigLoader;
 
 /**
  * Base Crawler configuration. Crawlers usually read this configuration upon
@@ -530,8 +530,6 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
                 "metadataFilters/filter", metadataFilters));
         setDocumentFilters(xml.getObjectList(
                 "documentFilters/filter", documentFilters));
-//        setCrawlerListeners(xml.getObjectList(
-//                "crawlerListeners/listener", crawlerListeners));
 
 
         //TODO Make it so importer can be null (importing is then skipped)
@@ -539,13 +537,11 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
 
         XML importerXML = xml.getXML("importer");
         if (importerXML != null) {
-
-
             //TODO new ImporterConfig()  .setCachedConfigParams as defaults... then call XML configure
-
-
-            setImporterConfig(ImporterConfigLoader.loadImporterConfig(
-                    importerXML, false)); //TODO handle ignore errors
+            ImporterConfig cfg = new ImporterConfig();
+            List<XMLValidationError> errors = importerXML.populate(cfg);
+            setImporterConfig(cfg);
+            //TODO handle ignore errors
         } else if (getImporterConfig() == null) {
             setImporterConfig(new ImporterConfig());
         }

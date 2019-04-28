@@ -36,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.config.ConfigurationLoader;
-import com.norconex.commons.lang.xml.XML;
 import com.norconex.commons.lang.xml.XMLValidationError;
 
 /**
@@ -133,74 +132,33 @@ public abstract class AbstractCollectorLauncher {
     private CollectorConfig loadCommandLineConfig(
             CommandLine cmd, Path configFile, Path varFile) {
         CollectorConfig config = null;
-//        CountingConsoleAppender appender = null;
-//            if (cmd.hasOption(ARG_CHECKCFG)) {
-//                appender = new CountingConsoleAppender();
-//                appender.startCountingFor(
-//                        XMLConfigurationUtil.class, Level.WARN);
-//            }
 
+        List<XMLValidationError> errors = null;
+        try {
+            config = getCollectorConfigClass().newInstance();
+            errors = new ConfigurationLoader()
+                    .setVariablesFile(varFile)
+                    .loadXML(configFile)
+                    .populate(config);
+        } catch (InstantiationException | IllegalAccessException e) {
+            //TODO use logging instead?
+            System.err.println("A problem occured loading configuration.");
+            e.printStackTrace(System.err);
+            System.exit(-1);
+        }
 
-            List<XMLValidationError> errors = null;
-            try {
-                ConfigurationLoader configLoader = new ConfigurationLoader();
-                XML xml = configLoader.loadXML(configFile, varFile);
-    //            XMLConfiguration xml = configLoader.loadXML(
-    //                    configFile, configVariables);
-                config = getCollectorConfigClass().newInstance();
-
-                errors = xml.configure(config);
-
-    //                CollectorConfig collectorConfig =
-    //                        collectorConfigClass.newInstance();
-    //                collectorConfig.loadFromXML(XMLConfigurationUtil.newReader(xml));
-    //                return collectorConfig;
-
-            } catch (InstantiationException | IllegalAccessException e) {
-
-                //TODO use logging instead?
-
-                System.err.println("A problem occured loading configuration.");
-                e.printStackTrace(System.err);
+        if (cmd.hasOption(ARG_CHECKCFG)) {
+            if (CollectionUtils.isNotEmpty(errors)) {
+                System.err.println("There were " + errors.size()
+                        + " XML configuration error(s).");
                 System.exit(-1);
+            } else if (cmd.hasOption(ARG_ACTION)) {
+                LOG.info("No XML configuration errors.");
+            } else {
+                System.out.println("No XML configuration errors.");
             }
-
-
-
-
-
-
-
-
-
-
-
-
-//            config = new CollectorConfigLoader(
-//                    getCollectorConfigClass()).loadCollectorConfig(
-//                            configFile, varFile);
-            if (cmd.hasOption(ARG_CHECKCFG)) {
-                if (CollectionUtils.isNotEmpty(errors)) {
-                    System.err.println("There were " + errors.size()
-                            + " XML configuration error(s).");
-                    System.exit(-1);
-                } else if (cmd.hasOption(ARG_ACTION)) {
-                    LOG.info("No XML configuration errors.");
-                } else {
-                    System.out.println("No XML configuration errors.");
-                }
-            }
-//        } catch (IOException e) {
-//            System.err.println("A problem occured loading configuration.");
-//            e.printStackTrace(System.err);
-//            System.exit(-1);
-//        } finally {
-//            if (appender != null) {
-//                appender.stopCountingFor(XMLConfigurationUtil.class);
-//            }
-//        }
+        }
         return config;
-
     }
 
     protected CommandLine parseCommandLineArguments(String[] args) {
