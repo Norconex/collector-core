@@ -1,4 +1,4 @@
-/* Copyright 2016-2018 Norconex Inc.
+/* Copyright 2016-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,15 @@
  */
 package com.norconex.collector.core;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.crawler.MockCrawlerConfig;
@@ -42,10 +42,6 @@ public class CollectorTest {
         MockCollectorConfig config = new MockCollectorConfig();
         config.setId("test-collector");
         config.setEventListeners(new MockCollectorEventListener());
-//        config.setCollectorListeners(new MockCollectorLifeCycleListener());
-//        config.setJobErrorListeners(new MockJobErrorListener());
-//        config.setJobLifeCycleListeners(new MockJobLifeCycleListener());
-//        config.setSuiteLifeCycleListeners(new MockSuiteLifeCycleListener());
 
         MockCrawlerConfig crawlerCfg = new MockCrawlerConfig();
         crawlerCfg.setId("myCrawler");
@@ -66,33 +62,39 @@ public class CollectorTest {
 
         MockCrawlerConfig crawlA =
                 (MockCrawlerConfig) cfg.getCrawlerConfigs().get(0);
-        assertEquals("crawlA", 22, crawlA.getNumThreads());
-//        assertEquals("crawlA", Paths.get("crawlAWorkdir"), crawlA.getWorkDir());
-        assertEquals("crawlA", "crawlAFilter", ((ExtensionReferenceFilter)
-                crawlA.getReferenceFilters().get(0)).getExtensions());
-        assertEquals("crawlA", "F", ((ReplaceTransformer)
+        assertEquals( 22, crawlA.getNumThreads(),
+                "crawlA");
+        assertEquals( "crawlAFilter", ((ExtensionReferenceFilter)
+                crawlA.getReferenceFilters().get(0)).getExtensions(),
+                "crawlA");
+        assertEquals( "F", ((ReplaceTransformer)
                 crawlA.getImporterConfig().getPreParseHandlers().get(0))
-                        .getReplacements().get("E"));
-        assertTrue("crawlA", CollectionUtils.isEmpty(
-                crawlA.getImporterConfig().getPostParseHandlers()));
-        assertEquals("crawlA", "crawlACommitter", ((FileSystemCommitter)
-                crawlA.getCommitter()).getDirectory());
+                        .getReplacements().get("E"),
+                "crawlA");
+        assertTrue( CollectionUtils.isEmpty(
+                crawlA.getImporterConfig().getPostParseHandlers()),
+                "crawlA");
+        assertEquals( "crawlACommitter", ((FileSystemCommitter)
+                crawlA.getCommitter()).getDirectory(),
+                "crawlA");
 
         MockCrawlerConfig crawlB =
                 (MockCrawlerConfig) cfg.getCrawlerConfigs().get(1);
-        assertEquals("crawlB", 1, crawlB.getNumThreads());
-//        assertEquals("crawlB",
-//                Paths.get("defaultWorkdir"), crawlB.getWorkDir());
-        assertEquals("crawlB", "defaultFilter", ((ExtensionReferenceFilter)
-                crawlB.getReferenceFilters().get(0)).getExtensions());
-        assertEquals("crawlB", "B", ((ReplaceTransformer)
+        assertEquals( 1, crawlB.getNumThreads(), "crawlB");
+        assertEquals( "defaultFilter", ((ExtensionReferenceFilter)
+                crawlB.getReferenceFilters().get(0)).getExtensions(),
+                "crawlB");
+        assertEquals( "B", ((ReplaceTransformer)
                 crawlB.getImporterConfig().getPreParseHandlers().get(0))
-                        .getReplacements().get("A"));
-        assertEquals("crawlB", "D", ((ReplaceTransformer)
+                        .getReplacements().get("A"),
+                "crawlB");
+        assertEquals( "D", ((ReplaceTransformer)
                 crawlB.getImporterConfig().getPostParseHandlers().get(0))
-                        .getReplacements().get("C"));
-        assertEquals("crawlB", "defaultCommitter", ((FileSystemCommitter)
-                crawlB.getCommitter()).getDirectory());
+                        .getReplacements().get("C"),
+                "crawlB");
+        assertEquals( "defaultCommitter", ((FileSystemCommitter)
+                crawlB.getCommitter()).getDirectory(),
+                "crawlB");
     }
 
 
@@ -100,8 +102,9 @@ public class CollectorTest {
     public void testValidation() throws IOException {
         try (Reader r = new InputStreamReader(getClass().getResourceAsStream(
                 "/validation/collector-core-full.xml"))) {
-            assertEquals("Validation warnings/errors were found.",
-                    0, new XML(r).populate(new MockCollectorConfig()).size());
+            assertEquals(
+                    0, new XML(r).populate(new MockCollectorConfig()).size(),
+                "Validation warnings/errors were found.");
         }
     }
 }

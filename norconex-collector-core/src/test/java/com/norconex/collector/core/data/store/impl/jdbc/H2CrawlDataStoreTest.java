@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
 package com.norconex.collector.core.data.store.impl.jdbc;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.collector.core.TestUtil;
 import com.norconex.collector.core.crawler.CrawlerConfig;
@@ -30,10 +30,10 @@ public class H2CrawlDataStoreTest extends BaseCrawlDataStoreTest {
 
     @Override
     protected ICrawlDataStore createCrawlDataStore(
-            CrawlerConfig config, TemporaryFolder tempFolder, boolean resume) {
+            CrawlerConfig config, Path tempFolder, boolean resume) {
 
         BasicJDBCCrawlDataStoreFactory f = new BasicJDBCCrawlDataStoreFactory();
-        f.setStoreDir(tempFolder.getRoot().toPath());
+        f.setStoreDir(tempFolder);
         return f.createCrawlDataStore(config, resume);
     }
 

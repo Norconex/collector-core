@@ -84,6 +84,8 @@
       <artifactId>h2</artifactId>
       <version>1.4.197</version>
     </dependency>
+
+    <!-- Tests and provided. -->
     <dependency>
       <groupId>com.norconex.commons</groupId>
       <artifactId>norconex-commons-lang</artifactId>
@@ -92,11 +94,19 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- TODO: replace with Junit 5. -->
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.12</version>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

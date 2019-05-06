@@ -1,4 +1,4 @@
-/* Copyright 2016 Norconex Inc.
+/* Copyright 2016-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package com.norconex.collector.core.filter.impl;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.filter.OnMatch;
@@ -30,7 +30,7 @@ public class ExtensionReferenceFilterTest {
                 "html,htm,\n"
               + "  xhtml , dhtml \n\n");
 
-        Assert.assertArrayEquals(
+        Assertions.assertArrayEquals(
                 new String[] {
                     "html",
                     "htm",
@@ -44,54 +44,54 @@ public class ExtensionReferenceFilterTest {
     public void testOnlyDetectExtensionsInLastPathSegment() {
         ExtensionReferenceFilter filter = initFilter("com,xml");
 
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 filter.acceptReference("http://example.com"));
 
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 filter.acceptReference("http://example.com/file"));
 
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 filter.acceptReference("http://example.com/dir.com/file"));
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 filter.acceptReference("http://example.com/file.com"));
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 filter.acceptReference("http://example.de/file.com"));
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 filter.acceptReference("http://example.com/file.xml"));
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 filter.acceptReference("http://example.com/file.subtype.xml"));
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 filter.acceptReference("http://example.com/dir.com/file.com"));
 
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 filter.acceptReference("http://example.com/dir.com/file.pdf"));
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 filter.acceptReference("http://example.com/dir.pdf/file.com"));
 
-        Assert.assertTrue(filter.acceptReference(
+        Assertions.assertTrue(filter.acceptReference(
                 "http://example.com/dir.pdf/file.com?param1=something.pdf"));
 
-        Assert.assertFalse(filter.acceptReference(
+        Assertions.assertFalse(filter.acceptReference(
                 "http://example.com/dir.pdf/file.pdf?param1=something.com"));
 
-        Assert.assertTrue(filter.acceptReference("C:\\example\\file.com"));
+        Assertions.assertTrue(filter.acceptReference("C:\\example\\file.com"));
 
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 filter.acceptReference("C:\\example\\dir.com\\file.pdf"));
 
-        Assert.assertTrue(filter.acceptReference("/tmp/file.com"));
+        Assertions.assertTrue(filter.acceptReference("/tmp/file.com"));
 
-        Assert.assertFalse(filter.acceptReference("/tmp/dir.com/file.pdf"));
+        Assertions.assertFalse(filter.acceptReference("/tmp/dir.com/file.pdf"));
 
-        Assert.assertTrue(filter.acceptReference("file.com"));
+        Assertions.assertTrue(filter.acceptReference("file.com"));
 
-        Assert.assertFalse(filter.acceptReference("dir.com/file.pdf"));
+        Assertions.assertFalse(filter.acceptReference("dir.com/file.pdf"));
     }
 
     private ExtensionReferenceFilter initFilter(String extensions) {

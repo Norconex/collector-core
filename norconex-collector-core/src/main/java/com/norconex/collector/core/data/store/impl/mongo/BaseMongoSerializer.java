@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,8 @@ import com.mongodb.client.model.IndexOptions;
 import com.norconex.collector.core.data.BaseCrawlData;
 import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.data.ICrawlData;
-import com.norconex.commons.lang.StringUtil;
 import com.norconex.commons.lang.file.ContentType;
+import com.norconex.commons.lang.text.StringUtil;
 
 /**
  * Basic Mongo serializer for {@link BaseCrawlData} instances.
@@ -38,9 +38,9 @@ public class BaseMongoSerializer implements IMongoSerializer {
 
     @Override
     public Document toDocument(Stage stage, ICrawlData crawlData) {
- 
+
         Document doc = new Document();
-        
+
         // "reference" is a Mongo indexed field, which is limited to 1024.
         // So if too long we truncate it, trying to keep it unique,
         // while storing the original in a separate field.
@@ -50,10 +50,10 @@ public class BaseMongoSerializer implements IMongoSerializer {
         if (!Objects.equals(ref, crawlData.getReference())) {
             doc.put(FIELD_REFERENCE_EXCESSIVE, crawlData.getReference());
         }
-        
-        doc.put(FIELD_PARENT_ROOT_REFERENCE, 
+
+        doc.put(FIELD_PARENT_ROOT_REFERENCE,
                 crawlData.getParentRootReference());
-        doc.put(FIELD_IS_ROOT_PARENT_REFERENCE, 
+        doc.put(FIELD_IS_ROOT_PARENT_REFERENCE,
                 crawlData.isRootParentReference());
         doc.put(FIELD_CRAWL_STATE, crawlData.getState().toString());
         doc.put(FIELD_META_CHECKSUM, crawlData.getMetaChecksum());
@@ -73,7 +73,7 @@ public class BaseMongoSerializer implements IMongoSerializer {
             return null;
         }
         BaseCrawlData data = new BaseCrawlData();
-      
+
         // If the doc has an excessively long URL, make sure to use it
         // and ignore the indexed one that was truncated.
         String ref = doc.getString(FIELD_REFERENCE_EXCESSIVE);
@@ -81,7 +81,7 @@ public class BaseMongoSerializer implements IMongoSerializer {
             ref = doc.getString(FIELD_REFERENCE);
         }
         data.setReference(ref);
-        
+
         data.setParentRootReference(doc.getString(FIELD_PARENT_ROOT_REFERENCE));
         data.setRootParentReference(
                 doc.getBoolean(FIELD_IS_ROOT_PARENT_REFERENCE));
@@ -109,13 +109,13 @@ public class BaseMongoSerializer implements IMongoSerializer {
 
     @Override
     public void createIndices(
-            MongoCollection<Document> referenceCollection, 
+            MongoCollection<Document> referenceCollection,
             MongoCollection<Document> cachedCollection) {
         ensureIndex(referenceCollection, true, FIELD_REFERENCE);
         ensureIndex(cachedCollection, true, FIELD_REFERENCE);
         ensureIndex(referenceCollection, false, FIELD_IS_VALID);
         ensureIndex(referenceCollection, false, FIELD_STAGE);
-        ensureIndex(referenceCollection, false, 
+        ensureIndex(referenceCollection, false,
         		FIELD_STAGE, FIELD_DEPTH);
     }
 

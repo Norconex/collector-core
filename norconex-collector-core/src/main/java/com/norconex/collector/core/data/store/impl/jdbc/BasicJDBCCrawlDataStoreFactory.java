@@ -1,4 +1,4 @@
-/* Copyright 2016-2018 Norconex Inc.
+/* Copyright 2016-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,9 +39,6 @@ import com.norconex.commons.lang.xml.XML;
  * </pre>
  *
  * <h4>Usage example:</h4>
- * <p>
- * The following changes the default to use an H2 database.
- * </p>
  * <pre>
  *  &lt;crawlDataStoreFactory
  *          class="com.norconex.collector.core.data.store.impl.jdbc.BasicJDBCCrawlDataStoreFactory"/&gt;
@@ -85,8 +82,7 @@ public class BasicJDBCCrawlDataStoreFactory //extends CrawlerLifeCycleListener
             CrawlerConfig config, boolean resume) {
 
         if (storeDir == null) {
-            storeDir = Crawler.get().getWorkDir().resolve(
-                    "crawlstore-jdbc");
+            storeDir = Crawler.get().getWorkDir().resolve("crawlstore-jdbc");
         }
 //        String storeDir = config.getWorkDir().toString() + "/crawlstore/jdbc/"
 //                + FileUtil.toSafeFileName(config.getId()) + "/";

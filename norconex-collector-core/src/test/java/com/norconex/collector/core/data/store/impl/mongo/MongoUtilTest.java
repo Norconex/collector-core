@@ -1,4 +1,4 @@
-/* Copyright 2013-2017 Norconex Inc.
+/* Copyright 2013-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  */
 package com.norconex.collector.core.data.store.impl.mongo;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class MongoUtilTest {
 
@@ -44,7 +44,7 @@ public class MongoUtilTest {
         checkInvalidName("invalid:name");
         checkInvalidName("invalid name");
     }
-    
+
     private void checkInvalidName(String name) {
         try {
             MongoUtil.getSafeDBName(name, null);

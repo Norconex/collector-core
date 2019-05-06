@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.event.IEventListener;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.commons.lang.xml.XMLValidationError;
 import com.norconex.importer.ImporterConfig;
 
 /**
@@ -539,7 +538,7 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
         if (importerXML != null) {
             //TODO new ImporterConfig()  .setCachedConfigParams as defaults... then call XML configure
             ImporterConfig cfg = new ImporterConfig();
-            List<XMLValidationError> errors = importerXML.populate(cfg);
+            /*List<XMLValidationError> errors = */ importerXML.populate(cfg);
             setImporterConfig(cfg);
             //TODO handle ignore errors
         } else if (getImporterConfig() == null) {

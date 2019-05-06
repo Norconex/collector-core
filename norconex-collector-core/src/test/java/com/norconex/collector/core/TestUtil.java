@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  */
 package com.norconex.collector.core;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,8 +51,8 @@ public final class TestUtil {
             InputStream xmlStream) throws IOException {
 
         try (Reader r = new InputStreamReader(xmlStream)) {
-            assertEquals("Validation warnings/errors were found.",
-                    0, new XML(r).validate().size());
+            assertEquals(0, new XML(r).validate().size(),
+                "Validation warnings/errors were found.");
         }
     }
 }

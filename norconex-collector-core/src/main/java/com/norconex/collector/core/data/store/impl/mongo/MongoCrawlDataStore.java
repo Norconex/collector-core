@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.AbstractCrawlDataStore;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.data.store.impl.mongo.IMongoSerializer.Stage;
-import com.norconex.commons.lang.StringUtil;
+import com.norconex.commons.lang.text.StringUtil;
 
 /**
  * <p>Mongo implementation of {@link ICrawlDataStore}.</p>
@@ -190,7 +190,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
     @Override
     public boolean isQueueEmpty() {
-        return (int) collRefs.count(eq(IMongoSerializer.FIELD_STAGE, 
+        return (int) collRefs.count(eq(IMongoSerializer.FIELD_STAGE,
                 Stage.QUEUED.name()), new CountOptions().limit(1)) == 0;
     }
 

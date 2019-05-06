@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package com.norconex.collector.core.crawler;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.collector.core.crawler.CrawlerConfig.OrphansStrategy;
 import com.norconex.commons.lang.xml.XML;
@@ -34,7 +34,6 @@ public class CrawlerConfigTest {
         c.setMaxDocuments(33);
         c.setNumThreads(3);
         c.setOrphansStrategy(OrphansStrategy.IGNORE);
-//        c.setWorkDir(Paths.get("c:\\temp"));
         XML.assertWriteRead(c, "crawler");
     }
 }

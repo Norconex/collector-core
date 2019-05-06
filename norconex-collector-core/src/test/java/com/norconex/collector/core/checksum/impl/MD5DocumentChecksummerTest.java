@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package com.norconex.collector.core.checksum.impl;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
@@ -41,8 +41,8 @@ public class MD5DocumentChecksummerTest {
         MD5DocumentChecksummer cs = new MD5DocumentChecksummer();
         String checksum = cs.createDocumentChecksum(doc);
         is.dispose();
-        Assert.assertTrue("No checksum was generated.",
-                StringUtils.isNotBlank(checksum));
+        Assertions.assertTrue(StringUtils.isNotBlank(checksum),
+                "No checksum was generated.");
     }
 
     @Test
@@ -58,42 +58,42 @@ public class MD5DocumentChecksummerTest {
         // 2 matching fields
         cs.setSourceFields("field1", "field2");
         String checksum1 = cs.createDocumentChecksum(doc);
-        Assert.assertTrue("No checksum was generated for two matching fields.",
-                StringUtils.isNotBlank(checksum1));
+        Assertions.assertTrue(
+                StringUtils.isNotBlank(checksum1),
+                "No checksum was generated for two matching fields.");
 
         // 1 out of 2 matching fields
         cs.setSourceFields("field1", "field3");
         String checksum2 = cs.createDocumentChecksum(doc);
-        Assert.assertTrue(
-                "No checksum was generated for 1 of two matching fields.",
-                StringUtils.isNotBlank(checksum2));
+        Assertions.assertTrue(
+                StringUtils.isNotBlank(checksum2),
+
+                "No checksum was generated for 1 of two matching fields.");
 
         // No matching fields
         cs.setSourceFields("field4", "field5");
         String checksum3 = cs.createDocumentChecksum(doc);
-        Assert.assertNull(
-                "Checksum for no matching fields should have been null.",
-                checksum3);
+        Assertions.assertNull(checksum3,
+                "Checksum for no matching fields should have been null.");
 
         // Fields + Regex
         cs.setSourceFieldsRegex("field.*");
         String checksum4 = cs.createDocumentChecksum(doc);
-        Assert.assertTrue("No checksum was generated.",
-                StringUtils.isNotBlank(checksum4));
+        Assertions.assertTrue(StringUtils.isNotBlank(checksum4),
+                "No checksum was generated.");
 
         // Regex only
         cs.setSourceFields();
         cs.setSourceFieldsRegex("field.*");
         String checksum5 = cs.createDocumentChecksum(doc);
-        Assert.assertTrue("No checksum was generated.",
-                StringUtils.isNotBlank(checksum5));
+        Assertions.assertTrue(StringUtils.isNotBlank(checksum5),
+                "No checksum was generated.");
 
         // Regex only no match
         cs.setSourceFieldsRegex("NOfield.*");
         String checksum6 = cs.createDocumentChecksum(doc);
-        Assert.assertNull(
-                "Checksum for no matching regex should have been null.",
-                checksum6);
+        Assertions.assertNull(checksum6,
+                "Checksum for no matching regex should have been null.");
 
         is.dispose();
     }
@@ -121,12 +121,15 @@ public class MD5DocumentChecksummerTest {
         String combinedChecksum = cs.createDocumentChecksum(doc);
 
         // The 3 checksums should be non-null, but different.
-        Assert.assertNotNull("Null content checksum.", contentChecksum);
-        Assert.assertNotNull("Null fields checksum.", fieldsChecksum);
-        Assert.assertNotNull("Null combined checksum.", combinedChecksum);
+        Assertions.assertNotNull( contentChecksum,
+                "Null content checksum.");
+        Assertions.assertNotNull( fieldsChecksum,
+                "Null fields checksum.");
+        Assertions.assertNotNull( combinedChecksum,
+                "Null combined checksum.");
 
-        Assert.assertNotEquals(contentChecksum, fieldsChecksum);
-        Assert.assertNotEquals(fieldsChecksum, combinedChecksum);
+        Assertions.assertNotEquals(contentChecksum, fieldsChecksum);
+        Assertions.assertNotEquals(fieldsChecksum, combinedChecksum);
 
         is.dispose();
     }

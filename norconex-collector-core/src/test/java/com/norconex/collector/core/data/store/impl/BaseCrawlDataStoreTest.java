@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,20 @@
  */
 package com.norconex.collector.core.data.store.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.data.BaseCrawlData;
@@ -43,8 +43,8 @@ import com.norconex.commons.lang.xml.XML;
  */
 public abstract class BaseCrawlDataStoreTest {
 
-    @Rule
-    public final TemporaryFolder tempFolder = new TemporaryFolder();
+    @TempDir
+    Path tempFolder;
 
     private ICrawlDataStore crawlStore;
     private CrawlerConfig crawlerConfig;
@@ -61,18 +61,18 @@ public abstract class BaseCrawlDataStoreTest {
     public void setCrawlerConfig(CrawlerConfig crawlerConfig) {
         this.crawlerConfig = crawlerConfig;
     }
-    public TemporaryFolder getTempfolder() {
+    public Path getTempfolder() {
         return tempFolder;
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         crawlerConfig = createCrawlerConfig(getCrawlerId(), tempFolder);
         // the tempFolder is re-created at each test
         crawlStore = createCrawlDataStore(crawlerConfig, tempFolder, false);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (crawlStore != null) {
             crawlStore.close();
@@ -80,7 +80,7 @@ public abstract class BaseCrawlDataStoreTest {
     }
 
     protected CrawlerConfig createCrawlerConfig(
-            String crawlerId, TemporaryFolder tempFolder) {
+            String crawlerId, Path tempFolder) {
 
         CrawlerConfig config = new CrawlerConfig() {
             @Override
@@ -131,7 +131,7 @@ public abstract class BaseCrawlDataStoreTest {
     }
 
     protected abstract ICrawlDataStore createCrawlDataStore(
-            CrawlerConfig config, TemporaryFolder tempFolder, boolean resume);
+            CrawlerConfig config, Path tempFolder, boolean resume);
 
 
     //--- Tests ----------------------------------------------------------------
