@@ -28,27 +28,32 @@ public class CollectorMetadata extends ImporterMetadata {
 
     public static final String COLLECTOR_PREFIX = "collector.";
 
-    public static final String COLLECTOR_CONTENT_ENCODING = 
+    public static final String COLLECTOR_CONTENT_ENCODING =
             COLLECTOR_PREFIX + "content-encoding";
-    public static final String COLLECTOR_CONTENT_TYPE = 
+    public static final String COLLECTOR_CONTENT_TYPE =
             COLLECTOR_PREFIX + "content-type";
-    public static final String COLLECTOR_CHECKSUM_METADATA = 
+    public static final String COLLECTOR_CHECKSUM_METADATA =
             COLLECTOR_PREFIX + "checksum-metadata";
-    public static final String COLLECTOR_CHECKSUM_DOC = 
+    public static final String COLLECTOR_CHECKSUM_DOC =
             COLLECTOR_PREFIX + "checksum-doc";
-    
+//    /**
+//     * A document ACL if ACL extraction is supported.
+//     * @since 1.9.2
+//     */
+//    public static final String COLLECTOR_ACL = COLLECTOR_PREFIX + "acl";
+
     /**
      * Boolean flag indicating whether a document is new to the crawler that
      * fetched it.
      * That is, a URL cache from a previous run exists and the document was
      * not found in that cache. If the crawler runs for the first time
-     * or its URL cache has been deleted, this flag will always be 
+     * or its URL cache has been deleted, this flag will always be
      * <code>true</code>.
      * @since 1.3.0
      */
-    public static final String COLLECTOR_IS_CRAWL_NEW = 
+    public static final String COLLECTOR_IS_CRAWL_NEW =
             COLLECTOR_PREFIX + "is-crawl-new";
-    
+
     public CollectorMetadata() {
         super(true);
     }

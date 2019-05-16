@@ -13,7 +13,7 @@
         the collector from managing its own file-based logging. 
       </action>
       <action dev="martin-huber" type="add" issue="25">
-        New "getMaxParallelCrawlers" collector configuration option. 
+        New "maxParallelCrawlers" collector configuration option. 
         Allows to run only a maximum number of crawlers at any given time,
         queuing the others. 
       </action>
