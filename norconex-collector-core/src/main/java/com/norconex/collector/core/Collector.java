@@ -525,6 +525,7 @@ public abstract class Collector {
         }
     }
     private void printReleaseVersion(String moduleName, Package p) {
+        //TODO grab from pom.xml if blank, in case running from unpackaged
         String version = p.getImplementationVersion();
         if (StringUtils.isBlank(version)) {
             // No version is likely due to using an unpacked or modified

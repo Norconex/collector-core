@@ -46,9 +46,9 @@ import com.norconex.importer.ImporterConfig;
  * to avoid unexpected behaviors.
  * @author Pascal Essiembre
  */
-public abstract class CrawlerConfig implements IXMLConfigurable {
+public abstract class  implements IXMLConfigurable {
 
-    enum OrphansStrategy {
+    public enum OrphansStrategy {
         /**
          * Deleting orphans sends them to the Committer for deletions and
          * they are removed from the internal reference cache.

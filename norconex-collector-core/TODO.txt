@@ -1,3 +1,6 @@
+- Add ability to have multiple crawlers talk to the same crawl store
+  for managing their queue (maybe MapReduce/Spark would be best?).
+
 - Add support for event listeners at crawler level, which would only
   get events for that crawler (since events are bubbling up, not down/sideways).
 

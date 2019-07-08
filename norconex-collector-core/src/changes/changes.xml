@@ -49,6 +49,9 @@
         Norconex Commons Lang 2.0.0, Norconex Committer 3.0.0, H2 1.4.197. 
       </action>
       <action dev="essiembre" type="update">
+        CrawlerConfig#OrphanStrategy is now public.
+      </action>
+      <action dev="essiembre" type="update">
         Now requires Java 8 or higher.
       </action>      
       <action dev="essiembre" type="remove">
