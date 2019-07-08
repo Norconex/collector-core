@@ -46,7 +46,7 @@ import com.norconex.importer.ImporterConfig;
  * to avoid unexpected behaviors.
  * @author Pascal Essiembre
  */
-public abstract class  implements IXMLConfigurable {
+public abstract class CrawlerConfig implements IXMLConfigurable {
 
     public enum OrphansStrategy {
         /**
