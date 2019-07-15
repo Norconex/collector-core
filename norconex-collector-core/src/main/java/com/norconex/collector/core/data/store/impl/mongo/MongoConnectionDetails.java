@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,20 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.norconex.commons.lang.encrypt.EncryptionKey;
 import com.norconex.commons.lang.encrypt.EncryptionUtil;
 
 /**
- * Hold Mongo connection details.
+ * <p>
+ * Holds Mongo connection details.
+ * </p>
  * @author Pascal Essiembre
  */
 public class MongoConnectionDetails implements Serializable {
@@ -45,6 +48,8 @@ public class MongoConnectionDetails implements Serializable {
     private String password;
     private String mechanism;
     private EncryptionKey passwordKey;
+    private boolean sslEnabled;
+    private boolean sslInvalidHostNameAllowed;
 
     public int getPort() {
         return port;
@@ -75,6 +80,42 @@ public class MongoConnectionDetails implements Serializable {
     }
     public void setPassword(String password) {
         this.password = password;
+    }
+    /**
+     * Gets whether to use SSL.
+     * @return <code>true</code> if SSL should be used
+     * @since 1.9.2
+     */
+    public boolean isSslEnabled() {
+        return sslEnabled;
+    }
+    /**
+     * Sets whether to use SSL.
+     * @param sslEnabled <code>true</code> if SSL should be used
+     * @since 1.9.2
+     */
+    public void setSslEnabled(boolean sslEnabled) {
+        this.sslEnabled = sslEnabled;
+    }
+
+    /**
+     * Gets whether invalid host names should be allowed if SSL is enabled.
+     * @return <code>true</code> if invalid host names are allowed
+     * @since 1.9.2
+     */
+    public boolean isSslInvalidHostNameAllowed() {
+        return sslInvalidHostNameAllowed;
+    }
+    /**
+     * Sets whether invalid host names should be allowed if SSL is enabled.
+     * Use caution before allowing invalid hosts.
+     * @param sslInvalidHostNameAllowed <code>true</code> if invalid host
+     *         names are allowed
+     * @since 1.9.2
+     */
+    public void setSslInvalidHostNameAllowed(
+            boolean sslInvalidHostNameAllowed) {
+        this.sslInvalidHostNameAllowed = sslInvalidHostNameAllowed;
     }
     /**
      * Gets the authentication mechanism to use (<code>MONGODB-CR</code>,
@@ -115,7 +156,7 @@ public class MongoConnectionDetails implements Serializable {
         this.passwordKey = passwordKey;
     }
     /**
-     * Gets a safe database name using MongoUtil, and treating a crawlerId as 
+     * Gets a safe database name using MongoUtil, and treating a crawlerId as
      * the default.
      *
      * @param crawlerId crawler id from collector configuration
@@ -147,7 +188,7 @@ public class MongoConnectionDetails implements Serializable {
         List<MongoCredential> credentialsList = new ArrayList<>();
         if (StringUtils.isNoneBlank(getUsername())) {
             // password may be encrypted, decrypt properly
-            String password = 
+            String password =
                     EncryptionUtil.decrypt(getPassword(), getPasswordKey());
 
             // build credential and add to list
@@ -155,7 +196,11 @@ public class MongoConnectionDetails implements Serializable {
                     dbName, password.toCharArray(), getMechanism());
             credentialsList.add(credential);
         }
-        return new MongoClient(server, credentialsList);
+        return new MongoClient(server, credentialsList,
+                MongoClientOptions.builder()
+                    .sslEnabled(sslEnabled)
+                    .sslInvalidHostNameAllowed(sslInvalidHostNameAllowed)
+                    .build());
     }
     /**
      * Builds a MongoCredential object based on these connection details.
@@ -182,42 +227,15 @@ public class MongoConnectionDetails implements Serializable {
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof MongoConnectionDetails)) {
-            return false;
-        }
-        MongoConnectionDetails castOther = (MongoConnectionDetails) other;
-        return new EqualsBuilder()
-                .append(port, castOther.port)
-                .append(host, castOther.host)
-                .append(databaseName, castOther.databaseName)
-                .append(username, castOther.username)
-                .append(password, castOther.password)
-                .append(mechanism, castOther.mechanism)
-                .append(passwordKey, castOther.passwordKey)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(port)
-                .append(host)
-                .append(databaseName)
-                .append(username)
-                .append(password)
-                .append(mechanism)
-                .append(passwordKey)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("port", port)
-                .append("host", host)
-                .append("databaseName", databaseName)
-                .append("username", username)
-                .append("password", password)
-                .append("mechanism", mechanism)
-                .append("passwordKey", passwordKey)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

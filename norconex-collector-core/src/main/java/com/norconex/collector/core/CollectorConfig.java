@@ -72,6 +72,7 @@ public abstract class CollectorConfig implements IXMLConfigurable {
 //    private int maxFileCacheSize = DEFAULT_MAX_FILE_CACHE_SIZE;
 //    private int maxFilePoolCacheSize = DEFAULT_MAX_FILE_POOL_CACHE_SIZE;
 
+    private int maxParallelCrawlers = -1;
 
 //    private Path progressDir = DEFAULT_PROGRESS_DIR;
 //    private Path logsDir = DEFAULT_LOGS_DIR;
@@ -220,6 +221,29 @@ public abstract class CollectorConfig implements IXMLConfigurable {
     public void setMaxMemoryInstance(int maxMemoryInstance) {
         this.maxMemoryInstance = maxMemoryInstance;
     }
+
+    /**
+     * Gets the maximum number of crawlers that can be executed in parallel at
+     * any given time.
+     * Default is <code>-1</code>, which means no maximum.
+     * @return maximum crawlers to be executed in parallel
+     * @since 1.9.2
+     */
+    public int getMaxParallelCrawlers() {
+        return maxParallelCrawlers;
+    }
+    /**
+     * Sets the maximum number of crawlers that can be executed in parallel at
+     * any given time.
+     * Use <code>-1</code> for no maximum.
+     * @param maxParallelCrawlers number of maximum parallel crawlers
+     * @since 1.9.2
+     */
+    public void setMaxParallelCrawlers(int maxParallelCrawlers) {
+        this.maxParallelCrawlers = maxParallelCrawlers;
+    }
+
+
     /**
      * Gets event listeners.
      * Those are considered additions to automatically
@@ -360,6 +384,8 @@ public abstract class CollectorConfig implements IXMLConfigurable {
 
         xml.addElement("workDir", getWorkDir());
 
+        xml.addElement("maxParallelCrawlers", getMaxParallelCrawlers());
+
 //        xml.addElement("logsDir", getLogsDir());
 //        xml.addElement("progressDir", getProgressDir());
         xml.addElementList("eventListeners", "listener", eventListeners);
@@ -390,6 +416,10 @@ public abstract class CollectorConfig implements IXMLConfigurable {
         }
         setId(collectorId);
         setWorkDir(xml.getPath("workDir", getWorkDir()));
+
+        setMaxParallelCrawlers(xml.getInteger(
+                "maxParallelCrawlers", getMaxParallelCrawlers()));
+
 //        setLogsDir(xml.getPath("logsDir", getLogsDir()));
 //        setProgressDir(xml.getPath("progressDir", getProgressDir()));
         setEventListeners(xml.getObjectList(

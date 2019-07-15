@@ -27,11 +27,14 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.CountOptions;
+import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.WriteModel;
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.AbstractCrawlDataStore;
 import com.norconex.collector.core.data.store.ICrawlDataStore;
@@ -183,9 +186,8 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
         // If the document does not exist yet, it will be inserted. If exists,
         // it will be replaced.
-        collRefs.updateOne(referenceFilter(crawlData.getReference()),
-                new Document("$set", document),
-                new UpdateOptions().upsert(true));
+        upsertOne(collRefs,
+                referenceFilter(crawlData.getReference()), document);
     }
 
     @Override
@@ -236,9 +238,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
         // If the document does not exist yet, it will be inserted. If exists,
         // it will be updated.
         Bson filter = referenceFilter(crawlData.getReference());
-        collRefs.updateOne(filter,
-                new Document("$set", document),
-                new UpdateOptions().upsert(true));
+        upsertOne(collRefs, filter, document);
 
         // Remove from cache
         collCached.deleteOne(filter);
@@ -298,16 +298,57 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
         MongoCursor<Document> cursor = collRefs.find(filter).iterator();
 
         // Add them to cache in batch
-        ArrayList<Document> list = new ArrayList<>(BATCH_UPDATE_SIZE);
+        List<WriteModel<Document>> list = new ArrayList<>(BATCH_UPDATE_SIZE);
         while (cursor.hasNext()) {
-            list.add(cursor.next());
+            Document document = cursor.next();
+            String reference = document.getString(
+                    IMongoSerializer.FIELD_REFERENCE);
+            list.add(new UpdateOneModel<Document>(
+                    eq(IMongoSerializer.FIELD_REFERENCE, reference),
+                    new Document("$set", document),
+                    new UpdateOptions().upsert(true)));
             if (list.size() == BATCH_UPDATE_SIZE) {
-                collCached.insertMany(list);
+                bulkWrite(collCached, list);
                 list.clear();
             }
         }
         if (!list.isEmpty()) {
-            collCached.insertMany(list);
+            bulkWrite(collCached, list);
+        }
+    }
+
+    private static final int maxRetries = 5;
+
+    private void upsertOne(
+            MongoCollection<Document> coll, Bson filter, Document document) {
+        for (int retry = 0; retry < maxRetries; ++retry) {
+            try {
+                coll.updateOne(filter, new Document("$set", document),
+                        new UpdateOptions().upsert(true));
+            } catch (MongoException e) {
+                // Workaround for https://jira.mongodb.org/browse/SERVER-14322
+                if (retry < maxRetries - 1
+                        && e.getMessage().contains("E11000 ")) {
+                    continue;
+                }
+                throw e;
+            }
+        }
+    }
+
+    private void bulkWrite(
+            MongoCollection<Document> coll, List<WriteModel<Document>> list) {
+        for (int retry = 0; retry < maxRetries; ++retry) {
+            try {
+                coll.bulkWrite(list);
+            } catch (MongoException e) {
+                // Workaround for https://jira.mongodb.org/browse/SERVER-14322
+                if (retry < maxRetries - 1
+                        && e.getMessage().contains("E11000 ")) {
+                    continue;
+                }
+                throw e;
+            }
         }
     }
 

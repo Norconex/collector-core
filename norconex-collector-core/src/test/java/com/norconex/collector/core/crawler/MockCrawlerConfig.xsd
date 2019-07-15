@@ -16,14 +16,14 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <xs:include schemaLocation="AbstractCrawlerConfig.xsd"></xs:include>
+  <xs:include schemaLocation="CrawlerConfig.xsd"></xs:include>
 
   <xs:element name="crawlerDefaults" type="MockCrawlerConfigType"/>
   <xs:element name="crawler" type="MockCrawlerConfigType"/>
 
   <xs:complexType name="MockCrawlerConfigType">
     <xs:complexContent> 
-      <xs:extension base="AbstractCrawlerConfig"/> 
+      <xs:extension base="CrawlerConfig"/> 
     </xs:complexContent>
   </xs:complexType>
 

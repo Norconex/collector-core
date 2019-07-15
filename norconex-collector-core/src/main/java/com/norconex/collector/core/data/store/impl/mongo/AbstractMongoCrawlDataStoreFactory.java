@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +84,9 @@ import com.norconex.commons.lang.xml.XML;
  *      &lt;cachedCollectionName&gt;(Custom "cached" collection name)&lt;/cachedCollectionName&gt;
  *      &lt;referencesCollectionName&gt;(Custom "references" collection name)&lt;/referencesCollectionName&gt;
  *      &lt;mechanism&gt;(Optional authentication mechanism)&lt;/mechanism&gt;
+ *      &lt;sslEnabled&gt;[false|true]&lt;/sslEnabled&gt;
+ *      &lt;sslInvalidHostNameAllowed&gt;[false|true]&lt;/sslInvalidHostNameAllowed&gt;
+ *
  *      &lt;!-- Use the following if password is encrypted. --&gt;
  *      &lt;passwordKey&gt;(the encryption key or a reference to it)&lt;/passwordKey&gt;
  *      &lt;passwordKeySource&gt;[key|file|environment|property]&lt;/passwordKeySource&gt;
@@ -118,6 +121,10 @@ import com.norconex.commons.lang.xml.XML;
  * As of 1.9.0, you can define your own collection names with
  * {@link #setReferencesCollectionName(String)} and
  * {@link #setCachedCollectionName(String)}.
+ * </p>
+ *
+ * <p>
+ * As of 1.9.2, you can enable SSL.
  * </p>
  *
  * @author Pascal Essiembre
@@ -211,6 +218,13 @@ public abstract class AbstractMongoCrawlDataStoreFactory
             }
             connDetails.setPasswordKey(new EncryptionKey(xmlKey, source));
         }
+
+        // SSL
+        connDetails.setSslEnabled(
+                xml.getBoolean("sslEnabled", connDetails.isSslEnabled()));
+        connDetails.setSslInvalidHostNameAllowed(
+                xml.getBoolean("sslInvalidHostNameAllowed",
+                        connDetails.isSslInvalidHostNameAllowed()));
     }
 
     @Override
@@ -240,7 +254,15 @@ public abstract class AbstractMongoCrawlDataStoreFactory
                         key.getSource().name().toLowerCase());
             }
         }
-//        } catch (XMLStreamException e) {
+
+
+        // SSL
+        xml.addElement("sslEnabled", connDetails.isSslEnabled());
+        xml.addElement("sslInvalidHostNameAllowed",
+                connDetails.isSslInvalidHostNameAllowed());
+
+
+        //        } catch (XMLStreamException e) {
 //            throw new IOException("Cannot save as XML.", e);
 //        }
     }

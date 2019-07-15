@@ -116,7 +116,8 @@ public abstract class Collector {
     //TODO Should we deprecate this since IJobSuiteFactory has createJobSuite
     //which can be overwritten if need be, instead of exposing it?
     /**
-     * Get Job Suite
+     * Gets the job suite or <code>null</code> if the the collector
+     * was not yet started or is no longer running.
      * @return JobSuite
      * @deprecated Since 2.0.0
      */
@@ -344,6 +345,15 @@ public abstract class Collector {
         }
     }
 
+    /**
+     * Gets the state of this collector. If the collector is not running,
+     * {@link JobState#UNKNOWN} is returned.
+     * @return execution state
+     * @since 1.9.2
+     * @deprecated Since 2.0.0
+     */
+    //TODO try to deprecate (do not rely on JEF???)
+    @Deprecated
     public JobState getState() {
         JobSuite suite = getJobSuite();
         if (suite != null) {
@@ -394,11 +404,18 @@ public abstract class Collector {
 
 //    @Override
     public JobSuite createJobSuite() {
+        CollectorConfig collConfig = getCollectorConfig();
+
         List<Crawler> crawlerList = getCrawlers();
 
         IJob rootJob = null;
         if (crawlerList.size() > 1) {
-            rootJob = new AsyncJobGroup(getId(), crawlerList);
+            int maxCrawlers = crawlerList.size();
+            if (collConfig.getMaxParallelCrawlers() > 0) {
+                maxCrawlers = Math.min(
+                        maxCrawlers, collConfig.getMaxParallelCrawlers());
+            }
+            rootJob = new AsyncJobGroup(getId(), maxCrawlers, crawlerList);
         } else if (crawlerList.size() == 1) {
             rootJob = crawlerList.get(0);
         }
@@ -408,7 +425,6 @@ public abstract class Collector {
         //TODO have a base workdir, which is used to figure out where to put
         // everything (log, progress), and make log and progress overwritable.
 
-        CollectorConfig collConfig = getCollectorConfig();
 //        suiteConfig.setLogManager(new FileLogManager(collConfig.getLogsDir()));
 //        suiteConfig.setJobStatusStore(
 //                new FileJobStatusStore(collConfig.getProgressDir()));
