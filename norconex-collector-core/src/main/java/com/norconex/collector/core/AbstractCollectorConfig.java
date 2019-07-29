@@ -158,15 +158,16 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
     /**
      * Gets whether written logs are managed by the collector.
      * @return <code>true</code> if unmanaged
-     * @since 1.9.2
+     * @since 1.10.0
      */
+    @Override
     public boolean isLogsUnmanaged() {
         return logsUnmanaged;
     }
     /**
      * Sets whether written logs are managed by the collector.
      * @param logsUnmanaged <code>true</code> if unmanaged
-     * @since 1.9.2
+     * @since 1.10.0
      */
     public void setLogsUnmanaged(boolean logsUnmanaged) {
         this.logsUnmanaged = logsUnmanaged;
@@ -177,7 +178,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
      * any given time.
      * Default is <code>-1</code>, which means no maximum.
      * @return maximum crawlers to be executed in parallel
-     * @since 1.9.2
+     * @since 1.10.0
      */
     @Override
     public int getMaxParallelCrawlers() {
@@ -188,7 +189,7 @@ public abstract class AbstractCollectorConfig implements ICollectorConfig {
      * any given time.
      * Use <code>-1</code> for no maximum.
      * @param maxParallelCrawlers number of maximum parallel crawlers
-     * @since 1.9.2
+     * @since 1.10.0
      */
     public void setMaxParallelCrawlers(int maxParallelCrawlers) {
         this.maxParallelCrawlers = maxParallelCrawlers;

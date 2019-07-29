@@ -38,7 +38,7 @@ public class CollectorMetadata extends ImporterMetadata {
             COLLECTOR_PREFIX + "checksum-doc";
 //    /**
 //     * A document ACL if ACL extraction is supported.
-//     * @since 1.9.2
+//     * @since 1.10.0
 //     */
 //    public static final String COLLECTOR_ACL = COLLECTOR_PREFIX + "acl";
 

@@ -104,7 +104,7 @@ public abstract class AbstractCollector implements ICollector {
      * Gets the state of this collector. If the collector is not running,
      * {@link JobState#UNKNOWN} is returned.
      * @return execution state
-     * @since 1.9.2
+     * @since 1.10.0
      */
     public JobState getState() {
         JobSuite suite = getJobSuite();

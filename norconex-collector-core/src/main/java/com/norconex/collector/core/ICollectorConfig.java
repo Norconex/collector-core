@@ -48,7 +48,7 @@ public interface ICollectorConfig extends IXMLConfigurable {
     /**
      * Gets whether written logs are managed by the collector.
      * @return <code>true</code> if unmanaged
-     * @since 1.9.2
+     * @since 1.10.0
      */
     boolean isLogsUnmanaged();
 
@@ -102,7 +102,7 @@ public interface ICollectorConfig extends IXMLConfigurable {
      * any given time.
      * Default is <code>-1</code>, which means no maximum.
      * @return maximum crawlers to be executed in parallel
-     * @since 1.9.2
+     * @since 1.10.0
      */
     int getMaxParallelCrawlers();
 }
