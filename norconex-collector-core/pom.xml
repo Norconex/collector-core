@@ -51,6 +51,12 @@
       <artifactId>norconex-jef</artifactId>
       <version>${norconex-jef.version}</version>
     </dependency>
+    
+    <dependency>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
+    </dependency>      
+    
     <!--
     <dependency>
       <groupId>commons-beanutils</groupId>

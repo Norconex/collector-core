@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import com.norconex.collector.core.data.store.ICrawlDataStore;
 
 /**
  * H2 MVStore {@link ICrawlDataStore} implementation.
- * @author Pascal Dimassimo
+ * @author Pascal Essiembre
  */
 public class MVStoreCrawlDataStore extends AbstractCrawlDataStore {
 
@@ -47,6 +47,13 @@ public class MVStoreCrawlDataStore extends AbstractCrawlDataStore {
     private final MVMap<String, ICrawlData> mapCached;
 
     public MVStoreCrawlDataStore(String path, boolean resume) {
+        this(path, resume, null);
+    }
+    public MVStoreCrawlDataStore(
+            String path, boolean resume, MVStoreConfig mvStoreConfig) {
+
+        MVStoreConfig cfg =
+                mvStoreConfig != null ? mvStoreConfig : new MVStoreConfig();
 
         try {
             FileUtils.forceMkdir(new File(path));
@@ -55,7 +62,38 @@ public class MVStoreCrawlDataStore extends AbstractCrawlDataStore {
                     "Cannot create crawl data store directory: " + path, e);
         }
 
-        store = MVStore.open(path + "/mvstore");
+        MVStore.Builder builder = new MVStore.Builder();
+        if (cfg.getPageSplitSize() != null) {
+            builder.pageSplitSize(cfg.getPageSplitSize());
+        }
+        if (Integer.valueOf(1).equals(cfg.getCompress())) {
+            builder.compress();
+        }
+        if (Integer.valueOf(2).equals(cfg.getCompress())) {
+            builder.compressHigh();
+        }
+        if (cfg.getCacheConcurrency() != null) {
+            builder.cacheConcurrency(cfg.getCacheConcurrency());
+        }
+        if (cfg.getCacheSize() != null) {
+            builder.cacheSize(cfg.getCacheSize());
+        }
+        if (cfg.getAutoCompactFillRate() != null) {
+            builder.autoCompactFillRate(cfg.getAutoCompactFillRate());
+        }
+        if (cfg.getAutoCommitBufferSize() != null) {
+            builder.autoCommitBufferSize(cfg.getAutoCommitBufferSize());
+        }
+        if (Integer.valueOf(0).equals(cfg.getAutoCommitDelay())) {
+            builder.autoCommitDisabled();
+        }
+        builder.fileName(path + "/mvstore");
+
+        store = builder.open();
+
+        if (cfg.getAutoCommitDelay() != null) {
+            store.setAutoCommitDelay(cfg.getAutoCommitDelay());
+        }
 
         mapQueued = store.openMap("queued");
         mapActive = store.openMap("active");

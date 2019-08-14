@@ -2,10 +2,13 @@
 LAST MERGE FROM MASTER
 ======================
 
-2019-07-14
+2019-07-29
 
 TODO:
 ==============
+
+- Make sure command line arguments can also be specified as system properties
+  or env variables (or properties files?).  Similar to spring boot?
 
 - Add ability to have multiple crawlers talk to the same crawl store
   for managing their queue (maybe MapReduce/Spark would be best?).

@@ -28,6 +28,7 @@ import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.crawler.MockCrawlerConfig;
 import com.norconex.collector.core.filter.impl.ExtensionReferenceFilter;
 import com.norconex.committer.core.impl.FileSystemCommitter;
+import com.norconex.commons.lang.xml.ErrorHandlerCapturer;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.transformer.impl.ReplaceTransformer;
 
@@ -58,7 +59,7 @@ public class CollectorTest {
         MockCollectorConfig cfg = new MockCollectorConfig();
         try (Reader r = new InputStreamReader(getClass().getResourceAsStream(
                 "overwrite-crawlerDefaults.xml"))) {
-            new XML(r).populate(cfg);
+            XML.of(r).create().populate(cfg);
         }
 
         MockCrawlerConfig crawlA =
@@ -103,8 +104,10 @@ public class CollectorTest {
     public void testValidation() throws IOException {
         try (Reader r = new InputStreamReader(getClass().getResourceAsStream(
                 "/validation/collector-core-full.xml"))) {
-            assertEquals(
-                    0, new XML(r).populate(new MockCollectorConfig()).size(),
+            ErrorHandlerCapturer eh = new ErrorHandlerCapturer();
+            XML.of(r).setErrorHandler(eh).create().populate(
+                    new MockCollectorConfig());
+            assertEquals(0, eh.getErrors().size(),
                 "Validation warnings/errors were found.");
         }
     }

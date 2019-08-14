@@ -227,7 +227,7 @@ public abstract class CollectorConfig implements IXMLConfigurable {
      * any given time.
      * Default is <code>-1</code>, which means no maximum.
      * @return maximum crawlers to be executed in parallel
-     * @since 1.9.2
+     * @since 1.10.0
      */
     public int getMaxParallelCrawlers() {
         return maxParallelCrawlers;
@@ -237,7 +237,7 @@ public abstract class CollectorConfig implements IXMLConfigurable {
      * any given time.
      * Use <code>-1</code> for no maximum.
      * @param maxParallelCrawlers number of maximum parallel crawlers
-     * @since 1.9.2
+     * @since 1.10.0
      */
     public void setMaxParallelCrawlers(int maxParallelCrawlers) {
         this.maxParallelCrawlers = maxParallelCrawlers;
@@ -455,7 +455,7 @@ public abstract class CollectorConfig implements IXMLConfigurable {
 
         loadCollectorConfigFromXML(xml);
 
-        LOG.info("Configuration loaded: id={}; workDir={};",
+        LOG.debug("Configuration loaded: id={}; workDir={};",
                 collectorId, workDir);
     }
 

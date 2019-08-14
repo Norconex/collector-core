@@ -54,6 +54,9 @@
       <action dev="essiembre" type="update">
         Now requires Java 8 or higher.
       </action>      
+      <action dev="essiembre" type="update">
+        Command-line arguments are now different.
+      </action>
       <action dev="essiembre" type="remove">
         Removed some of the deprecated code from 1.x. 
       </action>

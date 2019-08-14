@@ -51,7 +51,7 @@ public final class TestUtil {
             InputStream xmlStream) throws IOException {
 
         try (Reader r = new InputStreamReader(xmlStream)) {
-            assertEquals(0, new XML(r).validate().size(),
+            assertEquals(0, XML.of(r).create().validate().size(),
                 "Validation warnings/errors were found.");
         }
     }

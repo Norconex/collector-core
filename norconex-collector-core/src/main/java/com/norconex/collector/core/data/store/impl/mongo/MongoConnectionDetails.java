@@ -84,7 +84,7 @@ public class MongoConnectionDetails implements Serializable {
     /**
      * Gets whether to use SSL.
      * @return <code>true</code> if SSL should be used
-     * @since 1.9.2
+     * @since 1.10.0
      */
     public boolean isSslEnabled() {
         return sslEnabled;
@@ -92,7 +92,7 @@ public class MongoConnectionDetails implements Serializable {
     /**
      * Sets whether to use SSL.
      * @param sslEnabled <code>true</code> if SSL should be used
-     * @since 1.9.2
+     * @since 1.10.0
      */
     public void setSslEnabled(boolean sslEnabled) {
         this.sslEnabled = sslEnabled;
@@ -101,7 +101,7 @@ public class MongoConnectionDetails implements Serializable {
     /**
      * Gets whether invalid host names should be allowed if SSL is enabled.
      * @return <code>true</code> if invalid host names are allowed
-     * @since 1.9.2
+     * @since 1.10.0
      */
     public boolean isSslInvalidHostNameAllowed() {
         return sslInvalidHostNameAllowed;
@@ -111,7 +111,7 @@ public class MongoConnectionDetails implements Serializable {
      * Use caution before allowing invalid hosts.
      * @param sslInvalidHostNameAllowed <code>true</code> if invalid host
      *         names are allowed
-     * @since 1.9.2
+     * @since 1.10.0
      */
     public void setSslInvalidHostNameAllowed(
             boolean sslInvalidHostNameAllowed) {

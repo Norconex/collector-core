@@ -124,7 +124,7 @@ import com.norconex.commons.lang.xml.XML;
  * </p>
  *
  * <p>
- * As of 1.9.2, you can enable SSL.
+ * As of 1.10.0, you can enable SSL.
  * </p>
  *
  * @author Pascal Essiembre

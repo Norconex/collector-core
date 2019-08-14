@@ -22,10 +22,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -35,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.committer.core.ICommitter;
+import com.norconex.commons.lang.VersionUtil;
 import com.norconex.commons.lang.event.EventManager;
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory;
@@ -44,6 +43,7 @@ import com.norconex.jef5.job.group.AsyncJobGroup;
 import com.norconex.jef5.shutdown.ShutdownException;
 import com.norconex.jef5.status.JobState;
 import com.norconex.jef5.status.JobStatus;
+import com.norconex.jef5.status.JobSuiteStatus;
 import com.norconex.jef5.suite.JobSuite;
 import com.norconex.jef5.suite.JobSuiteConfig;
 
@@ -61,6 +61,15 @@ public abstract class Collector {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(Collector.class);
+
+    private static final String NORCONEX =
+            "  _   _  ___  ____   ____ ___  _   _ _______  __%n"
+          + " | \\ | |/ _ \\|  _ \\ / ___/ _ \\| \\ | | ____\\ \\/ /%n"
+          + " |  \\| | | | | |_) | |  | | | |  \\| |  _|  \\  / %n"
+          + " | |\\  | |_| |  _ <| |__| |_| | |\\  | |___ /  \\ %n"
+          + " |_| \\_|\\___/|_| \\_\\\\____\\___/|_| \\_|_____/_/\\_\\%n%n"
+          //+ " -----------[ HTTP COLLECTOR 3.0.0 ]------------%n%n";
+          + " %s%n%n";
 
     private final CollectorConfig collectorConfig;
 
@@ -198,14 +207,7 @@ public abstract class Collector {
         crawlers.clear();
 
         // recreate everything
-
-        List<CrawlerConfig> crawlerConfigs =
-                this.collectorConfig.getCrawlerConfigs();
-        if (crawlerConfigs != null) {
-            for (CrawlerConfig crawlerConfig : crawlerConfigs) {
-                crawlers.add(createCrawler(crawlerConfig));
-            }
-        }
+        createCrawlers();
 
         //--- Register event listeners ---
         eventManager.addListenersFromScan(this.collectorConfig);
@@ -296,7 +298,7 @@ public abstract class Collector {
 //        eventManager.addListenersFromScan(this.collectorConfig);
 
         //--- Print release versions ---
-        printReleaseVersions();
+//        printReleaseVersions();
     }
 
 //    // will be called any time before startup. After, only called once
@@ -349,7 +351,7 @@ public abstract class Collector {
      * Gets the state of this collector. If the collector is not running,
      * {@link JobState#UNKNOWN} is returned.
      * @return execution state
-     * @since 1.9.2
+     * @since 1.10.0
      * @deprecated Since 2.0.0
      */
     //TODO try to deprecate (do not rely on JEF???)
@@ -366,14 +368,29 @@ public abstract class Collector {
     }
 
     /**
-     * Stops a running instance of this Collector.
+     * Stops a running instance of this Collector. The caller can be a
+     * different JVM instance than the instance we want to stop.
      */
     public void stop() {
+        // It is currently necessary to create the crawlers from config
+        // so that the suite is created properly and jobs stopped properly.
+        createCrawlers();
+
         if (jobSuite == null) {
             jobSuite = createJobSuite();
+            //jobSuite = snap
+        }
+        JobSuiteStatus suiteStatus = null;
+        try {
+            suiteStatus = JobSuiteStatus.getInstance(jobSuite);
+        } catch (IOException e) {
+            throw new CollectorException(
+                    "Could not obtain job status of: " + getId(), e);
         }
 
-        JobStatus status = jobSuite.getRootStatus();
+//        JobStatus status = jobSuite.getRootStatus();
+        JobStatus status = suiteStatus.getRootStatus();
+
         if (status == null
                 || !status.isState(JobState.RUNNING, JobState.UNKNOWN)) {
             String curState =
@@ -467,6 +484,24 @@ public abstract class Collector {
     }
 
     /**
+     * Loads all crawlers from configuration.
+     */
+    private void createCrawlers() {
+        if (getCrawlers().isEmpty()) {
+            List<CrawlerConfig> crawlerConfigs =
+                    this.collectorConfig.getCrawlerConfigs();
+            if (crawlerConfigs != null) {
+                for (CrawlerConfig crawlerConfig : crawlerConfigs) {
+                    crawlers.add(createCrawler(crawlerConfig));
+                }
+            }
+        } else {
+            LOG.debug("Crawlers already created.");
+        }
+    }
+
+
+    /**
      * Creates a new crawler instance.
      * @param config crawler configuration
      * @return new crawler
@@ -514,47 +549,74 @@ public abstract class Collector {
         return Collections.unmodifiableList(crawlers);
     }
 
-    private void printReleaseVersions() {
-        printReleaseVersion("Collector", getClass().getPackage());
-        printReleaseVersion("Collector Core",
-                Collector.class.getPackage());
-        printReleaseVersion("Importer", Importer.class.getPackage());
-        printReleaseVersion("JEF", IJob.class.getPackage());
-
-        //--- Committers ---
-        printReleaseVersion("Committer Core", ICommitter.class.getPackage());
-        Set<ICommitter> committers = new HashSet<>();
-        for (Crawler crawler : getCrawlers()) {
-            ICommitter committer = crawler.getCrawlerConfig().getCommitter();
-            if (committer != null) {
-                Package committerPackage = committer.getClass().getPackage();
-                if (committerPackage != null
-                        && !committerPackage.getName().startsWith(
-                                "com.norconex.committer.core")) {
-                    committers.add(committer);
-                }
+    public String getVersion() {
+        return VersionUtil.getVersion(getClass(), "Undefined");
+    }
+    public List<String> getReleaseVersions() {
+        List<String> versions = new ArrayList<>();
+        versions.add(releaseVersion("Collector", getClass()));
+        versions.add(releaseVersion("Collector Core", Collector.class));
+        versions.add(releaseVersion("Importer", Importer.class));
+        versions.add(releaseVersion("JEF", IJob.class));
+        versions.add(releaseVersion("Committer Core", ICommitter.class));
+        for (CrawlerConfig crawler : getCollectorConfig().getCrawlerConfigs()) {
+            ICommitter c = crawler.getCommitter();
+            if (c != null && !c.getClass().getPackage().getName().startsWith(
+                    "com.norconex.committer.core")) {
+                versions.add(releaseVersion("Committer "
+                        + c.getClass().getSimpleName(), c.getClass()));
             }
         }
-        for (ICommitter c : committers) {
-            printReleaseVersion(
-                    c.getClass().getSimpleName(), c.getClass().getPackage());
-        }
+        return versions;
     }
-    private void printReleaseVersion(String moduleName, Package p) {
-        //TODO grab from pom.xml if blank, in case running from unpackaged
-        String version = p.getImplementationVersion();
-        if (StringUtils.isBlank(version)) {
-            // No version is likely due to using an unpacked or modified
-            // jar, or the jar not being packaged with version
-            // information.
-            LOG.info("Version: \"" + moduleName
-                    + "\" version is undefined.");
-            return;
-        }
-        LOG.info("Version: " + p.getImplementationTitle() + " "
-                + p.getImplementationVersion()
-                + " (" + p.getImplementationVendor() + ")");
+    private String releaseVersion(String moduleName, Class<?> cls) {
+        return StringUtils.rightPad(moduleName + ": ", 20, ' ')
+                + VersionUtil.getDetailedVersion(cls, "undefined");
     }
+
+
+//TODO delete below when replaced by above
+//    private void printReleaseVersions() {
+//        printReleaseVersion("Collector", getClass().getPackage());
+//        printReleaseVersion("Collector Core",
+//                Collector.class.getPackage());
+//        printReleaseVersion("Importer", Importer.class.getPackage());
+//        printReleaseVersion("JEF", IJob.class.getPackage());
+//
+//        //--- Committers ---
+//        printReleaseVersion("Committer Core", ICommitter.class.getPackage());
+//        Set<ICommitter> committers = new HashSet<>();
+//        for (Crawler crawler : getCrawlers()) {
+//            ICommitter committer = crawler.getCrawlerConfig().getCommitter();
+//            if (committer != null) {
+//                Package committerPackage = committer.getClass().getPackage();
+//                if (committerPackage != null
+//                        && !committerPackage.getName().startsWith(
+//                                "com.norconex.committer.core")) {
+//                    committers.add(committer);
+//                }
+//            }
+//        }
+//        for (ICommitter c : committers) {
+//            printReleaseVersion(
+//                    c.getClass().getSimpleName(), c.getClass().getPackage());
+//        }
+//    }
+//    private void printReleaseVersion(String moduleName, Package p) {
+//        //TODO grab from pom.xml if blank, in case running from unpackaged
+//        String version = p.getImplementationVersion();
+//        if (StringUtils.isBlank(version)) {
+//            // No version is likely due to using an unpacked or modified
+//            // jar, or the jar not being packaged with version
+//            // information.
+//            LOG.info("Version: \"" + moduleName
+//                    + "\" version is undefined.");
+//            return;
+//        }
+//        LOG.info("Version: " + p.getImplementationTitle() + " "
+//                + p.getImplementationVersion()
+//                + " (" + p.getImplementationVendor() + ")");
+//    }
 
     @Override
     public String toString() {
