@@ -25,6 +25,7 @@ import com.norconex.collector.core.Collector;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.HelpCommand;
 import picocli.CommandLine.IExecutionExceptionHandler;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
@@ -53,8 +54,14 @@ import picocli.CommandLine.Spec;
     separator = " ",
     commandListHeading = "%nCommands:%n",
     footerHeading = "%nExamples:%n",
-    footer = "  TODO",
+    footer = "%n  Start the Collector:%n"
+           + "%n    <collector> start -config=/path/to/config.xml%n"
+           + "%n  Stop the Collector:%n"
+           + "%n    <collector> stop -config=/path/to/config.xml%n"
+           + "%n  Get usage help on \"check\" command:%n"
+           + "%n    <collector> help check%n",
     subcommands = {
+        HelpCommand.class,
         StartCommand.class,
         StopCommand.class,
         CheckCommand.class,
