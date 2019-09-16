@@ -12,10 +12,32 @@
         New CollectorEvent.
       </action>
       <action dev="essiembre" type="add">
+        New crawler events: CRAWLER_CLEANING, CRAWLER_CLEANED, 
+        CRAWLER_INITIALIZING, CRAWLER_INITIALIZED.
+      </action>
+      <action dev="essiembre" type="add">
         New methods on CrawlerEvent: isCrawlerStartup and isCrawlerShutdown.
       </action>
       <action dev="essiembre" type="add">
         New UNSUPPORTED crawl state.
+      </action>
+      <action dev="essiembre" type="add">
+        New #clean() method and new related events.
+      </action>
+      <action dev="essiembre" type="add">
+        New .core.reference package along with new .core.store package
+        for storing of URL crawling information.
+      </action>
+      <action dev="essiembre" type="add">
+        New IDataStoreEngine accessible from crawler to store any kind 
+        of objects by implementors.
+      </action>
+      <action dev="essiembre" type="update">
+        NitriteDataStore now default crawl store implementation.
+      </action>
+      <action dev="essiembre" type="update">
+        Now always resume previous incomplete executions. Can now "clean"
+        to start fresh.
       </action>
       <action dev="essiembre" type="update">
         Now using XML class from Norconex Commons Lang for loading/saving
@@ -53,18 +75,32 @@
       </action>
       <action dev="essiembre" type="update">
         Now requires Java 8 or higher.
-      </action>      
+      </action>
       <action dev="essiembre" type="update">
-        Command-line arguments are now different.
+        Command-line arguments are now different, with more options.
+      </action>
+      <action dev="essiembre" type="update">
+        Now use simple file-locks to prevent running conflicting
+        commands concurrently.
+      </action>
+      <action dev="essiembre" type="remove">
+        Removed "data" package in favor of "reference" package.
       </action>
       <action dev="essiembre" type="remove">
         Removed some of the deprecated code from 1.x. 
+      </action>
+      <action dev="essiembre" type="remove">
+        Removed CRAWLER_RESUMED crawler event.
       </action>
       <action dev="essiembre" type="remove">
         Removed CollectorConfigLoader, CollectorLifeCycleListener, 
         CrawlerLifeCycleListener, IJobLifeCycleListener, IJobErrorListener, 
         ISuiteLifeCycleListener, ICrawlerEventListener 
         (replaced by IEventListener).
+      </action>
+      <action dev="essiembre" type="remove">
+        Remove all previously available crawl store implementions in favor
+        of new NitriteDataStore.
       </action>
     </release>
 

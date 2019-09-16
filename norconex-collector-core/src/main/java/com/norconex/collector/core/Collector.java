@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  */
 package com.norconex.collector.core;
 
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_CLEANED;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_CLEANING;
 import static com.norconex.collector.core.CollectorEvent.COLLECTOR_ENDED;
 import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STARTED;
 
@@ -24,8 +26,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
-import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.committer.core.ICommitter;
+import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.VersionUtil;
 import com.norconex.commons.lang.event.EventManager;
 import com.norconex.commons.lang.file.FileUtil;
@@ -62,14 +66,7 @@ public abstract class Collector {
     private static final Logger LOG =
             LoggerFactory.getLogger(Collector.class);
 
-    private static final String NORCONEX =
-            "  _   _  ___  ____   ____ ___  _   _ _______  __%n"
-          + " | \\ | |/ _ \\|  _ \\ / ___/ _ \\| \\ | | ____\\ \\/ /%n"
-          + " |  \\| | | | | |_) | |  | | | |  \\| |  _|  \\  / %n"
-          + " | |\\  | |_| |  _ <| |__| |_| | |\\  | |___ /  \\ %n"
-          + " |_| \\_|\\___/|_| \\_\\\\____\\___/|_| \\_|_____/_/\\_\\%n%n"
-          //+ " -----------[ HTTP COLLECTOR 3.0.0 ]------------%n%n";
-          + " %s%n%n";
+    public static final long LOCK_HEARTBEAT_INTERVAL = 5000;
 
     private final CollectorConfig collectorConfig;
 
@@ -84,6 +81,7 @@ public abstract class Collector {
     private CachedStreamFactory streamFactory;
     private Path workDir;
     private Path tempDir;
+    private Path lock;
 
     /**
      * Creates and configure a Collector with the provided
@@ -103,14 +101,9 @@ public abstract class Collector {
     public Collector(
             CollectorConfig collectorConfig, EventManager eventManager) {
 
-        //TODO have an init method instead?  Or make it implement
-        // IEvent listener and listen for start?
-
-        //TODO clone config so modifications no longer apply.
+        //TODO clone config so modifications no longer apply?
         Objects.requireNonNull(
                 collectorConfig, "'collectorConfig' must not be null.");
-//        Objects.requireNonNull(
-//                eventManager, "'eventManager' must not be null.");
 
         this.collectorConfig = collectorConfig;
         this.eventManager = new EventManager(eventManager);
@@ -136,62 +129,70 @@ public abstract class Collector {
         return jobSuite;
     }
 
-    public Path getWorkDir() {
-        if (workDir != null) {
-            return workDir;
+    public synchronized Path getWorkDir() {
+        if (workDir == null) {
+            workDir = createCollectorSubDirectory(Optional.ofNullable(
+                    collectorConfig.getWorkDir()).orElseGet(
+                            () -> CollectorConfig.DEFAULT_WORK_DIR));
         }
-
-        String fileSafeId = FileUtil.toSafeFileName(getId());
-        Path dir = ObjectUtils.defaultIfNull(collectorConfig.getWorkDir(),
-                CollectorConfig.DEFAULT_WORK_DIR).resolve(fileSafeId);
-        try {
-            Files.createDirectories(dir);
-        } catch (IOException e) {
-            throw new CollectorException(
-                    "Could not create collector working directory: " + dir, e);
-        }
-        workDir = dir;
         return workDir;
     }
-    public Path getTempDir() {
-        if (tempDir != null) {
-            return tempDir;
+    public synchronized Path getTempDir() {
+        if (tempDir == null) {
+            if (collectorConfig.getTempDir() == null) {
+                tempDir = getWorkDir().resolve("temp");
+            } else {
+                tempDir = createCollectorSubDirectory(
+                        collectorConfig.getTempDir());
+            }
         }
+        return tempDir;
+    }
 
-        Path dir;
-        if (collectorConfig.getTempDir() == null) {
-            dir = getWorkDir().resolve("temp");
-        } else {
-            String fileSafeId = FileUtil.toSafeFileName(getId());
-            dir = collectorConfig.getTempDir().resolve(fileSafeId);
-        }
+    private Path createCollectorSubDirectory(Path parentDir) {
+        Objects.requireNonNull(parentDir, "'parentDir' must not be null.");
+        String fileSafeId = FileUtil.toSafeFileName(getId());
+        Path subDir = parentDir.resolve(fileSafeId);
         try {
-            Files.createDirectories(dir);
+            Files.createDirectories(subDir);
         } catch (IOException e) {
             throw new CollectorException(
-                    "Could not create collector temp directory: " + dir, e);
+                    "Could not create directory: " + subDir, e);
         }
-        tempDir = dir;
-        return tempDir;
+        return subDir;
     }
 
     /**
      * Starts all crawlers defined in configuration.
-     * @param resumeNonCompleted whether to resume where previous crawler
-     *        aborted (if applicable)
      */
-    public void start(boolean resumeNonCompleted) {
+    public void start() {
+        lock();
         try {
             initCollector();
             eventManager.fire(CollectorEvent.create(COLLECTOR_STARTED, this));
-            jobSuite.execute(resumeNonCompleted);
+            jobSuite.execute();
         } finally {
             try {
-                cleanupCollector();
+                destroyCollector();
             } finally {
                 eventManager.fire(CollectorEvent.create(COLLECTOR_ENDED, this));
             }
             eventManager.clearListeners();
+            unlock();
+        }
+    }
+
+    public void clean() {
+        lock();
+        try {
+            initCollector();
+            eventManager.fire(CollectorEvent.create(COLLECTOR_CLEANING, this));
+            getCrawlers().forEach(Crawler::clean);
+            destroyCollector();
+            eventManager.fire(CollectorEvent.create(COLLECTOR_CLEANED, this));
+        } finally {
+            eventManager.clearListeners();
+            unlock();
         }
     }
 
@@ -211,13 +212,6 @@ public abstract class Collector {
 
         //--- Register event listeners ---
         eventManager.addListenersFromScan(this.collectorConfig);
-
-//        eventManager.getListeners().forEach(
-//                l -> LOG.debug("Event listener: {}", l.getClass()));
-//        System.out.println("DDDDDDDD listeners: ");
-//        eventManager.getListeners().forEach(
-//                l -> System.out.println("   class: " + l.getClass()));
-
 
         //TODO move this code to a config validator class?
         //--- Ensure good state/config ---
@@ -259,80 +253,20 @@ public abstract class Collector {
 //                  + "the currently running instance first.");
 //        }
 
-
-
-        // init order is important
-
-//        //--- Directories ---
-//        this.workDir = createWorkDir();
-//        this.tempDir = createTempDir();
-//        String fileSafeId = FileUtil.toSafeFileName(getId());
-//        workDir = ObjectUtils.defaultIfNull(
-//                collectorConfig.getWorkDir(),
-//                CollectorConfig.DEFAULT_WORK_DIR).resolve(fileSafeId);
-//        if (collectorConfig.getTempDir() == null) {
-//            tempDir = workDir.resolve("temp");
-//        } else {
-//            tempDir = collectorConfig.getTempDir().resolve(fileSafeId);
-//        }
-//        try {
-//            Files.createDirectories(workDir);
-//            Files.createDirectories(tempDir);
-//        } catch (IOException e) {
-//            throw new CollectorException(
-//                    "Could not create collector directory.", e);
-//        }
-
         //--- Stream Cache Factory ---
         streamFactory = new CachedStreamFactory(
                 collectorConfig.getMaxMemoryPool(),
                 collectorConfig.getMaxMemoryInstance(),
                 getTempDir());
-//                collectorConfig.getTempDir().resolve(
-//                        FileUtil.toSafeFileName(getId())));
 
         //--- JEF Job Suite ---
         jobSuite = createJobSuite();
-
-//        //--- Register event listeners ---
-//        eventManager.addListenersFromScan(this.collectorConfig);
 
         //--- Print release versions ---
 //        printReleaseVersions();
     }
 
-//    // will be called any time before startup. After, only called once
-//    private Path createWorkDir() {
-//        String fileSafeId = FileUtil.toSafeFileName(getId());
-//        Path dir = ObjectUtils.defaultIfNull(
-//                collectorConfig.getWorkDir(),
-//                CollectorConfig.DEFAULT_WORK_DIR).resolve(fileSafeId);
-//        try {
-//            Files.createDirectories(dir);
-//        } catch (IOException e) {
-//            throw new CollectorException(
-//                    "Could not create collector working directory: " + dir, e);
-//        }
-//        return dir;
-//    }
-//    private Path createTempDir() {
-//        Path dir;
-//        if (collectorConfig.getTempDir() == null) {
-//            dir = workDir.resolve("temp");
-//        } else {
-//            String fileSafeId = FileUtil.toSafeFileName(getId());
-//            dir = collectorConfig.getTempDir().resolve(fileSafeId);
-//        }
-//        try {
-//            Files.createDirectories(dir);
-//        } catch (IOException e) {
-//            throw new CollectorException(
-//                    "Could not create collector temp directory: " + dir, e);
-//        }
-//        return dir;
-//    }
-
-    protected void cleanupCollector() {
+    protected void destroyCollector() {
         //TODO do not make jobSuite null so we can grab status?
         // Or store latest status?
         //jobSuite = null;
@@ -442,32 +376,7 @@ public abstract class Collector {
         //TODO have a base workdir, which is used to figure out where to put
         // everything (log, progress), and make log and progress overwritable.
 
-//        suiteConfig.setLogManager(new FileLogManager(collConfig.getLogsDir()));
-//        suiteConfig.setJobStatusStore(
-//                new FileJobStatusStore(collConfig.getProgressDir()));
         suiteConfig.setWorkdir(collConfig.getWorkDir());
-
-        // Add JEF listeners
-//        if (collConfig.getJobLifeCycleListeners() != null) {
-//            suiteConfig.setJobLifeCycleListeners(
-//                    collConfig.getJobLifeCycleListeners());
-//        }
-//        if (collConfig.getJobErrorListeners() != null) {
-//            suiteConfig.setJobErrorListeners(collConfig.getJobErrorListeners());
-//        }
-//        List<ISuiteLifeCycleListener> suiteListeners = new ArrayList<>();
-//        suiteListeners.add(new AbstractSuiteLifeCycleListener() {
-//            @Override
-//            public void suiteStarted(JobSuite suite) {
-//                printReleaseVersion();
-//            }
-//        });
-//        if (collConfig.getSuiteLifeCycleListeners() != null) {
-//            suiteListeners.addAll(Arrays.asList(
-//                    collConfig.getSuiteLifeCycleListeners()));
-//        }
-//        suiteConfig.setSuiteLifeCycleListeners(
-//                suiteListeners.toArray(new ISuiteLifeCycleListener[]{}));
 
         JobSuite suite = new JobSuite(rootJob, suiteConfig);
         LOG.info("Collector with {} crawler(s) created.", crawlerList.size());
@@ -574,49 +483,49 @@ public abstract class Collector {
                 + VersionUtil.getDetailedVersion(cls, "undefined");
     }
 
-
-//TODO delete below when replaced by above
-//    private void printReleaseVersions() {
-//        printReleaseVersion("Collector", getClass().getPackage());
-//        printReleaseVersion("Collector Core",
-//                Collector.class.getPackage());
-//        printReleaseVersion("Importer", Importer.class.getPackage());
-//        printReleaseVersion("JEF", IJob.class.getPackage());
-//
-//        //--- Committers ---
-//        printReleaseVersion("Committer Core", ICommitter.class.getPackage());
-//        Set<ICommitter> committers = new HashSet<>();
-//        for (Crawler crawler : getCrawlers()) {
-//            ICommitter committer = crawler.getCrawlerConfig().getCommitter();
-//            if (committer != null) {
-//                Package committerPackage = committer.getClass().getPackage();
-//                if (committerPackage != null
-//                        && !committerPackage.getName().startsWith(
-//                                "com.norconex.committer.core")) {
-//                    committers.add(committer);
-//                }
-//            }
-//        }
-//        for (ICommitter c : committers) {
-//            printReleaseVersion(
-//                    c.getClass().getSimpleName(), c.getClass().getPackage());
-//        }
-//    }
-//    private void printReleaseVersion(String moduleName, Package p) {
-//        //TODO grab from pom.xml if blank, in case running from unpackaged
-//        String version = p.getImplementationVersion();
-//        if (StringUtils.isBlank(version)) {
-//            // No version is likely due to using an unpacked or modified
-//            // jar, or the jar not being packaged with version
-//            // information.
-//            LOG.info("Version: \"" + moduleName
-//                    + "\" version is undefined.");
-//            return;
-//        }
-//        LOG.info("Version: " + p.getImplementationTitle() + " "
-//                + p.getImplementationVersion()
-//                + " (" + p.getImplementationVendor() + ")");
-//    }
+    //TODO Move file-based (or port?) lock/unlock to Norconex Commons Lang
+    // util class?
+    // Will fail if collector is already locked (running)
+    // checks that lock is not older than X.  If so, consider it unlocked.
+    protected synchronized void lock() {
+        LOG.debug("Locking collector execution...");
+        Path lck = getWorkDir().resolve(".collector-lock");
+        if (lck.toFile().exists()
+                && System.currentTimeMillis() - lock.toFile().lastModified()
+                        > LOCK_HEARTBEAT_INTERVAL) {
+            throw new CollectorException(
+                    "A running Collector instance is preventing the execution "
+                  + "of the attempted command. Please wait for "
+                  + "the running Collector instance to complete or stop the "
+                  + "Collector and try again.");
+        }
+        new Thread((Runnable) () -> {
+            try {
+                FileUtils.touch(lck.toFile());
+                while(lck.toFile().exists()) {
+                    FileUtils.touch(lck.toFile());
+                    Sleeper.sleepMillis(LOCK_HEARTBEAT_INTERVAL);
+                }
+            } catch (IOException e) {
+                throw new CollectorException(
+                        "Cannot update lock timestamp.", e);
+            }
+        }, getId() + " Lock Heartbeat");
+        lock = lck;
+        LOG.debug("Collector execution locked");
+    }
+    // Delete lock (or rename extension to ".done"?).
+    protected synchronized void unlock() {
+        try {
+            if (lock != null) {
+                Files.deleteIfExists(lock);
+            }
+        } catch (IOException e) {
+            throw new CollectorException("Cannot delete lock.", e);
+        }
+        lock = null;
+        LOG.debug("Collector execution unlocked");
+    }
 
     @Override
     public String toString() {

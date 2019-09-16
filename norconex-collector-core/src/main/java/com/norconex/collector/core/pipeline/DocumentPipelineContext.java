@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,7 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 
 import com.norconex.collector.core.crawler.Crawler;
-import com.norconex.collector.core.data.BaseCrawlData;
-import com.norconex.collector.core.data.store.ICrawlDataStore;
+import com.norconex.collector.core.reference.CrawlReference;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 import com.norconex.commons.lang.pipeline.Pipeline;
@@ -34,37 +33,32 @@ import com.norconex.importer.doc.ImporterDocument;
 public class DocumentPipelineContext extends BasePipelineContext {
 
     private ImporterDocument document;
-    private BaseCrawlData cachedCrawlData;
+    private CrawlReference cachedCrawlRef;
 
     /**
      * Constructor.
      * @param crawler the crawler
-     * @param crawlDataStore crawl data store
      * @since 1.9.0
      */
-    public DocumentPipelineContext(
-            Crawler crawler, ICrawlDataStore crawlDataStore) {
-        super(crawler, crawlDataStore, null);
+    public DocumentPipelineContext(Crawler crawler) {
+        super(crawler, null);
     }
     /**
      * Constructor.
      * @param crawler the crawler
-     * @param crawlDataStore crawl data store
-     * @param crawlData current crawl data
+     * @param crawlRef current crawl data
      * @since 1.9.0
      */
-    public DocumentPipelineContext(
-            Crawler crawler, ICrawlDataStore crawlDataStore,
-            BaseCrawlData crawlData) {
-        super(crawler, crawlDataStore, crawlData);
+    public DocumentPipelineContext(Crawler crawler, CrawlReference crawlRef) {
+        super(crawler, crawlRef);
     }
     public DocumentPipelineContext(
-            Crawler crawler, ICrawlDataStore crawlDataStore,
-            BaseCrawlData crawlData,
-            BaseCrawlData cachedCrawlData,
+            Crawler crawler,
+            CrawlReference crawlRef,
+            CrawlReference cachedCrawlRef,
             ImporterDocument document) {
-        super(crawler, crawlDataStore, crawlData);
-        this.cachedCrawlData = cachedCrawlData;
+        super(crawler/*, crawlDataStore*/, crawlRef);
+        this.cachedCrawlRef = cachedCrawlRef;
         this.document = document;
     }
 
@@ -77,16 +71,16 @@ public class DocumentPipelineContext extends BasePipelineContext {
      * @return cached crawl data
      * @since 1.9.0
      */
-    public BaseCrawlData getCachedCrawlData() {
-        return cachedCrawlData;
+    public CrawlReference getCachedCrawlReference() {
+        return cachedCrawlRef;
     }
     /**
      * Sets cached crawl data.
-     * @param cachedCrawlData cached crawl data.
+     * @param cachedCrawlRef cached crawl data.
      * @since 1.9.0
      */
-    public void setCachedCrawlData(BaseCrawlData cachedCrawlData) {
-        this.cachedCrawlData = cachedCrawlData;
+    public void setCachedCrawlReference(CrawlReference cachedCrawlRef) {
+        this.cachedCrawlRef = cachedCrawlRef;
     }
     /**
      * Sets document.
@@ -97,7 +91,7 @@ public class DocumentPipelineContext extends BasePipelineContext {
         this.document = document;
     }
     public CachedInputStream getContent() {
-        return (CachedInputStream) getDocument().getInputStream();
+        return getDocument().getInputStream();
     }
 
     public Reader getContentReader() {

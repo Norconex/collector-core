@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,11 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.collector.core.crawler.CrawlerEvent;
 import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.collector.core.crawler.CrawlerConfig;
-import com.norconex.collector.core.data.BaseCrawlData;
-import com.norconex.collector.core.data.ICrawlData;
-import com.norconex.collector.core.data.store.ICrawlDataStore;
+import com.norconex.collector.core.crawler.CrawlerEvent;
+import com.norconex.collector.core.reference.CrawlReference;
+import com.norconex.collector.core.reference.CrawlReferenceService;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 import com.norconex.commons.lang.pipeline.Pipeline;
 
@@ -35,32 +34,25 @@ import com.norconex.commons.lang.pipeline.Pipeline;
 public class BasePipelineContext {
 
     private final Crawler crawler;
-    private final ICrawlDataStore crawlDataStore;
-    private BaseCrawlData crawlData;
+    private CrawlReference reference;
 
     /**
      * Constructor.
      * @param crawler the crawler
-     * @param crawlDataStore crawl data store
      * @since 1.9.0
      */
-    public BasePipelineContext(
-            Crawler crawler, ICrawlDataStore crawlDataStore) {
-        this(crawler, crawlDataStore, null);
+    public BasePipelineContext(Crawler crawler) {
+        this(crawler, null);
     }
 
     /**
      * Constructor.
      * @param crawler the crawler
-     * @param crawlDataStore crawl data store
-     * @param crawlData current crawl data
+     * @param ref current crawl reference
      */
-    public BasePipelineContext(
-            Crawler crawler, ICrawlDataStore crawlDataStore,
-            BaseCrawlData crawlData) {
+    public BasePipelineContext(Crawler crawler, CrawlReference ref) {
         this.crawler = crawler;
-        this.crawlDataStore = crawlDataStore;
-        this.crawlData = crawlData;
+        this.reference = ref;
     }
 
     public Crawler getCrawler() {
@@ -71,51 +63,28 @@ public class BasePipelineContext {
         return crawler.getCrawlerConfig();
     }
 
-    public BaseCrawlData getCrawlData() {
-        return crawlData;
+    public CrawlReference getCrawlReference() {
+        return reference;
     }
-    /**
-     * Sets the current crawl data.
-     * @param crawlData crawl data
-     * @since 1.9.0
-     */
-    public void setCrawlData(BaseCrawlData crawlData) {
-        this.crawlData = crawlData;
+    public void setCrawlReference(CrawlReference reference) {
+        this.reference = reference;
     }
 
-    public ICrawlDataStore getCrawlDataStore() {
-        return crawlDataStore;
+    public CrawlReferenceService getCrawlReferenceService() {
+        return crawler.getCrawlReferenceService();
     }
 
     /**
      * Fires an event.
      * @param event the event name
-     * @param crawlData crawl data
+     * @param crawlRef crawl data
      * @param subject subject triggering the event
      */
     public void fireCrawlerEvent(
-            String event, ICrawlData crawlData, Object subject) {
+            String event, CrawlReference crawlRef, Object subject) {
         crawler.getEventManager().fire(CrawlerEvent.create(
-                event, crawler, crawlData, subject));
+                event, crawler, crawlRef, subject));
     }
-//    /**
-//     * Fires an event.
-//     * @param event the event to fire
-//     * @since 2.0.0
-//     */
-//    public void fire(Event<?> event) {
-//        crawler.getEventManager().fire(event);
-//    }
-//    /**
-//     * Fires an event.
-//     * @param event the event to fire
-//     * @param level level at which to log the event
-//     * @since 2.0.0
-//     */
-//    public void fire(Event<?> event, Level level) {
-//        crawler.getEventManager().fire(event, level);
-//    }
-
 
     @Override
     public boolean equals(final Object other) {

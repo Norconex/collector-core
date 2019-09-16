@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import static com.norconex.collector.core.CollectorEvent.COLLECTOR_ERROR;
 import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STARTED;
 import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STOPPED;
 
-import com.norconex.commons.lang.event.Event;
 import com.norconex.commons.lang.event.IEventListener;
 
 /**
@@ -32,35 +31,20 @@ public class CollectorLifeCycleListener
 
     @Override
     public final void accept(CollectorEvent<Collector> event) {
-        if (isCollectorStartup(event)) {
-            collectorStartup(event);
-        } else if (isCollectorShutdown(event)) {
-            collectorShutdown(event);
+        if (event == null) {
+            return;
+        }
+        if (event.is(COLLECTOR_STARTED)) {
+            onCollectorStartup(event);
+        } else if (event.is(
+                COLLECTOR_ENDED, COLLECTOR_ERROR, COLLECTOR_STOPPED)) {
+            onCollectorShutdown(event);
         }
     }
-    public static final boolean isCollectorStartup(Event<?> event) {
-        //XXX check we filter on current instance?  No longer needed
-        // since we have parent event managers... it would prevent
-        // a parent to listen for many children at once using this class
-        // where as when set on a collector, only the collector events
-        // will be receive as desired (provided a dedicated instance).
-//        if (event.getSource() == Collector.get()) {
-            return event instanceof CollectorEvent
-                    && event.is(COLLECTOR_STARTED);
-//        }
-//        return false;
-    }
-    public static final boolean isCollectorShutdown(Event<?> event) {
-//        if (event.getSource() == Collector.get()) {
-            return event instanceof CollectorEvent && event.is(
-                    COLLECTOR_ENDED, COLLECTOR_ERROR, COLLECTOR_STOPPED);
-//        }
-//        return false;
-    }
-    protected void collectorStartup(CollectorEvent<Collector> event) {
+    protected void onCollectorStartup(CollectorEvent<Collector> event) {
         //NOOP
     }
-    protected void collectorShutdown(CollectorEvent<Collector> event) {
+    protected void onCollectorShutdown(CollectorEvent<Collector> event) {
         //NOOP
     }
 }

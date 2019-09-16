@@ -39,6 +39,10 @@ public class CollectorEvent<T extends Collector> extends Event<T> {
 //    public static final String COLLECTOR_UNCOMPLETED = "COLLECTOR_UNCOMPLETED";
 //    public static final String COLLECTOR_COMPLETED = "COLLECTOR_COMPLETED";
 
+    public static final String COLLECTOR_CLEANING = "COLLECTOR_CLEANING";
+    public static final String COLLECTOR_CLEANED = "COLLECTOR_CLEANED";
+
+
     //TODO Add COLLECTOR_ERROR?
     public static final String COLLECTOR_ERROR = "COLLECTOR_ERROR";
 
@@ -63,6 +67,12 @@ public class CollectorEvent<T extends Collector> extends Event<T> {
         return new CollectorEvent<>(name, collector, exception);
     }
 
+    public boolean isCollectorStartup(Event<?> event) {
+        return is(COLLECTOR_STARTED);
+    }
+    public boolean isCollectorShutdown(Event<?> event) {
+        return is(COLLECTOR_ENDED, COLLECTOR_ERROR, COLLECTOR_STOPPED);
+    }
 
     @Override
     public boolean equals(final Object other) {

@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.crawler.CrawlerEvent;
-import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.filter.IDocumentFilter;
+import com.norconex.collector.core.reference.CrawlState;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 import com.norconex.importer.handler.filter.IOnMatchFilter;
 import com.norconex.importer.handler.filter.OnMatch;
@@ -62,20 +62,20 @@ public class DocumentFiltersStage
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(String.format(
                             "ACCEPTED document. Reference=%s Filter=%s", ctx
-                                    .getCrawlData().getReference(), filter));
+                                .getCrawlReference().getReference(), filter));
                 }
             } else {
                 ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_FILTER,
-                        ctx.getCrawlData(), filter);
-                ctx.getCrawlData().setState(CrawlState.REJECTED);
+                        ctx.getCrawlReference(), filter);
+                ctx.getCrawlReference().setState(CrawlState.REJECTED);
                 return false;
             }
         }
         if (hasIncludes && !atLeastOneIncludeMatch) {
             ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_FILTER,
-                    ctx.getCrawlData(),
+                    ctx.getCrawlReference(),
                     "No \"include\" document filters matched.");
-            ctx.getCrawlData().setState(CrawlState.REJECTED);
+            ctx.getCrawlReference().setState(CrawlState.REJECTED);
             return false;
         }
         return true;

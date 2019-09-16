@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.crawler.CrawlerEvent;
-import com.norconex.collector.core.data.BaseCrawlData;
-import com.norconex.collector.core.data.CrawlState;
+import com.norconex.collector.core.reference.CrawlReference;
+import com.norconex.collector.core.reference.CrawlState;
 
 /**
  * Checksum stage utility methods.
@@ -51,30 +51,30 @@ public final class ChecksumStageUtil {
     // return false if checksum is rejected/unmodified
     private static boolean resolveChecksum(boolean isMeta, String newChecksum,
             DocumentPipelineContext ctx, Object subject) {
-        BaseCrawlData crawlData = ctx.getCrawlData();
+        CrawlReference crawlRef = ctx.getCrawlReference();
 
         // Set new checksum on crawlData + metadata
         String type;
         if (isMeta) {
-            crawlData.setMetaChecksum(newChecksum);
+            crawlRef.setMetaChecksum(newChecksum);
             type = "metadata";
         } else {
-            crawlData.setContentChecksum(newChecksum);
+            crawlRef.setContentChecksum(newChecksum);
             type = "document";
         }
 
         // Get old checksum from cache
-        BaseCrawlData cachedCrawlData = ctx.getCachedCrawlData();
+        CrawlReference cachedCrawlRef = ctx.getCachedCrawlReference();
         String oldChecksum = null;
-        if (cachedCrawlData != null) {
+        if (cachedCrawlRef != null) {
             if (isMeta) {
-                oldChecksum = cachedCrawlData.getMetaChecksum();
+                oldChecksum = cachedCrawlRef.getMetaChecksum();
             } else {
-                oldChecksum = cachedCrawlData.getContentChecksum();
+                oldChecksum = cachedCrawlRef.getContentChecksum();
             }
         } else {
             LOG.debug("ACCEPTED {} checkum (new): Reference={}",
-                    type, crawlData.getReference());
+                    type, crawlRef.getReference());
             return true;
         }
 
@@ -83,17 +83,17 @@ public final class ChecksumStageUtil {
                 && Objects.equals(newChecksum, oldChecksum)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("REJECTED {} checkum (unmodified): Reference={}",
-                        type, crawlData.getReference());
+                        type, crawlRef.getReference());
             }
-            crawlData.setState(CrawlState.UNMODIFIED);
+            crawlRef.setState(CrawlState.UNMODIFIED);
             ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_UNMODIFIED,
-                    ctx.getCrawlData(), subject);
+                    ctx.getCrawlReference(), subject);
             return false;
         }
 
-        crawlData.setState(CrawlState.MODIFIED);
+        crawlRef.setState(CrawlState.MODIFIED);
         LOG.debug("ACCEPTED {} checksum (modified): Reference={}",
-                type, crawlData.getReference());
+                type, crawlRef.getReference());
         return true;
     }
 }

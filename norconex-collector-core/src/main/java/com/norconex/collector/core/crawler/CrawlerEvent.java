@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.util.Objects;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import com.norconex.collector.core.data.ICrawlData;
+import com.norconex.collector.core.reference.CrawlReference;
 import com.norconex.commons.lang.event.Event;
 
 /**
@@ -33,13 +33,20 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
     private static final long serialVersionUID = 1L;
 
     /**
+     * The crawler began its initialization.
+     */
+    public static final String CRAWLER_INITIALIZING = "CRAWLER_INITIALIZING";
+    /**
+     * The crawler has been initialized.
+     */
+    public static final String CRAWLER_INITIALIZED = "CRAWLER_INITIALIZED";
+
+
+    /**
      * The crawler started.
      */
     public static final String CRAWLER_STARTED = "CRAWLER_STARTED";
-    /**
-     * The crawler resumed execution (from a previous incomplete crawl).
-     */
-    public static final String CRAWLER_RESUMED = "CRAWLER_RESUMED";
+
     /**
      * The crawler completed execution (without being stopped).
      */
@@ -53,6 +60,10 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
      * (crawler stopped).
      */
     public static final String CRAWLER_STOPPED = "CRAWLER_STOPPED";
+
+    public static final String CRAWLER_CLEANING = "CRAWLER_CLEANING";
+    public static final String CRAWLER_CLEANED = "CRAWLER_CLEANED";
+
     /**
      * A crawled document was rejected by a filters.
      */
@@ -122,7 +133,7 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
     public static final String DOCUMENT_SAVED = "DOCUMENT_SAVED";
 
 
-    private final ICrawlData crawlData;
+    private final CrawlReference crawlRef;
     private final Object subject;
     //TODO keep a reference to actual document?
 
@@ -131,14 +142,14 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
      * New crawler event.
      * @param name event name
      * @param source crawler responsible for triggering the event
-     * @param crawlData information about a document being crawled
+     * @param crawlRef information about a document being crawled
      * @param subject other relevant source related to the event
      * @param exception exception tied to this event (may be <code>null</code>)
      */
     public CrawlerEvent(String name, T source,
-            ICrawlData crawlData, Object subject, Throwable exception) {
+            CrawlReference crawlRef, Object subject, Throwable exception) {
         super(name, source, exception);
-        this.crawlData = crawlData;
+        this.crawlRef = crawlRef;
         this.subject = subject;
     }
 
@@ -146,16 +157,16 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
         return create(name, crawler, null);
     }
     public static CrawlerEvent<Crawler> create(
-            String name, Crawler crawler, ICrawlData crawlData) {
-        return create(name, crawler, crawlData, null, null);
+            String name, Crawler crawler, CrawlReference crawlRef) {
+        return create(name, crawler, crawlRef, null, null);
     }
     public static CrawlerEvent<Crawler> create(String name, Crawler crawler,
-            ICrawlData crawlData, Object subject) {
-        return create(name, crawler, crawlData, subject, null);
+            CrawlReference crawlRef, Object subject) {
+        return create(name, crawler, crawlRef, subject, null);
     }
     public static CrawlerEvent<Crawler> create(String name, Crawler crawler,
-            ICrawlData crawlData, Object subject, Throwable exception) {
-        return new CrawlerEvent<>(name, crawler, crawlData, subject, exception);
+            CrawlReference crawlRef, Object subject, Throwable exception) {
+        return new CrawlerEvent<>(name, crawler, crawlRef, subject, exception);
     }
 
     /**
@@ -164,19 +175,29 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
      * crawl data.
      * @return crawl data
      */
-    public ICrawlData getCrawlData() {
-        return crawlData;
+    public CrawlReference getCrawlReference() {
+        return crawlRef;
     }
+//    public ICrawlData getCrawlData() {
+//        return crawlData;
+//    }
 
     public Object getSubject() {
         return subject;
     }
 
     public boolean isCrawlerStartup() {
-        return is(CRAWLER_STARTED, CRAWLER_RESUMED);
+        return is(CRAWLER_STARTED);
     }
     public boolean isCrawlerShutdown() {
         return is(CRAWLER_FINISHED, CRAWLER_STOPPED);
+    }
+
+    public boolean isCrawlerCleaning() {
+        return is(CRAWLER_CLEANING);
+    }
+    public boolean isCrawlerCleaned() {
+        return is(CRAWLER_CLEANED);
     }
 
     @Override
@@ -190,8 +211,8 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-        if (crawlData != null) {
-            b.append(crawlData.getReference()).append(" - ");
+        if (crawlRef != null) {
+            b.append(crawlRef.getReference()).append(" - ");
         }
         if (subject != null) {
             b.append(subject.toString());

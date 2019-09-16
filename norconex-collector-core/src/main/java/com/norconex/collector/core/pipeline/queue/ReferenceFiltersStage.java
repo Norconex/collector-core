@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,19 @@
  */
 package com.norconex.collector.core.pipeline.queue;
 
-import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.pipeline.BasePipelineContext;
+import com.norconex.collector.core.reference.CrawlState;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 
 /**
  * Common pipeline stage for filtering references.
  * @author Pascal Essiembre
  */
-public class ReferenceFiltersStage 
+public class ReferenceFiltersStage
         implements IPipelineStage<BasePipelineContext> {
 
     private final String type;
-    
+
     public ReferenceFiltersStage() {
         this(null);
     }
@@ -39,7 +39,7 @@ public class ReferenceFiltersStage
     public boolean execute(BasePipelineContext ctx) {
         if (ReferenceFiltersStageUtil.resolveReferenceFilters(
                 ctx.getConfig().getReferenceFilters(), ctx, type)) {
-            ctx.getCrawlData().setState(CrawlState.REJECTED);
+            ctx.getCrawlReference().setState(CrawlState.REJECTED);
             return false;
         }
         return true;

@@ -12,22 +12,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.collector.core.cmdline;
+package com.norconex.collector.core.store;
 
-import picocli.CommandLine.Command;
+import static java.lang.annotation.ElementType.FIELD;
 
-/**
- * Start the Collector.
- * @author Pascal Essiembre
- * @since 2.0.0
- */
-@Command(
-    name = "start",
-    description = "Start the Collector."
-)
-public class StartCommand extends AbstractSubCommand {
-    @Override
-    public void runCommand() {
-        getCollector().start();
-    }
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target(FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Index {
+
 }

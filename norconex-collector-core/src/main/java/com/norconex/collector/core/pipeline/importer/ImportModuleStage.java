@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public class ImportModuleStage
         // We make sure to set it to save it to store so IRecrawlableResolver
         // has one to deal with
         if (!isContentTypeSet && response.getDocument() != null) {
-            ctx.getCrawlData().setContentType(
+            ctx.getCrawlReference().setContentType(
                     response.getDocument().getContentType());
         }
 

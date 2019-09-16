@@ -57,10 +57,9 @@
 
   <crawlerDefaults>
     <numThreads>1</numThreads>
-    <workDir>/tmp/111</workDir>
     <maxDocuments>111</maxDocuments>
     <orphansStrategy>PROCESS</orphansStrategy>
-    <crawlDataStoreFactory class="com.norconex.collector.core.data.store.impl.mvstore.MVStoreCrawlDataStoreFactory" />
+    <dataStoreEngine class="com.norconex.collector.core.data.store.impl.mvstore.MVStoreCrawlDataStoreEngine" />
     <referenceFilters>
       <filter class="com.norconex.collector.core.filter.impl.ExtensionReferenceFilter"
           onMatch="exclude" caseSensitive="true">xml,pdf,doc</filter>
@@ -136,13 +135,11 @@
   <crawlers>
     <crawler id="myCrawler1">
       <numThreads>2</numThreads>
-      <workDir>/tmp/222</workDir>
       <maxDocuments>222</maxDocuments>
       <orphansStrategy>DELETE</orphansStrategy>
     </crawler>
     <crawler id="myCrawler2">
       <numThreads>3</numThreads>
-      <workDir>/tmp/333</workDir>
       <maxDocuments>333</maxDocuments>
       <orphansStrategy>IGNORE</orphansStrategy>
     </crawler>

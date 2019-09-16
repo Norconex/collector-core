@@ -61,7 +61,7 @@ public class SaveDocumentStage
                         "Cannot create download directory: " + downloadDir, e);
             }
         }
-        String path = urlToPath(ctx.getCrawlData().getReference());
+        String path = urlToPath(ctx.getCrawlReference().getReference());
 
         Path downloadFile = downloadDir.resolve(path);
 
@@ -70,10 +70,10 @@ public class SaveDocumentStage
                 FileUtils.openOutputStream(downloadFile.toFile())) {
             IOUtils.copy(ctx.getDocument().getInputStream(), out);
             ctx.fireCrawlerEvent(
-                    DOCUMENT_SAVED, ctx.getCrawlData(), downloadFile);
+                    DOCUMENT_SAVED, ctx.getCrawlReference(), downloadFile);
         } catch (IOException e) {
             throw new CollectorException("Cannot save document: "
-                            + ctx.getCrawlData().getReference(), e);
+                            + ctx.getCrawlReference().getReference(), e);
         }
         return true;
     }

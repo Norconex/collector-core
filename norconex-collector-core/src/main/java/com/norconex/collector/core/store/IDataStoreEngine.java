@@ -1,4 +1,4 @@
-/* Copyright 2016-2018 Norconex Inc.
+/* Copyright 2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,26 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.collector.core;
+package com.norconex.collector.core.store;
 
-import com.norconex.collector.core.crawler.MockCrawlerConfig;
-import com.norconex.commons.lang.xml.XML;
+import java.io.Closeable;
+import java.util.Set;
 
-public class MockCollectorConfig extends CollectorConfig {
+import com.norconex.collector.core.crawler.Crawler;
 
-    public MockCollectorConfig() {
-        super(MockCrawlerConfig.class);
-        setId("Mock Collector");
-    }
+public interface IDataStoreEngine extends Closeable {
 
+    void init(Crawler crawler);
+    boolean clean();
     @Override
-    protected void loadCollectorConfigFromXML(XML xml) {
-        // TODO Auto-generated method stub
+    void close();
 
-    }
-    @Override
-    protected void saveCollectorConfigToXML(XML xml) {
-        // TODO Auto-generated method stub
+    <T> IDataStore<T> openStore(String name, Class<T> type);
+    boolean dropStore(String name);
+    Set<String> getStoreNames();
 
-    }
 }

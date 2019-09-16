@@ -30,12 +30,20 @@
     <norconex-importer.version>3.0.0-SNAPSHOT</norconex-importer.version>
     <norconex-jef.version>5.0.0-SNAPSHOT</norconex-jef.version>
     <norconex-committer-core.version>3.0.0-SNAPSHOT</norconex-committer-core.version>
+    <nitrite.version>3.2.0</nitrite.version>
   </properties>
 
   <inceptionYear>2014</inceptionYear>
 
   <dependencies>
 
+    <!-- NOSQL for crawl store -->
+    <dependency>
+        <groupId>org.dizitart</groupId>
+        <artifactId>nitrite</artifactId>
+        <version>3.2.0</version>
+    </dependency>
+    
     <dependency>
       <groupId>com.norconex.collectors</groupId>
       <artifactId>norconex-importer</artifactId>
@@ -57,13 +65,11 @@
       <artifactId>picocli</artifactId>
     </dependency>      
     
+    <!-- 
+        Maybe reintroduce the following if we still want to ship with
+        a few crawl store implementations.
+      -->
     <!--
-    <dependency>
-      <groupId>commons-beanutils</groupId>
-      <artifactId>commons-beanutils</artifactId>
-      <version>1.9.2</version>
-    </dependency>
-     -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-dbcp2</artifactId>
@@ -90,6 +96,7 @@
       <artifactId>h2</artifactId>
       <version>1.4.197</version>
     </dependency>
+    -->
 
     <!-- Tests and provided. -->
     <dependency>

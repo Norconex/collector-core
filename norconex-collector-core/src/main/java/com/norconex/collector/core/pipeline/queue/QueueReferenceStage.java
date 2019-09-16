@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,23 @@
 package com.norconex.collector.core.pipeline.queue;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.pipeline.BasePipelineContext;
+import com.norconex.collector.core.reference.CrawlReference.Stage;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 
 /**
  * Common pipeline stage for queuing documents.
  * @author Pascal Essiembre
  */
-public class QueueReferenceStage 
+public class QueueReferenceStage
         implements IPipelineStage<BasePipelineContext> {
 
-    private static final Logger LOG = 
+    private static final Logger LOG =
             LoggerFactory.getLogger(QueueReferenceStage.class);
-    
+
     /**
      * Constructor.
      */
@@ -41,28 +41,33 @@ public class QueueReferenceStage
 
     @Override
     public boolean execute(BasePipelineContext ctx) {
-        String ref = ctx.getCrawlData().getReference();
+        //TODO document and make sure it cannot be blank and remove this check?
+        String ref = ctx.getCrawlReference().getReference();
         if (StringUtils.isBlank(ref)) {
             return true;
         }
-        ICrawlDataStore refStore = ctx.getCrawlDataStore();
-        
-        if (refStore.isActive(ref)) {
+
+        Stage stage = ctx.getCrawlReferenceService().getProcessingStage(ref);
+
+        //TODO make this a reusable method somewhere, or part of the
+        //CrawlReferenceService?
+        if (Stage.ACTIVE.is(stage)) {
             debug("Already being processed: %s", ref);
-        } else if (refStore.isQueued(ref)) {
+        } else if (Stage.QUEUED.is(stage)) {
             debug("Already queued: %s", ref);
-        } else if (refStore.isProcessed(ref)) {
+        } else if (Stage.PROCESSED.is(stage)) {
             debug("Already processed: %s", ref);
         } else {
-            refStore.queue(ctx.getCrawlData().clone());
+            ctx.getCrawlReferenceService().queue(ctx.getCrawlReference());
+//            refStore.queue(ctx.getCrawlData().clone());
             debug("Queued for processing: %s", ref);
         }
         return true;
     }
-    
+
     private void debug(String message, Object... values) {
         if (LOG.isDebugEnabled()) {
             LOG.debug(String.format(message, values));
         }
-    }   
+    }
 }

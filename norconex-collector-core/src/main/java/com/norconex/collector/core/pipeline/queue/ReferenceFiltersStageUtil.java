@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,11 +52,11 @@ public final class ReferenceFiltersStageUtil {
             msg = " (" + msg + ")";
         }
 
+        String ref = ctx.getCrawlReference().getReference();
         boolean hasIncludes = false;
         boolean atLeastOneIncludeMatch = false;
         for (IReferenceFilter filter : filters) {
-            boolean accepted = filter.acceptReference(
-                    ctx.getCrawlData().getReference());
+            boolean accepted = filter.acceptReference(ref);
 
             // Deal with includes
             if (isIncludeFilter(filter)) {
@@ -69,30 +69,21 @@ public final class ReferenceFiltersStageUtil {
 
             // Deal with exclude and non-OnMatch filters
             if (accepted) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("ACCEPTED document reference" + msg
-                            + ". Reference=" + ctx.getCrawlData().getReference()
-                            + " Filter=" + filter);
-                }
+                LOG.debug("ACCEPTED document reference{}. Reference={}"
+                        + " Filter={}", msg, ref, filter);
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("REJECTED document reference " + msg
-                            + ". Reference=" + ctx.getCrawlData().getReference()
-                            + " Filter=" + filter);
-                }
+                LOG.debug("REJECTED document reference{}. Reference={}"
+                        + " Filter={}", msg, ref, filter);
                 fireDocumentRejected(filter, ctx);
                 return true;
             }
         }
         if (hasIncludes && !atLeastOneIncludeMatch) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("REJECTED document reference" + msg
-                      + ". No include filters matched. Reference="
-                      + ctx.getCrawlData().getReference()
-                      + " Filter=[one or more filter 'onMatch' "
-                      + "attribute is set to 'include', but none of them were "
-                      + "matched]");
-            }
+            LOG.debug("REJECTED document reference{}"
+                  + ". No include filters matched. Reference={}"
+                  + " Filter=[one or more filter 'onMatch' "
+                  + "attribute is set to 'include', but none of them were "
+                  + "matched]", msg, ref);
             fireDocumentRejected(
                     "No \"include\" reference filters matched.", ctx);
             return true;
@@ -102,7 +93,7 @@ public final class ReferenceFiltersStageUtil {
 
     private static void fireDocumentRejected(
             Object subject, BasePipelineContext ctx) {
-        ctx.fireCrawlerEvent(REJECTED_FILTER, ctx.getCrawlData(), subject);
+        ctx.fireCrawlerEvent(REJECTED_FILTER, ctx.getCrawlReference(), subject);
 
     }
 

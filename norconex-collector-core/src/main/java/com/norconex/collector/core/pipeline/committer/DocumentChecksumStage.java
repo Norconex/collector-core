@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
 package com.norconex.collector.core.pipeline.committer;
 
 import com.norconex.collector.core.checksum.IDocumentChecksummer;
-import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.pipeline.ChecksumStageUtil;
 import com.norconex.collector.core.pipeline.DocumentPipelineContext;
+import com.norconex.collector.core.reference.CrawlState;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 
 /**
@@ -25,22 +25,23 @@ import com.norconex.commons.lang.pipeline.IPipelineStage;
  * @author Pascal Essiembre
  *
  */
-public class DocumentChecksumStage 
+public class DocumentChecksumStage
         implements IPipelineStage<DocumentPipelineContext> {
-    
+
     @Override
     public boolean execute(DocumentPipelineContext ctx) {
         //TODO only if an INCREMENTAL run... else skip.
-        IDocumentChecksummer check = 
+        IDocumentChecksummer check =
                 ctx.getConfig().getDocumentChecksummer();
-        if (check == null && !ctx.getCrawlData().getState().isNewOrModified()) {
+        if (check == null 
+                && !ctx.getCrawlReference().getState().isNewOrModified()) {
             // NEW is default state (?)
-            ctx.getCrawlData().setState(CrawlState.NEW);
+            ctx.getCrawlReference().setState(CrawlState.NEW);
             return true;
         }
         String newDocChecksum = check.createDocumentChecksum(ctx.getDocument());
         return ChecksumStageUtil.resolveDocumentChecksum(
                 newDocChecksum, ctx, check);
     }
-    
-}   
+
+}

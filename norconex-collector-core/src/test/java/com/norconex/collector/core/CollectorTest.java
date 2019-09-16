@@ -108,7 +108,7 @@ public class CollectorTest {
             XML.of(r).setErrorHandler(eh).create().populate(
                     new MockCollectorConfig());
             assertEquals(0, eh.getErrors().size(),
-                "Validation warnings/errors were found.");
+                "Validation warnings/errors were found: " + eh.getErrors());
         }
     }
 }

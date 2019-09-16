@@ -23,11 +23,11 @@ import picocli.CommandLine.Command;
  */
 @Command(
     name = "clean",
-    description = "TO IMPLEMENT: Clean the Collector crawling history."
+    description = "Clean the Collector crawling history (to start fresh)."
 )
 public class CleanCommand extends AbstractSubCommand {
     @Override
     public void runCommand() {
-        printOut("TODO");
+        getCollector().clean();
     }
 }

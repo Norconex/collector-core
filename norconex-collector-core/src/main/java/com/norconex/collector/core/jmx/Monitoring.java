@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,24 @@
  */
 package com.norconex.collector.core.jmx;
 
-import com.norconex.collector.core.data.store.ICrawlDataStore;
+import com.norconex.collector.core.reference.CrawlReferenceService;
 
 public class Monitoring implements MonitoringMBean {
 
-    private final ICrawlDataStore refStore;
-    
-    public Monitoring(ICrawlDataStore refStore) {
-        this.refStore = refStore;
+    private final CrawlReferenceService service;
+
+    public Monitoring(CrawlReferenceService service) {
+        this.service = service;
     }
 
     @Override
-    public int getProcessedURLCount() {
-        return refStore.getProcessedCount();
+    public long getProcessedCount() {
+        return service.getProcessedCount();
     }
 
     @Override
-    public int getURLQueueSize() {
-        return refStore.getQueueSize();
+    public long getQueuedCount() {
+        return service.getQueuedCount();
     }
 
 }

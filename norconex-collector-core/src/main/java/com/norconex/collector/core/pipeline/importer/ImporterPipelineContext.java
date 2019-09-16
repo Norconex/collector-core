@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,8 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.crawler.Crawler;
-import com.norconex.collector.core.data.BaseCrawlData;
-import com.norconex.collector.core.data.store.ICrawlDataStore;
 import com.norconex.collector.core.pipeline.DocumentPipelineContext;
+import com.norconex.collector.core.reference.CrawlReference;
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 import com.norconex.commons.lang.pipeline.Pipeline;
@@ -47,37 +46,35 @@ public class ImporterPipelineContext extends DocumentPipelineContext {
      * @since 1.9.0
      */
     public ImporterPipelineContext(ImporterPipelineContext copiable) {
-        this(copiable.getCrawler(), copiable.getCrawlDataStore());
+        this(copiable.getCrawler());
         BeanUtil.copyProperties(this, copiable);
     }
 
     /**
      * Constructor.
      * @param crawler the crawler
-     * @param crawlDataStore crawl data store
      * @since 1.9.0
      */
-    public ImporterPipelineContext(
-            Crawler crawler, ICrawlDataStore crawlDataStore) {
-        super(crawler, crawlDataStore, null);
+    public ImporterPipelineContext(Crawler crawler) {
+        super(crawler, null);
     }
     /**
      * Constructor.
      * @param crawler the crawler
-     * @param crawlDataStore crawl data store
-     * @param crawlData current crawl data
+//     * @param crawlDataStore crawl data store
+     * @param crawlRef current crawl data
      * @since 1.9.0
      */
     public ImporterPipelineContext(
-            Crawler crawler, ICrawlDataStore crawlDataStore,
-            BaseCrawlData crawlData) {
-        super(crawler, crawlDataStore, crawlData);
+            Crawler crawler,
+            CrawlReference crawlRef) {
+        super(crawler, crawlRef);
     }
     public ImporterPipelineContext(
-            Crawler crawler, ICrawlDataStore crawlDataStore,
-            BaseCrawlData crawlData, BaseCrawlData cachedCrawlData,
+            Crawler crawler,
+            CrawlReference crawlRef, CrawlReference cachedCrawlRef,
             ImporterDocument document) {
-        super(crawler, crawlDataStore, crawlData, cachedCrawlData, document);
+        super(crawler, crawlRef, cachedCrawlRef, document);
     }
 
     public ImporterResponse getImporterResponse() {

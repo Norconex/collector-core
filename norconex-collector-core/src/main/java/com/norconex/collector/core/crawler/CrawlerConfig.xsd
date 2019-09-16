@@ -53,7 +53,7 @@
       <xs:element name="documentFilters" 
           type="filterType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="importer" type="anyComplexType" minOccurs="0" maxOccurs="1"/>
-      <xs:element name="crawlDataStoreFactory" 
+      <xs:element name="dataStoreEngine" 
           type="anyComplexOptionalClassType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="documentChecksummer" 
           type="anyComplexOptionalClassType" minOccurs="0" maxOccurs="1"/>

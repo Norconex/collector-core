@@ -18,6 +18,11 @@ import com.norconex.commons.lang.xml.XML;
 
 public class MockCrawlerConfig extends CrawlerConfig {
 
+    public MockCrawlerConfig() {
+        super();
+        setId("Mock Crawler");
+    }
+
     @Override
     protected void saveCrawlerConfigToXML(XML out) {
         //NOOP

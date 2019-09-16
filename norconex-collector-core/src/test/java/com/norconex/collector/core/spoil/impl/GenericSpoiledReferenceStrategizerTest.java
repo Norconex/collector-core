@@ -18,7 +18,7 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
-import com.norconex.collector.core.data.CrawlState;
+import com.norconex.collector.core.reference.CrawlState;
 import com.norconex.collector.core.spoil.SpoiledReferenceStrategy;
 import com.norconex.commons.lang.xml.XML;
 

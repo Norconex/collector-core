@@ -8,7 +8,7 @@
     </Console>
   </Appenders>
   <Loggers>
-    <Logger name="com.norconex.collector.core" level="WARN" additivity="false">
+    <Logger name="com.norconex.collector.core" level="INFO" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="org.apache" level="WARN" additivity="false">

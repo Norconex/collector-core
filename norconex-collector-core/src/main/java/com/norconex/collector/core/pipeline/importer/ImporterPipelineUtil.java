@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public final class ImporterPipelineUtil {
         boolean atLeastOneIncludeMatch = false;
         for (IMetadataFilter filter : filters) {
             boolean accepted = filter.acceptMetadata(
-                    ctx.getCrawlData().getReference(), metadata);
+                    ctx.getCrawlReference().getReference(), metadata);
             boolean isInclude = filter instanceof IOnMatchFilter
                    && OnMatch.INCLUDE == ((IOnMatchFilter) filter).getOnMatch();
             if (isInclude) {
@@ -65,16 +65,16 @@ public final class ImporterPipelineUtil {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(String.format("ACCEPTED document metadata. "
                             + "Reference=%s Filter=%s",
-                            ctx.getCrawlData().getReference(), filter));
+                            ctx.getCrawlReference().getReference(), filter));
                 }
             } else {
                 ctx.fireCrawlerEvent(
-                        REJECTED_FILTER, ctx.getCrawlData(), filter);
+                        REJECTED_FILTER, ctx.getCrawlReference(), filter);
                 return true;
             }
         }
         if (hasIncludes && !atLeastOneIncludeMatch) {
-            ctx.fireCrawlerEvent(REJECTED_FILTER, ctx.getCrawlData(),
+            ctx.fireCrawlerEvent(REJECTED_FILTER, ctx.getCrawlReference(),
                     "No \"include\" metadata filters matched.");
             return true;
         }

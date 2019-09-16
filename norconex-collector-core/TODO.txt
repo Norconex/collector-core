@@ -2,10 +2,18 @@
 LAST MERGE FROM MASTER
 ======================
 
-2019-07-29
+2019-09-02
 
 TODO:
 ==============
+- Put back previous data store tests that now applies to CrawlReferenceService.
+
+- Create a MemoryDataStore for testing only
+
+- Investigate this construct for usage samples (and maybe parsing)
+      {@code 
+              <multiline stuff>
+      }
 
 - Make sure command line arguments can also be specified as system properties
   or env variables (or properties files?).  Similar to spring boot?

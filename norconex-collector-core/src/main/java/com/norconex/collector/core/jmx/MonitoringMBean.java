@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
 package com.norconex.collector.core.jmx;
 
 public interface MonitoringMBean {
-    
-    int getProcessedURLCount();
-    
-    int getURLQueueSize();
-    
+
+    long getProcessedCount();
+
+    long getQueuedCount();
+
 }
