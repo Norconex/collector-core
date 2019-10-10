@@ -18,6 +18,10 @@ import static com.norconex.collector.core.CollectorEvent.COLLECTOR_CLEANED;
 import static com.norconex.collector.core.CollectorEvent.COLLECTOR_CLEANING;
 import static com.norconex.collector.core.CollectorEvent.COLLECTOR_ENDED;
 import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STARTED;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_EXPORTED;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_EXPORTING;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_IMPORTED;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_IMPORTING;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -190,6 +194,40 @@ public abstract class Collector {
             getCrawlers().forEach(Crawler::clean);
             destroyCollector();
             eventManager.fire(CollectorEvent.create(COLLECTOR_CLEANED, this));
+        } finally {
+            eventManager.clearListeners();
+            unlock();
+        }
+    }
+
+    public void importDataStore(List<Path> inFiles) {
+        lock();
+        try {
+            initCollector();
+            eventManager.fire(
+                    CollectorEvent.create(COLLECTOR_STORE_IMPORTING, this));
+            inFiles.forEach(f -> {
+                getCrawlers().forEach(c -> c.importDataStore(f));
+            });
+            destroyCollector();
+            eventManager.fire(
+                    CollectorEvent.create(COLLECTOR_STORE_IMPORTED, this));
+        } finally {
+            eventManager.clearListeners();
+            unlock();
+        }
+    }
+    public void exportDataStore(Path dir) {
+        lock();
+        try {
+            initCollector();
+            eventManager.fire(
+                    CollectorEvent.create(COLLECTOR_STORE_EXPORTING, this));
+            //TODO zip all exported data stores in a single file?
+            getCrawlers().forEach(c -> c.exportDataStore(dir));
+            destroyCollector();
+            eventManager.fire(
+                    CollectorEvent.create(COLLECTOR_STORE_EXPORTED, this));
         } finally {
             eventManager.clearListeners();
             unlock();

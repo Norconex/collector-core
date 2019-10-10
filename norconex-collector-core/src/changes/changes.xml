@@ -9,7 +9,11 @@
 
     <release version="2.0.0-SNAPSHOT" date="2018-??-??" description="Major release">
       <action dev="essiembre" type="add">
-        New CollectorEvent.
+        New collector events: COLLECTOR_CLEANED, COLLECTOR_CLEANING
+        COLLECTOR_ENDED, COLLECTOR_STARTED, COLLECTOR_STOPPING,
+        COLLECTOR_STOPPED, COLLECTOR_STORE_EXPORTED,
+        COLLECTOR_STORE_EXPORTING, COLLECTOR_STORE_IMPORTED,
+        COLLECTOR_STORE_IMPORTING
       </action>
       <action dev="essiembre" type="add">
         New crawler events: CRAWLER_CLEANING, CRAWLER_CLEANED, 
@@ -22,7 +26,11 @@
         New UNSUPPORTED crawl state.
       </action>
       <action dev="essiembre" type="add">
-        New #clean() method and new related events.
+        New Collector#clean() method and related events.
+      </action>
+      <action dev="essiembre" type="add">
+        New Collector#exportDataStore(), Collector#importDataStore() methods
+        and related events.
       </action>
       <action dev="essiembre" type="add">
         New .core.reference package along with new .core.store package
@@ -30,7 +38,7 @@
       </action>
       <action dev="essiembre" type="add">
         New IDataStoreEngine accessible from crawler to store any kind 
-        of objects by implementors.
+        of objects by implementors in their own extensions.
       </action>
       <action dev="essiembre" type="update">
         NitriteDataStore now default crawl store implementation.
@@ -77,7 +85,10 @@
         Now requires Java 8 or higher.
       </action>
       <action dev="essiembre" type="update">
-        Command-line arguments are now different, with more options.
+        Command-line arguments are now different, with more options such
+        as "cleaning" previous executions, 
+        importing/exporting the crawl store and forcing a commit of any remains
+        from committer queue.
       </action>
       <action dev="essiembre" type="update">
         Now use simple file-locks to prevent running conflicting

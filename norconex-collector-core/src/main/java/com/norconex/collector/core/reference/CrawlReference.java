@@ -15,7 +15,7 @@
 package com.norconex.collector.core.reference;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -51,7 +51,7 @@ public class CrawlReference implements Cloneable, Serializable {
     private String metaChecksum;
     private String contentChecksum;
     private ContentType contentType;
-    private Date crawlDate;
+    private LocalDateTime crawlDate;
     @Index
     private Stage processingStage;
 
@@ -140,14 +140,14 @@ public class CrawlReference implements Cloneable, Serializable {
      * @return the crawl date
      * @since 1.5.0
      */
-    public Date getCrawlDate() {
+    public LocalDateTime getCrawlDate() {
         return crawlDate;
     }
     /**
      * Sets the crawl date.
      * @param crawlDate the crawl date
      */
-    public void setCrawlDate(Date crawlDate) {
+    public void setCrawlDate(LocalDateTime crawlDate) {
         this.crawlDate = crawlDate;
     }
 

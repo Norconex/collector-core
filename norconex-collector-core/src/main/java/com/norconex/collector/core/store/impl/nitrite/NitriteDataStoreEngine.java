@@ -14,8 +14,14 @@
  */
 package com.norconex.collector.core.store.impl.nitrite;
 
+import static org.apache.commons.lang3.StringUtils.substringAfter;
+import static org.apache.commons.lang3.StringUtils.substringBefore;
+
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -28,6 +34,8 @@ import org.dizitart.no2.NitriteBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.norconex.collector.core.CollectorException;
 import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.collector.core.reference.CrawlState;
@@ -35,6 +43,7 @@ import com.norconex.collector.core.store.DataStoreException;
 import com.norconex.collector.core.store.IDataStore;
 import com.norconex.collector.core.store.IDataStoreEngine;
 import com.norconex.commons.lang.file.ContentType;
+import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
@@ -85,6 +94,8 @@ public class NitriteDataStoreEngine //extends CrawlerLifeCycleListener
         }
         builder.filePath(
                 storeDir.resolve("nitrite").toAbsolutePath().toString());
+        builder.registerModule(new Jdk8Module());
+        builder.registerModule(new JavaTimeModule());
         builder.registerModule(new ValueOfToStringModule(
                 ContentType.class, CrawlState.class));
         db = builder.openOrCreate();
@@ -128,12 +139,37 @@ public class NitriteDataStoreEngine //extends CrawlerLifeCycleListener
     }
     @Override
     public Set<String> getStoreNames() {
-        return db.listCollectionNames();
+        // listRepositories return type plus file-safe name.  That is reliable
+        // enough, but if it ever changes, store the name-type association
+        // on file upon creating a store so we can retrive them here.
+        return getNameTypes().keySet();
+    }
+    @Override
+    public Optional<Class<?>> getStoreType(String name) {
+        String t = getNameTypes().get(name);
+        if (t != null) {
+            try {
+                return Optional.of(Class.forName(t));
+            } catch (ClassNotFoundException e) {
+                throw new CollectorException(
+                        "Could establish store type for " + name, e);
+            }
+        }
+        return Optional.empty();
     }
 
     @Override
     public <T> IDataStore<T> openStore(String name, Class<T> type) {
         return new NitriteDataStore<>(db, name, type);
+    }
+
+    private Map<String, String> getNameTypes() {
+        Map<String, String> map = new HashMap<>();
+        for (String rep : db.listRepositories()) {
+            map.put(FileUtil.fromSafeFileName(substringAfter(rep, "+")),
+                    substringBefore(rep, "+"));
+        }
+        return map;
     }
 
     @Override

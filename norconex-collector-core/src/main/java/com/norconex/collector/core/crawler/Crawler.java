@@ -68,6 +68,8 @@ import com.norconex.collector.core.reference.CrawlState;
 import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
 import com.norconex.collector.core.spoil.SpoiledReferenceStrategy;
 import com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer;
+import com.norconex.collector.core.store.DataStoreExporter;
+import com.norconex.collector.core.store.DataStoreImporter;
 import com.norconex.collector.core.store.IDataStoreEngine;
 import com.norconex.committer.core.ICommitter;
 import com.norconex.commons.lang.Sleeper;
@@ -99,7 +101,7 @@ import com.norconex.jef5.suite.JobSuite;
  *
  * @author Pascal Essiembre
  */
-//TODO document that logger should print thread name to see which crawler 
+//TODO document that logger should print thread name to see which crawler
 //is running?
 public abstract class Crawler
         extends AbstractResumableJob {
@@ -200,7 +202,8 @@ public abstract class Crawler
         return config;
     }
 
-    protected Collector getCollector() {
+    // really make public? Or have a getCollectorId() method instead?
+    public Collector getCollector() {
         return collector;
     }
 
@@ -333,11 +336,34 @@ public abstract class Crawler
         }
     }
 
+
+    public void importDataStore(Path inFile) {
+        initCrawler();
+        try {
+            DataStoreImporter.importDataStore(this, inFile);
+        } catch (IOException e) {
+            throw new CollectorException("Could not import data store.", e);
+        } finally {
+            destroyCrawler();
+        }
+
+    }
+    public Path exportDataStore(Path dir) {
+        initCrawler();
+        try {
+            return DataStoreExporter.exportDataStore(this, dir);
+        } catch (IOException e) {
+            throw new CollectorException("Could not export data store.", e);
+        } finally {
+            destroyCrawler();
+        }
+    }
+
     protected void destroyCrawler() {
         crawlReferenceService.close();
         dataStoreEngine.close();
 
-        //TODO shall we clear crawler listeners, or leave to collector 
+        //TODO shall we clear crawler listeners, or leave to collector
         // to clean all?
         // eventManager.clearListeners();
     }

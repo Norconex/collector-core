@@ -14,6 +14,7 @@
  */
 package com.norconex.collector.core.store.impl.nitrite;
 
+import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.dizitart.no2.objects.filters.ObjectFilters.eq;
 
 import java.lang.reflect.Field;
@@ -75,7 +76,8 @@ public class NitriteDataStore<T> implements IDataStore<T> {
 
     @Override
     public String getName() {
-        return repository.getName();
+        return FileUtil.fromSafeFileName(
+                substringAfter(repository.getName(), "+"));
     }
 
     @Override

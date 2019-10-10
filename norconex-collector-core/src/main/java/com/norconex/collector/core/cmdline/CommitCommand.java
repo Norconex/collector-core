@@ -14,6 +14,8 @@
  */
 package com.norconex.collector.core.cmdline;
 
+import com.norconex.collector.core.crawler.Crawler;
+
 import picocli.CommandLine.Command;
 
 /**
@@ -23,11 +25,14 @@ import picocli.CommandLine.Command;
  */
 @Command(
     name = "commit",
-    description = "TO IMPLEMENT: Force Committers to commit their queue."
+    description = "Committer to commit remains from their queue "
+                + "from a previous run."
 )
 public class CommitCommand extends AbstractSubCommand {
     @Override
     public void runCommand() {
-        printOut("TODO");
+        for (Crawler crawler : getCollector().getCrawlers()) {
+            crawler.getCrawlerConfig().getCommitter().commit();
+        }
     }
 }

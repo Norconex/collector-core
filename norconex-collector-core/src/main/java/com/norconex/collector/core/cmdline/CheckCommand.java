@@ -29,26 +29,8 @@ public class CheckCommand extends AbstractSubCommand {
     @Override
     public void runCommand() {
         // If it reaches here, that means no errors were found. Simply say so.
-
-//        try {
-//            loadConfig();
-            printOut();
-            printOut("No XML configuration errors detected.");
-//        } catch (CollectorException e) {
-//            Throwable t = ExceptionUtils.getRootCause(e);
-//            if (t instanceof XMLValidationException) {
-//                List<XMLValidationError> errors =
-//                        ((XMLValidationException) t).getErrors();
-//                printOut();
-//                printOut(errors.size()
-//                        + " XML configuration errors detected:");
-//                printOut();
-//                errors.stream().forEach(er ->
-//                        printOut("   " + er.getMessage()));
-//            } else {
-//                throw e;
-//            }
-//        }
+        printOut();
+        printOut("No XML configuration errors detected.");
         System.exit(0);
     }
 }

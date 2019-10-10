@@ -15,6 +15,7 @@
 package com.norconex.collector.core.store;
 
 import java.io.Closeable;
+import java.util.Optional;
 import java.util.Set;
 
 import com.norconex.collector.core.crawler.Crawler;
@@ -29,5 +30,5 @@ public interface IDataStoreEngine extends Closeable {
     <T> IDataStore<T> openStore(String name, Class<T> type);
     boolean dropStore(String name);
     Set<String> getStoreNames();
-
+    Optional<Class<?>> getStoreType(String name);
 }

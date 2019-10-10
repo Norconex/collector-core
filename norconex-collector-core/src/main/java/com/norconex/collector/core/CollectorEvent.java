@@ -42,6 +42,15 @@ public class CollectorEvent<T extends Collector> extends Event<T> {
     public static final String COLLECTOR_CLEANING = "COLLECTOR_CLEANING";
     public static final String COLLECTOR_CLEANED = "COLLECTOR_CLEANED";
 
+    public static final String COLLECTOR_STORE_EXPORTING =
+            "COLLECTOR_STORE_EXPORTING";
+    public static final String COLLECTOR_STORE_EXPORTED =
+            "COLLECTOR_STORE_EXPORTED";
+    public static final String COLLECTOR_STORE_IMPORTING =
+            "COLLECTOR_STORE_IMPORTING";
+    public static final String COLLECTOR_STORE_IMPORTED =
+            "COLLECTOR_STORE_IMPORTED";
+
 
     //TODO Add COLLECTOR_ERROR?
     public static final String COLLECTOR_ERROR = "COLLECTOR_ERROR";
