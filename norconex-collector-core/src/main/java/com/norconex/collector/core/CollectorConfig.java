@@ -422,8 +422,8 @@ public abstract class CollectorConfig implements IXMLConfigurable {
 
 //        setLogsDir(xml.getPath("logsDir", getLogsDir()));
 //        setProgressDir(xml.getPath("progressDir", getProgressDir()));
-        setEventListeners(xml.getObjectList(
-                "eventListeners/listener", eventListeners));
+        setEventListeners(xml.getObjectListImpl(
+                IEventListener.class, "eventListeners/listener", eventListeners));
 
 //        setCollectorListeners(xml.getObjectList(
 //                "collectorListeners/listener", getCollectorListeners()));

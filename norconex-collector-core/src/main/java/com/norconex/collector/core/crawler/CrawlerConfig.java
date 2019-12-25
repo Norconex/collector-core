@@ -483,11 +483,11 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
         setMaxDocuments(xml.getInteger("maxDocuments", maxDocuments));
         setStopOnExceptions(xml.getClassList(
                 "stopOnExceptions/exception", stopOnExceptions));
-        setReferenceFilters(xml.getObjectList(
+        setReferenceFilters(xml.getObjectListImpl(IReferenceFilter.class,
                 "referenceFilters/filter", referenceFilters));
-        setMetadataFilters(xml.getObjectList(
+        setMetadataFilters(xml.getObjectListImpl(IMetadataFilter.class,
                 "metadataFilters/filter", metadataFilters));
-        setDocumentFilters(xml.getObjectList(
+        setDocumentFilters(xml.getObjectListImpl(IDocumentFilter.class,
                 "documentFilters/filter", documentFilters));
 
         //TODO Make it so importer can be null (importing is then skipped)
@@ -504,16 +504,18 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
         }
 
         xml.checkDeprecated("crawlDataStoreEngine", "dataStoreEngine", true);
-        setDataStoreEngine(xml.getObject(
-                "dataStoreEngine", dataStoreEngine));
-        setCommitter(xml.getObject("committer", committer));
-        setDocumentChecksummer(xml.getObject(
+        setDataStoreEngine(xml.getObjectImpl(
+                IDataStoreEngine.class, "dataStoreEngine", dataStoreEngine));
+        setCommitter(xml.getObjectImpl(
+                ICommitter.class, "committer", committer));
+        setDocumentChecksummer(xml.getObjectImpl(IDocumentChecksummer.class,
                 "documentChecksummer", documentChecksummer));
-        setSpoiledReferenceStrategizer(xml.getObject(
+        setSpoiledReferenceStrategizer(xml.getObjectImpl(
+                ISpoiledReferenceStrategizer.class,
                 "spoiledReferenceStrategizer", spoiledReferenceStrategizer));
 
         xml.checkDeprecated("crawlerListeners", "eventListeners", true);
-        setEventListeners(xml.getObjectList(
+        setEventListeners(xml.getObjectListImpl(IEventListener.class,
                 "eventListeners/listener", eventListeners));
 
         loadCrawlerConfigFromXML(xml);
