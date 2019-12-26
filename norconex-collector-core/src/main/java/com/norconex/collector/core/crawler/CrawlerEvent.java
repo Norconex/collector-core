@@ -35,34 +35,34 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
     /**
      * The crawler began its initialization.
      */
-    public static final String CRAWLER_INITIALIZING = "CRAWLER_INITIALIZING";
+    public static final String CRAWLER_INIT_BEGIN = "CRAWLER_INIT_BEGIN";
     /**
      * The crawler has been initialized.
      */
-    public static final String CRAWLER_INITIALIZED = "CRAWLER_INITIALIZED";
+    public static final String CRAWLER_INIT_END = "CRAWLER_INIT_END";
 
 
     /**
      * The crawler started.
      */
-    public static final String CRAWLER_STARTED = "CRAWLER_STARTED";
-
+    public static final String CRAWLER_RUN_BEGIN = "CRAWLER_RUN_BEGIN";
     /**
      * The crawler completed execution (without being stopped).
      */
-    public static final String CRAWLER_FINISHED = "CRAWLER_FINISHED";
+    public static final String CRAWLER_RUN_END = "CRAWLER_RUN_END";
+
     /**
      * Issued when a request to stop the crawler has been received.
      */
-    public static final String CRAWLER_STOPPING = "CRAWLER_STOPPING";
+    public static final String CRAWLER_STOP_BEGIN = "CRAWLER_STOP_BEGIN";
     /**
      * Issued when a request to stop the crawler has been fully executed
      * (crawler stopped).
      */
-    public static final String CRAWLER_STOPPED = "CRAWLER_STOPPED";
+    public static final String CRAWLER_STOP_END = "CRAWLER_STOP_END";
 
-    public static final String CRAWLER_CLEANING = "CRAWLER_CLEANING";
-    public static final String CRAWLER_CLEANED = "CRAWLER_CLEANED";
+    public static final String CRAWLER_CLEAN_BEGIN = "CRAWLER_CLEAN_BEGIN";
+    public static final String CRAWLER_CLEAN_END = "CRAWLER_CLEAN_END";
 
     /**
      * A crawled document was rejected by a filters.
@@ -186,19 +186,19 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
         return subject;
     }
 
-    public boolean isCrawlerStartup() {
-        return is(CRAWLER_STARTED);
-    }
+//    public boolean isCrawlerStartup() {
+//        return is(CRAWLER_RUN_BEGIN);
+//    }
     public boolean isCrawlerShutdown() {
-        return is(CRAWLER_FINISHED, CRAWLER_STOPPED);
+        return is(CRAWLER_RUN_END, CRAWLER_STOP_END);
     }
-
-    public boolean isCrawlerCleaning() {
-        return is(CRAWLER_CLEANING);
-    }
-    public boolean isCrawlerCleaned() {
-        return is(CRAWLER_CLEANED);
-    }
+//
+//    public boolean isCrawlerCleaning() {
+//        return is(CRAWLER_CLEAN_BEGIN);
+//    }
+//    public boolean isCrawlerCleaned() {
+//        return is(CRAWLER_CLEAN_END);
+//    }
 
     @Override
     public boolean equals(final Object other) {

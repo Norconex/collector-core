@@ -9,15 +9,17 @@
 
     <release version="2.0.0-SNAPSHOT" date="2018-??-??" description="Major release">
       <action dev="essiembre" type="add">
-        New collector events: COLLECTOR_CLEANED, COLLECTOR_CLEANING
-        COLLECTOR_ENDED, COLLECTOR_STARTED, COLLECTOR_STOPPING,
-        COLLECTOR_STOPPED, COLLECTOR_STORE_EXPORTED,
-        COLLECTOR_STORE_EXPORTING, COLLECTOR_STORE_IMPORTED,
-        COLLECTOR_STORE_IMPORTING
+        New collector events: COLLECTOR_RUN_BEGIN, COLLECTOR_RUN_END,
+        COLLECTOR_STOP_BEGIN, COLLECTOR_STOP_END,
+        COLLECTOR_CLEAN_BEGIN, COLLECTOR_CLEAN_END,
+        COLLECTOR_STORE_EXPORT_BEGIN, COLLECTOR_STORE_EXPORT_END,
+        COLLECTOR_STORE_IMPORT_BEGIN, COLLECTOR_STORE_IMPORT_END
       </action>
       <action dev="essiembre" type="add">
-        New crawler events: CRAWLER_CLEANING, CRAWLER_CLEANED, 
-        CRAWLER_INITIALIZING, CRAWLER_INITIALIZED.
+        New crawler events: CRAWLER_INIT_BEGIN, CRAWLER_INIT_END,
+        CRAWLER_RUN_BEGIN, CRAWLER_RUN_END,
+        CRAWLER_STOP_BEGIN, CRAWLER_STOP_END,
+        CRAWLER_CLEAN_BEGIN, CRAWLER_CLEAN_END.
       </action>
       <action dev="essiembre" type="add">
         New methods on CrawlerEvent: isCrawlerStartup and isCrawlerShutdown.

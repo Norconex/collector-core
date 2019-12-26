@@ -14,14 +14,14 @@
  */
 package com.norconex.collector.core.crawler;
 
-import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_CLEANED;
-import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_CLEANING;
-import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_FINISHED;
-import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_INITIALIZED;
-import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_INITIALIZING;
-import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_STARTED;
-import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_STOPPED;
-import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_STOPPING;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_CLEAN_END;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_CLEAN_BEGIN;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_RUN_END;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_INIT_END;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_INIT_BEGIN;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_RUN_BEGIN;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_STOP_END;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_STOP_BEGIN;
 import static com.norconex.collector.core.crawler.CrawlerEvent.DOCUMENT_COMMITTED_REMOVE;
 import static com.norconex.collector.core.crawler.CrawlerEvent.DOCUMENT_IMPORTED;
 import static com.norconex.collector.core.crawler.CrawlerEvent.REJECTED_ERROR;
@@ -177,7 +177,7 @@ public abstract class Crawler
 
     @Override
     public void stop(JobStatus jobStatus, JobSuite suite) {
-        getEventManager().fire(CrawlerEvent.create(CRAWLER_STOPPING, this));
+        getEventManager().fire(CrawlerEvent.create(CRAWLER_STOP_BEGIN, this));
         stopped = true;
         LOG.info("Stopping the crawler.");
     }
@@ -262,7 +262,7 @@ public abstract class Crawler
         }
 
         try {
-            getEventManager().fire(CrawlerEvent.create(CRAWLER_STARTED, this));
+            getEventManager().fire(CrawlerEvent.create(CRAWLER_RUN_BEGIN, this));
             //TODO rename "beforeExecution and afterExecution"?
             prepareExecution(statusUpdater, suite, resume);
 
@@ -291,7 +291,7 @@ public abstract class Crawler
     }
 
     protected boolean initCrawler() {
-        getEventManager().fire(CrawlerEvent.create(CRAWLER_INITIALIZING, this));
+        getEventManager().fire(CrawlerEvent.create(CRAWLER_INIT_BEGIN, this));
 
         //--- Ensure good state/config ---
         if (StringUtils.isBlank(config.getId())) {
@@ -307,7 +307,7 @@ public abstract class Crawler
                 getId(), dataStoreEngine, getCrawlReferenceType());
 
         boolean resuming = crawlReferenceService.open();
-        getEventManager().fire(CrawlerEvent.create(CRAWLER_INITIALIZED, this));
+        getEventManager().fire(CrawlerEvent.create(CRAWLER_INIT_END, this));
         return resuming;
     }
 
@@ -325,12 +325,12 @@ public abstract class Crawler
 
     public void clean() {
         initCrawler();
-        getEventManager().fire(CrawlerEvent.create(CRAWLER_CLEANING, this));
+        getEventManager().fire(CrawlerEvent.create(CRAWLER_CLEAN_BEGIN, this));
         destroyCrawler();
         try {
             FileUtils.deleteDirectory(getTempDir().toFile());
             FileUtils.deleteDirectory(getWorkDir().toFile());
-            getEventManager().fire(CrawlerEvent.create(CRAWLER_CLEANED, this));
+            getEventManager().fire(CrawlerEvent.create(CRAWLER_CLEAN_END, this));
         } catch (IOException e) {
             throw new CollectorException("Could clean crawler directory.");
         }
@@ -400,9 +400,9 @@ public abstract class Crawler
         FileUtil.deleteEmptyDirs(getDownloadDir().toFile());
 
         if (!isStopped()) {
-            getEventManager().fire(CrawlerEvent.create(CRAWLER_FINISHED, this));
+            getEventManager().fire(CrawlerEvent.create(CRAWLER_RUN_END, this));
         } else {
-            getEventManager().fire(CrawlerEvent.create(CRAWLER_STOPPED, this));
+            getEventManager().fire(CrawlerEvent.create(CRAWLER_STOP_END, this));
         }
         LOG.info("Crawler {}", (isStopped() ? "stopped." : "completed."));
     }

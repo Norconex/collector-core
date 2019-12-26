@@ -14,14 +14,14 @@
  */
 package com.norconex.collector.core;
 
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_CLEANED;
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_CLEANING;
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_ENDED;
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STARTED;
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_EXPORTED;
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_EXPORTING;
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_IMPORTED;
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_IMPORTING;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_CLEAN_END;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_CLEAN_BEGIN;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_RUN_END;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_RUN_BEGIN;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_EXPORT_END;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_EXPORT_BEGIN;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_IMPORT_END;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_IMPORT_BEGIN;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -173,13 +173,13 @@ public abstract class Collector {
         lock();
         try {
             initCollector();
-            eventManager.fire(CollectorEvent.create(COLLECTOR_STARTED, this));
+            eventManager.fire(CollectorEvent.create(COLLECTOR_RUN_BEGIN, this));
             jobSuite.execute();
         } finally {
             try {
                 destroyCollector();
             } finally {
-                eventManager.fire(CollectorEvent.create(COLLECTOR_ENDED, this));
+                eventManager.fire(CollectorEvent.create(COLLECTOR_RUN_END, this));
             }
             eventManager.clearListeners();
             unlock();
@@ -190,10 +190,10 @@ public abstract class Collector {
         lock();
         try {
             initCollector();
-            eventManager.fire(CollectorEvent.create(COLLECTOR_CLEANING, this));
+            eventManager.fire(CollectorEvent.create(COLLECTOR_CLEAN_BEGIN, this));
             getCrawlers().forEach(Crawler::clean);
             destroyCollector();
-            eventManager.fire(CollectorEvent.create(COLLECTOR_CLEANED, this));
+            eventManager.fire(CollectorEvent.create(COLLECTOR_CLEAN_END, this));
         } finally {
             eventManager.clearListeners();
             unlock();
@@ -205,13 +205,13 @@ public abstract class Collector {
         try {
             initCollector();
             eventManager.fire(
-                    CollectorEvent.create(COLLECTOR_STORE_IMPORTING, this));
+                    CollectorEvent.create(COLLECTOR_STORE_IMPORT_BEGIN, this));
             inFiles.forEach(f -> {
                 getCrawlers().forEach(c -> c.importDataStore(f));
             });
             destroyCollector();
             eventManager.fire(
-                    CollectorEvent.create(COLLECTOR_STORE_IMPORTED, this));
+                    CollectorEvent.create(COLLECTOR_STORE_IMPORT_END, this));
         } finally {
             eventManager.clearListeners();
             unlock();
@@ -222,12 +222,12 @@ public abstract class Collector {
         try {
             initCollector();
             eventManager.fire(
-                    CollectorEvent.create(COLLECTOR_STORE_EXPORTING, this));
+                    CollectorEvent.create(COLLECTOR_STORE_EXPORT_BEGIN, this));
             //TODO zip all exported data stores in a single file?
             getCrawlers().forEach(c -> c.exportDataStore(dir));
             destroyCollector();
             eventManager.fire(
-                    CollectorEvent.create(COLLECTOR_STORE_EXPORTED, this));
+                    CollectorEvent.create(COLLECTOR_STORE_EXPORT_END, this));
         } finally {
             eventManager.clearListeners();
             unlock();
@@ -398,16 +398,26 @@ public abstract class Collector {
         List<Crawler> crawlerList = getCrawlers();
 
         IJob rootJob = null;
-        if (crawlerList.size() > 1) {
+
+        if (!crawlerList.isEmpty()) {
             int maxCrawlers = crawlerList.size();
             if (collConfig.getMaxParallelCrawlers() > 0) {
                 maxCrawlers = Math.min(
                         maxCrawlers, collConfig.getMaxParallelCrawlers());
             }
             rootJob = new AsyncJobGroup(getId(), maxCrawlers, crawlerList);
-        } else if (crawlerList.size() == 1) {
-            rootJob = crawlerList.get(0);
         }
+//
+//        if (crawlerList.size() > 1) {
+//            int maxCrawlers = crawlerList.size();
+//            if (collConfig.getMaxParallelCrawlers() > 0) {
+//                maxCrawlers = Math.min(
+//                        maxCrawlers, collConfig.getMaxParallelCrawlers());
+//            }
+//            rootJob = new AsyncJobGroup(getId(), maxCrawlers, crawlerList);
+//        } else if (crawlerList.size() == 1) {
+//            rootJob = crawlerList.get(0);
+//        }
 
         JobSuiteConfig suiteConfig = new JobSuiteConfig();
 

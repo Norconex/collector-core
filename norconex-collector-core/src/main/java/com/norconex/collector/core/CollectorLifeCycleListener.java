@@ -14,11 +14,6 @@
  */
 package com.norconex.collector.core;
 
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_ENDED;
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_ERROR;
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STARTED;
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STOPPED;
-
 import com.norconex.commons.lang.event.IEventListener;
 
 /**
@@ -34,17 +29,60 @@ public class CollectorLifeCycleListener
         if (event == null) {
             return;
         }
-        if (event.is(COLLECTOR_STARTED)) {
-            onCollectorStartup(event);
-        } else if (event.is(
-                COLLECTOR_ENDED, COLLECTOR_ERROR, COLLECTOR_STOPPED)) {
+        onCollectorEvent(event);
+        if (event.is(CollectorEvent.COLLECTOR_RUN_BEGIN)) {
+            onCollectorRunBegin(event);
+        } else if (event.is(CollectorEvent.COLLECTOR_RUN_END)) {
+            onCollectorRunEnd(event);
+            onCollectorShutdown(event);
+        } else if (event.is(CollectorEvent.COLLECTOR_STOP_BEGIN)) {
+            onCollectorStopBegin(event);
+        } else if (event.is(CollectorEvent.COLLECTOR_STOP_END)) {
+            onCollectorStopEnd(event);
+            onCollectorShutdown(event);
+        } else if (event.is(CollectorEvent.COLLECTOR_CLEAN_BEGIN)) {
+            onCollectorCleanBegin(event);
+        } else if (event.is(CollectorEvent.COLLECTOR_CLEAN_END)) {
+            onCollectorCleanEnd(event);
+        } else if (event.is(CollectorEvent.COLLECTOR_ERROR)) {
+            onCollectorError(event);
             onCollectorShutdown(event);
         }
     }
-    protected void onCollectorStartup(CollectorEvent<Collector> event) {
+
+    protected void onCollectorEvent(CollectorEvent<Collector> event) {
         //NOOP
     }
+
+    /**
+     * Triggered when a collector is ending its execution on either
+     * a {@link CollectorEvent#COLLECTOR_ERROR},
+     * {@link CollectorEvent#COLLECTOR_RUN_END} or
+     * {@link CollectorEvent#COLLECTOR_STOP_END} event.
+     * @param event collector event
+     */
     protected void onCollectorShutdown(CollectorEvent<Collector> event) {
+        //NOOP
+    }
+    protected void onCollectorError(CollectorEvent<Collector> event) {
+        //NOOP
+    }
+    protected void onCollectorRunBegin(CollectorEvent<Collector> event) {
+        //NOOP
+    }
+    protected void onCollectorRunEnd(CollectorEvent<Collector> event) {
+        //NOOP
+    }
+    protected void onCollectorStopBegin(CollectorEvent<Collector> event) {
+        //NOOP
+    }
+    protected void onCollectorStopEnd(CollectorEvent<Collector> event) {
+        //NOOP
+    }
+    protected void onCollectorCleanBegin(CollectorEvent<Collector> event) {
+        //NOOP
+    }
+    protected void onCollectorCleanEnd(CollectorEvent<Collector> event) {
         //NOOP
     }
 }

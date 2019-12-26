@@ -26,34 +26,65 @@ public class CrawlerLifeCycleListener
 
     @Override
     public final void accept(CrawlerEvent<Crawler> event) {
-        if (event.isCrawlerStartup()) {
-            onCrawlerStartup(event);
-        } else if (event.isCrawlerShutdown()) {
+        if (event == null) {
+            return;
+        }
+        onCrawlerEvent(event);
+        if (event.is(CrawlerEvent.CRAWLER_INIT_BEGIN)) {
+            onCrawlerInitBegin(event);
+        } else if (event.is(CrawlerEvent.CRAWLER_INIT_END)) {
+            onCrawlerInitEnd(event);
+        } else if (event.is(CrawlerEvent.CRAWLER_RUN_BEGIN)) {
+            onCrawlerRunBegin(event);
+        } else if (event.is(CrawlerEvent.CRAWLER_RUN_END)) {
+            onCrawlerRunEnd(event);
             onCrawlerShutdown(event);
-        } else if (event.isCrawlerCleaning()) {
-            onCrawlerCleaning(event);
-        } else if (event.isCrawlerCleaned()) {
-            onCrawlerCleaned(event);
+        } else if (event.is(CrawlerEvent.CRAWLER_STOP_BEGIN)) {
+            onCrawlerStopBegin(event);
+        } else if (event.is(CrawlerEvent.CRAWLER_STOP_END)) {
+            onCrawlerStopEnd(event);
+            onCrawlerShutdown(event);
+        } else if (event.is(CrawlerEvent.CRAWLER_CLEAN_BEGIN)) {
+            onCrawlerCleanBegin(event);
+        } else if (event.is(CrawlerEvent.CRAWLER_CLEAN_END)) {
+            onCrawlerCleanEnd(event);
         }
     }
-//    public static final boolean isCrawlerStartup(Event<?> event) {
-//        return event instanceof CrawlerEvent
-//                && event.is(CrawlerEvent.CRAWLER_STARTED);
-//    }
-//    public static final boolean isCrawlerShutdown(Event<?> event) {
-//        return event instanceof CrawlerEvent && event.is(
-//                CrawlerEvent.CRAWLER_FINISHED, CrawlerEvent.CRAWLER_STOPPED);
-//    }
-    protected void onCrawlerStartup(CrawlerEvent<Crawler> event) {
+
+    protected void onCrawlerEvent(CrawlerEvent<Crawler> event) {
         //NOOP
     }
+    /**
+     * Triggered when a crawler is ending its execution on either
+     * a {@link CrawlerEvent#CRAWLER_RUN_END} or
+     * {@link CrawlerEvent#CRAWLER_STOP_END} event.
+     * @param event crawler event
+     */
     protected void onCrawlerShutdown(CrawlerEvent<Crawler> event) {
         //NOOP
     }
-    protected void onCrawlerCleaning(CrawlerEvent<Crawler> event) {
+    protected void onCrawlerInitBegin(CrawlerEvent<Crawler> event) {
         //NOOP
     }
-    protected void onCrawlerCleaned(CrawlerEvent<Crawler> event) {
+    protected void onCrawlerInitEnd(CrawlerEvent<Crawler> event) {
+        //NOOP
+    }
+    protected void onCrawlerRunBegin(CrawlerEvent<Crawler> event) {
+        //NOOP
+    }
+    protected void onCrawlerRunEnd(CrawlerEvent<Crawler> event) {
+        //NOOP
+    }
+    protected void onCrawlerStopBegin(CrawlerEvent<Crawler> event) {
+        //NOOP
+    }
+    protected void onCrawlerStopEnd(CrawlerEvent<Crawler> event) {
+        //NOOP
+    }
+    protected void onCrawlerCleanBegin(CrawlerEvent<Crawler> event) {
+        //NOOP
+    }
+    protected void onCrawlerCleanEnd(CrawlerEvent<Crawler> event) {
         //NOOP
     }
 }

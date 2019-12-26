@@ -29,27 +29,27 @@ public class CollectorEvent<T extends Collector> extends Event<T> {
 
     private static final long serialVersionUID = 1L;
 
-    public static final String COLLECTOR_STARTED = "COLLECTOR_STARTED";
-    public static final String COLLECTOR_ENDED = "COLLECTOR_ENDED";
-    public static final String COLLECTOR_STOPPING = "COLLECTOR_STOPPING";
-    public static final String COLLECTOR_STOPPED = "COLLECTOR_STOPPED"; // <-- Realy an event? If stopped, it means nothing else
+    public static final String COLLECTOR_RUN_BEGIN = "COLLECTOR_RUN_BEGIN";
+    public static final String COLLECTOR_RUN_END = "COLLECTOR_RUN_END";
+    public static final String COLLECTOR_STOP_BEGIN = "COLLECTOR_STOP_BEGIN";
+    public static final String COLLECTOR_STOP_END = "COLLECTOR_STOP_END"; // <-- Realy an event? If stopped, it means nothing else
 //    public static final String COLLECTOR_ABORTED = "COLLECTOR_ABORTED"; // <-- Realy an event? If abborted, no event can be sent.
     //TODO eliminate this one and rely on COMPLETED + status to find if failed/success?
     //TODO have a COLLECTOR_FAILED instead (or in addition??)
 //    public static final String COLLECTOR_UNCOMPLETED = "COLLECTOR_UNCOMPLETED";
 //    public static final String COLLECTOR_COMPLETED = "COLLECTOR_COMPLETED";
 
-    public static final String COLLECTOR_CLEANING = "COLLECTOR_CLEANING";
-    public static final String COLLECTOR_CLEANED = "COLLECTOR_CLEANED";
+    public static final String COLLECTOR_CLEAN_BEGIN = "COLLECTOR_CLEAN_BEGIN";
+    public static final String COLLECTOR_CLEAN_END = "COLLECTOR_CLEAN_END";
 
-    public static final String COLLECTOR_STORE_EXPORTING =
-            "COLLECTOR_STORE_EXPORTING";
-    public static final String COLLECTOR_STORE_EXPORTED =
-            "COLLECTOR_STORE_EXPORTED";
-    public static final String COLLECTOR_STORE_IMPORTING =
-            "COLLECTOR_STORE_IMPORTING";
-    public static final String COLLECTOR_STORE_IMPORTED =
-            "COLLECTOR_STORE_IMPORTED";
+    public static final String COLLECTOR_STORE_EXPORT_BEGIN =
+            "COLLECTOR_STORE_EXPORT_BEGIN";
+    public static final String COLLECTOR_STORE_EXPORT_END =
+            "COLLECTOR_STORE_EXPORT_END";
+    public static final String COLLECTOR_STORE_IMPORT_BEGIN =
+            "COLLECTOR_STORE_IMPORT_BEGIN";
+    public static final String COLLECTOR_STORE_IMPORT_END =
+            "COLLECTOR_STORE_IMPORT_END";
 
 
     //TODO Add COLLECTOR_ERROR?
@@ -76,11 +76,8 @@ public class CollectorEvent<T extends Collector> extends Event<T> {
         return new CollectorEvent<>(name, collector, exception);
     }
 
-    public boolean isCollectorStartup(Event<?> event) {
-        return is(COLLECTOR_STARTED);
-    }
     public boolean isCollectorShutdown(Event<?> event) {
-        return is(COLLECTOR_ENDED, COLLECTOR_ERROR, COLLECTOR_STOPPED);
+        return is(COLLECTOR_RUN_END, COLLECTOR_ERROR, COLLECTOR_STOP_END);
     }
 
     @Override

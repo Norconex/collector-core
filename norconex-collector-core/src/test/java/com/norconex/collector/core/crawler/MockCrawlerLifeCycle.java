@@ -14,10 +14,10 @@
  */
 package com.norconex.collector.core.crawler;
 
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_ENDED;
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STARTED;
-import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_FINISHED;
-import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_STARTED;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_RUN_END;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_RUN_BEGIN;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_RUN_END;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_RUN_BEGIN;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -86,14 +86,14 @@ public final class MockCrawlerLifeCycle {
         for (Object obj: objects) {
             eventManager.addListenersFromScan(obj);
         }
-        eventManager.fire(CollectorEvent.create(COLLECTOR_STARTED, collector));
-        eventManager.fire(CrawlerEvent.create(CRAWLER_STARTED, crawler));
+        eventManager.fire(CollectorEvent.create(COLLECTOR_RUN_BEGIN, collector));
+        eventManager.fire(CrawlerEvent.create(CRAWLER_RUN_BEGIN, crawler));
         try {
             executable.execute();
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
-        eventManager.fire(CrawlerEvent.create(CRAWLER_FINISHED, crawler));
-        eventManager.fire(CollectorEvent.create(COLLECTOR_ENDED, collector));
+        eventManager.fire(CrawlerEvent.create(CRAWLER_RUN_END, crawler));
+        eventManager.fire(CollectorEvent.create(COLLECTOR_RUN_END, collector));
     }
 }
