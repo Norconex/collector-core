@@ -8,12 +8,16 @@ TODO:
 ==============
 - Put back previous data store tests that now applies to CrawlReferenceService.
 
+- Rename CrawlReference* to shorter CrawlObject (preffered), or CrawlItem.
+
 - Create a MemoryDataStore for testing only
 
 - Investigate this construct for usage samples (and maybe parsing)
       {@code 
               <multiline stuff>
       }
+
+- Consider Lucene as a data store.
 
 - Make sure command line arguments can also be specified as system properties
   or env variables (or properties files?).  Similar to spring boot?

@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="2.0.0-SNAPSHOT" date="2018-??-??" description="Major release">
+    <release version="2.0.0-SNAPSHOT" date="2020-??-??" description="Major release">
       <action dev="essiembre" type="add">
         New collector events: COLLECTOR_RUN_BEGIN, COLLECTOR_RUN_END,
         COLLECTOR_STOP_BEGIN, COLLECTOR_STOP_END,
@@ -22,7 +22,7 @@
         CRAWLER_CLEAN_BEGIN, CRAWLER_CLEAN_END.
       </action>
       <action dev="essiembre" type="add">
-        New methods on CrawlerEvent: isCrawlerStartup and isCrawlerShutdown.
+        New method on CrawlerEvent: isCrawlerShutdown.
       </action>
       <action dev="essiembre" type="add">
         New UNSUPPORTED crawl state.
@@ -41,6 +41,11 @@
       <action dev="essiembre" type="add">
         New IDataStoreEngine accessible from crawler to store any kind 
         of objects by implementors in their own extensions.
+      </action>
+      <action dev="essiembre" type="add">
+        AbstractDocumentChecksummer and AbstractMetadataChecksummer classes
+        (and their subclasses) now have an "onSet" configurable option for 
+        dictating how values are set: append, prepend, replace, optional.
       </action>
       <action dev="essiembre" type="update">
         NitriteDataStore now default crawl store implementation.

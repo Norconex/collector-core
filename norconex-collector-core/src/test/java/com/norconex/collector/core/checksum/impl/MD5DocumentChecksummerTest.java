@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
 
@@ -143,6 +144,7 @@ public class MD5DocumentChecksummerTest {
         c.setSourceFieldsRegex("field.*");
         c.setCombineFieldsAndContent(true);
         c.setTargetField("target");
+        c.setOnSet(PropertySetter.PREPEND);
         XML.assertWriteRead(c, "documentChecksummer");
     }
 }

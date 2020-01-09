@@ -37,23 +37,6 @@
       <sample sample="sample">sample</sample>
     </listener>
   </eventListeners>
-  <!--
-  <jobLifeCycleListeners>
-    <listener class="com.norconex.collector.core.MockJobLifeCycleListener">
-      <sample sample="sample">sample</sample>
-    </listener>
-  </jobLifeCycleListeners>
-  <jobErrorListeners>
-    <listener class="com.norconex.collector.core.MockJobErrorListener">
-      <sample sample="sample">sample</sample>
-    </listener>
-  </jobErrorListeners>
-  <suiteLifeCycleListeners>
-    <listener class="com.norconex.collector.core.MockSuiteLifeCycleListener" >
-      <sample sample="sample">sample</sample>
-    </listener>
-  </suiteLifeCycleListeners>
-  -->
 
   <crawlerDefaults>
     <numThreads>1</numThreads>
@@ -120,7 +103,8 @@
     <documentChecksummer 
         class="com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer"
         combineFieldsAndContent="true"
-        disabled="false" keep="true" targetField="afield">
+        disabled="false" keep="true" targetField="afield"
+        onSet="replace">
       <sourceFields>field1,field2</sourceFields>
       <sourceFieldsRegex>field.*</sourceFieldsRegex>
     </documentChecksummer>

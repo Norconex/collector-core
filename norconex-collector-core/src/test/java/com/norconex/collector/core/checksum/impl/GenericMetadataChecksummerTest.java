@@ -1,4 +1,4 @@
-/* Copyright 2017-2019 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.collector.core.TestUtil;
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 
 
@@ -35,6 +36,7 @@ public class GenericMetadataChecksummerTest {
         c.setSourceFields("field1","field2");
         c.setSourceFieldsRegex("field.*");
         c.setTargetField("target");
+        c.setOnSet(PropertySetter.OPTIONAL);
         XML.assertWriteRead(c, "metadataChecksummer");
     }
 

@@ -14,14 +14,14 @@
  */
 package com.norconex.collector.core.crawler;
 
-import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_CLEAN_END;
 import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_CLEAN_BEGIN;
-import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_RUN_END;
-import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_INIT_END;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_CLEAN_END;
 import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_INIT_BEGIN;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_INIT_END;
 import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_RUN_BEGIN;
-import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_STOP_END;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_RUN_END;
 import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_STOP_BEGIN;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_STOP_END;
 import static com.norconex.collector.core.crawler.CrawlerEvent.DOCUMENT_COMMITTED_REMOVE;
 import static com.norconex.collector.core.crawler.CrawlerEvent.DOCUMENT_IMPORTED;
 import static com.norconex.collector.core.crawler.CrawlerEvent.REJECTED_ERROR;
@@ -254,7 +254,9 @@ public abstract class Crawler
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
 
-        importer = new Importer(getCrawlerConfig().getImporterConfig());
+        importer = new Importer(
+                getCrawlerConfig().getImporterConfig(),
+                getEventManager());
         processedCount = crawlReferenceService.getProcessedCount();
 
         if (Boolean.getBoolean("enableJMX")) {

@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,29 +23,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.doc.CollectorMetadata;
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
 
 /**
- * Abstract implementation of {@link IDocumentChecksummer} giving the option
+ * <p>Abstract implementation of {@link IDocumentChecksummer} giving the option
  * to keep the generated checksum in a metadata field.
  * The checksum can be stored
  * in a target field name specified.  If no target field name is specified,
  * it stores it under the
  * metadata field name {@link CollectorMetadata#COLLECTOR_CHECKSUM_DOC}.
- * <br><br>
+ * </p><p>
  * <b>Implementors do not need to store the checksum themselves, this abstract
  * class does it.</b>
- * <br><br>
+ * </p><p>
  * Implementors should offer this XML configuration usage:
- * <pre>
- *  &lt;documentChecksummer
- *      class="(subclass)"
- *      keep="[false|true]"
- *      targetField="(optional metadata field to store the checksum)" /&gt;
- * </pre>
+ * </p>
+ * <pre>{@code
+ * <documentChecksummer
+ *    class="(subclass)"
+ *    keep="[false|true]"
+ *    targetField="(optional metadata field to store the checksum)"
+ *    onSet="[append|prepend|replace|optional]" />
+ * }</pre>
+ * <p>
  * <code>targetField</code> is ignored unless the <code>keep</code>
+ * </p>
  * attribute is set to <code>true</code>.
  * @author Pascal Essiembre
  */
@@ -57,6 +62,7 @@ public abstract class AbstractDocumentChecksummer
 
 	private boolean keep;
     private String targetField = CollectorMetadata.COLLECTOR_CHECKSUM_DOC;
+    private PropertySetter onSet;
 
     @Override
     public final String createDocumentChecksum(ImporterDocument document) {
@@ -66,10 +72,9 @@ public abstract class AbstractDocumentChecksummer
             if (StringUtils.isBlank(field)) {
                 field = CollectorMetadata.COLLECTOR_CHECKSUM_DOC;
             }
-            document.getMetadata().add(field, checksum);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Document checksum stored in {}", field);
-            }
+            PropertySetter.orDefault(onSet).apply(
+                    document.getMetadata(), field, checksum);
+            LOG.debug("Document checksum stored in {}", field);
         }
         return checksum;
     }
@@ -111,10 +116,28 @@ public abstract class AbstractDocumentChecksummer
         this.targetField = targetField;
     }
 
+    /**
+     * Gets the property setter to use when a value is set.
+     * @return property setter
+     * @since 2.0.0
+     */
+    public PropertySetter getOnSet() {
+        return onSet;
+    }
+    /**
+     * Sets the property setter to use when a value is set.
+     * @param onSet property setter
+     * @since 2.0.0
+     */
+    public void setOnSet(PropertySetter onSet) {
+        this.onSet = onSet;
+    }
+
     @Override
     public final void loadFromXML(XML xml) {
         setKeep(xml.getBoolean("@keep", keep));
         setTargetField(xml.getString("@targetField", targetField));
+        setOnSet(PropertySetter.fromXML(xml, onSet));
         loadChecksummerFromXML(xml);
     }
     protected abstract void loadChecksummerFromXML(XML xml);
@@ -123,6 +146,7 @@ public abstract class AbstractDocumentChecksummer
     public final void saveToXML(XML xml) {
         xml.setAttribute("keep", isKeep());
         xml.setAttribute("targetField", getTargetField());
+        PropertySetter.toXML(xml, getOnSet());
         saveChecksummerToXML(xml);
     }
     protected abstract void saveChecksummerToXML(XML xml);
