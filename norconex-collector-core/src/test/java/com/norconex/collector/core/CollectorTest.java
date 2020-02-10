@@ -1,4 +1,4 @@
-/* Copyright 2016-2019 Norconex Inc.
+/* Copyright 2016-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,37 +64,37 @@ public class CollectorTest {
 
         MockCrawlerConfig crawlA =
                 (MockCrawlerConfig) cfg.getCrawlerConfigs().get(0);
-        assertEquals( 22, crawlA.getNumThreads(),
+        assertEquals(22, crawlA.getNumThreads(),
                 "crawlA");
-        assertEquals( "crawlAFilter", ((ExtensionReferenceFilter)
+        assertEquals("crawlAFilter", ((ExtensionReferenceFilter)
                 crawlA.getReferenceFilters().get(0)).getExtensions(),
                 "crawlA");
-        assertEquals( "F", ((ReplaceTransformer)
+        assertEquals("F", ((ReplaceTransformer)
                 crawlA.getImporterConfig().getPreParseHandlers().get(0))
-                        .getReplacements().get("E"),
+                        .getReplacements().get(0),
                 "crawlA");
-        assertTrue( CollectionUtils.isEmpty(
+        assertTrue(CollectionUtils.isEmpty(
                 crawlA.getImporterConfig().getPostParseHandlers()),
                 "crawlA");
-        assertEquals( "crawlACommitter", ((FileSystemCommitter)
+        assertEquals("crawlACommitter", ((FileSystemCommitter)
                 crawlA.getCommitter()).getDirectory(),
                 "crawlA");
 
         MockCrawlerConfig crawlB =
                 (MockCrawlerConfig) cfg.getCrawlerConfigs().get(1);
-        assertEquals( 1, crawlB.getNumThreads(), "crawlB");
-        assertEquals( "defaultFilter", ((ExtensionReferenceFilter)
+        assertEquals(1, crawlB.getNumThreads(), "crawlB");
+        assertEquals("defaultFilter", ((ExtensionReferenceFilter)
                 crawlB.getReferenceFilters().get(0)).getExtensions(),
                 "crawlB");
-        assertEquals( "B", ((ReplaceTransformer)
+        assertEquals("B", ((ReplaceTransformer)
                 crawlB.getImporterConfig().getPreParseHandlers().get(0))
-                        .getReplacements().get("A"),
+                        .getReplacements().get(0),
                 "crawlB");
-        assertEquals( "D", ((ReplaceTransformer)
+        assertEquals("D", ((ReplaceTransformer)
                 crawlB.getImporterConfig().getPostParseHandlers().get(0))
-                        .getReplacements().get("C"),
+                        .getReplacements().get(0),
                 "crawlB");
-        assertEquals( "defaultCommitter", ((FileSystemCommitter)
+        assertEquals("defaultCommitter", ((FileSystemCommitter)
                 crawlB.getCommitter()).getDirectory(),
                 "crawlB");
     }

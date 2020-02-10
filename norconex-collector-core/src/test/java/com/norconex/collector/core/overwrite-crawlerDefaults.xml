@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xml>
 <!-- 
-   Copyright 2017 Norconex Inc.
+   Copyright 2017-2020 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,12 +31,12 @@
     <importer>
       <preParseHandlers>
         <handler class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer">
-          <replace><fromValue>A</fromValue><toValue>B</toValue></replace>
+          <replace><valueMatcher>A</valueMatcher><toValue>B</toValue></replace>
         </handler>  
       </preParseHandlers>
       <postParseHandlers>
         <handler class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer">
-          <replace><fromValue>C</fromValue><toValue>D</toValue></replace>
+          <replace><valueMatcher>C</valueMatcher><toValue>D</toValue></replace>
         </handler>  
       </postParseHandlers>    
     </importer>
@@ -57,7 +57,7 @@
       <importer>
         <preParseHandlers>
           <handler class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer">
-            <replace><fromValue>E</fromValue><toValue>F</toValue></replace>
+            <replace><valueMatcher>E</valueMatcher><toValue>F</toValue></replace>
           </handler>  
         </preParseHandlers>
       </importer>
