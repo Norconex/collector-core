@@ -71,7 +71,7 @@ public class CollectorTest {
                 "crawlA");
         assertEquals("F", ((ReplaceTransformer)
                 crawlA.getImporterConfig().getPreParseHandlers().get(0))
-                        .getReplacements().get(0),
+                        .getReplacements().get(0).getToValue(),
                 "crawlA");
         assertTrue(CollectionUtils.isEmpty(
                 crawlA.getImporterConfig().getPostParseHandlers()),
@@ -88,11 +88,11 @@ public class CollectorTest {
                 "crawlB");
         assertEquals("B", ((ReplaceTransformer)
                 crawlB.getImporterConfig().getPreParseHandlers().get(0))
-                        .getReplacements().get(0),
+                        .getReplacements().get(0).getToValue(),
                 "crawlB");
         assertEquals("D", ((ReplaceTransformer)
                 crawlB.getImporterConfig().getPostParseHandlers().get(0))
-                        .getReplacements().get(0),
+                        .getReplacements().get(0).getToValue(),
                 "crawlB");
         assertEquals("defaultCommitter", ((FileSystemCommitter)
                 crawlB.getCommitter()).getDirectory(),
