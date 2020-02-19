@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.crawler.Crawler;
+import com.norconex.collector.core.doc.CrawlDocInfo;
 import com.norconex.collector.core.pipeline.DocumentPipelineContext;
-import com.norconex.collector.core.reference.CrawlReference;
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 import com.norconex.commons.lang.pipeline.Pipeline;
@@ -61,18 +61,17 @@ public class ImporterPipelineContext extends DocumentPipelineContext {
     /**
      * Constructor.
      * @param crawler the crawler
-//     * @param crawlDataStore crawl data store
      * @param crawlRef current crawl data
      * @since 1.9.0
      */
     public ImporterPipelineContext(
             Crawler crawler,
-            CrawlReference crawlRef) {
+            CrawlDocInfo crawlRef) {
         super(crawler, crawlRef);
     }
     public ImporterPipelineContext(
             Crawler crawler,
-            CrawlReference crawlRef, CrawlReference cachedCrawlRef,
+            CrawlDocInfo crawlRef, CrawlDocInfo cachedCrawlRef,
             ImporterDocument document) {
         super(crawler, crawlRef, cachedCrawlRef, document);
     }

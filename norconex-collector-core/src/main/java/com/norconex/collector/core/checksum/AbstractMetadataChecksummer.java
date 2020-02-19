@@ -22,7 +22,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.collector.core.doc.CollectorMetadata;
+import com.norconex.collector.core.doc.CrawlDocMetadata;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
@@ -33,7 +33,7 @@ import com.norconex.commons.lang.xml.XML;
  * to keep the generated checksum.  The checksum can be stored
  * in a target field name specified.  If no target field name is specified,
  * it stores it under the
- * metadata field name {@link CollectorMetadata#COLLECTOR_CHECKSUM_METADATA}.
+ * metadata field name {@link CrawlDocMetadata#COLLECTOR_CHECKSUM_METADATA}.
  * </p><p>
  * <b>Implementors do not need to store the checksum themselves, this abstract
  * class does it.</b>
@@ -59,7 +59,7 @@ public abstract class AbstractMetadataChecksummer
 			AbstractMetadataChecksummer.class);
 
 	private boolean keep;
-    private String targetField = CollectorMetadata.COLLECTOR_CHECKSUM_METADATA;
+    private String targetField = CrawlDocMetadata.COLLECTOR_CHECKSUM_METADATA;
     private PropertySetter onSet;
 
     @Override
@@ -68,7 +68,7 @@ public abstract class AbstractMetadataChecksummer
         if (isKeep()) {
             String field = getTargetField();
             if (StringUtils.isBlank(field)) {
-                field = CollectorMetadata.COLLECTOR_CHECKSUM_METADATA;
+                field = CrawlDocMetadata.COLLECTOR_CHECKSUM_METADATA;
             }
             PropertySetter.orDefault(onSet).apply(metadata, field, checksum);
             LOG.debug("Meta checksum stored in {}", field);
@@ -95,7 +95,7 @@ public abstract class AbstractMetadataChecksummer
 
     /**
      * Gets the metadata field to use to store the checksum value.
-     * Defaults to {@link CollectorMetadata#COLLECTOR_CHECKSUM_METADATA}.
+     * Defaults to {@link CrawlDocMetadata#COLLECTOR_CHECKSUM_METADATA}.
      * Only applicable if {@link #isKeep()} returns {@code true}
      * @return metadata field name
      */

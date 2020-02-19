@@ -30,7 +30,7 @@ import com.norconex.collector.core.CollectorException;
 import com.norconex.collector.core.checksum.AbstractDocumentChecksummer;
 import com.norconex.collector.core.checksum.ChecksumUtil;
 import com.norconex.collector.core.checksum.IDocumentChecksummer;
-import com.norconex.collector.core.doc.CollectorMetadata;
+import com.norconex.collector.core.doc.CrawlDocMetadata;
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
@@ -47,7 +47,7 @@ import com.norconex.importer.doc.ImporterDocument;
  * When {@link #setKeep(boolean)} is <code>true</code>, the checksum will be
  * stored in the target field name specified. If you do not specify any,
  * it stores it under the metadata field name
- * {@link CollectorMetadata#COLLECTOR_CHECKSUM_METADATA}.
+ * {@link CrawlDocMetadata#COLLECTOR_CHECKSUM_METADATA}.
  * </p>
  * <p>
  * <b>Since 1.9.0</b>, it is possible to use regular expressions to match

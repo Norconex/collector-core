@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,12 +59,12 @@ import org.slf4j.LoggerFactory;
 import com.norconex.collector.core.Collector;
 import com.norconex.collector.core.CollectorException;
 import com.norconex.collector.core.crawler.CrawlerConfig.OrphansStrategy;
-import com.norconex.collector.core.doc.CollectorMetadata;
+import com.norconex.collector.core.doc.CrawlDocInfo;
+import com.norconex.collector.core.doc.CrawlDocInfoService;
+import com.norconex.collector.core.doc.CrawlDocMetadata;
+import com.norconex.collector.core.doc.CrawlState;
 import com.norconex.collector.core.jmx.Monitoring;
 import com.norconex.collector.core.pipeline.importer.ImporterPipelineContext;
-import com.norconex.collector.core.reference.CrawlReference;
-import com.norconex.collector.core.reference.CrawlReferenceService;
-import com.norconex.collector.core.reference.CrawlState;
 import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
 import com.norconex.collector.core.spoil.SpoiledReferenceStrategy;
 import com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer;
@@ -134,7 +134,7 @@ public abstract class Crawler
     private long lastStatusLoggingTime;
 
     private IDataStoreEngine dataStoreEngine;
-    private CrawlReferenceService crawlReferenceService;
+    private CrawlDocInfoService crawlDocInfoService;
 
     /**
      * Constructor.
@@ -257,7 +257,7 @@ public abstract class Crawler
         importer = new Importer(
                 getCrawlerConfig().getImporterConfig(),
                 getEventManager());
-        processedCount = crawlReferenceService.getProcessedCount();
+        processedCount = crawlDocInfoService.getProcessedCount();
 
         if (Boolean.getBoolean("enableJMX")) {
             registerMonitoringMbean();
@@ -305,24 +305,24 @@ public abstract class Crawler
         this.downloadDir = getWorkDir().resolve("downloads");
         this.dataStoreEngine = config.getDataStoreEngine();
         this.dataStoreEngine.init(this);
-        this.crawlReferenceService = new CrawlReferenceService(
+        this.crawlDocInfoService = new CrawlDocInfoService(
                 getId(), dataStoreEngine, getCrawlReferenceType());
 
-        boolean resuming = crawlReferenceService.open();
+        boolean resuming = crawlDocInfoService.open();
         getEventManager().fire(CrawlerEvent.create(CRAWLER_INIT_END, this));
         return resuming;
     }
 
-    protected Class<? extends CrawlReference> getCrawlReferenceType() {
-        return CrawlReference.class;
+    protected Class<? extends CrawlDocInfo> getCrawlReferenceType() {
+        return CrawlDocInfo.class;
     }
 
     public IDataStoreEngine getDataStoreEngine() {
         return dataStoreEngine;
     }
 
-    public CrawlReferenceService getCrawlReferenceService() {
-        return crawlReferenceService;
+    public CrawlDocInfoService getCrawlReferenceService() {
+        return crawlDocInfoService;
     }
 
     public void clean() {
@@ -362,7 +362,7 @@ public abstract class Crawler
     }
 
     protected void destroyCrawler() {
-        crawlReferenceService.close();
+        crawlDocInfoService.close();
         dataStoreEngine.close();
 
         //TODO shall we clear crawler listeners, or leave to collector
@@ -447,7 +447,7 @@ public abstract class Crawler
         LOG.info("Reprocessing any cached/orphan references...");
 
         long count = 0;
-        for (CrawlReference ref : crawlReferenceService.getCachedIterable()) {
+        for (CrawlDocInfo ref : crawlDocInfoService.getCachedIterable()) {
             executeQueuePipeline(ref);
             count++;
         }
@@ -460,14 +460,14 @@ public abstract class Crawler
         LOG.info("Reprocessed {} cached/orphan references.", count);
     }
 
-    protected abstract void executeQueuePipeline(CrawlReference ref);
+    protected abstract void executeQueuePipeline(CrawlDocInfo ref);
 
     protected void deleteCacheOrphans(
             JobStatusUpdater statusUpdater, JobSuite suite) {
         LOG.info("Deleting orphan references (if any)...");
         long count = 0;
-        for (CrawlReference ref : crawlReferenceService.getCachedIterable()) {
-            crawlReferenceService.queue(ref);
+        for (CrawlDocInfo ref : crawlDocInfoService.getCachedIterable()) {
+            crawlDocInfoService.queue(ref);
             count++;
         }
         if (count > 0) {
@@ -515,8 +515,8 @@ public abstract class Crawler
                     getCrawlerConfig().getMaxDocuments());
             return false;
         }
-        CrawlReference queuedRef =
-                crawlReferenceService.nextQueued().orElse(null);
+        CrawlDocInfo queuedRef =
+                crawlDocInfoService.nextQueued().orElse(null);
         context.setCrawlReference(queuedRef);
 
         LOG.trace("Processing next reference from Queue: {}", queuedRef);
@@ -533,8 +533,8 @@ public abstract class Crawler
                 LOG.debug("{} to process: {}", watch, queuedRef.getReference());
             }
         } else {
-            long activeCount = crawlReferenceService.getActiveCount();
-            boolean queueEmpty = crawlReferenceService.isQueueEmpty();
+            long activeCount = crawlDocInfoService.getActiveCount();
+            boolean queueEmpty = crawlDocInfoService.isQueueEmpty();
             if (LOG.isTraceEnabled()) {
                 LOG.trace("Number of references currently being "
                         + "processed: {}", activeCount);
@@ -555,7 +555,7 @@ public abstract class Crawler
                     getCrawlerConfig().getId();
             LOG.info("Adding MBean for JMX monitoring: {}", objName);
             ObjectName name = new ObjectName(objName);
-            Monitoring mbean = new Monitoring(crawlReferenceService);
+            Monitoring mbean = new Monitoring(crawlDocInfoService);
             mbs.registerMBean(mbean, name);
         } catch (MalformedObjectNameException |
                  InstanceAlreadyExistsException |
@@ -566,7 +566,7 @@ public abstract class Crawler
     }
 
     private void setProgress(JobStatusUpdater statusUpdater) {
-        long queued = crawlReferenceService.getQueuedCount();
+        long queued = crawlDocInfoService.getQueuedCount();
         long processed = processedCount;
         long total = queued + processed;
 
@@ -600,27 +600,27 @@ public abstract class Crawler
     //TODO given latest changes in implementing methods, shall we only consider
     //using generics instead of having this wrapping method?
     protected abstract ImporterDocument wrapDocument(
-            CrawlReference crawlRef, ImporterDocument document);
+            CrawlDocInfo crawlRef, ImporterDocument document);
     protected void initCrawlReference(
-            CrawlReference crawlRef,
-            CrawlReference cachedCrawlRef,
+            CrawlDocInfo crawlRef,
+            CrawlDocInfo cachedCrawlRef,
             ImporterDocument document) {
         // default does nothing
     }
 
     private void processNextQueuedCrawlData(ImporterPipelineContext context) {
-        CrawlReference crawlRef = context.getCrawlReference();
+        CrawlDocInfo crawlRef = context.getCrawlReference();
         String reference = crawlRef.getReference();
         ImporterDocument doc = wrapDocument(crawlRef, new ImporterDocument(
                 crawlRef.getReference(), getStreamFactory().newInputStream()));
         context.setDocument(doc);
 
-        CrawlReference cachedCrawlRef =
-                crawlReferenceService.getCached(reference).orElse(null);
+        CrawlDocInfo cachedCrawlRef =
+                crawlDocInfoService.getCached(reference).orElse(null);
         context.setCachedCrawlReference(cachedCrawlRef);
 
         doc.getMetadata().set(
-                CollectorMetadata.COLLECTOR_IS_CRAWL_NEW,
+                CrawlDocMetadata.COLLECTOR_IS_CRAWL_NEW,
                 cachedCrawlRef == null);
 
         initCrawlReference(crawlRef, cachedCrawlRef, doc);
@@ -686,8 +686,8 @@ public abstract class Crawler
 
     private void processImportResponse(
             ImporterResponse response,
-            CrawlReference crawlRef,
-            CrawlReference cachedCrawlRef) {
+            CrawlDocInfo crawlRef,
+            CrawlDocInfo cachedCrawlRef) {
 
         ImporterDocument doc = response.getDocument();
         if (response.isSuccess()) {
@@ -707,10 +707,10 @@ public abstract class Crawler
         finalizeDocumentProcessing(crawlRef, doc, cachedCrawlRef);
         ImporterResponse[] children = response.getNestedResponses();
         for (ImporterResponse child : children) {
-            CrawlReference embeddedCrawlRef = createEmbeddedCrawlReference(
+            CrawlDocInfo embeddedCrawlRef = createEmbeddedCrawlReference(
                     child.getReference(), crawlRef);
-            CrawlReference embeddedCachedCrawlRef =
-                    crawlReferenceService.getCached(
+            CrawlDocInfo embeddedCachedCrawlRef =
+                    crawlDocInfoService.getCached(
                             child.getReference()).orElse(null);
             processImportResponse(child,
                     embeddedCrawlRef, embeddedCachedCrawlRef);
@@ -718,8 +718,8 @@ public abstract class Crawler
     }
 
 
-    private void finalizeDocumentProcessing(CrawlReference crawlRef,
-            ImporterDocument doc, CrawlReference cachedCrawlRef) {
+    private void finalizeDocumentProcessing(CrawlDocInfo crawlRef,
+            ImporterDocument doc, CrawlDocInfo cachedCrawlRef) {
 
         //--- Ensure we have a state -------------------------------------------
         if (crawlRef.getState() == null) {
@@ -810,7 +810,7 @@ public abstract class Crawler
         //--- Mark reference as Processed --------------------------------------
         try {
             processedCount++;
-            crawlReferenceService.processed(crawlRef);
+            crawlDocInfoService.processed(crawlRef);
             markReferenceVariationsAsProcessed(crawlRef);
         } catch (Exception e) {
             LOG.error("Could not mark reference as processed: {} ({})",
@@ -836,17 +836,17 @@ public abstract class Crawler
      * @param cachedCrawlRef cached crawl data
      *        (<code>null</code> if document was not crawled before)
      */
-    protected void beforeFinalizeDocumentProcessing(CrawlReference crawlRef,
-            ImporterDocument doc, CrawlReference cachedCrawlRef) {
+    protected void beforeFinalizeDocumentProcessing(CrawlDocInfo crawlRef,
+            ImporterDocument doc, CrawlDocInfo cachedCrawlRef) {
         //NOOP
     }
 
     protected abstract void markReferenceVariationsAsProcessed(
-            CrawlReference crawlRef);
+            CrawlDocInfo crawlRef);
 
 
-    protected abstract CrawlReference createEmbeddedCrawlReference(
-            String embeddedReference, CrawlReference parentCrawlRef);
+    protected abstract CrawlDocInfo createEmbeddedCrawlReference(
+            String embeddedReference, CrawlDocInfo parentCrawlRef);
 
     protected abstract ImporterResponse executeImporterPipeline(
             ImporterPipelineContext context);
@@ -855,8 +855,8 @@ public abstract class Crawler
     protected abstract void executeCommitterPipeline(
             Crawler crawler,
             ImporterDocument doc,
-            CrawlReference crawlRef,
-            CrawlReference cachedCrawlRef);
+            CrawlDocInfo crawlRef,
+            CrawlDocInfo cachedCrawlRef);
 
     private ImporterMetadata getNullSafeMetadata(ImporterDocument doc) {
         if (doc == null) {
@@ -866,7 +866,7 @@ public abstract class Crawler
     }
 
     private SpoiledReferenceStrategy getSpoiledStateStrategy(
-            CrawlReference crawlData) {
+            CrawlDocInfo crawlData) {
         ISpoiledReferenceStrategizer strategyResolver =
                 config.getSpoiledReferenceStrategizer();
         SpoiledReferenceStrategy strategy =
@@ -881,7 +881,7 @@ public abstract class Crawler
     }
 
     private void deleteReference(
-            CrawlReference crawlRef, ImporterDocument doc) {
+            CrawlDocInfo crawlRef, ImporterDocument doc) {
         LOG.debug("Deleting reference: {}", crawlRef.getReference());
         ICommitter committer = getCrawlerConfig().getCommitter();
         crawlRef.setState(CrawlState.DELETED);

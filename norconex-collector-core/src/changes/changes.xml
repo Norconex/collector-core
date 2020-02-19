@@ -47,6 +47,10 @@
         (and their subclasses) now have an "onSet" configurable option for 
         dictating how values are set: append, prepend, replace, optional.
       </action>
+      <action dev="essiembre" type="add">
+        New CrawlDoc, CrawlDocInfo, and CrawlDocMetadata (either new
+        or renamed).
+      </action>
       <action dev="essiembre" type="update">
         NitriteDataStore now default crawl store implementation.
       </action>

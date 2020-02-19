@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.crawler.CrawlerEvent;
-import com.norconex.collector.core.reference.CrawlReference;
-import com.norconex.collector.core.reference.CrawlReferenceService;
+import com.norconex.collector.core.doc.CrawlDocInfo;
+import com.norconex.collector.core.doc.CrawlDocInfoService;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 import com.norconex.commons.lang.pipeline.Pipeline;
 
@@ -34,7 +34,7 @@ import com.norconex.commons.lang.pipeline.Pipeline;
 public class BasePipelineContext {
 
     private final Crawler crawler;
-    private CrawlReference reference;
+    private CrawlDocInfo reference;
 
     /**
      * Constructor.
@@ -50,7 +50,7 @@ public class BasePipelineContext {
      * @param crawler the crawler
      * @param ref current crawl reference
      */
-    public BasePipelineContext(Crawler crawler, CrawlReference ref) {
+    public BasePipelineContext(Crawler crawler, CrawlDocInfo ref) {
         this.crawler = crawler;
         this.reference = ref;
     }
@@ -63,14 +63,14 @@ public class BasePipelineContext {
         return crawler.getCrawlerConfig();
     }
 
-    public CrawlReference getCrawlReference() {
+    public CrawlDocInfo getCrawlReference() {
         return reference;
     }
-    public void setCrawlReference(CrawlReference reference) {
+    public void setCrawlReference(CrawlDocInfo reference) {
         this.reference = reference;
     }
 
-    public CrawlReferenceService getCrawlReferenceService() {
+    public CrawlDocInfoService getCrawlReferenceService() {
         return crawler.getCrawlReferenceService();
     }
 
@@ -81,7 +81,7 @@ public class BasePipelineContext {
      * @param subject subject triggering the event
      */
     public void fireCrawlerEvent(
-            String event, CrawlReference crawlRef, Object subject) {
+            String event, CrawlDocInfo crawlRef, Object subject) {
         crawler.getEventManager().fire(CrawlerEvent.create(
                 event, crawler, crawlRef, subject));
     }

@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 
 import com.norconex.collector.core.crawler.Crawler;
-import com.norconex.collector.core.reference.CrawlReference;
+import com.norconex.collector.core.doc.CrawlDocInfo;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 import com.norconex.commons.lang.pipeline.Pipeline;
@@ -33,7 +33,7 @@ import com.norconex.importer.doc.ImporterDocument;
 public class DocumentPipelineContext extends BasePipelineContext {
 
     private ImporterDocument document;
-    private CrawlReference cachedCrawlRef;
+    private CrawlDocInfo cachedCrawlRef;
 
     /**
      * Constructor.
@@ -49,13 +49,13 @@ public class DocumentPipelineContext extends BasePipelineContext {
      * @param crawlRef current crawl data
      * @since 1.9.0
      */
-    public DocumentPipelineContext(Crawler crawler, CrawlReference crawlRef) {
+    public DocumentPipelineContext(Crawler crawler, CrawlDocInfo crawlRef) {
         super(crawler, crawlRef);
     }
     public DocumentPipelineContext(
             Crawler crawler,
-            CrawlReference crawlRef,
-            CrawlReference cachedCrawlRef,
+            CrawlDocInfo crawlRef,
+            CrawlDocInfo cachedCrawlRef,
             ImporterDocument document) {
         super(crawler/*, crawlDataStore*/, crawlRef);
         this.cachedCrawlRef = cachedCrawlRef;
@@ -71,7 +71,7 @@ public class DocumentPipelineContext extends BasePipelineContext {
      * @return cached crawl data
      * @since 1.9.0
      */
-    public CrawlReference getCachedCrawlReference() {
+    public CrawlDocInfo getCachedCrawlReference() {
         return cachedCrawlRef;
     }
     /**
@@ -79,7 +79,7 @@ public class DocumentPipelineContext extends BasePipelineContext {
      * @param cachedCrawlRef cached crawl data.
      * @since 1.9.0
      */
-    public void setCachedCrawlReference(CrawlReference cachedCrawlRef) {
+    public void setCachedCrawlReference(CrawlDocInfo cachedCrawlRef) {
         this.cachedCrawlRef = cachedCrawlRef;
     }
     /**

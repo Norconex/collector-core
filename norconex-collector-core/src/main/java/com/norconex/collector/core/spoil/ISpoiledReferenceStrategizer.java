@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,20 @@
  */
 package com.norconex.collector.core.spoil;
 
-import com.norconex.collector.core.reference.CrawlState;
+import com.norconex.collector.core.doc.CrawlState;
 
 /**
  * <p>
  * Decides which strategy to adopt for a given reference with a bad state.
- * Those can 
- * either be deleted (asking the committer to remove them from a target 
+ * Those can
+ * either be deleted (asking the committer to remove them from a target
  * repository),
  * they can be ignored (no action is taken), or graced (give is one chance
  * to recover on a subsequent run).
  * </p>
  * <p>
- * A "bad" state is any state but <code>NEW</code>, <code>MODIFIED</code>, 
- * and <code>UNMODIFIED</code>. These statuses never have to be resolved. 
+ * A "bad" state is any state but <code>NEW</code>, <code>MODIFIED</code>,
+ * and <code>UNMODIFIED</code>. These statuses never have to be resolved.
  * A complete list of statuses can be obtained from {@link CrawlState}
  * or a subclass.
  * </p>

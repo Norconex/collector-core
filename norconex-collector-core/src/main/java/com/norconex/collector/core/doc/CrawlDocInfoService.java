@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.collector.core.reference;
+package com.norconex.collector.core.doc;
 
 import java.io.Closeable;
 import java.util.Locale;
@@ -22,15 +22,15 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.collector.core.reference.CrawlReference.Stage;
+import com.norconex.collector.core.doc.CrawlDocInfo.Stage;
 import com.norconex.collector.core.store.IDataStore;
 import com.norconex.collector.core.store.IDataStoreEngine;
 import com.norconex.commons.lang.PercentFormatter;
 
-public class CrawlReferenceService implements Closeable {
+public class CrawlDocInfoService implements Closeable {
 
     private static final Logger LOG =
-            LoggerFactory.getLogger(CrawlReferenceService.class);
+            LoggerFactory.getLogger(CrawlDocInfoService.class);
 
 //    * The few stages a reference should have in most implementations are:</p>
 //    * <ul>
@@ -47,23 +47,23 @@ public class CrawlReferenceService implements Closeable {
     //TODO if performance is too impacted, make it a configurable
     //option to offer guarantee or not?
 
-    //TODO so we can report better... have more states? processed is vague.. 
+    //TODO so we can report better... have more states? processed is vague..
     //should we have rejected/accepted instead?
 
     private static final String PROP_STAGE = "processingStage";
-    private final IDataStore<CrawlReference> store;
-    private final IDataStore<CrawlReference> cache;
+    private final IDataStore<CrawlDocInfo> store;
+    private final IDataStore<CrawlDocInfo> cache;
     private boolean open;
     private String crawlerId;
 
     @SuppressWarnings("unchecked")
-    public CrawlReferenceService(
+    public CrawlDocInfoService(
             String crawlerId, IDataStoreEngine storeEngine,
-            Class<? extends CrawlReference> type) {
+            Class<? extends CrawlDocInfo> type) {
         this.crawlerId = crawlerId;
-        this.store = (IDataStore<CrawlReference>) storeEngine.openStore(
+        this.store = (IDataStore<CrawlDocInfo>) storeEngine.openStore(
                 crawlerId + "-store", type);
-        this.cache = (IDataStore<CrawlReference>) storeEngine.openStore(
+        this.cache = (IDataStore<CrawlDocInfo>) storeEngine.openStore(
                 crawlerId + "-cache", type);
     }
 
@@ -124,12 +124,12 @@ public class CrawlReferenceService implements Closeable {
         return resuming;
     }
 
-    public IDataStore<CrawlReference> getDataStore() {
+    public IDataStore<CrawlDocInfo> getDataStore() {
         return store;
     }
 
     public Stage getProcessingStage(String id) {
-        Optional<CrawlReference> ref = store.findById(id);
+        Optional<CrawlDocInfo> ref = store.findById(id);
         if (ref.isPresent()) {
             return ref.get().getProcessingStage();
         }
@@ -152,7 +152,7 @@ public class CrawlReferenceService implements Closeable {
     public long getProcessedCount() {
         return store.countBy(PROP_STAGE, Stage.PROCESSED);
     }
-    public synchronized void processed(CrawlReference crawlRef) {
+    public synchronized void processed(CrawlDocInfo crawlRef) {
         crawlRef.setProcessingStage(Stage.PROCESSED);
         store.save(crawlRef);
         boolean deleted = cache.deleteById(crawlRef.getReference());
@@ -167,7 +167,7 @@ public class CrawlReferenceService implements Closeable {
     public long getQueuedCount() {
         return store.countBy(PROP_STAGE, Stage.QUEUED);
     }
-    public void queue(CrawlReference ref) {
+    public void queue(CrawlDocInfo ref) {
         Objects.requireNonNull(ref, "'ref' must not be null.");
         ref.setProcessingStage(Stage.QUEUED);
         store.save(ref);
@@ -175,8 +175,8 @@ public class CrawlReferenceService implements Closeable {
             LOG.debug("Saved queued: {}", ref.getReference());
         }
     }
-    public synchronized Optional<CrawlReference> nextQueued() {
-        Optional<CrawlReference> ref =
+    public synchronized Optional<CrawlDocInfo> nextQueued() {
+        Optional<CrawlDocInfo> ref =
                 store.findFirstBy(PROP_STAGE, Stage.QUEUED);
         if (ref.isPresent()) {
             ref.get().setProcessingStage(Stage.ACTIVE);
@@ -193,10 +193,10 @@ public class CrawlReferenceService implements Closeable {
 
     //--- Cache ---
 
-    public Optional<CrawlReference> getCached(String cachedReference) {
+    public Optional<CrawlDocInfo> getCached(String cachedReference) {
         return cache.findById(cachedReference);
     }
-    public Iterable<CrawlReference> getCachedIterable() {
+    public Iterable<CrawlDocInfo> getCachedIterable() {
         return cache.findAll();
     }
 

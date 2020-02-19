@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.collector.core.doc.CrawlDocInfo.Stage;
 import com.norconex.collector.core.pipeline.BasePipelineContext;
-import com.norconex.collector.core.reference.CrawlReference.Stage;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 
 /**
@@ -50,7 +50,7 @@ public class QueueReferenceStage
         Stage stage = ctx.getCrawlReferenceService().getProcessingStage(ref);
 
         //TODO make this a reusable method somewhere, or part of the
-        //CrawlReferenceService?
+        //CrawlDocInfoService?
         if (Stage.ACTIVE.is(stage)) {
             debug("Already being processed: %s", ref);
         } else if (Stage.QUEUED.is(stage)) {

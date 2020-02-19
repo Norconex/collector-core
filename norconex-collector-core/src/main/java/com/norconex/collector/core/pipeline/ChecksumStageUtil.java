@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.crawler.CrawlerEvent;
-import com.norconex.collector.core.reference.CrawlReference;
-import com.norconex.collector.core.reference.CrawlState;
+import com.norconex.collector.core.doc.CrawlDocInfo;
+import com.norconex.collector.core.doc.CrawlState;
 
 /**
  * Checksum stage utility methods.
@@ -51,7 +51,7 @@ public final class ChecksumStageUtil {
     // return false if checksum is rejected/unmodified
     private static boolean resolveChecksum(boolean isMeta, String newChecksum,
             DocumentPipelineContext ctx, Object subject) {
-        CrawlReference crawlRef = ctx.getCrawlReference();
+        CrawlDocInfo crawlRef = ctx.getCrawlReference();
 
         // Set new checksum on crawlData + metadata
         String type;
@@ -64,7 +64,7 @@ public final class ChecksumStageUtil {
         }
 
         // Get old checksum from cache
-        CrawlReference cachedCrawlRef = ctx.getCachedCrawlReference();
+        CrawlDocInfo cachedCrawlRef = ctx.getCachedCrawlReference();
         String oldChecksum = null;
         if (cachedCrawlRef != null) {
             if (isMeta) {

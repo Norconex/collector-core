@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,9 @@ import com.norconex.importer.doc.ImporterMetadata;
  * names. Keys are case insensitive.
  * @author Pascal Essiembre
  */
-public class CollectorMetadata extends ImporterMetadata {
+public class CrawlDocMetadata extends ImporterMetadata {
+
+    //TODO NEEDED IF JUST FOR CONSTANTS?
 
     private static final long serialVersionUID = -562425360774678869L;
 
@@ -55,10 +57,10 @@ public class CollectorMetadata extends ImporterMetadata {
     public static final String COLLECTOR_IS_CRAWL_NEW =
             COLLECTOR_PREFIX + "is-crawl-new";
 
-    public CollectorMetadata() {
+    public CrawlDocMetadata() {
         super(true);
     }
-    public CollectorMetadata(Properties metadata) {
+    public CrawlDocMetadata(Properties metadata) {
         super(metadata, true);
     }
 }

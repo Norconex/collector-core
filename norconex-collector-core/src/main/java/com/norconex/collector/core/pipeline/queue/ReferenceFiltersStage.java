@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  */
 package com.norconex.collector.core.pipeline.queue;
 
+import com.norconex.collector.core.doc.CrawlState;
 import com.norconex.collector.core.pipeline.BasePipelineContext;
-import com.norconex.collector.core.reference.CrawlState;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 
 /**

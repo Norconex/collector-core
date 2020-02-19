@@ -1,9 +1,9 @@
 package com.norconex.collector.core.store.impl;
 
-import com.norconex.collector.core.reference.CrawlReference;
+import com.norconex.collector.core.doc.CrawlDocInfo;
 
 // Adds a few extra field types for testing
-public class TestObject extends CrawlReference {
+public class TestObject extends CrawlDocInfo {
 
     private static final long serialVersionUID = 1L;
     private int count;

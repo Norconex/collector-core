@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,9 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.collector.core.reference;
+package com.norconex.collector.core.doc;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -24,15 +23,17 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.store.Id;
 import com.norconex.collector.core.store.Index;
-import com.norconex.commons.lang.bean.BeanUtil;
-import com.norconex.commons.lang.file.ContentType;
+import com.norconex.importer.doc.DocInfo;
 
 /**
  * @author Pascal Essiembre
  */
-public class CrawlReference implements Cloneable, Serializable {
+@Id("reference")
+public class CrawlDocInfo extends DocInfo {
 
-    private static final long serialVersionUID = 8711781555253202315L;
+    //TODO create @ignore metadata to prevent storing some fields?
+
+    private static final long serialVersionUID = 1L;
 
     public enum Stage {
         QUEUED, ACTIVE, PROCESSED /*, CACHED*/;
@@ -43,36 +44,27 @@ public class CrawlReference implements Cloneable, Serializable {
 
     } //TODO add NONE?
 
-    @Id
-    private String reference;
     private String parentRootReference;
-    private boolean isRootParentReference;
     private CrawlState state;
     private String metaChecksum;
     private String contentChecksum;
-    private ContentType contentType;
     private LocalDateTime crawlDate;
     @Index
     private Stage processingStage;
 
-    /**
-     * Constructor.
-     */
-    public CrawlReference() {
+    public CrawlDocInfo() {
         super();
-        setState(CrawlState.NEW);
     }
 
-    public CrawlReference(String reference) {
-        this();
-        this.reference = reference;
+    public CrawlDocInfo(String reference) {
+        super(reference);
     }
-
-    public String getReference() {
-        return reference;
-    }
-    public void setReference(String reference) {
-        this.reference = reference;
+    /**
+     * Copy constructor.
+     * @param docDetails document details to copy
+     */
+    public CrawlDocInfo(DocInfo docDetails) {
+        super(docDetails);
     }
 
     public String getParentRootReference() {
@@ -80,13 +72,6 @@ public class CrawlReference implements Cloneable, Serializable {
     }
     public void setParentRootReference(String parentRootReference) {
         this.parentRootReference = parentRootReference;
-    }
-
-    public boolean isRootParentReference() {
-        return isRootParentReference;
-    }
-    public void setRootParentReference(boolean isRootParentReference) {
-        this.isRootParentReference = isRootParentReference;
     }
 
     public CrawlState getState() {
@@ -119,23 +104,6 @@ public class CrawlReference implements Cloneable, Serializable {
     }
 
     /**
-     * Gets the content type.
-     * @return content type
-     * @since 1.5.0
-     */
-    public ContentType getContentType() {
-        return contentType;
-    }
-    /**
-     * Sets the content type.
-     * @param contentType the content type
-     * @since 1.5.0
-     */
-    public void setContentType(ContentType contentType) {
-        this.contentType = contentType;
-    }
-
-    /**
      * Gets the crawl date.
      * @return the crawl date
      * @since 1.5.0
@@ -157,11 +125,6 @@ public class CrawlReference implements Cloneable, Serializable {
 
     public void setProcessingStage(Stage processingStage) {
         this.processingStage = processingStage;
-    }
-
-    @Override
-    public CrawlReference clone() {
-        return BeanUtil.clone(this);
     }
 
     @Override

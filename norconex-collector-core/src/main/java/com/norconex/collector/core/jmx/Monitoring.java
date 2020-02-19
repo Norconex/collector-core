@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
  */
 package com.norconex.collector.core.jmx;
 
-import com.norconex.collector.core.reference.CrawlReferenceService;
+import com.norconex.collector.core.doc.CrawlDocInfoService;
 
 public class Monitoring implements MonitoringMBean {
 
-    private final CrawlReferenceService service;
+    private final CrawlDocInfoService service;
 
-    public Monitoring(CrawlReferenceService service) {
+    public Monitoring(CrawlDocInfoService service) {
         this.service = service;
     }
 

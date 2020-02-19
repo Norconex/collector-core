@@ -34,7 +34,7 @@ import com.norconex.collector.core.MockCollector;
 import com.norconex.collector.core.MockCollectorConfig;
 import com.norconex.collector.core.crawler.MockCrawler;
 import com.norconex.collector.core.crawler.MockCrawlerConfig;
-import com.norconex.collector.core.reference.CrawlReference.Stage;
+import com.norconex.collector.core.doc.CrawlDocInfo.Stage;
 import com.norconex.collector.core.store.IDataStore;
 import com.norconex.collector.core.store.IDataStoreEngine;
 import com.norconex.collector.core.store.impl.nitrite.NitriteDataStoreEngine;

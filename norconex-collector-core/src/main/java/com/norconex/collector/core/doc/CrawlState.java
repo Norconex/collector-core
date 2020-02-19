@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.collector.core.reference;
+package com.norconex.collector.core.doc;
 
 import java.io.Serializable;
 import java.util.HashMap;

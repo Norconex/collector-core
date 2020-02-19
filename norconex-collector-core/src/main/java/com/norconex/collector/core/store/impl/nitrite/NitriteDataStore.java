@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.dizitart.no2.Document;
 import org.dizitart.no2.IndexOptions;
@@ -34,8 +35,11 @@ import com.norconex.collector.core.CollectorException;
 import com.norconex.collector.core.store.IDataStore;
 import com.norconex.collector.core.store.Id;
 import com.norconex.collector.core.store.Index;
+import com.norconex.commons.lang.ClassUtil;
 import com.norconex.commons.lang.file.FileUtil;
 
+//TODO extract Ids and Indices in a generic way before creating
+// a datastore (passing as argument) or in a utility class.
 public class NitriteDataStore<T> implements IDataStore<T> {
 
     private final Nitrite db;
@@ -50,18 +54,39 @@ public class NitriteDataStore<T> implements IDataStore<T> {
         this.db = db;
         this.repository = db.getRepository(FileUtil.toSafeFileName(name), type);
 
+        Field idFld = null;
+
+        // ID field from Type
+        Id id = ClassUtil.getAnnotation(type, Id.class);
+        if (id != null) {
+            if (StringUtils.isBlank(id.value())) {
+                throw new CollectorException("@Id anotation must have "
+                        + "a field name argument when declared on a type.");
+            }
+            idFld = FieldUtils.getField(type, id.value(), true);
+        }
+
         List<Field> fields = null;
 
-        // ID field
-        fields = FieldUtils.getFieldsListWithAnnotation(type, Id.class);
-        idField = fields.isEmpty() ? null : fields.get(0);
-        if (idField != null) {
-            idField.setAccessible(true);
-            if (!repository.hasIndex(idField.getName())) {
-                repository.createIndex(idField.getName(),
-                        IndexOptions.indexOptions(IndexType.Unique));
+        // ID field from field if still undefined
+        if (idFld == null) {
+            fields = FieldUtils.getFieldsListWithAnnotation(type, Id.class);
+            idFld = fields.isEmpty() ? null : fields.get(0);
+            if (idFld != null) {
+                idFld.setAccessible(true);
+                if (!repository.hasIndex(idFld.getName())) {
+                    repository.createIndex(idFld.getName(),
+                            IndexOptions.indexOptions(IndexType.Unique));
+                }
             }
         }
+
+        if (idFld == null) {
+            throw new IllegalArgumentException("Class must have an @id "
+                    + "annotation on a field or type: " + type.getName());
+        }
+
+        this.idField = idFld;
 
         // Indexed fields
         fields = FieldUtils.getFieldsListWithAnnotation(type, Index.class);

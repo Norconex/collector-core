@@ -1,4 +1,4 @@
-/* Copyright 2018-2019 Norconex Inc.
+/* Copyright 2018-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.util.Objects;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import com.norconex.collector.core.reference.CrawlReference;
+import com.norconex.collector.core.doc.CrawlDocInfo;
 import com.norconex.commons.lang.event.Event;
 
 /**
@@ -133,7 +133,7 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
     public static final String DOCUMENT_SAVED = "DOCUMENT_SAVED";
 
 
-    private final CrawlReference crawlRef;
+    private final CrawlDocInfo crawlRef;
     private final Object subject;
     //TODO keep a reference to actual document?
 
@@ -147,7 +147,7 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
      * @param exception exception tied to this event (may be <code>null</code>)
      */
     public CrawlerEvent(String name, T source,
-            CrawlReference crawlRef, Object subject, Throwable exception) {
+            CrawlDocInfo crawlRef, Object subject, Throwable exception) {
         super(name, source, exception);
         this.crawlRef = crawlRef;
         this.subject = subject;
@@ -157,15 +157,15 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
         return create(name, crawler, null);
     }
     public static CrawlerEvent<Crawler> create(
-            String name, Crawler crawler, CrawlReference crawlRef) {
+            String name, Crawler crawler, CrawlDocInfo crawlRef) {
         return create(name, crawler, crawlRef, null, null);
     }
     public static CrawlerEvent<Crawler> create(String name, Crawler crawler,
-            CrawlReference crawlRef, Object subject) {
+            CrawlDocInfo crawlRef, Object subject) {
         return create(name, crawler, crawlRef, subject, null);
     }
     public static CrawlerEvent<Crawler> create(String name, Crawler crawler,
-            CrawlReference crawlRef, Object subject, Throwable exception) {
+            CrawlDocInfo crawlRef, Object subject, Throwable exception) {
         return new CrawlerEvent<>(name, crawler, crawlRef, subject, exception);
     }
 
@@ -175,7 +175,7 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
      * crawl data.
      * @return crawl data
      */
-    public CrawlReference getCrawlReference() {
+    public CrawlDocInfo getCrawlReference() {
         return crawlRef;
     }
 //    public ICrawlData getCrawlData() {

@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
 package com.norconex.collector.core.pipeline.committer;
 
 import com.norconex.collector.core.checksum.IDocumentChecksummer;
+import com.norconex.collector.core.doc.CrawlState;
 import com.norconex.collector.core.pipeline.ChecksumStageUtil;
 import com.norconex.collector.core.pipeline.DocumentPipelineContext;
-import com.norconex.collector.core.reference.CrawlState;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 
 /**
@@ -33,7 +33,7 @@ public class DocumentChecksumStage
         //TODO only if an INCREMENTAL run... else skip.
         IDocumentChecksummer check =
                 ctx.getConfig().getDocumentChecksummer();
-        if (check == null 
+        if (check == null
                 && !ctx.getCrawlReference().getState().isNewOrModified()) {
             // NEW is default state (?)
             ctx.getCrawlReference().setState(CrawlState.NEW);

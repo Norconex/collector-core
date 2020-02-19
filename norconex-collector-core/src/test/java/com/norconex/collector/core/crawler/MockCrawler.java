@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 package com.norconex.collector.core.crawler;
 
 import com.norconex.collector.core.Collector;
+import com.norconex.collector.core.doc.CrawlDocInfo;
 import com.norconex.collector.core.pipeline.importer.ImporterPipelineContext;
-import com.norconex.collector.core.reference.CrawlReference;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.response.ImporterResponse;
 import com.norconex.jef5.status.JobStatusUpdater;
@@ -49,24 +49,24 @@ public class MockCrawler extends Crawler {
     }
 
     @Override
-    protected void executeQueuePipeline(CrawlReference ref) {
+    protected void executeQueuePipeline(CrawlDocInfo ref) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    protected ImporterDocument wrapDocument(CrawlReference ref,
+    protected ImporterDocument wrapDocument(CrawlDocInfo ref,
             ImporterDocument document) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    protected void markReferenceVariationsAsProcessed(CrawlReference ref) {
+    protected void markReferenceVariationsAsProcessed(CrawlDocInfo ref) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    protected CrawlReference createEmbeddedCrawlReference(
-            String embeddedReference, CrawlReference parentCrawlRef) {
+    protected CrawlDocInfo createEmbeddedCrawlReference(
+            String embeddedReference, CrawlDocInfo parentCrawlRef) {
         throw new UnsupportedOperationException();
     }
 
@@ -79,7 +79,7 @@ public class MockCrawler extends Crawler {
     @Override
     protected void executeCommitterPipeline(Crawler crawler,
             ImporterDocument doc,
-            CrawlReference crawlRef, CrawlReference cachedCrawlRef) {
+            CrawlDocInfo crawlRef, CrawlDocInfo cachedCrawlRef) {
         throw new UnsupportedOperationException();
     }
 
