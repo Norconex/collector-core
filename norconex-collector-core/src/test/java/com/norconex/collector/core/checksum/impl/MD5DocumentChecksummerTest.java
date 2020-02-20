@@ -24,7 +24,7 @@ import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 
 /**
  * @author Pascal Essiembre
@@ -38,7 +38,7 @@ public class MD5DocumentChecksummerTest {
         String content = "Some content";
         CachedInputStream is =
                 new CachedStreamFactory(1024, 1024).newInputStream(content);
-        ImporterDocument doc = new ImporterDocument("N/A", is);
+        Doc doc = new Doc("N/A", is);
         MD5DocumentChecksummer cs = new MD5DocumentChecksummer();
         String checksum = cs.createDocumentChecksum(doc);
         is.dispose();
@@ -51,7 +51,7 @@ public class MD5DocumentChecksummerTest {
         // Simply should not fail and return something.
         CachedInputStream is =
                 new CachedStreamFactory(1024, 1024).newInputStream();
-        ImporterDocument doc = new ImporterDocument("N/A", is);
+        Doc doc = new Doc("N/A", is);
         doc.getMetadata().add("field1", "value1.1", "value1.2");
         doc.getMetadata().add("field2", "value2");
         MD5DocumentChecksummer cs = new MD5DocumentChecksummer();
@@ -105,7 +105,7 @@ public class MD5DocumentChecksummerTest {
         // Simply should not fail and return something.
         CachedInputStream is =
                 new CachedStreamFactory(1024, 1024).newInputStream("Content");
-        ImporterDocument doc = new ImporterDocument("N/A", is);
+        Doc doc = new Doc("N/A", is);
         doc.getMetadata().add("field1", "value1.1", "value1.2");
         doc.getMetadata().add("field2", "value2");
         MD5DocumentChecksummer cs = new MD5DocumentChecksummer();

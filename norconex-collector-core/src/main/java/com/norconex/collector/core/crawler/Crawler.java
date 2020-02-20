@@ -77,10 +77,10 @@ import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.event.EventManager;
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.time.DurationFormatter;
 import com.norconex.importer.Importer;
-import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.response.ImporterResponse;
 import com.norconex.jef5.job.AbstractResumableJob;
 import com.norconex.jef5.status.JobStatus;
@@ -599,19 +599,19 @@ public abstract class Crawler
 
     //TODO given latest changes in implementing methods, shall we only consider
     //using generics instead of having this wrapping method?
-    protected abstract ImporterDocument wrapDocument(
-            CrawlDocInfo crawlRef, ImporterDocument document);
+    protected abstract Doc wrapDocument(
+            CrawlDocInfo crawlRef, Doc document);
     protected void initCrawlReference(
             CrawlDocInfo crawlRef,
             CrawlDocInfo cachedCrawlRef,
-            ImporterDocument document) {
+            Doc document) {
         // default does nothing
     }
 
     private void processNextQueuedCrawlData(ImporterPipelineContext context) {
         CrawlDocInfo crawlRef = context.getCrawlReference();
         String reference = crawlRef.getReference();
-        ImporterDocument doc = wrapDocument(crawlRef, new ImporterDocument(
+        Doc doc = wrapDocument(crawlRef, new Doc(
                 crawlRef.getReference(), getStreamFactory().newInputStream()));
         context.setDocument(doc);
 
@@ -689,11 +689,11 @@ public abstract class Crawler
             CrawlDocInfo crawlRef,
             CrawlDocInfo cachedCrawlRef) {
 
-        ImporterDocument doc = response.getDocument();
+        Doc doc = response.getDocument();
         if (response.isSuccess()) {
             getEventManager().fire(CrawlerEvent.create(
                     DOCUMENT_IMPORTED, this, crawlRef, response));
-            ImporterDocument wrappedDoc = wrapDocument(crawlRef, doc);
+            Doc wrappedDoc = wrapDocument(crawlRef, doc);
             executeCommitterPipeline(this, wrappedDoc,
                     crawlRef, cachedCrawlRef);
         } else {
@@ -719,7 +719,7 @@ public abstract class Crawler
 
 
     private void finalizeDocumentProcessing(CrawlDocInfo crawlRef,
-            ImporterDocument doc, CrawlDocInfo cachedCrawlRef) {
+            Doc doc, CrawlDocInfo cachedCrawlRef) {
 
         //--- Ensure we have a state -------------------------------------------
         if (crawlRef.getState() == null) {
@@ -837,7 +837,7 @@ public abstract class Crawler
      *        (<code>null</code> if document was not crawled before)
      */
     protected void beforeFinalizeDocumentProcessing(CrawlDocInfo crawlRef,
-            ImporterDocument doc, CrawlDocInfo cachedCrawlRef) {
+            Doc doc, CrawlDocInfo cachedCrawlRef) {
         //NOOP
     }
 
@@ -854,13 +854,13 @@ public abstract class Crawler
     //TODO, replace with DocumentPipelineContext?
     protected abstract void executeCommitterPipeline(
             Crawler crawler,
-            ImporterDocument doc,
+            Doc doc,
             CrawlDocInfo crawlRef,
             CrawlDocInfo cachedCrawlRef);
 
-    private ImporterMetadata getNullSafeMetadata(ImporterDocument doc) {
+    private Properties getNullSafeMetadata(Doc doc) {
         if (doc == null) {
-            return new ImporterMetadata();
+            return new Properties();
         }
         return doc.getMetadata();
     }
@@ -881,7 +881,7 @@ public abstract class Crawler
     }
 
     private void deleteReference(
-            CrawlDocInfo crawlRef, ImporterDocument doc) {
+            CrawlDocInfo crawlRef, Doc doc) {
         LOG.debug("Deleting reference: {}", crawlRef.getReference());
         ICommitter committer = getCrawlerConfig().getCommitter();
         crawlRef.setState(CrawlState.DELETED);

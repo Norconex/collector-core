@@ -15,14 +15,14 @@
 package com.norconex.collector.core.checksum;
 
 import com.norconex.commons.lang.xml.IXMLConfigurable;
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 
 /**
  * Creates a checksum representing a a document. 
  * Checksums are used to quickly filter out documents that have already been 
  * processed or that have changed since a previous run.
  * <br><br>  
- * Two or more {@link ImporterDocument} can hold different values, but 
+ * Two or more {@link Doc} can hold different values, but 
  * be deemed logically the same.
  * Such documents do not have to be <em>equal</em>, but they should return the 
  * same checksum.  An example of
@@ -51,6 +51,6 @@ public interface IDocumentChecksummer {
      * @param document an HTTP document
      * @return a checksum value
      */
-	String createDocumentChecksum(ImporterDocument document);
+	String createDocumentChecksum(Doc document);
 	
 }

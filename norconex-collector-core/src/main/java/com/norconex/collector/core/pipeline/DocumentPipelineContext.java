@@ -23,16 +23,16 @@ import com.norconex.collector.core.doc.CrawlDocInfo;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 import com.norconex.commons.lang.pipeline.Pipeline;
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 
 /**
  * {@link IPipelineStage} context for collector {@link Pipeline}s dealing with
- * an {@link ImporterDocument}.
+ * an {@link Doc}.
  * @author Pascal Essiembre
  */
 public class DocumentPipelineContext extends BasePipelineContext {
 
-    private ImporterDocument document;
+    private Doc document;
     private CrawlDocInfo cachedCrawlRef;
 
     /**
@@ -56,13 +56,13 @@ public class DocumentPipelineContext extends BasePipelineContext {
             Crawler crawler,
             CrawlDocInfo crawlRef,
             CrawlDocInfo cachedCrawlRef,
-            ImporterDocument document) {
+            Doc document) {
         super(crawler/*, crawlDataStore*/, crawlRef);
         this.cachedCrawlRef = cachedCrawlRef;
         this.document = document;
     }
 
-    public ImporterDocument getDocument() {
+    public Doc getDocument() {
         return document;
     }
 
@@ -87,7 +87,7 @@ public class DocumentPipelineContext extends BasePipelineContext {
      * @param document a document
      * @since 1.9.0
      */
-    public void setDocument(ImporterDocument document) {
+    public void setDocument(Doc document) {
         this.document = document;
     }
     public CachedInputStream getContent() {

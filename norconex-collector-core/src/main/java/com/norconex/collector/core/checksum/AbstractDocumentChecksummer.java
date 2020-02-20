@@ -26,7 +26,7 @@ import com.norconex.collector.core.doc.CrawlDocMetadata;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 
 /**
  * <p>Abstract implementation of {@link IDocumentChecksummer} giving the option
@@ -65,7 +65,7 @@ public abstract class AbstractDocumentChecksummer
     private PropertySetter onSet;
 
     @Override
-    public final String createDocumentChecksum(ImporterDocument document) {
+    public final String createDocumentChecksum(Doc document) {
         String checksum = doCreateDocumentChecksum(document);
         if (isKeep()) {
             String field = getTargetField();
@@ -80,7 +80,7 @@ public abstract class AbstractDocumentChecksummer
     }
 
     protected abstract String doCreateDocumentChecksum(
-            ImporterDocument document);
+            Doc document);
 
 	/**
 	 * Whether to keep the document checksum value as a new field in the

@@ -15,18 +15,18 @@
 package com.norconex.collector.core.doc;
 
 import com.norconex.commons.lang.io.CachedInputStream;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.doc.DocInfo;
-import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 
 //TODO consider dropping since it just brings HttpMetadata cast.
 
 //TODO forcing to pass COLLECTOR_URL that way is best?
 //TODO rename CrawlDoc to CrawlerDocument (Same for metadata)
-public class CrawlDoc extends ImporterDocument {
+public class CrawlDoc extends Doc {
 
     public CrawlDoc(DocInfo docDetails, CachedInputStream content,
-            ImporterMetadata metadata) {
+            Properties metadata) {
         super(docDetails, content, metadata);
     }
 
@@ -35,7 +35,7 @@ public class CrawlDoc extends ImporterDocument {
     }
 
 //    public CrawlDoc(CrawlDocInfo docDetails,
-//            CachedStreamFactory streamFactory, ImporterMetadata metadata) {
+//            CachedStreamFactory streamFactory, Properties metadata) {
 //        super(docDetails, streamFactory, metadata);
 //    }
 //

@@ -67,6 +67,8 @@ public class CrawlDocInfo extends DocInfo {
         super(docDetails);
     }
 
+
+//------ parent root reference is not used..........................
     public String getParentRootReference() {
         return parentRootReference;
     }

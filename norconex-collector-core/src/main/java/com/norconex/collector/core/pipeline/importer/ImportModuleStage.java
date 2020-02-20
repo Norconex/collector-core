@@ -16,7 +16,7 @@ package com.norconex.collector.core.pipeline.importer;
 
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 import com.norconex.importer.Importer;
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.response.ImporterResponse;
 
 /**
@@ -30,7 +30,7 @@ public class ImportModuleStage
     public boolean execute(ImporterPipelineContext ctx) {
         Importer importer = ctx.getCrawler().getImporter();
 
-        ImporterDocument doc = ctx.getDocument();
+        Doc doc = ctx.getDocument();
 
         boolean isContentTypeSet = doc.getContentType() != null;
 

@@ -25,7 +25,7 @@ import com.norconex.collector.core.pipeline.DocumentPipelineContext;
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 import com.norconex.commons.lang.pipeline.Pipeline;
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.response.ImporterResponse;
 
 /**
@@ -72,7 +72,7 @@ public class ImporterPipelineContext extends DocumentPipelineContext {
     public ImporterPipelineContext(
             Crawler crawler,
             CrawlDocInfo crawlRef, CrawlDocInfo cachedCrawlRef,
-            ImporterDocument document) {
+            Doc document) {
         super(crawler, crawlRef, cachedCrawlRef, document);
     }
 

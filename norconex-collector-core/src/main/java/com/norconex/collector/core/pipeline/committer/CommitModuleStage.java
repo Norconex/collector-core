@@ -18,7 +18,7 @@ import com.norconex.collector.core.crawler.CrawlerEvent;
 import com.norconex.collector.core.pipeline.DocumentPipelineContext;
 import com.norconex.committer.core.ICommitter;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 
 /**
  * Common pipeline stage for committing documents.
@@ -30,7 +30,7 @@ public class CommitModuleStage
     public boolean execute(DocumentPipelineContext ctx) {
         ICommitter committer = ctx.getConfig().getCommitter();
         if (committer != null) {
-            ImporterDocument doc = ctx.getDocument();
+            Doc doc = ctx.getDocument();
             committer.add(doc.getReference(),
                     doc.getInputStream(), doc.getMetadata());
         }

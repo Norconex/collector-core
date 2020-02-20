@@ -31,7 +31,7 @@ import com.norconex.collector.core.filter.IReferenceFilter;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.filter.IOnMatchFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 
@@ -168,7 +168,7 @@ public class ExtensionReferenceFilter implements
     }
 
     @Override
-    public boolean acceptDocument(ImporterDocument document) {
+    public boolean acceptDocument(Doc document) {
         return acceptReference(document.getReference());
     }
     @Override

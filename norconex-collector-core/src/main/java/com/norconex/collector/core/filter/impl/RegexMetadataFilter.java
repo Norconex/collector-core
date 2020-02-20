@@ -29,7 +29,7 @@ import com.norconex.collector.core.filter.IMetadataFilter;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.filter.IOnMatchFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 /**
@@ -155,7 +155,7 @@ public class RegexMetadataFilter implements IOnMatchFilter, IMetadataFilter,
     }
 
     @Override
-    public boolean acceptDocument(ImporterDocument document) {
+    public boolean acceptDocument(Doc document) {
         if (document == null) {
             return getOnMatch() == OnMatch.INCLUDE;
         }

@@ -15,14 +15,13 @@
 package com.norconex.collector.core.doc;
 
 import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.doc.ImporterMetadata;
 
 /**
  * Collector metadata with constants for common metadata field
  * names. Keys are case insensitive.
  * @author Pascal Essiembre
  */
-public class CrawlDocMetadata extends ImporterMetadata {
+public class CrawlDocMetadata extends Properties {
 
     //TODO NEEDED IF JUST FOR CONSTANTS?
 

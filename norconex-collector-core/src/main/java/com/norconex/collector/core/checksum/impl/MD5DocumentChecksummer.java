@@ -33,7 +33,7 @@ import com.norconex.collector.core.checksum.IDocumentChecksummer;
 import com.norconex.collector.core.doc.CrawlDocMetadata;
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 
 /**
  * <p>Implementation of {@link IDocumentChecksummer} which
@@ -114,7 +114,7 @@ public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
 	private boolean combineFieldsAndContent;
 
     @Override
-    public String doCreateDocumentChecksum(ImporterDocument document) {
+    public String doCreateDocumentChecksum(Doc document) {
         if (disabled) {
             return null;
         }

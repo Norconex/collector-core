@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.filter.IMetadataFilter;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.handler.filter.IOnMatchFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 
@@ -46,7 +46,7 @@ public final class ImporterPipelineUtil {
         if (filters == null) {
             return false;
         }
-        ImporterMetadata metadata = ctx.getDocument().getMetadata();
+        Properties metadata = ctx.getDocument().getMetadata();
         boolean hasIncludes = false;
         boolean atLeastOneIncludeMatch = false;
         for (IMetadataFilter filter : filters) {

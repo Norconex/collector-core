@@ -14,7 +14,7 @@
  */
 package com.norconex.collector.core.filter;
 
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 
 /**
  * Filter a document after the document content is fetched, downloaded,
@@ -34,6 +34,6 @@ public interface IDocumentFilter {
      * @param document the document to accept/reject
      * @return <code>true</code> if accepted, <code>false</code> otherwise
      */
-    boolean acceptDocument(ImporterDocument document);
+    boolean acceptDocument(Doc document);
     
 }
