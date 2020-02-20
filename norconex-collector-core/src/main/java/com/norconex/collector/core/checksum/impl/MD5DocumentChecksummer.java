@@ -47,7 +47,7 @@ import com.norconex.importer.doc.Doc;
  * When {@link #setKeep(boolean)} is <code>true</code>, the checksum will be
  * stored in the target field name specified. If you do not specify any,
  * it stores it under the metadata field name
- * {@link CrawlDocMetadata#COLLECTOR_CHECKSUM_METADATA}.
+ * {@link CrawlDocMetadata#CHECKSUM_METADATA}.
  * </p>
  * <p>
  * <b>Since 1.9.0</b>, it is possible to use regular expressions to match

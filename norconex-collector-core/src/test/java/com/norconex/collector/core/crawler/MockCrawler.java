@@ -53,11 +53,11 @@ public class MockCrawler extends Crawler {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    protected Doc wrapDocument(CrawlDocInfo ref,
-            Doc document) {
-        throw new UnsupportedOperationException();
-    }
+//    @Override
+//    protected Doc wrapDocument(CrawlDocInfo ref,
+//            Doc document) {
+//        throw new UnsupportedOperationException();
+//    }
 
     @Override
     protected void markReferenceVariationsAsProcessed(CrawlDocInfo ref) {

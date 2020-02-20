@@ -34,7 +34,7 @@ import com.norconex.importer.doc.Doc;
  * The checksum can be stored
  * in a target field name specified.  If no target field name is specified,
  * it stores it under the
- * metadata field name {@link CrawlDocMetadata#COLLECTOR_CHECKSUM_DOC}.
+ * metadata field name {@link CrawlDocMetadata#CHECKSUM_DOC}.
  * </p><p>
  * <b>Implementors do not need to store the checksum themselves, this abstract
  * class does it.</b>
@@ -61,7 +61,7 @@ public abstract class AbstractDocumentChecksummer
 			AbstractDocumentChecksummer.class);
 
 	private boolean keep;
-    private String targetField = CrawlDocMetadata.COLLECTOR_CHECKSUM_DOC;
+    private String targetField = CrawlDocMetadata.CHECKSUM_DOC;
     private PropertySetter onSet;
 
     @Override
@@ -70,7 +70,7 @@ public abstract class AbstractDocumentChecksummer
         if (isKeep()) {
             String field = getTargetField();
             if (StringUtils.isBlank(field)) {
-                field = CrawlDocMetadata.COLLECTOR_CHECKSUM_DOC;
+                field = CrawlDocMetadata.CHECKSUM_DOC;
             }
             PropertySetter.orDefault(onSet).apply(
                     document.getMetadata(), field, checksum);
@@ -101,7 +101,7 @@ public abstract class AbstractDocumentChecksummer
 
     /**
      * Gets the metadata field to use to store the checksum value.
-     * Defaults to {@link CrawlDocMetadata#COLLECTOR_CHECKSUM_DOC}.
+     * Defaults to {@link CrawlDocMetadata#CHECKSUM_DOC}.
      * Only applicable if {@link #isKeep()} returns {@code true}
      * @return metadata field name
      */

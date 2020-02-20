@@ -14,35 +14,34 @@
  */
 package com.norconex.collector.core.doc;
 
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.doc.DocMetadata;
 
 /**
- * Collector metadata with constants for common metadata field
- * names. Keys are case insensitive.
+ * Metadata constants for common metadata field
+ * names typically set by a collector crawler.
  * @author Pascal Essiembre
+ * @see DocMetadata
  */
-public class CrawlDocMetadata extends Properties {
+public final class CrawlDocMetadata {
 
-    //TODO NEEDED IF JUST FOR CONSTANTS?
+    public static final String PREFIX = "collector.";
 
-    private static final long serialVersionUID = -562425360774678869L;
-
-    public static final String COLLECTOR_PREFIX = "collector.";
-
-    public static final String COLLECTOR_CONTENT_ENCODING =
-            COLLECTOR_PREFIX + "content-encoding";
-    public static final String COLLECTOR_CONTENT_TYPE =
-            COLLECTOR_PREFIX + "content-type";
-    public static final String COLLECTOR_CHECKSUM_METADATA =
-            COLLECTOR_PREFIX + "checksum-metadata";
-    public static final String COLLECTOR_CHECKSUM_DOC =
-            COLLECTOR_PREFIX + "checksum-doc";
+    //TODO really keep those found in DocMetadata?
+    //TODO really use these constants when fields on DocInfo should be used?
+    public static final String CONTENT_ENCODING =
+            PREFIX + "content-encoding";
+    public static final String CONTENT_TYPE =
+            PREFIX + "content-type";
+    public static final String CHECKSUM_METADATA =
+            PREFIX + "checksum-metadata";
+    public static final String CHECKSUM_DOC =
+            PREFIX + "checksum-doc";
 
 //    /**
 //     * A document ACL if ACL extraction is supported.
 //     * @since 1.10.0
 //     */
-//    public static final String COLLECTOR_ACL = COLLECTOR_PREFIX + "acl";
+//    public static final String COLLECTOR_ACL = PREFIX + "acl";
 
     /**
      * Boolean flag indicating whether a document is new to the crawler that
@@ -53,13 +52,10 @@ public class CrawlDocMetadata extends Properties {
      * <code>true</code>.
      * @since 1.3.0
      */
-    public static final String COLLECTOR_IS_CRAWL_NEW =
-            COLLECTOR_PREFIX + "is-crawl-new";
+    public static final String IS_CRAWL_NEW =
+            PREFIX + "is-crawl-new";
 
-    public CrawlDocMetadata() {
-        super(true);
-    }
-    public CrawlDocMetadata(Properties metadata) {
-        super(metadata, true);
+    private CrawlDocMetadata() {
+        super();
     }
 }

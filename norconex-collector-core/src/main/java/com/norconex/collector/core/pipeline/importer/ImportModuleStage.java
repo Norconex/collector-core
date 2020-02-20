@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,12 +32,12 @@ public class ImportModuleStage
 
         Doc doc = ctx.getDocument();
 
-        boolean isContentTypeSet = doc.getContentType() != null;
+        boolean isContentTypeSet = doc.getDocInfo().getContentType() != null;
 
         ImporterResponse response = importer.importDocument(
                 doc.getInputStream(),
-                doc.getContentType(),
-                doc.getContentEncoding(),
+                doc.getDocInfo().getContentType(),
+                doc.getDocInfo().getContentEncoding(),
                 doc.getMetadata(),
                 doc.getReference());
         ctx.setImporterResponse(response);
@@ -47,7 +47,7 @@ public class ImportModuleStage
         // has one to deal with
         if (!isContentTypeSet && response.getDocument() != null) {
             ctx.getCrawlReference().setContentType(
-                    response.getDocument().getContentType());
+                    response.getDocument().getDocInfo().getContentType());
         }
 
         return true;

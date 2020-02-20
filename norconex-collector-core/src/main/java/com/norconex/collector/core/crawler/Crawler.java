@@ -599,8 +599,10 @@ public abstract class Crawler
 
     //TODO given latest changes in implementing methods, shall we only consider
     //using generics instead of having this wrapping method?
-    protected abstract Doc wrapDocument(
-            CrawlDocInfo crawlRef, Doc document);
+//    protected abstract Doc wrapDocument(
+//            CrawlDocInfo crawlRef, Doc document);
+
+
     protected void initCrawlReference(
             CrawlDocInfo crawlRef,
             CrawlDocInfo cachedCrawlRef,
@@ -611,8 +613,7 @@ public abstract class Crawler
     private void processNextQueuedCrawlData(ImporterPipelineContext context) {
         CrawlDocInfo crawlRef = context.getCrawlReference();
         String reference = crawlRef.getReference();
-        Doc doc = wrapDocument(crawlRef, new Doc(
-                crawlRef.getReference(), getStreamFactory().newInputStream()));
+        Doc doc = new Doc(crawlRef, getStreamFactory().newInputStream());
         context.setDocument(doc);
 
         CrawlDocInfo cachedCrawlRef =
@@ -620,7 +621,7 @@ public abstract class Crawler
         context.setCachedCrawlReference(cachedCrawlRef);
 
         doc.getMetadata().set(
-                CrawlDocMetadata.COLLECTOR_IS_CRAWL_NEW,
+                CrawlDocMetadata.IS_CRAWL_NEW,
                 cachedCrawlRef == null);
 
         initCrawlReference(crawlRef, cachedCrawlRef, doc);
@@ -693,8 +694,8 @@ public abstract class Crawler
         if (response.isSuccess()) {
             getEventManager().fire(CrawlerEvent.create(
                     DOCUMENT_IMPORTED, this, crawlRef, response));
-            Doc wrappedDoc = wrapDocument(crawlRef, doc);
-            executeCommitterPipeline(this, wrappedDoc,
+            //Doc wrappedDoc = wrapDocument(crawlRef, doc);
+            executeCommitterPipeline(this, doc, //wrappedDoc,
                     crawlRef, cachedCrawlRef);
         } else {
             crawlRef.setState(CrawlState.REJECTED);
