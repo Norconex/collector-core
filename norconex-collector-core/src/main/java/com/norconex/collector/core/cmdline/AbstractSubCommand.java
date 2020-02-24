@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,11 +104,9 @@ public abstract class AbstractSubCommand implements Runnable {
         return crawlers;
     }
 
-    protected void /*List<XMLValidationError>*/ loadConfig() {
+    protected void loadConfig() {
         ErrorHandlerCapturer eh = new ErrorHandlerCapturer(getClass());
-//        try {
         new ConfigurationLoader()
-//                        .setIgnoreValidationErrors(false)
                 .setVariablesFile(getVariablesFile())
                 .loadFromXML(getConfigFile(),
                         getCollector().getCollectorConfig(), eh);
@@ -121,68 +119,6 @@ public abstract class AbstractSubCommand implements Runnable {
                     printErr(er.getMessage()));
             System.exit(0);
         }
-//        getCollector().getCollectorConfig().loadFromXML(
-//                new ConfigurationLoader()
-//                    .setIgnoreValidationErrors(false)
-//                    .setVariablesFile(getVariablesFile())
-//                    .loadXML(getConfigFile()));
-//        } catch (Exception e) {
-//            System.out.println("REALLY?");
-//        }
-//
-//        try {
-//            loadConfig(collector, cmd);
-//            cmdLine.getOut().println();
-//            cmdLine.getOut().println(
-//                    " No XML configuration errors detected.");
-//        } catch (CollectorException e) {
-//            Throwable t = ExceptionUtils.getRootCause(e);
-//            if (t instanceof XMLValidationException) {
-//                List<XMLValidationError> errors =
-//                        ((XMLValidationException) t).getErrors();
-//                cmdLine.getOut().println();
-//                cmdLine.getOut().println(errors.size()
-//                        + " XML configuration errors detected:");
-//                cmdLine.getOut().println();
-//                errors.stream().forEach(er ->
-//                        cmdLine.getOut().println("  " + er.getMessage()));
-//            } else {
-//                throw e;
-//            }
-//        }
-//        System.exit(0);
-//
-
-
-
-
-//        List<XMLValidationError> errors = new ConfigurationLoader()
-//                .setVariablesFile(getVariablesFile())
-//                .loadXML(getConfigFile())
-//                .populate(getCollector().getCollectorConfig());
-//        if (!errors.isEmpty()) {
-//            printErr();
-//            printErr(errors.size() + " XML configuration errors detected:");
-//            printErr();
-//            errors.stream().forEach(er -> printErr("  " + er.getMessage()));
-//            System.exit(-1);
-//        }
-//        try {
-//            errors = new ConfigurationLoader()
-//                    .setVariablesFile(getVariablesFile())
-//                    .loadXML(getConfigFile())
-//                    .populate(getCollector().getCollectorConfig());
-//        } catch (InstantiationException | IllegalAccessException e) {
-//            //TODO use logging instead?
-//            System.err.println("A problem occured loading configuration.");
-//            e.printStackTrace(System.err);
-//            System.exit(-1);
-//        }
-//
-//        getCollector().getCollectorConfig().loadFromXML(
-//                new ConfigurationLoader()
-//                    .setVariablesFile(getVariablesFile())
-//                    .loadXML(getConfigFile()));
     }
 
     @Override

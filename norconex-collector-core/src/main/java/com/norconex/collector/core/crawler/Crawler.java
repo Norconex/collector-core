@@ -321,7 +321,7 @@ public abstract class Crawler
         return dataStoreEngine;
     }
 
-    public CrawlDocInfoService getCrawlReferenceService() {
+    public CrawlDocInfoService getDocInfoService() {
         return crawlDocInfoService;
     }
 
@@ -515,12 +515,13 @@ public abstract class Crawler
                     getCrawlerConfig().getMaxDocuments());
             return false;
         }
-        CrawlDocInfo queuedRef =
+        CrawlDocInfo queuedDocInfo =
                 crawlDocInfoService.nextQueued().orElse(null);
-        context.setCrawlReference(queuedRef);
+        context.setDocInfo(queuedDocInfo);
 
-        LOG.trace("Processing next reference from Queue: {}", queuedRef);
-        if (queuedRef != null) {
+        LOG.trace("Processing next reference from Queue: {}",
+                queuedDocInfo);
+        if (queuedDocInfo != null) {
             StopWatch watch = null;
             if (LOG.isDebugEnabled()) {
                 watch = new StopWatch();
@@ -530,7 +531,8 @@ public abstract class Crawler
             setProgress(statusUpdater);
             if (LOG.isDebugEnabled()) {
                 watch.stop();
-                LOG.debug("{} to process: {}", watch, queuedRef.getReference());
+                LOG.debug("{} to process: {}", watch, 
+                        queuedDocInfo.getReference());
             }
         } else {
             long activeCount = crawlDocInfoService.getActiveCount();
@@ -611,26 +613,26 @@ public abstract class Crawler
     }
 
     private void processNextQueuedCrawlData(ImporterPipelineContext context) {
-        CrawlDocInfo crawlRef = context.getCrawlReference();
-        String reference = crawlRef.getReference();
-        Doc doc = new Doc(crawlRef, getStreamFactory().newInputStream());
+        CrawlDocInfo docInfo = context.getDocInfo();
+        String reference = docInfo.getReference();
+        Doc doc = new Doc(docInfo, getStreamFactory().newInputStream());
         context.setDocument(doc);
 
-        CrawlDocInfo cachedCrawlRef =
+        CrawlDocInfo cachedDocInfo =
                 crawlDocInfoService.getCached(reference).orElse(null);
-        context.setCachedCrawlReference(cachedCrawlRef);
+        context.setCachedDocInfo(cachedDocInfo);
 
         doc.getMetadata().set(
                 CrawlDocMetadata.IS_CRAWL_NEW,
-                cachedCrawlRef == null);
+                cachedDocInfo == null);
 
-        initCrawlReference(crawlRef, cachedCrawlRef, doc);
+        initCrawlReference(docInfo, cachedDocInfo, doc);
 
         try {
             if (context.isDelete()) {
-                deleteReference(crawlRef, doc);
+                deleteReference(docInfo, doc);
                 finalizeDocumentProcessing(
-                        crawlRef, doc, cachedCrawlRef);
+                        docInfo, doc, cachedDocInfo);
                 return;
             }
             LOG.debug("Processing reference: {}", reference);
@@ -639,10 +641,10 @@ public abstract class Crawler
 
             if (response != null) {
                 processImportResponse(
-                        response, crawlRef, cachedCrawlRef);
+                        response, docInfo, cachedDocInfo);
             } else {
-                if (crawlRef.getState().isNewOrModified()) {
-                    crawlRef.setState(CrawlState.REJECTED);
+                if (docInfo.getState().isNewOrModified()) {
+                    docInfo.setState(CrawlState.REJECTED);
                 }
                 //TODO Fire an event here? If we get here, the importer did
                 //not kick in,
@@ -654,15 +656,15 @@ public abstract class Crawler
                 //OR do we want to always fire REJECTED_IMPORT on import failure
                 //(in addition to whatever) and maybe a new REJECTED_COLLECTOR
                 //when it did not reach the importer module?
-                finalizeDocumentProcessing(crawlRef, doc, cachedCrawlRef);
+                finalizeDocumentProcessing(docInfo, doc, cachedDocInfo);
             }
         } catch (Throwable e) {
             //TODO do we really want to catch anything other than
             // HTTPFetchException?  In case we want special treatment to the
             // class?
-            crawlRef.setState(CrawlState.ERROR);
+            docInfo.setState(CrawlState.ERROR);
             getEventManager().fire(
-                    CrawlerEvent.create(REJECTED_ERROR, this, crawlRef, e));
+                    CrawlerEvent.create(REJECTED_ERROR, this, docInfo, e));
             if (LOG.isDebugEnabled()) {
                 LOG.info("Could not process document: {} ({})",
                         reference, e.getMessage(), e);
@@ -670,7 +672,7 @@ public abstract class Crawler
                 LOG.info("Could not process document: {} ({})",
                         reference, e.getMessage());
             }
-            finalizeDocumentProcessing(crawlRef, doc, cachedCrawlRef);
+            finalizeDocumentProcessing(docInfo, doc, cachedDocInfo);
 
             // Rethrow exception is we want the crawler to stop
             List<Class<? extends Exception>> exceptionClasses =
@@ -687,29 +689,29 @@ public abstract class Crawler
 
     private void processImportResponse(
             ImporterResponse response,
-            CrawlDocInfo crawlRef,
-            CrawlDocInfo cachedCrawlRef) {
+            CrawlDocInfo docInfo,
+            CrawlDocInfo cachedDocInfo) {
 
         Doc doc = response.getDocument();
         if (response.isSuccess()) {
             getEventManager().fire(CrawlerEvent.create(
-                    DOCUMENT_IMPORTED, this, crawlRef, response));
+                    DOCUMENT_IMPORTED, this, docInfo, response));
             //Doc wrappedDoc = wrapDocument(crawlRef, doc);
             executeCommitterPipeline(this, doc, //wrappedDoc,
-                    crawlRef, cachedCrawlRef);
+                    docInfo, cachedDocInfo);
         } else {
-            crawlRef.setState(CrawlState.REJECTED);
+            docInfo.setState(CrawlState.REJECTED);
             getEventManager().fire(CrawlerEvent.create(
-                    REJECTED_IMPORT, this, crawlRef, response));
+                    REJECTED_IMPORT, this, docInfo, response));
             LOG.debug("Importing unsuccessful for \"{}\": {}",
-                    crawlRef.getReference(),
+                    docInfo.getReference(),
                     response.getImporterStatus().getDescription());
         }
-        finalizeDocumentProcessing(crawlRef, doc, cachedCrawlRef);
+        finalizeDocumentProcessing(docInfo, doc, cachedDocInfo);
         ImporterResponse[] children = response.getNestedResponses();
         for (ImporterResponse child : children) {
             CrawlDocInfo embeddedCrawlRef = createEmbeddedCrawlReference(
-                    child.getReference(), crawlRef);
+                    child.getReference(), docInfo);
             CrawlDocInfo embeddedCachedCrawlRef =
                     crawlDocInfoService.getCached(
                             child.getReference()).orElse(null);
@@ -719,21 +721,21 @@ public abstract class Crawler
     }
 
 
-    private void finalizeDocumentProcessing(CrawlDocInfo crawlRef,
-            Doc doc, CrawlDocInfo cachedCrawlRef) {
+    private void finalizeDocumentProcessing(CrawlDocInfo docInfo,
+            Doc doc, CrawlDocInfo cachedDocInfo) {
 
         //--- Ensure we have a state -------------------------------------------
-        if (crawlRef.getState() == null) {
+        if (docInfo.getState() == null) {
             LOG.warn("Reference status is unknown for \"{}\". "
                     + "This should not happen. Assuming bad status.",
-                    crawlRef.getReference());
-            crawlRef.setState(CrawlState.BAD_STATUS);
+                    docInfo.getReference());
+            docInfo.setState(CrawlState.BAD_STATUS);
         }
 
         try {
 
             // important to call this before copying properties further down
-            beforeFinalizeDocumentProcessing(crawlRef, doc, cachedCrawlRef);
+            beforeFinalizeDocumentProcessing(docInfo, doc, cachedDocInfo);
 
             //--- If doc crawl was incomplete, set missing info from cache -----
             // If document is not new or modified, it did not go through
@@ -741,15 +743,15 @@ public abstract class Crawler
             // could be gathered for a reference.  Since we do not want to lose
             // previous information when the crawl was effective/good
             // we copy it all that is non-null from cache.
-            if (!crawlRef.getState().isNewOrModified() && cachedCrawlRef != null) {
+            if (!docInfo.getState().isNewOrModified() && cachedDocInfo != null) {
                 //TODO maybe new CrawlData instances should be initialized with
                 // some of cache data available instead?
-                BeanUtil.copyPropertiesOverNulls(crawlRef, cachedCrawlRef);
+                BeanUtil.copyPropertiesOverNulls(docInfo, cachedDocInfo);
             }
 
             //--- Deal with bad states (if not already deleted) ----------------
-            if (!crawlRef.getState().isGoodState()
-                    && !crawlRef.getState().isOneOf(CrawlState.DELETED)) {
+            if (!docInfo.getState().isGoodState()
+                    && !docInfo.getState().isOneOf(CrawlState.DELETED)) {
 
                 //TODO If duplicate, consider it as spoiled if a cache version
                 // exists in a good state.
@@ -764,23 +766,23 @@ public abstract class Crawler
                 // markReferenceVariationsAsProcessed(...) method
 
                 SpoiledReferenceStrategy strategy =
-                        getSpoiledStateStrategy(crawlRef);
+                        getSpoiledStateStrategy(docInfo);
 
                 if (strategy == SpoiledReferenceStrategy.IGNORE) {
                     LOG.debug("Ignoring spoiled reference: {}",
-                            crawlRef.getReference());
+                            docInfo.getReference());
                 } else if (strategy == SpoiledReferenceStrategy.DELETE) {
                     // Delete if previous state exists and is not already
                     // marked as deleted.
-                    if (cachedCrawlRef != null
-                            && !cachedCrawlRef.getState().isOneOf(CrawlState.DELETED)) {
-                        deleteReference(crawlRef, doc);
+                    if (cachedDocInfo != null
+                            && !cachedDocInfo.getState().isOneOf(CrawlState.DELETED)) {
+                        deleteReference(docInfo, doc);
                     }
                 } else {
                     // GRACE_ONCE:
                     // Delete if previous state exists and is a bad state,
                     // but not already marked as deleted.
-                    if (cachedCrawlRef == null) {
+                    if (cachedDocInfo == null) {
                         // If graced once and has no cache, it means it
                         // was likely marked as invalid (dropped from cache
                         // by some store implementations).
@@ -790,32 +792,32 @@ public abstract class Crawler
                         // https://github.com/Norconex/collector-http/issues/635
                         //TODO handle better (make sure "processedInvalid"
                         // is no longer wiped by datastore on startup).
-                        deleteReference(crawlRef, doc);
-                    } else if (!cachedCrawlRef.getState().isOneOf(CrawlState.DELETED)) {
-                        if (!cachedCrawlRef.getState().isGoodState()) {
-                            deleteReference(crawlRef, doc);
+                        deleteReference(docInfo, doc);
+                    } else if (!cachedDocInfo.getState().isOneOf(CrawlState.DELETED)) {
+                        if (!cachedDocInfo.getState().isGoodState()) {
+                            deleteReference(docInfo, doc);
                         } else {
                             LOG.debug("This spoiled reference is "
                                     + "being graced once (will be deleted "
                                     + "next time if still spoiled): {}",
-                                    crawlRef.getReference());
+                                    docInfo.getReference());
                         }
                     }
                 }
             }
         } catch (Exception e) {
             LOG.error("Could not finalize processing of: {} ({})",
-                    crawlRef.getReference(), e.getMessage(), e);
+                    docInfo.getReference(), e.getMessage(), e);
         }
 
         //--- Mark reference as Processed --------------------------------------
         try {
             processedCount++;
-            crawlDocInfoService.processed(crawlRef);
-            markReferenceVariationsAsProcessed(crawlRef);
+            crawlDocInfoService.processed(docInfo);
+            markReferenceVariationsAsProcessed(docInfo);
         } catch (Exception e) {
             LOG.error("Could not mark reference as processed: {} ({})",
-                    crawlRef.getReference(), e.getMessage(), e);
+                    docInfo.getReference(), e.getMessage(), e);
         }
 
         try {

@@ -52,7 +52,7 @@ public final class ReferenceFiltersStageUtil {
             msg = " (" + msg + ")";
         }
 
-        String ref = ctx.getCrawlReference().getReference();
+        String ref = ctx.getDocInfo().getReference();
         boolean hasIncludes = false;
         boolean atLeastOneIncludeMatch = false;
         for (IReferenceFilter filter : filters) {
@@ -93,7 +93,7 @@ public final class ReferenceFiltersStageUtil {
 
     private static void fireDocumentRejected(
             Object subject, BasePipelineContext ctx) {
-        ctx.fireCrawlerEvent(REJECTED_FILTER, ctx.getCrawlReference(), subject);
+        ctx.fireCrawlerEvent(REJECTED_FILTER, ctx.getDocInfo(), subject);
 
     }
 

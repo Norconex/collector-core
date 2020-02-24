@@ -42,12 +42,12 @@ public class QueueReferenceStage
     @Override
     public boolean execute(BasePipelineContext ctx) {
         //TODO document and make sure it cannot be blank and remove this check?
-        String ref = ctx.getCrawlReference().getReference();
+        String ref = ctx.getDocInfo().getReference();
         if (StringUtils.isBlank(ref)) {
             return true;
         }
 
-        Stage stage = ctx.getCrawlReferenceService().getProcessingStage(ref);
+        Stage stage = ctx.getDocInfoService().getProcessingStage(ref);
 
         //TODO make this a reusable method somewhere, or part of the
         //CrawlDocInfoService?
@@ -58,7 +58,7 @@ public class QueueReferenceStage
         } else if (Stage.PROCESSED.is(stage)) {
             debug("Already processed: %s", ref);
         } else {
-            ctx.getCrawlReferenceService().queue(ctx.getCrawlReference());
+            ctx.getDocInfoService().queue(ctx.getDocInfo());
 //            refStore.queue(ctx.getCrawlData().clone());
             debug("Queued for processing: %s", ref);
         }

@@ -61,7 +61,7 @@ public class SaveDocumentStage
                         "Cannot create download directory: " + downloadDir, e);
             }
         }
-        String path = urlToPath(ctx.getCrawlReference().getReference());
+        String path = urlToPath(ctx.getDocInfo().getReference());
 
         Path downloadFile = downloadDir.resolve(path);
 
@@ -70,10 +70,10 @@ public class SaveDocumentStage
                 FileUtils.openOutputStream(downloadFile.toFile())) {
             IOUtils.copy(ctx.getDocument().getInputStream(), out);
             ctx.fireCrawlerEvent(
-                    DOCUMENT_SAVED, ctx.getCrawlReference(), downloadFile);
+                    DOCUMENT_SAVED, ctx.getDocInfo(), downloadFile);
         } catch (IOException e) {
             throw new CollectorException("Cannot save document: "
-                            + ctx.getCrawlReference().getReference(), e);
+                            + ctx.getDocInfo().getReference(), e);
         }
         return true;
     }
@@ -82,10 +82,6 @@ public class SaveDocumentStage
         if (url == null) {
             return null;
         }
-//        String sep = File.separator;
-//        if (sep.equals("\\")) {
-//            sep = "\\" + sep;
-//        }
 
         String domain = url.replaceFirst("(.*?)(://)(.*?)(/)(.*)", "$1_$3");
         domain = domain.replaceAll("[\\W]+", "_");

@@ -51,7 +51,7 @@ public final class ImporterPipelineUtil {
         boolean atLeastOneIncludeMatch = false;
         for (IMetadataFilter filter : filters) {
             boolean accepted = filter.acceptMetadata(
-                    ctx.getCrawlReference().getReference(), metadata);
+                    ctx.getDocInfo().getReference(), metadata);
             boolean isInclude = filter instanceof IOnMatchFilter
                    && OnMatch.INCLUDE == ((IOnMatchFilter) filter).getOnMatch();
             if (isInclude) {
@@ -65,16 +65,16 @@ public final class ImporterPipelineUtil {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(String.format("ACCEPTED document metadata. "
                             + "Reference=%s Filter=%s",
-                            ctx.getCrawlReference().getReference(), filter));
+                            ctx.getDocInfo().getReference(), filter));
                 }
             } else {
                 ctx.fireCrawlerEvent(
-                        REJECTED_FILTER, ctx.getCrawlReference(), filter);
+                        REJECTED_FILTER, ctx.getDocInfo(), filter);
                 return true;
             }
         }
         if (hasIncludes && !atLeastOneIncludeMatch) {
-            ctx.fireCrawlerEvent(REJECTED_FILTER, ctx.getCrawlReference(),
+            ctx.fireCrawlerEvent(REJECTED_FILTER, ctx.getDocInfo(),
                     "No \"include\" metadata filters matched.");
             return true;
         }

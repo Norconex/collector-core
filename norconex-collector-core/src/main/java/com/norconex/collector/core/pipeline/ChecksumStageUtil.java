@@ -51,7 +51,7 @@ public final class ChecksumStageUtil {
     // return false if checksum is rejected/unmodified
     private static boolean resolveChecksum(boolean isMeta, String newChecksum,
             DocumentPipelineContext ctx, Object subject) {
-        CrawlDocInfo crawlRef = ctx.getCrawlReference();
+        CrawlDocInfo crawlRef = ctx.getDocInfo();
 
         // Set new checksum on crawlData + metadata
         String type;
@@ -64,7 +64,7 @@ public final class ChecksumStageUtil {
         }
 
         // Get old checksum from cache
-        CrawlDocInfo cachedCrawlRef = ctx.getCachedCrawlReference();
+        CrawlDocInfo cachedCrawlRef = ctx.getCachedDocInfo();
         String oldChecksum = null;
         if (cachedCrawlRef != null) {
             if (isMeta) {
@@ -87,7 +87,7 @@ public final class ChecksumStageUtil {
             }
             crawlRef.setState(CrawlState.UNMODIFIED);
             ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_UNMODIFIED,
-                    ctx.getCrawlReference(), subject);
+                    ctx.getDocInfo(), subject);
             return false;
         }
 

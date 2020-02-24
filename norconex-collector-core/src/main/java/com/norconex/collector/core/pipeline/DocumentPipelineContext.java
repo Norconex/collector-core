@@ -18,6 +18,11 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.collector.core.doc.CrawlDocInfo;
 import com.norconex.commons.lang.io.CachedInputStream;
@@ -33,7 +38,7 @@ import com.norconex.importer.doc.Doc;
 public class DocumentPipelineContext extends BasePipelineContext {
 
     private Doc document;
-    private CrawlDocInfo cachedCrawlRef;
+    private CrawlDocInfo cachedDocInfo;
 
     /**
      * Constructor.
@@ -46,19 +51,19 @@ public class DocumentPipelineContext extends BasePipelineContext {
     /**
      * Constructor.
      * @param crawler the crawler
-     * @param crawlRef current crawl data
+     * @param docInfo current crawl data
      * @since 1.9.0
      */
-    public DocumentPipelineContext(Crawler crawler, CrawlDocInfo crawlRef) {
-        super(crawler, crawlRef);
+    public DocumentPipelineContext(Crawler crawler, CrawlDocInfo docInfo) {
+        super(crawler, docInfo);
     }
     public DocumentPipelineContext(
             Crawler crawler,
-            CrawlDocInfo crawlRef,
-            CrawlDocInfo cachedCrawlRef,
+            CrawlDocInfo docInfo,
+            CrawlDocInfo cachedDocInfo,
             Doc document) {
-        super(crawler/*, crawlDataStore*/, crawlRef);
-        this.cachedCrawlRef = cachedCrawlRef;
+        super(crawler, docInfo);
+        this.cachedDocInfo = cachedDocInfo;
         this.document = document;
     }
 
@@ -71,16 +76,16 @@ public class DocumentPipelineContext extends BasePipelineContext {
      * @return cached crawl data
      * @since 1.9.0
      */
-    public CrawlDocInfo getCachedCrawlReference() {
-        return cachedCrawlRef;
+    public CrawlDocInfo getCachedDocInfo() {
+        return cachedDocInfo;
     }
     /**
      * Sets cached crawl data.
-     * @param cachedCrawlRef cached crawl data.
+     * @param cachedDocInfo cached crawl data.
      * @since 1.9.0
      */
-    public void setCachedCrawlReference(CrawlDocInfo cachedCrawlRef) {
-        this.cachedCrawlRef = cachedCrawlRef;
+    public void setCachedDocInfo(CrawlDocInfo cachedDocInfo) {
+        this.cachedDocInfo = cachedDocInfo;
     }
     /**
      * Sets document.
@@ -97,5 +102,19 @@ public class DocumentPipelineContext extends BasePipelineContext {
     public Reader getContentReader() {
         return new InputStreamReader(
                 getDocument().getInputStream(), StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
+    }
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(this,
+                ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

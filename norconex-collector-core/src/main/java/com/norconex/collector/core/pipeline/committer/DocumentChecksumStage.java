@@ -34,9 +34,9 @@ public class DocumentChecksumStage
         IDocumentChecksummer check =
                 ctx.getConfig().getDocumentChecksummer();
         if (check == null
-                && !ctx.getCrawlReference().getState().isNewOrModified()) {
+                && !ctx.getDocInfo().getState().isNewOrModified()) {
             // NEW is default state (?)
-            ctx.getCrawlReference().setState(CrawlState.NEW);
+            ctx.getDocInfo().setState(CrawlState.NEW);
             return true;
         }
         String newDocChecksum = check.createDocumentChecksum(ctx.getDocument());

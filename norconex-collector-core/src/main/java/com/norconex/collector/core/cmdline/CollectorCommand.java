@@ -44,7 +44,7 @@ import picocli.CommandLine.Spec;
  * @since 2.0.0
  */
 @Command(
-    name = "<collector>",
+    name = "<app>",
     description = "%nOptions:",
 //    customSynopsis = "<collector> [OPTIONS] [COMMANDS]",
 //    abbreviateSynopsis = true,

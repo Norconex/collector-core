@@ -34,7 +34,7 @@ import com.norconex.commons.lang.pipeline.Pipeline;
 public class BasePipelineContext {
 
     private final Crawler crawler;
-    private CrawlDocInfo reference;
+    private CrawlDocInfo docInfo;
 
     /**
      * Constructor.
@@ -48,11 +48,11 @@ public class BasePipelineContext {
     /**
      * Constructor.
      * @param crawler the crawler
-     * @param ref current crawl reference
+     * @param docInfo current crawl docInfo
      */
-    public BasePipelineContext(Crawler crawler, CrawlDocInfo ref) {
+    public BasePipelineContext(Crawler crawler, CrawlDocInfo docInfo) {
         this.crawler = crawler;
-        this.reference = ref;
+        this.docInfo = docInfo;
     }
 
     public Crawler getCrawler() {
@@ -63,27 +63,27 @@ public class BasePipelineContext {
         return crawler.getCrawlerConfig();
     }
 
-    public CrawlDocInfo getCrawlReference() {
-        return reference;
+    public CrawlDocInfo getDocInfo() {
+        return docInfo;
     }
-    public void setCrawlReference(CrawlDocInfo reference) {
-        this.reference = reference;
+    public void setDocInfo(CrawlDocInfo docInfo) {
+        this.docInfo = docInfo;
     }
 
-    public CrawlDocInfoService getCrawlReferenceService() {
-        return crawler.getCrawlReferenceService();
+    public CrawlDocInfoService getDocInfoService() {
+        return crawler.getDocInfoService();
     }
 
     /**
      * Fires an event.
      * @param event the event name
-     * @param crawlRef crawl data
+     * @param docInfo crawl data
      * @param subject subject triggering the event
      */
     public void fireCrawlerEvent(
-            String event, CrawlDocInfo crawlRef, Object subject) {
+            String event, CrawlDocInfo docInfo, Object subject) {
         crawler.getEventManager().fire(CrawlerEvent.create(
-                event, crawler, crawlRef, subject));
+                event, crawler, docInfo, subject));
     }
 
     @Override

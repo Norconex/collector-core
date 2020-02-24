@@ -36,7 +36,7 @@ public class CommitModuleStage
         }
         ctx.fireCrawlerEvent(
                 CrawlerEvent.DOCUMENT_COMMITTED_ADD,
-                ctx.getCrawlReference(), committer);
+                ctx.getDocInfo(), committer);
         return true;
     }
 }

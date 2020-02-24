@@ -46,7 +46,7 @@ public class ImportModuleStage
         // We make sure to set it to save it to store so IRecrawlableResolver
         // has one to deal with
         if (!isContentTypeSet && response.getDocument() != null) {
-            ctx.getCrawlReference().setContentType(
+            ctx.getDocInfo().setContentType(
                     response.getDocument().getDocInfo().getContentType());
         }
 

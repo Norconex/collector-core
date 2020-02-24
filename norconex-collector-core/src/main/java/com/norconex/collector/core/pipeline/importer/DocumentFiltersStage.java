@@ -62,20 +62,20 @@ public class DocumentFiltersStage
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(String.format(
                             "ACCEPTED document. Reference=%s Filter=%s", ctx
-                                .getCrawlReference().getReference(), filter));
+                                .getDocInfo().getReference(), filter));
                 }
             } else {
                 ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_FILTER,
-                        ctx.getCrawlReference(), filter);
-                ctx.getCrawlReference().setState(CrawlState.REJECTED);
+                        ctx.getDocInfo(), filter);
+                ctx.getDocInfo().setState(CrawlState.REJECTED);
                 return false;
             }
         }
         if (hasIncludes && !atLeastOneIncludeMatch) {
             ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_FILTER,
-                    ctx.getCrawlReference(),
+                    ctx.getDocInfo(),
                     "No \"include\" document filters matched.");
-            ctx.getCrawlReference().setState(CrawlState.REJECTED);
+            ctx.getDocInfo().setState(CrawlState.REJECTED);
             return false;
         }
         return true;

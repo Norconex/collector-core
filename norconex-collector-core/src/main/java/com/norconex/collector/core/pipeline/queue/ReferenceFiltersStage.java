@@ -39,7 +39,7 @@ public class ReferenceFiltersStage
     public boolean execute(BasePipelineContext ctx) {
         if (ReferenceFiltersStageUtil.resolveReferenceFilters(
                 ctx.getConfig().getReferenceFilters(), ctx, type)) {
-            ctx.getCrawlReference().setState(CrawlState.REJECTED);
+            ctx.getDocInfo().setState(CrawlState.REJECTED);
             return false;
         }
         return true;
