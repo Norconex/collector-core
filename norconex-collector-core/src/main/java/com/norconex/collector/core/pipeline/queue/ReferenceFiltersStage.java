@@ -15,7 +15,7 @@
 package com.norconex.collector.core.pipeline.queue;
 
 import com.norconex.collector.core.doc.CrawlState;
-import com.norconex.collector.core.pipeline.BasePipelineContext;
+import com.norconex.collector.core.pipeline.DocInfoPipelineContext;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 
 /**
@@ -23,7 +23,7 @@ import com.norconex.commons.lang.pipeline.IPipelineStage;
  * @author Pascal Essiembre
  */
 public class ReferenceFiltersStage
-        implements IPipelineStage<BasePipelineContext> {
+        implements IPipelineStage<DocInfoPipelineContext> {
 
     private final String type;
 
@@ -36,7 +36,7 @@ public class ReferenceFiltersStage
     }
 
     @Override
-    public boolean execute(BasePipelineContext ctx) {
+    public boolean execute(DocInfoPipelineContext ctx) {
         if (ReferenceFiltersStageUtil.resolveReferenceFilters(
                 ctx.getConfig().getReferenceFilters(), ctx, type)) {
             ctx.getDocInfo().setState(CrawlState.REJECTED);

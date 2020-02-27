@@ -20,12 +20,10 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.crawler.Crawler;
-import com.norconex.collector.core.doc.CrawlDocInfo;
+import com.norconex.collector.core.doc.CrawlDoc;
 import com.norconex.collector.core.pipeline.DocumentPipelineContext;
-import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 import com.norconex.commons.lang.pipeline.Pipeline;
-import com.norconex.importer.doc.Doc;
 import com.norconex.importer.response.ImporterResponse;
 
 /**
@@ -37,44 +35,47 @@ import com.norconex.importer.response.ImporterResponse;
 public class ImporterPipelineContext extends DocumentPipelineContext {
 
     private ImporterResponse importerResponse;
-    private boolean delete;
-    private boolean orphan;
+//    private boolean delete;
+//    private boolean orphan;
 
-    /**
-     * Constructor creating a copy of supplied context.
-     * @param copiable the item to be copied
-     * @since 1.9.0
-     */
-    public ImporterPipelineContext(ImporterPipelineContext copiable) {
-        this(copiable.getCrawler());
-        BeanUtil.copyProperties(this, copiable);
-    }
-
+//    /**
+//     * Constructor creating a copy of supplied context.
+//     * @param copiable the item to be copied
+//     * @since 1.9.0
+//     */
+//    public ImporterPipelineContext(ImporterPipelineContext copiable) {
+//        this(copiable.getCrawler());
+//        BeanUtil.copyProperties(this, copiable);
+//    }
+//
+//    /**
+//     * Constructor.
+//     * @param crawler the crawler
+//     * @since 1.9.0
+//     */
+//    public ImporterPipelineContext(Crawler crawler) {
+//        super(crawler, null);
+//    }
     /**
      * Constructor.
      * @param crawler the crawler
-     * @since 1.9.0
-     */
-    public ImporterPipelineContext(Crawler crawler) {
-        super(crawler, null);
-    }
-    /**
-     * Constructor.
-     * @param crawler the crawler
-     * @param crawlRef current crawl data
-     * @since 1.9.0
+     * @param document current crawl document
      */
     public ImporterPipelineContext(
             Crawler crawler,
-            CrawlDocInfo crawlRef) {
-        super(crawler, crawlRef);
+            CrawlDoc document) {
+        super(crawler, document);
     }
-    public ImporterPipelineContext(
-            Crawler crawler,
-            CrawlDocInfo crawlRef, CrawlDocInfo cachedCrawlRef,
-            Doc document) {
-        super(crawler, crawlRef, cachedCrawlRef, document);
-    }
+//    /**
+//     * Constructor.
+//     * @param crawler the crawler
+//     * @param document current crawl document
+//     */
+//    public ImporterPipelineContext(
+//            Crawler crawler,
+//            CrawlDoc document) {
+//        super(crawler, document);
+//    }
 
     public ImporterResponse getImporterResponse() {
         return importerResponse;
@@ -83,39 +84,39 @@ public class ImporterPipelineContext extends DocumentPipelineContext {
         this.importerResponse = importerResponse;
     }
 
-    /**
-     * Gets whether the document should be deleted.
-     * @return <code>true</code> if should be deleted
-     * @since 1.9.0
-     */
-    public boolean isDelete() {
-        return delete;
-    }
-    /**
-     * Sets whether the document should be deleted.
-     * @param delete <code>true</code> if should be deleted
-     * @since 1.9.0
-     */
-    public void setDelete(boolean delete) {
-        this.delete = delete;
-    }
-
-    /**
-     * Gets whether the document is an orphan (no longer referenced).
-     * @return <code>true</code> is an orphan
-     * @since 1.9.0
-     */
-    public boolean isOrphan() {
-        return orphan;
-    }
-    /**
-     * Sets whether the document is an orphan (no longer referenced).
-     * @param orphan <code>true</code> is an orphan
-     * @since 1.9.0
-     */
-    public void setOrphan(boolean orphan) {
-        this.orphan = orphan;
-    }
+//    /**
+//     * Gets whether the document should be deleted.
+//     * @return <code>true</code> if should be deleted
+//     * @since 1.9.0
+//     */
+//    public boolean isDelete() {
+//        return delete;
+//    }
+//    /**
+//     * Sets whether the document should be deleted.
+//     * @param delete <code>true</code> if should be deleted
+//     * @since 1.9.0
+//     */
+//    public void setDelete(boolean delete) {
+//        this.delete = delete;
+//    }
+//
+//    /**
+//     * Gets whether the document is an orphan (no longer referenced).
+//     * @return <code>true</code> is an orphan
+//     * @since 1.9.0
+//     */
+//    public boolean isOrphan() {
+//        return orphan;
+//    }
+//    /**
+//     * Sets whether the document is an orphan (no longer referenced).
+//     * @param orphan <code>true</code> is an orphan
+//     * @since 1.9.0
+//     */
+//    public void setOrphan(boolean orphan) {
+//        this.orphan = orphan;
+//    }
 
     @Override
     public boolean equals(final Object other) {

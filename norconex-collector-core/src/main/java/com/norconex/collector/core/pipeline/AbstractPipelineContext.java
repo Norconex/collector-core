@@ -31,29 +31,31 @@ import com.norconex.commons.lang.pipeline.Pipeline;
  * Base {@link IPipelineStage} context for collector {@link Pipeline}s.
  * @author Pascal Essiembre
  */
-public class BasePipelineContext {
+public abstract class AbstractPipelineContext {
 
     private final Crawler crawler;
-    private CrawlDocInfo docInfo;
+//    private CrawlDocInfo docInfo;
 
     /**
      * Constructor.
      * @param crawler the crawler
      * @since 1.9.0
      */
-    public BasePipelineContext(Crawler crawler) {
-        this(crawler, null);
+    public AbstractPipelineContext(Crawler crawler) {
+        super();
+        this.crawler = crawler;
+        //this(crawler, null);
     }
 
-    /**
-     * Constructor.
-     * @param crawler the crawler
-     * @param docInfo current crawl docInfo
-     */
-    public BasePipelineContext(Crawler crawler, CrawlDocInfo docInfo) {
-        this.crawler = crawler;
-        this.docInfo = docInfo;
-    }
+//    /**
+//     * Constructor.
+//     * @param crawler the crawler
+//     * @param docInfo current crawl docInfo
+//     */
+//    public AbstractPipelineContext(Crawler crawler, CrawlDocInfo docInfo) {
+//        this.crawler = crawler;
+//        this.docInfo = docInfo;
+//    }
 
     public Crawler getCrawler() {
         return crawler;
@@ -63,12 +65,12 @@ public class BasePipelineContext {
         return crawler.getCrawlerConfig();
     }
 
-    public CrawlDocInfo getDocInfo() {
-        return docInfo;
-    }
-    public void setDocInfo(CrawlDocInfo docInfo) {
-        this.docInfo = docInfo;
-    }
+//    public CrawlDocInfo getDocInfo() {
+//        return docInfo;
+//    }
+//    public void setDocInfo(CrawlDocInfo docInfo) {
+//        this.docInfo = docInfo;
+//    }
 
     public CrawlDocInfoService getDocInfoService() {
         return crawler.getDocInfoService();

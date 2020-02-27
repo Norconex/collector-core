@@ -15,9 +15,9 @@
 package com.norconex.collector.core.crawler;
 
 import com.norconex.collector.core.Collector;
+import com.norconex.collector.core.doc.CrawlDoc;
 import com.norconex.collector.core.doc.CrawlDocInfo;
 import com.norconex.collector.core.pipeline.importer.ImporterPipelineContext;
-import com.norconex.importer.doc.Doc;
 import com.norconex.importer.response.ImporterResponse;
 import com.norconex.jef5.status.JobStatusUpdater;
 import com.norconex.jef5.suite.JobSuite;
@@ -78,8 +78,7 @@ public class MockCrawler extends Crawler {
 
     @Override
     protected void executeCommitterPipeline(Crawler crawler,
-            Doc doc,
-            CrawlDocInfo crawlRef, CrawlDocInfo cachedCrawlRef) {
+            CrawlDoc doc) {
         throw new UnsupportedOperationException();
     }
 

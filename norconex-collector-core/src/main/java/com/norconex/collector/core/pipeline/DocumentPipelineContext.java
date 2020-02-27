@@ -17,6 +17,7 @@ package com.norconex.collector.core.pipeline;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -24,6 +25,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.crawler.Crawler;
+import com.norconex.collector.core.doc.CrawlDoc;
 import com.norconex.collector.core.doc.CrawlDocInfo;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
@@ -35,41 +37,48 @@ import com.norconex.importer.doc.Doc;
  * an {@link Doc}.
  * @author Pascal Essiembre
  */
-public class DocumentPipelineContext extends BasePipelineContext {
+public class DocumentPipelineContext extends AbstractPipelineContext {
 
-    private Doc document;
-    private CrawlDocInfo cachedDocInfo;
+    private CrawlDoc document;
+//    private CrawlDocInfo cachedDocInfo;
 
-    /**
-     * Constructor.
-     * @param crawler the crawler
-     * @since 1.9.0
-     */
-    public DocumentPipelineContext(Crawler crawler) {
-        super(crawler, null);
-    }
-    /**
-     * Constructor.
-     * @param crawler the crawler
-     * @param docInfo current crawl data
-     * @since 1.9.0
-     */
-    public DocumentPipelineContext(Crawler crawler, CrawlDocInfo docInfo) {
-        super(crawler, docInfo);
-    }
+//    /**
+//     * Constructor.
+//     * @param crawler the crawler
+//     * @since 1.9.0
+//     */
+//    public DocumentPipelineContext(Crawler crawler) {
+//        super(crawler, null);
+//    }
+//    /**
+//     * Constructor.
+//     * @param crawler the crawler
+//     * @param docInfo current crawl data
+//     * @since 1.9.0
+//     */
+//    public DocumentPipelineContext(Crawler crawler, CrawlDocInfo docInfo) {
+//        super(crawler, docInfo);
+//    }
     public DocumentPipelineContext(
             Crawler crawler,
-            CrawlDocInfo docInfo,
-            CrawlDocInfo cachedDocInfo,
-            Doc document) {
-        super(crawler, docInfo);
-        this.cachedDocInfo = cachedDocInfo;
-        this.document = document;
+//            CrawlDocInfo docInfo,
+//            CrawlDocInfo cachedDocInfo,
+            CrawlDoc document) {
+        super(Objects.requireNonNull(crawler, "'crawler' must not be null."));
+//        super(crawler, docInfo);
+//        this.cachedDocInfo = cachedDocInfo;
+        this.document = Objects.requireNonNull(
+                document, "'document' must not be null.");
     }
 
-    public Doc getDocument() {
+    public CrawlDoc getDocument() {
         return document;
     }
+
+    public CrawlDocInfo getDocInfo() {
+        return (CrawlDocInfo) document.getDocInfo();
+    }
+
 
     /**
      * Gets cached crawl data.
@@ -77,24 +86,25 @@ public class DocumentPipelineContext extends BasePipelineContext {
      * @since 1.9.0
      */
     public CrawlDocInfo getCachedDocInfo() {
-        return cachedDocInfo;
+        return document.getCachedDocInfo();
+//        return cachedDocInfo;
     }
-    /**
-     * Sets cached crawl data.
-     * @param cachedDocInfo cached crawl data.
-     * @since 1.9.0
-     */
-    public void setCachedDocInfo(CrawlDocInfo cachedDocInfo) {
-        this.cachedDocInfo = cachedDocInfo;
-    }
-    /**
-     * Sets document.
-     * @param document a document
-     * @since 1.9.0
-     */
-    public void setDocument(Doc document) {
-        this.document = document;
-    }
+//    /**
+//     * Sets cached crawl data.
+//     * @param cachedDocInfo cached crawl data.
+//     * @since 1.9.0
+//     */
+//    public void setCachedDocInfo(CrawlDocInfo cachedDocInfo) {
+//        this.cachedDocInfo = cachedDocInfo;
+//    }
+//    /**
+//     * Sets document.
+//     * @param document a document
+//     * @since 1.9.0
+//     */
+//    public void setDocument(Doc document) {
+//        this.document = document;
+//    }
     public CachedInputStream getContent() {
         return getDocument().getInputStream();
     }

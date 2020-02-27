@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringExclude;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.store.Id;
@@ -44,9 +45,12 @@ public class CrawlDocInfo extends DocInfo {
 
     } //TODO add NONE?
 
+    @ToStringExclude
     private String parentRootReference;
     private CrawlState state;
+    @ToStringExclude
     private String metaChecksum;
+    @ToStringExclude
     private String contentChecksum;
     private LocalDateTime crawlDate;
     @Index
@@ -139,7 +143,10 @@ public class CrawlDocInfo extends DocInfo {
     }
     @Override
     public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+        ReflectionToStringBuilder b = new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE);
+        b.setExcludeNullValues(true);
+        return b.toString();
+
     }
 }

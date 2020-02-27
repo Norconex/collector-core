@@ -59,6 +59,7 @@ import org.slf4j.LoggerFactory;
 import com.norconex.collector.core.Collector;
 import com.norconex.collector.core.CollectorException;
 import com.norconex.collector.core.crawler.CrawlerConfig.OrphansStrategy;
+import com.norconex.collector.core.doc.CrawlDoc;
 import com.norconex.collector.core.doc.CrawlDocInfo;
 import com.norconex.collector.core.doc.CrawlDocInfoService;
 import com.norconex.collector.core.doc.CrawlDocMetadata;
@@ -80,7 +81,6 @@ import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.time.DurationFormatter;
 import com.norconex.importer.Importer;
-import com.norconex.importer.doc.Doc;
 import com.norconex.importer.response.ImporterResponse;
 import com.norconex.jef5.job.AbstractResumableJob;
 import com.norconex.jef5.status.JobStatus;
@@ -381,9 +381,10 @@ public abstract class Crawler
 
         //--- Process start/queued references ----------------------------------
         LOG.info("Crawling references...");
-        ImporterPipelineContext contextPrototype =
-                new ImporterPipelineContext(this);
-        processReferences(statusUpdater, suite, contextPrototype);
+//        ImporterPipelineContext contextPrototype =
+//                new ImporterPipelineContext(this);
+//        processReferences(statusUpdater, suite, contextPrototype);
+        processReferences(statusUpdater, suite, new ProcessFlags());
 
         if (!isStopped()) {
             handleOrphans(statusUpdater, suite);
@@ -452,10 +453,12 @@ public abstract class Crawler
             count++;
         }
         if (count > 0) {
-            ImporterPipelineContext contextPrototype =
-                    new ImporterPipelineContext(this);
-            contextPrototype.setOrphan(true);
-            processReferences(statusUpdater, suite, contextPrototype);
+//            ImporterPipelineContext contextPrototype =
+//                    new ImporterPipelineContext(this);
+//            contextPrototype.setOrphan(true);
+            processReferences(
+                    statusUpdater, suite, new ProcessFlags().orphan());
+//            processReferences(statusUpdater, suite, contextPrototype);
         }
         LOG.info("Reprocessed {} cached/orphan references.", count);
     }
@@ -471,10 +474,11 @@ public abstract class Crawler
             count++;
         }
         if (count > 0) {
-            ImporterPipelineContext contextPrototype =
-                    new ImporterPipelineContext(this);
-            contextPrototype.setDelete(true);
-            processReferences(statusUpdater, suite, contextPrototype);
+//            ImporterPipelineContext contextPrototype =
+//                    new ImporterPipelineContext(this);
+//            contextPrototype.setDelete(true);
+            processReferences(
+                    statusUpdater, suite, new ProcessFlags().delete());//  contextPrototype);
         }
         LOG.info("Deleted {} orphan references.", count);
     }
@@ -483,7 +487,8 @@ public abstract class Crawler
     protected void processReferences(
             final JobStatusUpdater statusUpdater,
             final JobSuite suite,
-            final ImporterPipelineContext contextPrototype) {
+            final ProcessFlags flags) {
+//            final ImporterPipelineContext contextPrototype) {
 
 
         int numThreads = getCrawlerConfig().getNumThreads();
@@ -494,7 +499,7 @@ public abstract class Crawler
             final int threadIndex = i + 1;
             LOG.debug("Crawler thread #{} started.", threadIndex);
             pool.execute(new ProcessReferencesRunnable(
-                    suite, statusUpdater, latch, contextPrototype));
+                    suite, statusUpdater, latch, flags)); //contextPrototype));
         }
 
         try {
@@ -509,15 +514,21 @@ public abstract class Crawler
     // return <code>true</code> if more references to process
     protected boolean processNextReference(
             final JobStatusUpdater statusUpdater,
-            final ImporterPipelineContext context) {
-        if (!context.isDelete() && isMaxDocuments()) {
+            final ProcessFlags flags) {
+//            final ImporterPipelineContext contextPrototype) {
+
+//        ImporterPipelineContext context =
+//                new ImporterPipelineContext(contextPrototype);
+
+        if (!flags.delete && isMaxDocuments()) {
+//        if (!context.isDelete() && isMaxDocuments()) {
             LOG.info("Maximum documents reached: {}",
                     getCrawlerConfig().getMaxDocuments());
             return false;
         }
         CrawlDocInfo queuedDocInfo =
                 crawlDocInfoService.nextQueued().orElse(null);
-        context.setDocInfo(queuedDocInfo);
+//        context.setDocInfo(queuedDocInfo);
 
         LOG.trace("Processing next reference from Queue: {}",
                 queuedDocInfo);
@@ -527,11 +538,11 @@ public abstract class Crawler
                 watch = new StopWatch();
                 watch.start();
             }
-            processNextQueuedCrawlData(context);
+            processNextQueuedCrawlData(queuedDocInfo, flags);// context);
             setProgress(statusUpdater);
             if (LOG.isDebugEnabled()) {
                 watch.stop();
-                LOG.debug("{} to process: {}", watch, 
+                LOG.debug("{} to process: {}", watch,
                         queuedDocInfo.getReference());
             }
         } else {
@@ -604,35 +615,45 @@ public abstract class Crawler
 //    protected abstract Doc wrapDocument(
 //            CrawlDocInfo crawlRef, Doc document);
 
-
+//TODO rely on events?
     protected void initCrawlReference(
-            CrawlDocInfo crawlRef,
-            CrawlDocInfo cachedCrawlRef,
-            Doc document) {
+//            CrawlDocInfo crawlRef,
+//            CrawlDocInfo cachedCrawlRef,
+            CrawlDoc document) {
         // default does nothing
     }
 
-    private void processNextQueuedCrawlData(ImporterPipelineContext context) {
-        CrawlDocInfo docInfo = context.getDocInfo();
+    private void processNextQueuedCrawlData(
+            CrawlDocInfo docInfo, ProcessFlags flags) {// ImporterPipelineContext context) {
+//        CrawlDocInfo docInfo = context.getDocInfo();
         String reference = docInfo.getReference();
-        Doc doc = new Doc(docInfo, getStreamFactory().newInputStream());
-        context.setDocument(doc);
 
         CrawlDocInfo cachedDocInfo =
                 crawlDocInfoService.getCached(reference).orElse(null);
-        context.setCachedDocInfo(cachedDocInfo);
+
+        CrawlDoc doc = new CrawlDoc(
+                docInfo, cachedDocInfo, getStreamFactory().newInputStream(),
+                flags.orphan);
+
+        ImporterPipelineContext context =
+                new ImporterPipelineContext(Crawler.this, doc);
+
+
+//        context.setDocument(doc);
+//
+//        context.setCachedDocInfo(cachedDocInfo);
 
         doc.getMetadata().set(
                 CrawlDocMetadata.IS_CRAWL_NEW,
                 cachedDocInfo == null);
 
-        initCrawlReference(docInfo, cachedDocInfo, doc);
+        initCrawlReference(doc);//docInfo, cachedDocInfo, doc);
 
         try {
-            if (context.isDelete()) {
-                deleteReference(docInfo, doc);
-                finalizeDocumentProcessing(
-                        docInfo, doc, cachedDocInfo);
+            if (flags.delete) {
+//            if (context.isDelete()) {
+                deleteReference(doc);
+                finalizeDocumentProcessing(doc);
                 return;
             }
             LOG.debug("Processing reference: {}", reference);
@@ -640,8 +661,7 @@ public abstract class Crawler
             ImporterResponse response = executeImporterPipeline(context);
 
             if (response != null) {
-                processImportResponse(
-                        response, docInfo, cachedDocInfo);
+                processImportResponse(response, doc);//docInfo, cachedDocInfo);
             } else {
                 if (docInfo.getState().isNewOrModified()) {
                     docInfo.setState(CrawlState.REJECTED);
@@ -656,7 +676,7 @@ public abstract class Crawler
                 //OR do we want to always fire REJECTED_IMPORT on import failure
                 //(in addition to whatever) and maybe a new REJECTED_COLLECTOR
                 //when it did not reach the importer module?
-                finalizeDocumentProcessing(docInfo, doc, cachedDocInfo);
+                finalizeDocumentProcessing(doc);
             }
         } catch (Throwable e) {
             //TODO do we really want to catch anything other than
@@ -672,7 +692,7 @@ public abstract class Crawler
                 LOG.info("Could not process document: {} ({})",
                         reference, e.getMessage());
             }
-            finalizeDocumentProcessing(docInfo, doc, cachedDocInfo);
+            finalizeDocumentProcessing(doc);
 
             // Rethrow exception is we want the crawler to stop
             List<Class<? extends Exception>> exceptionClasses =
@@ -688,17 +708,19 @@ public abstract class Crawler
     }
 
     private void processImportResponse(
-            ImporterResponse response,
-            CrawlDocInfo docInfo,
-            CrawlDocInfo cachedDocInfo) {
+            ImporterResponse response, CrawlDoc doc) {
+//            CrawlDocInfo docInfo,
+//            CrawlDocInfo cachedDocInfo) {
 
-        Doc doc = response.getDocument();
+//        CrawlDoc doc = (CrawlDoc) response.getDocument();
+        CrawlDocInfo docInfo = doc.getDocInfo();
+
         if (response.isSuccess()) {
             getEventManager().fire(CrawlerEvent.create(
                     DOCUMENT_IMPORTED, this, docInfo, response));
             //Doc wrappedDoc = wrapDocument(crawlRef, doc);
-            executeCommitterPipeline(this, doc, //wrappedDoc,
-                    docInfo, cachedDocInfo);
+            executeCommitterPipeline(this, doc);//, //wrappedDoc,
+//                    docInfo, cachedDocInfo);
         } else {
             docInfo.setState(CrawlState.REJECTED);
             getEventManager().fire(CrawlerEvent.create(
@@ -707,22 +729,27 @@ public abstract class Crawler
                     docInfo.getReference(),
                     response.getImporterStatus().getDescription());
         }
-        finalizeDocumentProcessing(docInfo, doc, cachedDocInfo);
+        finalizeDocumentProcessing(doc);
         ImporterResponse[] children = response.getNestedResponses();
         for (ImporterResponse child : children) {
+//TODO have a createEmbeddedDoc method instead?
             CrawlDocInfo embeddedCrawlRef = createEmbeddedCrawlReference(
                     child.getReference(), docInfo);
             CrawlDocInfo embeddedCachedCrawlRef =
                     crawlDocInfoService.getCached(
                             child.getReference()).orElse(null);
-            processImportResponse(child,
-                    embeddedCrawlRef, embeddedCachedCrawlRef);
+            processImportResponse(child, new CrawlDoc(
+                    embeddedCrawlRef, embeddedCachedCrawlRef,
+                    child.getDocument().getInputStream()));
+//                    embeddedCrawlRef, embeddedCachedCrawlRef);
         }
     }
 
 
-    private void finalizeDocumentProcessing(CrawlDocInfo docInfo,
-            Doc doc, CrawlDocInfo cachedDocInfo) {
+    private void finalizeDocumentProcessing(CrawlDoc doc) {
+
+        CrawlDocInfo docInfo = doc.getDocInfo();
+        CrawlDocInfo cachedDocInfo = doc.getCachedDocInfo();
 
         //--- Ensure we have a state -------------------------------------------
         if (docInfo.getState() == null) {
@@ -735,7 +762,7 @@ public abstract class Crawler
         try {
 
             // important to call this before copying properties further down
-            beforeFinalizeDocumentProcessing(docInfo, doc, cachedDocInfo);
+            beforeFinalizeDocumentProcessing(doc);
 
             //--- If doc crawl was incomplete, set missing info from cache -----
             // If document is not new or modified, it did not go through
@@ -776,7 +803,7 @@ public abstract class Crawler
                     // marked as deleted.
                     if (cachedDocInfo != null
                             && !cachedDocInfo.getState().isOneOf(CrawlState.DELETED)) {
-                        deleteReference(docInfo, doc);
+                        deleteReference(doc);
                     }
                 } else {
                     // GRACE_ONCE:
@@ -792,10 +819,10 @@ public abstract class Crawler
                         // https://github.com/Norconex/collector-http/issues/635
                         //TODO handle better (make sure "processedInvalid"
                         // is no longer wiped by datastore on startup).
-                        deleteReference(docInfo, doc);
+                        deleteReference(doc);
                     } else if (!cachedDocInfo.getState().isOneOf(CrawlState.DELETED)) {
                         if (!cachedDocInfo.getState().isGoodState()) {
-                            deleteReference(docInfo, doc);
+                            deleteReference(doc);
                         } else {
                             LOG.debug("This spoiled reference is "
                                     + "being graced once (will be deleted "
@@ -821,9 +848,7 @@ public abstract class Crawler
         }
 
         try {
-            if (doc != null) {
-                doc.getInputStream().dispose();
-            }
+            doc.getInputStream().dispose();
         } catch (Exception e) {
             LOG.error("Could not dispose of resources.", e);
         }
@@ -833,15 +858,11 @@ public abstract class Crawler
      * Gives implementors a change to take action on a document before
      * its processing is being finalized (cycle end-of-life for a crawled
      * reference). Default implementation does nothing.
-     * @param crawlRef crawl data with data the crawler was able to obtain,
-     *                  guaranteed to have a non-null state
      * @param doc the document
-     * @param cachedCrawlRef cached crawl data
-     *        (<code>null</code> if document was not crawled before)
      */
-    protected void beforeFinalizeDocumentProcessing(CrawlDocInfo crawlRef,
-            Doc doc, CrawlDocInfo cachedCrawlRef) {
+    protected void beforeFinalizeDocumentProcessing(CrawlDoc doc) {
         //NOOP
+//TODO rely on event instead???
     }
 
     protected abstract void markReferenceVariationsAsProcessed(
@@ -856,12 +877,9 @@ public abstract class Crawler
 
     //TODO, replace with DocumentPipelineContext?
     protected abstract void executeCommitterPipeline(
-            Crawler crawler,
-            Doc doc,
-            CrawlDocInfo crawlRef,
-            CrawlDocInfo cachedCrawlRef);
+            Crawler crawler, CrawlDoc doc);
 
-    private Properties getNullSafeMetadata(Doc doc) {
+    private Properties getNullSafeMetadata(CrawlDoc doc) {
         if (doc == null) {
             return new Properties();
         }
@@ -883,21 +901,35 @@ public abstract class Crawler
         return strategy;
     }
 
-    private void deleteReference(
-            CrawlDocInfo crawlRef, Doc doc) {
-        LOG.debug("Deleting reference: {}", crawlRef.getReference());
+    private void deleteReference(CrawlDoc doc) {
+        LOG.debug("Deleting reference: {}", doc.getReference());
         ICommitter committer = getCrawlerConfig().getCommitter();
-        crawlRef.setState(CrawlState.DELETED);
+        doc.getDocInfo().setState(CrawlState.DELETED);
         if (committer != null) {
             committer.remove(
-                    crawlRef.getReference(), getNullSafeMetadata(doc));
+                    doc.getReference(), getNullSafeMetadata(doc));
         }
         getEventManager().fire(CrawlerEvent.create(
-                DOCUMENT_COMMITTED_REMOVE, this, crawlRef, doc));
+                DOCUMENT_COMMITTED_REMOVE, this, doc.getDocInfo(), doc));
+    }
+
+//TODO make enum if never mixed, and add "default" --------------------------------------------
+    private final class ProcessFlags {
+        private boolean delete;
+        private boolean orphan;
+        private ProcessFlags delete() {
+            this.delete = true;
+            return this;
+        }
+        private ProcessFlags orphan() {
+            this.orphan = true;
+            return this;
+        }
     }
 
     private final class ProcessReferencesRunnable implements Runnable {
-        private final ImporterPipelineContext importerContextPrototype;
+        //private final ImporterPipelineContext importerContextPrototype;
+        private final ProcessFlags flags;
         private final JobSuite suite;
         private final JobStatusUpdater statusUpdater;
         private final CountDownLatch latch;
@@ -906,11 +938,13 @@ public abstract class Crawler
                 JobSuite suite,
                 JobStatusUpdater statusUpdater,
                 CountDownLatch latch,
-                ImporterPipelineContext importerContextPrototype) {
+                ProcessFlags flags) {
+//                ImporterPipelineContext importerContextPrototype) {
             this.suite = suite;
             this.statusUpdater = statusUpdater;
             this.latch = latch;
-            this.importerContextPrototype = importerContextPrototype;
+            this.flags = flags;
+//            this.importerContextPrototype = importerContextPrototype;
         }
 
         @Override
@@ -919,9 +953,8 @@ public abstract class Crawler
             try {
                 while (!isStopped()) {
                     try {
-                        if (!processNextReference(statusUpdater,
-                                new ImporterPipelineContext(
-                                        importerContextPrototype))) {
+                        if (!processNextReference(statusUpdater, flags)) {
+//                                        importerContextPrototype)) {
                             break;
                         }
                     } catch (Exception e) {

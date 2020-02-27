@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.filter.IReferenceFilter;
-import com.norconex.collector.core.pipeline.BasePipelineContext;
+import com.norconex.collector.core.pipeline.DocInfoPipelineContext;
 import com.norconex.importer.handler.filter.IOnMatchFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 
@@ -43,7 +43,7 @@ public final class ReferenceFiltersStageUtil {
     // return true if reference is rejected
     public static boolean resolveReferenceFilters(
             List<IReferenceFilter> filters,
-            BasePipelineContext ctx, String type) {
+            DocInfoPipelineContext ctx, String type) {
         if (filters == null) {
             return false;
         }
@@ -92,7 +92,7 @@ public final class ReferenceFiltersStageUtil {
     }
 
     private static void fireDocumentRejected(
-            Object subject, BasePipelineContext ctx) {
+            Object subject, DocInfoPipelineContext ctx) {
         ctx.fireCrawlerEvent(REJECTED_FILTER, ctx.getDocInfo(), subject);
 
     }

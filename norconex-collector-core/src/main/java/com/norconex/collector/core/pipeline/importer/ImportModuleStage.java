@@ -34,12 +34,7 @@ public class ImportModuleStage
 
         boolean isContentTypeSet = doc.getDocInfo().getContentType() != null;
 
-        ImporterResponse response = importer.importDocument(
-                doc.getInputStream(),
-                doc.getDocInfo().getContentType(),
-                doc.getDocInfo().getContentEncoding(),
-                doc.getMetadata(),
-                doc.getReference());
+        ImporterResponse response = importer.importDocument(doc);
         ctx.setImporterResponse(response);
 
         //TODO is it possible for content type not to be set here??
