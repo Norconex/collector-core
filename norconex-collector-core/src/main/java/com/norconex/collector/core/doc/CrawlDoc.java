@@ -14,6 +14,8 @@
  */
 package com.norconex.collector.core.doc;
 
+import java.util.Objects;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -34,6 +36,11 @@ public class CrawlDoc extends Doc {
 
     private final CrawlDocInfo cachedDocInfo;
     private final boolean orphan;
+
+    public CrawlDoc(String reference, CachedInputStream content) {
+        this(new DocInfo(reference),  null, Objects.requireNonNull(
+                content, "'content' must not be null"), false);
+    }
 
     public CrawlDoc(
             DocInfo docInfo,

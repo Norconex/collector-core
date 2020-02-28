@@ -76,7 +76,7 @@ public class DocumentPipelineContext extends AbstractPipelineContext {
     }
 
     public CrawlDocInfo getDocInfo() {
-        return (CrawlDocInfo) document.getDocInfo();
+        return document.getDocInfo();
     }
 
 
