@@ -14,7 +14,7 @@
  */
 package com.norconex.collector.core.doc;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -52,7 +52,8 @@ public class CrawlDocInfo extends DocInfo {
     private String metaChecksum;
     @ToStringExclude
     private String contentChecksum;
-    private LocalDateTime crawlDate;
+    private ZonedDateTime crawlDate;
+
     @Index
     private Stage processingStage;
 
@@ -114,14 +115,14 @@ public class CrawlDocInfo extends DocInfo {
      * @return the crawl date
      * @since 1.5.0
      */
-    public LocalDateTime getCrawlDate() {
+    public ZonedDateTime getCrawlDate() {
         return crawlDate;
     }
     /**
      * Sets the crawl date.
      * @param crawlDate the crawl date
      */
-    public void setCrawlDate(LocalDateTime crawlDate) {
+    public void setCrawlDate(ZonedDateTime crawlDate) {
         this.crawlDate = crawlDate;
     }
 
