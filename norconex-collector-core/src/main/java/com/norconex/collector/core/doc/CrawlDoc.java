@@ -14,15 +14,12 @@
  */
 package com.norconex.collector.core.doc;
 
-import java.util.Objects;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.io.CachedInputStream;
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.doc.DocInfo;
 
@@ -37,11 +34,9 @@ public class CrawlDoc extends Doc {
     private final CrawlDocInfo cachedDocInfo;
     private final boolean orphan;
 
-    public CrawlDoc(String reference, CachedInputStream content) {
-        this(new DocInfo(reference),  null, Objects.requireNonNull(
-                content, "'content' must not be null"), false);
+    public CrawlDoc(DocInfo docInfo, CachedInputStream content) {
+        this(docInfo, null, content, false);
     }
-
     public CrawlDoc(
             DocInfo docInfo,
             CrawlDocInfo cachedDocInfo,
@@ -57,22 +52,6 @@ public class CrawlDoc extends Doc {
         this.orphan = orphan;
     }
 
-//    public CrawlDoc(
-//            DocInfo docInfo,
-//            CrawlDocInfo cachedDocInfo,
-//            CachedInputStream content, boolean orphan) {
-//        this(docInfo, cachedDocInfo, content, null, orphan);
-//    }
-//    public CrawlDoc(
-//            DocInfo docInfo,
-//            CrawlDocInfo cachedDocInfo,
-//            CachedInputStream content,
-//            Properties metadata, boolean orphan) {
-//        super(docInfo, content, metadata);
-//        this.cachedDocInfo = cachedDocInfo;
-//        this.orphan = orphan;
-//    }
-
     @Override
     public CrawlDocInfo getDocInfo() {
         return (CrawlDocInfo) super.getDocInfo();
@@ -80,31 +59,6 @@ public class CrawlDoc extends Doc {
 
     public boolean isOrphan() {
         return orphan;
-    }
-
-    public CrawlDoc(
-            String reference,
-            CrawlDocInfo cachedDocInfo,
-            CachedInputStream content) {
-        this(reference, cachedDocInfo, content, null);
-    }
-    public CrawlDoc(
-            String reference,
-            CrawlDocInfo cachedDocInfo,
-            CachedInputStream content,
-            Properties metadata) {
-        this(reference, cachedDocInfo, content, metadata, false);
-    }
-//TODO remove unused constructors
-    public CrawlDoc(
-            String reference,
-            CrawlDocInfo cachedDocInfo,
-            CachedInputStream content,
-            Properties metadata,
-            boolean orphan) {
-        super(reference, content, metadata);
-        this.cachedDocInfo = cachedDocInfo;
-        this.orphan = orphan;
     }
 
     public CrawlDocInfo getCachedDocInfo() {
@@ -130,5 +84,4 @@ public class CrawlDoc extends Doc {
         b.setExcludeNullValues(true);
         return b.toString();
     }
-
 }
