@@ -14,8 +14,6 @@
  */
 package com.norconex.collector.core.spoil.impl;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Test;
 
 import com.norconex.collector.core.doc.CrawlState;
@@ -27,7 +25,7 @@ public class GenericSpoiledReferenceStrategizerTest  {
 
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         GenericSpoiledReferenceStrategizer s =
                 new GenericSpoiledReferenceStrategizer();
         s.setFallbackStrategy(SpoiledReferenceStrategy.GRACE_ONCE);

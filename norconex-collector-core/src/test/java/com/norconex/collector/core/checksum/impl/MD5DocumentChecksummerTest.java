@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,7 +136,7 @@ public class MD5DocumentChecksummerTest {
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         MD5DocumentChecksummer c = new MD5DocumentChecksummer();
         c.setDisabled(true);
         c.setKeep(true);

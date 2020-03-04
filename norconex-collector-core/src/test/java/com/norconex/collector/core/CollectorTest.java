@@ -39,7 +39,7 @@ import com.norconex.importer.handler.transformer.impl.ReplaceTransformer;
 public class CollectorTest {
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         MockCollectorConfig config = new MockCollectorConfig();
         config.setId("test-collector");
         config.setMaxParallelCrawlers(100);

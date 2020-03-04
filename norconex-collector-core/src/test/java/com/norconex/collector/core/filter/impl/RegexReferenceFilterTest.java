@@ -1,4 +1,4 @@
-/* Copyright 2017-2019 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ package com.norconex.collector.core.filter.impl;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
@@ -27,7 +25,7 @@ import com.norconex.importer.handler.filter.OnMatch;
 public class RegexReferenceFilterTest {
 
     @Test
-    public void testCaseSensitivity() throws IOException {
+    public void testCaseSensitivity() {
         RegexReferenceFilter f = new RegexReferenceFilter();
         f.setOnMatch(OnMatch.INCLUDE);
         f.setRegex("case");
@@ -45,7 +43,7 @@ public class RegexReferenceFilterTest {
 
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         RegexReferenceFilter f = new RegexReferenceFilter();
         f.setCaseSensitive(true);
         f.setRegex(".*blah.*");

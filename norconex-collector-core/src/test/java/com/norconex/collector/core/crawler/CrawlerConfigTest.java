@@ -1,4 +1,4 @@
-/* Copyright 2017-2019 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package com.norconex.collector.core.crawler;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Test;
 
 import com.norconex.collector.core.crawler.CrawlerConfig.OrphansStrategy;
@@ -28,7 +26,7 @@ import com.norconex.commons.lang.xml.XML;
 public class CrawlerConfigTest {
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         MockCrawlerConfig c = new MockCrawlerConfig();
         c.setId("id");
         c.setMaxDocuments(33);

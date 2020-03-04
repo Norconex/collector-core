@@ -1,4 +1,4 @@
-/* Copyright 2016-2019 Norconex Inc.
+/* Copyright 2016-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package com.norconex.collector.core.filter.impl;
-
-import java.io.IOException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -101,7 +99,7 @@ public class ExtensionReferenceFilterTest {
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         ExtensionReferenceFilter f = new ExtensionReferenceFilter();
         f.setCaseSensitive(true);
         f.setExtensions("com,pdf");

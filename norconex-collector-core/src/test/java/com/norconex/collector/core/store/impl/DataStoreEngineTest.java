@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,12 +61,12 @@ public class DataStoreEngineTest {
         obj.setValid(true);
     }
     @AfterEach
-    public void tearDown() throws IOException {
+    public void tearDown() {
         tempFolder.toFile().deleteOnExit();
     }
 
     @DataStoreTest
-    public void testFindById(IDataStoreEngine f) throws IOException {
+    public void testFindById(IDataStoreEngine f) {
         savePojo(f, obj);
         inNewStoreSession(f, (store) -> {
             TestObject newPojo = store.findById("areference").get();
@@ -74,7 +74,7 @@ public class DataStoreEngineTest {
         });
     }
     @DataStoreTest
-    public void testFindBy(IDataStoreEngine f) throws IOException {
+    public void testFindBy(IDataStoreEngine f) {
         savePojo(f, obj);
         inNewStoreSession(f, (store) -> {
             Assertions.assertEquals(obj, store.findFirstBy(
@@ -85,7 +85,7 @@ public class DataStoreEngineTest {
         });
     }
     @DataStoreTest
-    public void testFindFirstBy(IDataStoreEngine f) throws IOException {
+    public void testFindFirstBy(IDataStoreEngine f) {
         // Saving two entries, only the first one should be returned
         savePojo(f, obj);
         obj.setReference("breference");
@@ -98,7 +98,7 @@ public class DataStoreEngineTest {
         });
     }
     @DataStoreTest
-    public void testFindAll(IDataStoreEngine f) throws IOException {
+    public void testFindAll(IDataStoreEngine f) {
         // Saving two entries, make sure they are retreived
         savePojo(f, obj);
         TestObject obj2 = new TestObject("breference", 67, "blah", "ipsum");
@@ -111,7 +111,7 @@ public class DataStoreEngineTest {
     }
 
     @DataStoreTest
-    public void testExistsById(IDataStoreEngine f) throws IOException {
+    public void testExistsById(IDataStoreEngine f) {
         savePojo(f, obj);
         inNewStoreSession(f, (store) -> {
             Assertions.assertTrue(store.existsById("areference"));
@@ -119,7 +119,7 @@ public class DataStoreEngineTest {
         });
     }
     @DataStoreTest
-    public void testExistsBy(IDataStoreEngine f) throws IOException {
+    public void testExistsBy(IDataStoreEngine f) {
         savePojo(f, obj);
         inNewStoreSession(f, (store) -> {
             Assertions.assertTrue(
@@ -129,7 +129,7 @@ public class DataStoreEngineTest {
     }
 
     @DataStoreTest
-    public void testCount(IDataStoreEngine f) throws IOException {
+    public void testCount(IDataStoreEngine f) {
         savePojo(f, obj);
         // each test start with 1
         inNewStoreSession(f, (store) -> {
@@ -143,7 +143,7 @@ public class DataStoreEngineTest {
         });
     }
     @DataStoreTest
-    public void testCountBy(IDataStoreEngine f) throws IOException {
+    public void testCountBy(IDataStoreEngine f) {
         savePojo(f, obj);
         inNewStoreSession(f, (store) -> {
             Assertions.assertEquals(
@@ -165,7 +165,7 @@ public class DataStoreEngineTest {
     }
 
     @DataStoreTest
-    public void testDeleteById(IDataStoreEngine f) throws IOException {
+    public void testDeleteById(IDataStoreEngine f) {
         savePojo(f, obj);
         inNewStoreSession(f, (store) -> {
             Assertions.assertEquals(1, store.count());
@@ -176,7 +176,7 @@ public class DataStoreEngineTest {
         });
     }
     @DataStoreTest
-    public void testDeleteBy(IDataStoreEngine f) throws IOException {
+    public void testDeleteBy(IDataStoreEngine f) {
         savePojo(f, obj);
         // add 2nd:
         obj.setReference("breference");
@@ -197,7 +197,7 @@ public class DataStoreEngineTest {
     }
 
     @DataStoreTest
-    public void testModifyById(IDataStoreEngine f) throws IOException {
+    public void testModifyById(IDataStoreEngine f) {
         savePojo(f, obj);
         inNewStoreSession(f, (store) -> {
             Assertions.assertTrue(
@@ -210,7 +210,7 @@ public class DataStoreEngineTest {
         });
     }
     @DataStoreTest
-    public void testModifyBy4Args(IDataStoreEngine f) throws IOException {
+    public void testModifyBy4Args(IDataStoreEngine f) {
         savePojo(f, obj);
         // add 2nd:
         obj.setReference("breference");
@@ -236,7 +236,7 @@ public class DataStoreEngineTest {
         });
     }
     @DataStoreTest
-    public void testModifyBy3Args(IDataStoreEngine f) throws IOException {
+    public void testModifyBy3Args(IDataStoreEngine f) {
         savePojo(f, obj);
         // add 2nd:
         obj.setReference("breference");
@@ -262,7 +262,7 @@ public class DataStoreEngineTest {
     }
 
     @DataStoreTest
-    public void testClear(IDataStoreEngine f) throws IOException {
+    public void testClear(IDataStoreEngine f) {
         savePojo(f, obj);
         // add 2nd:
         obj.setReference("breference");
@@ -277,8 +277,7 @@ public class DataStoreEngineTest {
         });
     }
 
-    private void savePojo(IDataStoreEngine f, TestObject testPojo)
-            throws IOException {
+    private void savePojo(IDataStoreEngine f, TestObject testPojo) {
         inNewStoreSession(f, (store) -> {
             store.save(testPojo);
         });

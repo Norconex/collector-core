@@ -29,7 +29,7 @@ import com.norconex.commons.lang.xml.XML;
 public class GenericMetadataChecksummerTest {
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         GenericMetadataChecksummer c = new GenericMetadataChecksummer();
         c.setDisabled(true);
         c.setKeep(true);
