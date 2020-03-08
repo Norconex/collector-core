@@ -26,12 +26,8 @@ public final class CrawlDocMetadata {
 
     public static final String PREFIX = "collector.";
 
-    //TODO really keep those found in DocMetadata?
-    //TODO really use these constants when fields on DocInfo should be used?
-    public static final String CONTENT_ENCODING =
-            PREFIX + "content-encoding";
-    public static final String CONTENT_TYPE =
-            PREFIX + "content-type";
+    // Avoid duplicating metadata under Collector when there is an equivalent
+    // set by Importer
     public static final String CHECKSUM_METADATA =
             PREFIX + "checksum-metadata";
     public static final String CHECKSUM_DOC =
