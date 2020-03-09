@@ -27,9 +27,6 @@
   <name>Norconex Collector Core</name>
 
   <properties>
-    <norconex-importer.version>3.0.0-SNAPSHOT</norconex-importer.version>
-    <norconex-jef.version>5.0.0-SNAPSHOT</norconex-jef.version>
-    <norconex-committer-core.version>3.0.0-SNAPSHOT</norconex-committer-core.version>
     <nitrite.version>3.2.0</nitrite.version>
   </properties>
 
@@ -227,7 +224,7 @@
       <url>${site.baseurl}/collectors/collector-core/latest</url>
     </site>
   </distributionManagement>
-
+<!-- 
   <reporting>
     <plugins>
       <plugin>
@@ -284,9 +281,6 @@
             <link>https://www.norconex.com/jef/api/latest/apidocs/</link>
             <link>https://www.norconex.com/collectors/importer/latest/apidocs/</link>
             <link>https://www.norconex.com/collectors/committer-core/latest/apidocs/</link>
-            <!-- 
-            <link>https://commons.apache.org/proper/commons-configuration/javadocs/v1.10/apidocs/</link>
-             -->
             <link>https://api.mongodb.com/java/current/</link>
           </links>
         </configuration>
@@ -303,6 +297,7 @@
       </plugin>
     </plugins>
   </reporting>
+ -->
 
   <url>https://www.norconex.com/collectors/collector-core</url>
   <description>Norconex Collector Core contains core functionalities shared between collectors.</description>
