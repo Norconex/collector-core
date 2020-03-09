@@ -34,27 +34,25 @@
 
   <dependencies>
 
+    <dependency>
+      <groupId>com.norconex.collectors</groupId>
+      <artifactId>norconex-importer</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.norconex.collectors</groupId>
+      <artifactId>norconex-committer-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.norconex.jef</groupId>
+      <artifactId>norconex-jef</artifactId>
+    </dependency>
+    
+    
     <!-- NOSQL for crawl store -->
     <dependency>
         <groupId>org.dizitart</groupId>
         <artifactId>nitrite</artifactId>
         <version>3.2.0</version>
-    </dependency>
-    
-    <dependency>
-      <groupId>com.norconex.collectors</groupId>
-      <artifactId>norconex-importer</artifactId>
-      <version>${norconex-importer.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.norconex.collectors</groupId>
-      <artifactId>norconex-committer-core</artifactId>
-      <version>${norconex-committer-core.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.norconex.jef</groupId>
-      <artifactId>norconex-jef</artifactId>
-      <version>${norconex-jef.version}</version>
     </dependency>
     
 <!--     <dependency>
