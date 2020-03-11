@@ -302,17 +302,17 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
     }
     /**
      * Sets document filters.
-     * @param documentfilters document filters
+     * @param documentFilters document filters
      */
-    public void setDocumentFilters(IDocumentFilter... documentfilters) {
-        setDocumentFilters(Arrays.asList(documentfilters));
+    public void setDocumentFilters(IDocumentFilter... documentFilters) {
+        setDocumentFilters(Arrays.asList(documentFilters));
     }
     /**
      * Sets document filters.
-     * @param documentfilters document filters
+     * @param documentFilters document filters
      * @since 2.0.0
      */
-    public void setDocumentFilters(List<IDocumentFilter> documentfilters) {
+    public void setDocumentFilters(List<IDocumentFilter> documentFilters) {
         CollectionUtil.setAll(this.documentFilters, documentFilters);
     }
 

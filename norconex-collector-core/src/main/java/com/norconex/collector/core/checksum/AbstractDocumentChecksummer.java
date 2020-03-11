@@ -72,7 +72,7 @@ public abstract class AbstractDocumentChecksummer
             if (StringUtils.isBlank(field)) {
                 field = CrawlDocMetadata.CHECKSUM_DOC;
             }
-            PropertySetter.orDefault(onSet).apply(
+            PropertySetter.orAppend(onSet).apply(
                     document.getMetadata(), field, checksum);
             LOG.debug("Document checksum stored in {}", field);
         }
