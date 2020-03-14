@@ -616,7 +616,7 @@ public abstract class Crawler
 //            CrawlDocInfo crawlRef, Doc document);
 
 //TODO rely on events?
-    protected void initCrawlReference(
+    protected void initCrawlDoc(
 //            CrawlDocInfo crawlRef,
 //            CrawlDocInfo cachedCrawlRef,
             CrawlDoc document) {
@@ -624,8 +624,7 @@ public abstract class Crawler
     }
 
     private void processNextQueuedCrawlData(
-            CrawlDocInfo docInfo, ProcessFlags flags) {// ImporterPipelineContext context) {
-//        CrawlDocInfo docInfo = context.getDocInfo();
+            CrawlDocInfo docInfo, ProcessFlags flags) {
         String reference = docInfo.getReference();
 
         CrawlDocInfo cachedDocInfo =
@@ -638,16 +637,11 @@ public abstract class Crawler
         ImporterPipelineContext context =
                 new ImporterPipelineContext(Crawler.this, doc);
 
-
-//        context.setDocument(doc);
-//
-//        context.setCachedDocInfo(cachedDocInfo);
-
         doc.getMetadata().set(
                 CrawlDocMetadata.IS_CRAWL_NEW,
                 cachedDocInfo == null);
 
-        initCrawlReference(doc);//docInfo, cachedDocInfo, doc);
+        initCrawlDoc(doc);
 
         try {
             if (flags.delete) {
