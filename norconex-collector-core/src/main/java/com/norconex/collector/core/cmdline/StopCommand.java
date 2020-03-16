@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import picocli.CommandLine.Command;
  */
 @Command(
     name = "stop",
-    description = "Stop the Collector."
+    description = "Stop the Collector"
 )
 public class StopCommand extends AbstractSubCommand {
     @Override

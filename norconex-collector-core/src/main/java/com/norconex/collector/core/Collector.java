@@ -14,14 +14,14 @@
  */
 package com.norconex.collector.core;
 
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_CLEAN_END;
 import static com.norconex.collector.core.CollectorEvent.COLLECTOR_CLEAN_BEGIN;
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_RUN_END;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_CLEAN_END;
 import static com.norconex.collector.core.CollectorEvent.COLLECTOR_RUN_BEGIN;
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_EXPORT_END;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_RUN_END;
 import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_EXPORT_BEGIN;
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_IMPORT_END;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_EXPORT_END;
 import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_IMPORT_BEGIN;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_IMPORT_END;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,12 +34,14 @@ import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.committer.core.ICommitter;
+import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.VersionUtil;
 import com.norconex.commons.lang.event.EventManager;
@@ -516,19 +518,35 @@ public abstract class Collector {
         versions.add(releaseVersion("Importer", Importer.class));
         versions.add(releaseVersion("JEF", IJob.class));
         versions.add(releaseVersion("Committer Core", ICommitter.class));
-        for (CrawlerConfig crawler : getCollectorConfig().getCrawlerConfigs()) {
-            ICommitter c = crawler.getCommitter();
-            if (c != null && !c.getClass().getPackage().getName().startsWith(
-                    "com.norconex.committer.core")) {
-                versions.add(releaseVersion("Committer "
-                        + c.getClass().getSimpleName(), c.getClass()));
-            }
+        versions.add(releaseVersion("Lang", ClassFinder.class));
+
+        for (Class<?> c : nonCoreClasspathCommitters()) {
+            versions.add(releaseVersion("Committer "
+                    + c.getClass().getSimpleName(), c.getClass()));
         }
         return versions;
     }
     private String releaseVersion(String moduleName, Class<?> cls) {
         return StringUtils.rightPad(moduleName + ": ", 20, ' ')
                 + VersionUtil.getDetailedVersion(cls, "undefined");
+    }
+
+    private List<Class<?>> nonCoreClasspathCommitters() {
+        List<Class<?>> classes = new ArrayList<>();
+        ClassFinder.findSubTypes(ICommitter.class, n -> !n.startsWith(
+                "com.norconex.committer.core")).forEach(c -> {
+            try {
+                classes.add(Class.forName(c, true, Collector.class.getClassLoader()));
+            } catch (ClassNotFoundException | NoClassDefFoundError e) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.error("Could not get version for {}.\n", c, e);
+                } else {
+                    LOG.warn("Could not get version for {}: {}\n",
+                            c, ExceptionUtils.getRootCauseMessage(e));
+                }
+            }
+        });
+        return classes;
     }
 
     //TODO Move file-based (or port?) lock/unlock to Norconex Commons Lang

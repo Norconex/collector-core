@@ -34,7 +34,7 @@ import picocli.CommandLine.Option;
 public class StartCommand extends AbstractSubCommand {
 
     @Option(names = { "-clean" },
-            description = "Clean the Collector crawling history "
+            description = "Clean the Collector crawl store "
                     + "before start. Same as invoking the \"clean\" and "
                     + "\"start\" commands one after the other.",
             required = false)

@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Norconex Inc.
+/* Copyright 2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,36 +14,61 @@
  */
 package com.norconex.collector.core.cmdline;
 
-import java.nio.file.Path;
-import java.util.List;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.IOException;
+import java.nio.file.Path;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.xml.XML;
+
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 /**
- * Import crawl store from specified file.
+ * Resolve all includes and variables substitution and print the
+ * resulting configuration to facilitate sharing.
  * @author Pascal Essiembre
  * @since 2.0.0
  */
 @Command(
-    name = "storeimport",
-    description = "Import crawl store from specified files"
+    name = "configrender",
+    description = "Render effective configuration"
 )
-public class StoreImportCommand extends AbstractSubCommand {
-    @Option(names = { "-f", "-file" },
-            description = "Data store files to import.",
-            required = true,
-            split = ",")
-    private List<Path> inFiles;
+public class ConfigRenderCommand extends AbstractSubCommand {
+
+    @Option(names = { "-o", "-output" },
+            description = "Render to a file",
+            required = false)
+    private Path output;
+
+    @Option(names = { "-i", "-indent" },
+            description = "Number of spaces used for indentation (default: 2).",
+            required = false)
+    private int indent = 2;
 
     @Override
     public void runCommand() {
-        getCollector().importDataStore(inFiles);
+        XML xml = new XML("collector");
+        getCollector().getCollectorConfig().saveToXML(xml);
+
+        String renderedConfig = xml.toString(indent);
+
+        if (output != null) {
+            try {
+                FileUtils.write(output.toFile(), renderedConfig, UTF_8);
+            } catch (IOException e) {
+                e.printStackTrace(System.err);
+            }
+        } else {
+            printOut(renderedConfig);
+        }
+        System.exit(0);
     }
 
     @Override
@@ -59,5 +84,4 @@ public class StoreImportCommand extends AbstractSubCommand {
         return new ReflectionToStringBuilder(
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
-
 }

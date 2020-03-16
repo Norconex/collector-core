@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package com.norconex.collector.core.cmdline;
 
+import java.io.PrintWriter;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -33,10 +34,6 @@ import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.PicocliException;
 import picocli.CommandLine.Spec;
 
-//@Command(name = "fs", synopsisSubcommandLabel = "(list | add | delete)",
-//subcommands = {List.class, Add.class, Delete.class}, mixinStandardHelpOptions = true)
-
-
 /**
  * Encapsulates command line arguments when running the Collector from
  * a command prompt.
@@ -46,25 +43,24 @@ import picocli.CommandLine.Spec;
 @Command(
     name = "<app>",
     description = "%nOptions:",
-//    customSynopsis = "<collector> [OPTIONS] [COMMANDS]",
-//    abbreviateSynopsis = true,
-//    headerHeading = CollectorCommand.NORCONEX,
-//    mixinStandardHelpOptions = true,
+    descriptionHeading = "%n<app> is the executable program used to "
+            + "launch me%n",
     sortOptions = false,
     separator = " ",
     commandListHeading = "%nCommands:%n",
     footerHeading = "%nExamples:%n",
     footer = "%n  Start the Collector:%n"
-           + "%n    <collector> start -config=/path/to/config.xml%n"
+           + "%n    <app> start -config=/path/to/config.xml%n"
            + "%n  Stop the Collector:%n"
-           + "%n    <collector> stop -config=/path/to/config.xml%n"
+           + "%n    <app> stop -config=/path/to/config.xml%n"
            + "%n  Get usage help on \"check\" command:%n"
-           + "%n    <collector> help check%n",
+           + "%n    <app> help configcheck%n",
     subcommands = {
         HelpCommand.class,
         StartCommand.class,
         StopCommand.class,
-        CheckCommand.class,
+        ConfigCheckCommand.class,
+        ConfigRenderCommand.class,
         CleanCommand.class,
         CommitCommand.class,
         StoreExportCommand.class,
@@ -74,25 +70,25 @@ import picocli.CommandLine.Spec;
 public class CollectorCommand
         implements Callable<Integer>, IExecutionExceptionHandler {
 
-//    static final String NORCONEX =
-//            " _   _  ___  ____   ____ ___  _   _ _______  __%n"
-//          + "| \\ | |/ _ \\|  _ \\ / ___/ _ \\| \\ | | ____\\ \\/ /%n"
-//          + "|  \\| | | | | |_) | |  | | | |  \\| |  _|  \\  / %n"
-//          + "| |\\  | |_| |  _ <| |__| |_| | |\\  | |___ /  \\ %n"
-//          + "|_| \\_|\\___/|_| \\_\\\\____\\___/|_| \\_|_____/_/\\_\\%n%n"
-//          + "%n";
+    static final String NORCONEX =
+            " _   _  ___  ____   ____ ___  _   _ _______  __%n"
+          + "| \\ | |/ _ \\|  _ \\ / ___/ _ \\| \\ | | ____\\ \\/ /%n"
+          + "|  \\| | | | | |_) | |  | | | |  \\| |  _|  \\  / %n"
+          + "| |\\  | |_| |  _ <| |__| |_| | |\\  | |___ /  \\ %n"
+          + "|_| \\_|\\___/|_| \\_\\\\____\\___/|_| \\_|_____/_/\\_\\%n%n"
+          + "%n";
 
     private final Collector collector;
 
     @Option(
         names = {"-h", "-help"},
         usageHelp = true,
-        description = "Show this help message and exit."
+        description = "Show this help message and exit"
     )
     private boolean help;
     @Option(
         names = {"-v", "-version"},
-        description = "Show the Collector version and exit."
+        description = "Show the Collector version and exit"
     )
     private boolean version;
 
@@ -108,51 +104,17 @@ public class CollectorCommand
         return collector;
     }
 
-
-//    public boolean isHelp() {
-//        return help;
-//    }
-//    public void setHelp(boolean help) {
-//        this.help = help;
-//    }
-//
-//    public boolean isVersion() {
-//        return version;
-//    }
-//    public void setVersion(boolean version) {
-//        this.version = version;
-//    }
-
-
-
     @Override
     public Integer call() throws Exception {
         if (version) {
-            collector.getReleaseVersions().stream().forEach(
-                    v -> spec.commandLine().getOut().println(v));
+            PrintWriter out = spec.commandLine().getOut();
+            out.format(NORCONEX);
+            out.println("Version of the Collector and key components:");
+            out.println();
+
+            collector.getReleaseVersions().stream().forEach(out::println);
             System.exit(0);
         }
-
-        //TODO use JSR Validation
-        // Validate arguments
-//        if (action != null && !isHelp() && !isVersion()) {
-//            if (!configFile.toFile().isFile()) {
-//                throw new IllegalArgumentException(String.format(
-//                        "Configuration file does not exist or "
-//                                + "path is invalid: '%s'.",
-//                        configFile.toAbsolutePath()));
-//            }
-//            if (variablesFile != null && !variablesFile.toFile().isFile()) {
-//                throw new IllegalArgumentException(String.format(
-//                        "Variables file does not exist or path is "
-//                                + "invalid: '%s'.",
-//                        variablesFile.toAbsolutePath()));
-//            }
-//        }
-
-//        if (action == null && !isHelp() && !isVersion()) {
-//            throw new IllegalArgumentException("No arguments specified.");
-//        }
         return 0;
     }
 
@@ -168,8 +130,6 @@ public class CollectorCommand
         }
         throw ex;
     }
-
-
 
     @Override
     public boolean equals(final Object other) {

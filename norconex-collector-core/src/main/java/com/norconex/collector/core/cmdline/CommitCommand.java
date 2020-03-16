@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import picocli.CommandLine.Command;
 @Command(
     name = "commit",
     description = "Committer to commit remains from their queue "
-                + "from a previous run."
+                + "from a previous run"
 )
 public class CommitCommand extends AbstractSubCommand {
     @Override

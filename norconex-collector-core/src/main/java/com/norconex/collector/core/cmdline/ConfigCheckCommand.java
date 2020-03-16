@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,10 @@ import picocli.CommandLine.Command;
  * @since 2.0.0
  */
 @Command(
-    name = "check",
-    description = "Validate configuration file format."
+    name = "configcheck",
+    description = "Validate configuration file syntax"
 )
-public class CheckCommand extends AbstractSubCommand {
+public class ConfigCheckCommand extends AbstractSubCommand {
     @Override
     public void runCommand() {
         // If it reaches here, that means no errors were found. Simply say so.

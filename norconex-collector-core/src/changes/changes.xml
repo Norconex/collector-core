@@ -99,7 +99,8 @@
         Command-line arguments are now different, with more options such
         as "cleaning" previous executions, 
         importing/exporting the crawl store and forcing a commit of any remains
-        from committer queue.
+        from committer queue, rendering of configuration file once interpreted,
+        etc.
       </action>
       <action dev="essiembre" type="update">
         Now use simple file-locks to prevent running conflicting

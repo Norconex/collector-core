@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import picocli.CommandLine.Command;
  */
 @Command(
     name = "clean",
-    description = "Clean the Collector crawling history (to start fresh)."
+    description = "Clean the Collector crawling history (to start fresh)"
 )
 public class CleanCommand extends AbstractSubCommand {
     @Override

@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import picocli.CommandLine.Option;
  */
 @Command(
     name = "storeexport",
-    description = "Export crawl store to specified directory."
+    description = "Export crawl store to specified directory"
 )
 public class StoreExportCommand extends AbstractSubCommand {
 
