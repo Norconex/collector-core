@@ -1,12 +1,8 @@
-
-LAST MERGE FROM MASTER
-======================
-
-2019-09-02
-
 TODO:
 ==============
 - Put back previous data store tests that now applies to CrawlReferenceService.
+
+- Re-introduce CommitCommand? Or is it no longer applicable? 
 
 - Rename CrawlReference* to shorter CrawlObject (preffered), or CrawlItem.
 

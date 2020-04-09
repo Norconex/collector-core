@@ -72,7 +72,10 @@ import com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer
 import com.norconex.collector.core.store.DataStoreExporter;
 import com.norconex.collector.core.store.DataStoreImporter;
 import com.norconex.collector.core.store.IDataStoreEngine;
-import com.norconex.committer.core.ICommitter;
+import com.norconex.committer.core3.CommitterContext;
+import com.norconex.committer.core3.CommitterException;
+import com.norconex.committer.core3.DeleteRequest;
+import com.norconex.committer.core3.ICommitter;
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.event.EventManager;
@@ -308,6 +311,22 @@ public abstract class Crawler
         this.crawlDocInfoService = new CrawlDocInfoService(
                 getId(), dataStoreEngine, getCrawlReferenceType());
 
+        //--- Committers ---
+        //TODO handle multiple committers, and move this code somewhere else.
+        CommitterContext committerContext = CommitterContext.build()
+                .setEventManager(getEventManager())
+                .setWorkDir(getWorkDir().resolve("committer-todo"))
+                .create();
+        ICommitter committer = getCrawlerConfig().getCommitter();
+        if (committer != null) {
+            try {
+                committer.init(committerContext);
+            } catch (CommitterException e) {
+                throw new CollectorException(
+                        "Could not initialize committer: " + committer, e);
+            }
+        }
+
         boolean resuming = crawlDocInfoService.open();
         getEventManager().fire(CrawlerEvent.create(CRAWLER_INIT_END, this));
         return resuming;
@@ -365,9 +384,19 @@ public abstract class Crawler
         crawlDocInfoService.close();
         dataStoreEngine.close();
 
-        //TODO shall we clear crawler listeners, or leave to collector
+        //TODO shall we clear crawler listeners, or leave to collector impl
         // to clean all?
         // eventManager.clearListeners();
+
+        ICommitter committer = getCrawlerConfig().getCommitter();
+        try {
+            if (committer != null) {
+                committer.close();
+            }
+        } catch (CommitterException e) {
+            throw new CollectorException("Could not close Committer: "
+                    + getCrawlerConfig().getCommitter(), e);
+        }
     }
 
     protected abstract void prepareExecution(
@@ -390,12 +419,13 @@ public abstract class Crawler
             handleOrphans(statusUpdater, suite);
         }
 
-        ICommitter committer = getCrawlerConfig().getCommitter();
-        if (committer != null) {
-            LOG.info("Crawler {}: committing documents.",
-                    (isStopped() ? "stopping" : "finishing"));
-            committer.commit();
-        }
+        //Can delete? Now done in destrowCrawler:
+//        ICommitter committer = getCrawlerConfig().getCommitter();
+//        if (committer != null) {
+//            LOG.info("Crawler {}: committing documents.",
+//                    (isStopped() ? "stopping" : "finishing"));
+//            committer.commit();
+//        }
 
         LOG.info("{} reference(s) processed.", processedCount);
 
@@ -900,8 +930,15 @@ public abstract class Crawler
         ICommitter committer = getCrawlerConfig().getCommitter();
         doc.getDocInfo().setState(CrawlState.DELETED);
         if (committer != null) {
-            committer.remove(
-                    doc.getReference(), getNullSafeMetadata(doc));
+            try {
+                committer.delete(new DeleteRequest(
+                        doc.getReference(), getNullSafeMetadata(doc)));
+            } catch (CommitterException e) {
+                throw new CollectorException(
+                        "Could not delete: " + doc.getReference(), e);
+            }
+//            committer.remove(
+//                    doc.getReference(), getNullSafeMetadata(doc));
         }
         getEventManager().fire(CrawlerEvent.create(
                 DOCUMENT_COMMITTED_REMOVE, this, doc.getDocInfo(), doc));

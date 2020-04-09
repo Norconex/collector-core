@@ -62,7 +62,7 @@ import picocli.CommandLine.Spec;
         ConfigCheckCommand.class,
         ConfigRenderCommand.class,
         CleanCommand.class,
-        CommitCommand.class,
+//        CommitCommand.class,
         StoreExportCommand.class,
         StoreImportCommand.class
     }

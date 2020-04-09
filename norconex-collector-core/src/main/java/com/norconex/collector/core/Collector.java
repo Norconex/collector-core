@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.collector.core.crawler.CrawlerConfig;
-import com.norconex.committer.core.ICommitter;
+import com.norconex.committer.core3.ICommitter;
 import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.VersionUtil;

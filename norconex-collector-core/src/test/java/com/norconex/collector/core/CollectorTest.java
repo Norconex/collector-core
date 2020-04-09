@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.crawler.MockCrawlerConfig;
 import com.norconex.collector.core.filter.impl.ExtensionReferenceFilter;
-import com.norconex.committer.core.impl.FileSystemCommitter;
+import com.norconex.committer.core3.fs.impl.JSONFileCommitter;
 import com.norconex.commons.lang.xml.ErrorHandlerCapturer;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.transformer.impl.ReplaceTransformer;
@@ -47,7 +47,7 @@ public class CollectorTest {
 
         MockCrawlerConfig crawlerCfg = new MockCrawlerConfig();
         crawlerCfg.setId("myCrawler");
-        crawlerCfg.setCommitter(new FileSystemCommitter());
+        crawlerCfg.setCommitter(new JSONFileCommitter());
 
         config.setCrawlerConfigs(new CrawlerConfig[] {crawlerCfg});
 
@@ -76,8 +76,8 @@ public class CollectorTest {
         assertTrue(CollectionUtils.isEmpty(
                 crawlA.getImporterConfig().getPostParseHandlers()),
                 "crawlA");
-        assertEquals("crawlACommitter", ((FileSystemCommitter)
-                crawlA.getCommitter()).getDirectory(),
+        assertEquals("crawlACommitter", ((JSONFileCommitter)
+                crawlA.getCommitter()).getDirectory().toString(),
                 "crawlA");
 
         MockCrawlerConfig crawlB =
@@ -94,8 +94,8 @@ public class CollectorTest {
                 crawlB.getImporterConfig().getPostParseHandlers().get(0))
                         .getReplacements().get(0).getToValue(),
                 "crawlB");
-        assertEquals("defaultCommitter", ((FileSystemCommitter)
-                crawlB.getCommitter()).getDirectory(),
+        assertEquals("defaultCommitter", ((JSONFileCommitter)
+                crawlB.getCommitter()).getDirectory().toString(),
                 "crawlB");
     }
 

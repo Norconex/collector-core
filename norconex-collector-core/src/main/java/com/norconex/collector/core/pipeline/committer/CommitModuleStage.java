@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,12 @@
  */
 package com.norconex.collector.core.pipeline.committer;
 
+import com.norconex.collector.core.CollectorException;
 import com.norconex.collector.core.crawler.CrawlerEvent;
 import com.norconex.collector.core.pipeline.DocumentPipelineContext;
-import com.norconex.committer.core.ICommitter;
+import com.norconex.committer.core3.CommitterException;
+import com.norconex.committer.core3.ICommitter;
+import com.norconex.committer.core3.UpsertRequest;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 import com.norconex.importer.doc.Doc;
 
@@ -31,8 +34,15 @@ public class CommitModuleStage
         ICommitter committer = ctx.getConfig().getCommitter();
         if (committer != null) {
             Doc doc = ctx.getDocument();
-            committer.add(doc.getReference(),
-                    doc.getInputStream(), doc.getMetadata());
+            try {
+                committer.upsert(new UpsertRequest(
+                        doc.getReference(),
+                        doc.getMetadata(),
+                        doc.getInputStream()));
+            } catch (CommitterException e) {
+                throw new CollectorException(
+                        "Could not upsert document: " + doc.getReference(), e);
+            }
         }
         ctx.fireCrawlerEvent(
                 CrawlerEvent.DOCUMENT_COMMITTED_ADD,

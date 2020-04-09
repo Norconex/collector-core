@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
 import com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer;
 import com.norconex.collector.core.store.IDataStoreEngine;
 import com.norconex.collector.core.store.impl.nitrite.NitriteDataStoreEngine;
-import com.norconex.committer.core.ICommitter;
+import com.norconex.committer.core3.ICommitter;
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.event.IEventListener;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
