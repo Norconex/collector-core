@@ -69,6 +69,14 @@ import com.norconex.jef5.suite.JobSuiteConfig;
  */
 public abstract class Collector {
 
+    /** Simple ASCI art of Norconex. */
+    public static final String NORCONEX_ASCII =
+            " _   _  ___  ____   ____ ___  _   _ _______  __\n"
+          + "| \\ | |/ _ \\|  _ \\ / ___/ _ \\| \\ | | ____\\ \\/ /\n"
+          + "|  \\| | | | | |_) | |  | | | |  \\| |  _|  \\  / \n"
+          + "| |\\  | |_| |  _ <| |__| |_| | |\\  | |___ /  \\ \n"
+          + "|_| \\_|\\___/|_| \\_\\\\____\\___/|_| \\_|_____/_/\\_\\\n";
+
     private static final Logger LOG =
             LoggerFactory.getLogger(Collector.class);
 
@@ -172,6 +180,9 @@ public abstract class Collector {
      * Starts all crawlers defined in configuration.
      */
     public void start() {
+        // Version intro
+        LOG.info('\n' + getReleaseVersions());
+
         lock();
         try {
             initCollector();
@@ -242,6 +253,19 @@ public abstract class Collector {
         tempDir = null;
         workDir = null;
         jobSuite = null;
+
+        // Print out versions
+        //TODO centralize the printing of versions
+//        new Formatter().f
+
+//        // Version intro
+//        LOG.info('\n' + getReleaseVersions());
+
+//        LOG.info('\n' +String.format(NORCONEX_ASCII));
+//        LOG.info("Version of the Collector and key components:");
+//        getReleaseVersions().stream().forEach(LOG::info);
+
+
         //TODO listeners are removed after everything and not kept
         // because we support adding them after config is added.  Shall we???
 //        eventManager.clearListeners();
@@ -511,7 +535,17 @@ public abstract class Collector {
     public String getVersion() {
         return VersionUtil.getVersion(getClass(), "Undefined");
     }
-    public List<String> getReleaseVersions() {
+
+    public String getReleaseVersions() {
+        StringBuilder b = new StringBuilder()
+                .append(NORCONEX_ASCII)
+                .append("\nVersion of the Collector and key components:\n")
+                .append("\n");
+        releaseVersions().stream().forEach(s -> b.append(s + '\n'));
+        return b.toString();
+    }
+
+    private List<String> releaseVersions() {
         List<String> versions = new ArrayList<>();
         versions.add(releaseVersion("Collector", getClass()));
         versions.add(releaseVersion("Collector Core", Collector.class));

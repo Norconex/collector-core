@@ -70,13 +70,13 @@ import picocli.CommandLine.Spec;
 public class CollectorCommand
         implements Callable<Integer>, IExecutionExceptionHandler {
 
-    static final String NORCONEX =
-            " _   _  ___  ____   ____ ___  _   _ _______  __%n"
-          + "| \\ | |/ _ \\|  _ \\ / ___/ _ \\| \\ | | ____\\ \\/ /%n"
-          + "|  \\| | | | | |_) | |  | | | |  \\| |  _|  \\  / %n"
-          + "| |\\  | |_| |  _ <| |__| |_| | |\\  | |___ /  \\ %n"
-          + "|_| \\_|\\___/|_| \\_\\\\____\\___/|_| \\_|_____/_/\\_\\%n%n"
-          + "%n";
+//    public static final String NORCONEX =
+//            " _   _  ___  ____   ____ ___  _   _ _______  __%n"
+//          + "| \\ | |/ _ \\|  _ \\ / ___/ _ \\| \\ | | ____\\ \\/ /%n"
+//          + "|  \\| | | | | |_) | |  | | | |  \\| |  _|  \\  / %n"
+//          + "| |\\  | |_| |  _ <| |__| |_| | |\\  | |___ /  \\ %n"
+//          + "|_| \\_|\\___/|_| \\_\\\\____\\___/|_| \\_|_____/_/\\_\\%n%n"
+//          + "%n";
 
     private final Collector collector;
 
@@ -107,12 +107,16 @@ public class CollectorCommand
     @Override
     public Integer call() throws Exception {
         if (version) {
-            PrintWriter out = spec.commandLine().getOut();
-            out.format(NORCONEX);
-            out.println("Version of the Collector and key components:");
-            out.println();
+//            out.println(Collector.getReleaseVersions());
 
-            collector.getReleaseVersions().stream().forEach(out::println);
+            PrintWriter out = spec.commandLine().getOut();
+//            out.println(Collector.NORCONEX_ASCII);
+//            out.println("Version of the Collector and key components:");
+//            out.println();
+//
+            out.println(collector.getReleaseVersions());
+
+           // collector.getReleaseVersions().stream().forEach(out::println);
             System.exit(0);
         }
         return 0;
