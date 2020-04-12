@@ -347,12 +347,13 @@ public abstract class Crawler
     public void clean() {
         initCrawler();
         getEventManager().fire(CrawlerEvent.create(CRAWLER_CLEAN_BEGIN, this));
-        destroyCrawler();
         try {
+            getCrawlerConfig().getCommitter().clean();
+            destroyCrawler();
             FileUtils.deleteDirectory(getTempDir().toFile());
             FileUtils.deleteDirectory(getWorkDir().toFile());
             getEventManager().fire(CrawlerEvent.create(CRAWLER_CLEAN_END, this));
-        } catch (IOException e) {
+        } catch (IOException | CommitterException e) {
             throw new CollectorException("Could clean crawler directory.");
         }
     }
