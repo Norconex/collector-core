@@ -14,11 +14,8 @@
  */
 package com.norconex.collector.core.pipeline.committer;
 
-import com.norconex.collector.core.CollectorException;
 import com.norconex.collector.core.crawler.CrawlerEvent;
 import com.norconex.collector.core.pipeline.DocumentPipelineContext;
-import com.norconex.committer.core3.CommitterException;
-import com.norconex.committer.core3.ICommitter;
 import com.norconex.committer.core3.UpsertRequest;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 import com.norconex.importer.doc.Doc;
@@ -31,22 +28,34 @@ public class CommitModuleStage
         implements IPipelineStage<DocumentPipelineContext> {
     @Override
     public boolean execute(DocumentPipelineContext ctx) {
-        ICommitter committer = ctx.getConfig().getCommitter();
-        if (committer != null) {
+
+        if (!ctx.getCommitters().isEmpty()) {
             Doc doc = ctx.getDocument();
-            try {
-                committer.upsert(new UpsertRequest(
-                        doc.getReference(),
-                        doc.getMetadata(),
-                        doc.getInputStream()));
-            } catch (CommitterException e) {
-                throw new CollectorException(
-                        "Could not upsert document: " + doc.getReference(), e);
-            }
+            ctx.getCommitters().upsert(new UpsertRequest(
+                    doc.getReference(),
+                    doc.getMetadata(),
+                    doc.getInputStream()));
         }
+
+//        ICommitter committer = ctx.getConfig().getCommitter();
+//        if (committer != null) {
+//            Doc doc = ctx.getDocument();
+//            try {
+//                committer.upsert(new UpsertRequest(
+//                        doc.getReference(),
+//                        doc.getMetadata(),
+//                        doc.getInputStream()));
+//            } catch (CommitterException e) {
+//                throw new CollectorException(
+//                        "Could not upsert document: " + doc.getReference(), e);
+//            }
+//        }
+
+
+        //TODO really pass Committers here?  Pass null isntead?
         ctx.fireCrawlerEvent(
                 CrawlerEvent.DOCUMENT_COMMITTED_ADD,
-                ctx.getDocInfo(), committer);
+                ctx.getDocInfo(), ctx.getCommitters());
         return true;
     }
 }

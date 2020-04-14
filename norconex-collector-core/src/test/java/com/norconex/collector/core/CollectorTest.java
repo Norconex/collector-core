@@ -47,7 +47,7 @@ public class CollectorTest {
 
         MockCrawlerConfig crawlerCfg = new MockCrawlerConfig();
         crawlerCfg.setId("myCrawler");
-        crawlerCfg.setCommitter(new JSONFileCommitter());
+        crawlerCfg.setCommitters(new JSONFileCommitter());
 
         config.setCrawlerConfigs(new CrawlerConfig[] {crawlerCfg});
 
@@ -77,7 +77,7 @@ public class CollectorTest {
                 crawlA.getImporterConfig().getPostParseHandlers()),
                 "crawlA");
         assertEquals("crawlACommitter", ((JSONFileCommitter)
-                crawlA.getCommitter()).getDirectory().toString(),
+                crawlA.getCommitters().get(0)).getDirectory().toString(),
                 "crawlA");
 
         MockCrawlerConfig crawlB =
@@ -95,7 +95,7 @@ public class CollectorTest {
                         .getReplacements().get(0).getToValue(),
                 "crawlB");
         assertEquals("defaultCommitter", ((JSONFileCommitter)
-                crawlB.getCommitter()).getDirectory().toString(),
+                crawlB.getCommitters().get(0)).getDirectory().toString(),
                 "crawlB");
     }
 

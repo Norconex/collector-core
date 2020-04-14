@@ -40,9 +40,11 @@
         </handler>  
       </postParseHandlers>    
     </importer>
-    <committer class="com.norconex.committer.core3.fs.impl.JSONFileCommitter">
-      <directory>defaultCommitter</directory>
-    </committer>
+    <committers>
+      <committer class="com.norconex.committer.core3.fs.impl.JSONFileCommitter">
+        <directory>defaultCommitter</directory>
+      </committer>
+    </committers>
   </crawlerDefaults>
 
   <crawlers>
@@ -61,9 +63,11 @@
           </handler>  
         </preParseHandlers>
       </importer>
-      <committer class="com.norconex.committer.core3.fs.impl.JSONFileCommitter">
-        <directory>crawlACommitter</directory>
-      </committer>
+      <committers>
+        <committer class="com.norconex.committer.core3.fs.impl.JSONFileCommitter">
+          <directory>crawlACommitter</directory>
+        </committer>
+      </committers>
     </crawler>
 
     <crawler id="myCrawlerB">

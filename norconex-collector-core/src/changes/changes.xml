@@ -9,6 +9,9 @@
 
     <release version="2.0.0-SNAPSHOT" date="2020-??-??" description="Major release">
       <action dev="essiembre" type="add">
+        Now supports providing multiple committers.
+      </action>
+      <action dev="essiembre" type="add">
         New collector events: COLLECTOR_RUN_BEGIN, COLLECTOR_RUN_END,
         COLLECTOR_STOP_BEGIN, COLLECTOR_STOP_END,
         COLLECTOR_CLEAN_BEGIN, COLLECTOR_CLEAN_END,

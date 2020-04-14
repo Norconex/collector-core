@@ -92,9 +92,11 @@
       </postParseHandlers>    
     </importer>
 
-    <committer class="com.norconex.committer.core3.fs.impl.JSONFileCommitter">
-      <directory>/tmp/somepath</directory>
-    </committer>
+    <committers>
+      <committer class="com.norconex.committer.core3.fs.impl.JSONFileCommitter">
+        <directory>/tmp/somepath</directory>
+      </committer>
+    </committers>
 
     <documentChecksummer 
         class="com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer"

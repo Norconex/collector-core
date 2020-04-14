@@ -80,7 +80,7 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
     private final List<IDocumentFilter> documentFilters = new ArrayList<>();
 
     private ImporterConfig importerConfig = new ImporterConfig();
-    private ICommitter committer;
+    private final List<ICommitter> committers = new ArrayList<>();
 
     private IDocumentChecksummer documentChecksummer =
             new MD5DocumentChecksummer();
@@ -373,16 +373,48 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
     /**
      * Gets the Committer module configuration.
      * @return Committer module configuration
+     * @deprecated Since 2.0.0, use {@link #getCommitters()}.
      */
+    @Deprecated
     public ICommitter getCommitter() {
-        return committer;
+        if (committers.isEmpty()) {
+            return null;
+        }
+        return committers.get(0);
     }
     /**
      * Sets the Committer module configuration.
      * @param committer Committer module configuration
+     * @deprecated Since 2.0.0, use {@link #setCommitters(ICommitter...)}.
      */
+    @Deprecated
     public void setCommitter(ICommitter committer) {
-        this.committer = committer;
+        setCommitters(committer);
+    }
+
+    /**
+     * Gets Committers responsible for persisting information
+     * to a target location/repository.
+     * @return list of Committers
+     */
+    public List<ICommitter> getCommitters() {
+        return Collections.unmodifiableList(committers);
+    }
+    /**
+     * Sets Committers responsible for persisting information
+     * to a target location/repository.
+     * @param committers list of Committers
+     */
+    public void setCommitters(List<ICommitter> committers) {
+        CollectionUtil.setAll(this.committers, committers);
+    }
+    /**
+     * Sets Committers responsible for persisting information
+     * to a target location/repository.
+     * @param committers list of Committers
+     */
+    public void setCommitters(ICommitter... committers) {
+        CollectionUtil.setAll(this.committers, committers);
     }
 
     /**
@@ -459,9 +491,7 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
         if (importerConfig != null) {
             xml.addElement("importer", importerConfig);
         }
-        if (committer != null) {
-            xml.addElement("committer", committer);
-        }
+        xml.addElementList("committers", "committer", committers);
         xml.addElement("documentChecksummer", documentChecksummer);
         xml.addElement(
                 "spoiledReferenceStrategizer", spoiledReferenceStrategizer);
@@ -475,6 +505,7 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
     @Override
     public final void loadFromXML(XML xml) {
         xml.checkDeprecated("crawler/workDir", "collector/workDir", true);
+        xml.checkDeprecated("committer", "committers/committer", true);
 
         setId(xml.getString("@id", id));
         setNumThreads(xml.getInteger("numThreads", numThreads));
@@ -506,8 +537,8 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
         xml.checkDeprecated("crawlDataStoreEngine", "dataStoreEngine", true);
         setDataStoreEngine(xml.getObjectImpl(
                 IDataStoreEngine.class, "dataStoreEngine", dataStoreEngine));
-        setCommitter(xml.getObjectImpl(
-                ICommitter.class, "committer", committer));
+        setCommitters(xml.getObjectListImpl(ICommitter.class,
+                "committers/committer", committers));
         setDocumentChecksummer(xml.getObjectImpl(IDocumentChecksummer.class,
                 "documentChecksummer", documentChecksummer));
         setSpoiledReferenceStrategizer(xml.getObjectImpl(

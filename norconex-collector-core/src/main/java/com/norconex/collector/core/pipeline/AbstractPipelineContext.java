@@ -20,6 +20,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.crawler.Crawler;
+import com.norconex.collector.core.crawler.CrawlerCommitters;
 import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.crawler.CrawlerEvent;
 import com.norconex.collector.core.doc.CrawlDocInfo;
@@ -74,6 +75,10 @@ public abstract class AbstractPipelineContext {
 
     public CrawlDocInfoService getDocInfoService() {
         return crawler.getDocInfoService();
+    }
+
+    public CrawlerCommitters getCommitters() {
+        return crawler.getCommitters();
     }
 
     /**

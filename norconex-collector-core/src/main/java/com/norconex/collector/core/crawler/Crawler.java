@@ -73,9 +73,7 @@ import com.norconex.collector.core.store.DataStoreExporter;
 import com.norconex.collector.core.store.DataStoreImporter;
 import com.norconex.collector.core.store.IDataStoreEngine;
 import com.norconex.committer.core3.CommitterContext;
-import com.norconex.committer.core3.CommitterException;
 import com.norconex.committer.core3.DeleteRequest;
-import com.norconex.committer.core3.ICommitter;
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.event.EventManager;
@@ -123,6 +121,7 @@ public abstract class Crawler
     private final CrawlerConfig config;
     private final Collector collector;
     private Importer importer;
+    private final CrawlerCommitters committers;
 
     private Path workDir;
     private Path tempDir;
@@ -149,6 +148,8 @@ public abstract class Crawler
         Objects.requireNonNull(config, "'collector' must not be null");
         this.config = config;
         this.collector = collector;
+        this.committers = new CrawlerCommitters(
+                this.collector.getStreamFactory(), config.getCommitters());
         INSTANCE.set(this);
     }
 
@@ -163,6 +164,10 @@ public abstract class Crawler
      */
     public EventManager getEventManager() {
         return collector.getEventManager();
+    }
+
+    public CrawlerCommitters getCommitters() {
+        return committers;
     }
 
     @Override
@@ -312,20 +317,12 @@ public abstract class Crawler
                 getId(), dataStoreEngine, getCrawlReferenceType());
 
         //--- Committers ---
-        //TODO handle multiple committers, and move this code somewhere else.
+        // index will be appended to committer workdir for each one
         CommitterContext committerContext = CommitterContext.build()
                 .setEventManager(getEventManager())
-                .setWorkDir(getWorkDir().resolve("committer-todo"))
+                .setWorkDir(getWorkDir().resolve("committer"))
                 .create();
-        ICommitter committer = getCrawlerConfig().getCommitter();
-        if (committer != null) {
-            try {
-                committer.init(committerContext);
-            } catch (CommitterException e) {
-                throw new CollectorException(
-                        "Could not initialize committer: " + committer, e);
-            }
-        }
+        committers.init(committerContext);
 
         boolean resuming = crawlDocInfoService.open();
         getEventManager().fire(CrawlerEvent.create(CRAWLER_INIT_END, this));
@@ -348,12 +345,13 @@ public abstract class Crawler
         initCrawler();
         getEventManager().fire(CrawlerEvent.create(CRAWLER_CLEAN_BEGIN, this));
         try {
-            getCrawlerConfig().getCommitter().clean();
+            committers.clean();
             destroyCrawler();
             FileUtils.deleteDirectory(getTempDir().toFile());
             FileUtils.deleteDirectory(getWorkDir().toFile());
-            getEventManager().fire(CrawlerEvent.create(CRAWLER_CLEAN_END, this));
-        } catch (IOException | CommitterException e) {
+            getEventManager().fire(
+                    CrawlerEvent.create(CRAWLER_CLEAN_END, this));
+        } catch (IOException e) {
             throw new CollectorException("Could clean crawler directory.");
         }
     }
@@ -388,16 +386,7 @@ public abstract class Crawler
         //TODO shall we clear crawler listeners, or leave to collector impl
         // to clean all?
         // eventManager.clearListeners();
-
-        ICommitter committer = getCrawlerConfig().getCommitter();
-        try {
-            if (committer != null) {
-                committer.close();
-            }
-        } catch (CommitterException e) {
-            throw new CollectorException("Could not close Committer: "
-                    + getCrawlerConfig().getCommitter(), e);
-        }
+        committers.close();
     }
 
     protected abstract void prepareExecution(
@@ -928,19 +917,10 @@ public abstract class Crawler
 
     private void deleteReference(CrawlDoc doc) {
         LOG.debug("Deleting reference: {}", doc.getReference());
-        ICommitter committer = getCrawlerConfig().getCommitter();
+
         doc.getDocInfo().setState(CrawlState.DELETED);
-        if (committer != null) {
-            try {
-                committer.delete(new DeleteRequest(
-                        doc.getReference(), getNullSafeMetadata(doc)));
-            } catch (CommitterException e) {
-                throw new CollectorException(
-                        "Could not delete: " + doc.getReference(), e);
-            }
-//            committer.remove(
-//                    doc.getReference(), getNullSafeMetadata(doc));
-        }
+        committers.delete(new DeleteRequest(
+                doc.getReference(), getNullSafeMetadata(doc)));
         getEventManager().fire(CrawlerEvent.create(
                 DOCUMENT_COMMITTED_REMOVE, this, doc.getDocInfo(), doc));
     }

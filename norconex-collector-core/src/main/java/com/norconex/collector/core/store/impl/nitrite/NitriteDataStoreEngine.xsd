@@ -15,14 +15,17 @@
    limitations under the License.
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:include schemaLocation="/com/norconex/commons/lang/Lang.xsd"></xs:include>
+  
   <xs:element name="dataStoreEngine">
     <xs:complexType>
       <xs:all>
-        <xs:element name="autoCommitBufferSize" type="xs:int" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="compress" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="disableAutoCommit" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="disableAutoCompact" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="disableShutdownHook" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="autoCommitBufferSize" type="NullableInteger" minOccurs="0" maxOccurs="1" />
+        <xs:element name="compress" type="NullableBoolean" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="disableAutoCommit" type="NullableBoolean" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="disableAutoCompact" type="NullableBoolean" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="disableShutdownHook" type="NullableBoolean" minOccurs="0" maxOccurs="1"/>
       </xs:all>
       <xs:attribute name="class" type="xs:string"/>
     </xs:complexType>

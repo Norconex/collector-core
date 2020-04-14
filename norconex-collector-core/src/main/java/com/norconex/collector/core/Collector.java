@@ -182,7 +182,7 @@ public abstract class Collector {
      */
     public void start() {
         // Version intro
-        LOG.info('\n' + getReleaseVersions());
+        LOG.info("\n{}", getReleaseVersions());
 
         lock();
         try {
