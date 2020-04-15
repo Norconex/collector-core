@@ -519,7 +519,7 @@ public abstract class Crawler
             final int threadIndex = i + 1;
             LOG.debug("Crawler thread #{} started.", threadIndex);
             pool.execute(new ProcessReferencesRunnable(
-                    suite, statusUpdater, latch, flags)); //contextPrototype));
+                    suite, statusUpdater, latch, flags, threadIndex)); //contextPrototype));
         }
 
         try {
@@ -945,22 +945,28 @@ public abstract class Crawler
         private final JobSuite suite;
         private final JobStatusUpdater statusUpdater;
         private final CountDownLatch latch;
+        private final int threadIndex;
 
         private ProcessReferencesRunnable(
                 JobSuite suite,
                 JobStatusUpdater statusUpdater,
                 CountDownLatch latch,
-                ProcessFlags flags) {
+                ProcessFlags flags,
+                int threadIndex) {
 //                ImporterPipelineContext importerContextPrototype) {
             this.suite = suite;
             this.statusUpdater = statusUpdater;
             this.latch = latch;
             this.flags = flags;
+            this.threadIndex = threadIndex;
 //            this.importerContextPrototype = importerContextPrototype;
         }
 
         @Override
         public void run() {
+            Thread.currentThread().setName(statusUpdater.getJobId()
+                    + "/" + threadIndex);
+
             JobSuite.setCurrentJobId(statusUpdater.getJobId());
             try {
                 while (!isStopped()) {
