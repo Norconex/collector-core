@@ -23,24 +23,8 @@ import com.norconex.importer.handler.filter.OnMatch;
 public class ExtensionReferenceFilterTest {
 
     @Test
-    public void testExtensionSplitting() {
-        ExtensionReferenceFilter filter = initFilter(
-                "html,htm,\n"
-              + "  xhtml , dhtml \n\n");
-
-        Assertions.assertArrayEquals(
-                new String[] {
-                    "html",
-                    "htm",
-                    "xhtml",
-                    "dhtml"
-                },
-                filter.getExtensionParts());
-    }
-
-    @Test
     public void testOnlyDetectExtensionsInLastPathSegment() {
-        ExtensionReferenceFilter filter = initFilter("com,xml");
+        ExtensionReferenceFilter filter = initFilter("com", "xml");
 
         Assertions.assertFalse(
                 filter.acceptReference("http://example.com"));
@@ -92,7 +76,7 @@ public class ExtensionReferenceFilterTest {
         Assertions.assertFalse(filter.acceptReference("dir.com/file.pdf"));
     }
 
-    private ExtensionReferenceFilter initFilter(String extensions) {
+    private ExtensionReferenceFilter initFilter(String... extensions) {
         ExtensionReferenceFilter filter = new ExtensionReferenceFilter();
         filter.setExtensions(extensions);
         return filter;
@@ -102,7 +86,7 @@ public class ExtensionReferenceFilterTest {
     public void testWriteRead() {
         ExtensionReferenceFilter f = new ExtensionReferenceFilter();
         f.setCaseSensitive(true);
-        f.setExtensions("com,pdf");
+        f.setExtensions("com","pdf");
         f.setOnMatch(OnMatch.EXCLUDE);
         XML.assertWriteRead(f, "filter");
     }

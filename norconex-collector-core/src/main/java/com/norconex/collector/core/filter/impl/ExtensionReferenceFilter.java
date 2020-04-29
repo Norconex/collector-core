@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,12 @@ package com.norconex.collector.core.filter.impl;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -28,6 +31,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.norconex.collector.core.filter.IDocumentFilter;
 import com.norconex.collector.core.filter.IMetadataFilter;
 import com.norconex.collector.core.filter.IReferenceFilter;
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
@@ -41,25 +45,24 @@ import com.norconex.importer.handler.filter.OnMatch;
  * Extensions are typically the last characters of a file name, after the
  * last dot.
  * </p>
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;filter class="com.norconex.collector.core.filter.impl.ExtensionReferenceFilter"
- *          onMatch="[include|exclude]"
- *          caseSensitive="[false|true]" &gt;
- *      (comma-separated list of extensions)
- *  &lt;/filter&gt;
- * </pre>
  *
- * <h4>Usage example:</h4>
+ * {@nx.xml.usage
+ * <filter class="com.norconex.collector.core.filter.impl.ExtensionReferenceFilter"
+ *     onMatch="[include|exclude]"
+ *     caseSensitive="[false|true]" >
+ *   (comma-separated list of extensions)
+ * </filter>
+ * }
+ *
+ * {@nx.xml.example
+ * <filter class="com.norconex.collector.core.filter.impl.ExtensionReferenceFilter">
+ *   html,htm,php,asp
+ * </filter>
+ * }
  * <p>
- * The following example will only accept references with the following
+ * The above example will only accept references with the following
  * extensions: .html, .htm, .php, and .asp.
  * </p>
- * <pre>
- *  &lt;filter class="com.norconex.collector.core.filter.impl.ExtensionReferenceFilter"&gt;
- *      html,htm,php,asp
- *  &lt;/filter&gt;
- * </pre>
  * @author Pascal Essiembre
  */
 public class ExtensionReferenceFilter implements
@@ -70,8 +73,7 @@ public class ExtensionReferenceFilter implements
         IXMLConfigurable {
 
     private boolean caseSensitive;
-    private String extensions;
-    private String[] extensionParts;
+    private final Set<String> extensions = new HashSet<>();
     private OnMatch onMatch;
 
     public ExtensionReferenceFilter() {
@@ -103,7 +105,7 @@ public class ExtensionReferenceFilter implements
     public boolean acceptReference(String reference) {
         OnMatch safeOnMatch = OnMatch.includeIfNull(onMatch);
 
-        if (StringUtils.isBlank(extensions)) {
+        if (extensions.isEmpty()) {
             return safeOnMatch == OnMatch.INCLUDE;
         }
         String referencePath;
@@ -116,7 +118,7 @@ public class ExtensionReferenceFilter implements
 
         String refExtension = FilenameUtils.getExtension(referencePath);
 
-        for (String ext : extensionParts) {
+        for (String ext : extensions) {
             if (!isCaseSensitive() && ext.equalsIgnoreCase(refExtension)) {
                 return safeOnMatch == OnMatch.INCLUDE;
             }
@@ -127,36 +129,26 @@ public class ExtensionReferenceFilter implements
         return safeOnMatch == OnMatch.EXCLUDE;
     }
 
+    public Set<String> getExtensions() {
+        return Collections.unmodifiableSet(extensions);
+    }
+    public void setExtensions(String... extensions) {
+        CollectionUtil.setAll(this.extensions, extensions);
+    }
+    public void setExtensions(List<String> extensions) {
+        CollectionUtil.setAll(this.extensions, extensions);
+    }
 
-    /**
-     * @return the extensions
-     */
-    public String getExtensions() {
-        return extensions;
-    }
-    public String[] getExtensionParts() {
-        return extensionParts;
-    }
     public boolean isCaseSensitive() {
         return caseSensitive;
     }
     public final void setCaseSensitive(boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
     }
-    public final void setExtensions(String extensions) {
-        this.extensions = extensions;
-        if (extensions != null) {
-            this.extensionParts = extensions.split("\\s*,\\s*");
-            for (int i = 0; i < this.extensionParts.length; i++) {
-                this.extensionParts[i] = this.extensionParts[i].trim();
-            }
-        } else {
-            this.extensionParts = ArrayUtils.EMPTY_STRING_ARRAY;
-        }
-    }
+
     @Override
     public void loadFromXML(XML xml)  {
-        setExtensions(xml.getString("."));
+        setExtensions(xml.getDelimitedStringList("."));
         setOnMatch(xml.getEnum("@onMatch", OnMatch.class, onMatch));
         setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
     }
@@ -164,7 +156,7 @@ public class ExtensionReferenceFilter implements
     public void saveToXML(XML xml) {
         xml.setAttribute("onMatch", onMatch);
         xml.setAttribute("caseSensitive", caseSensitive);
-        xml.setTextContent(extensions);
+        xml.setTextContent(StringUtils.join(extensions, ','));
     }
 
     @Override

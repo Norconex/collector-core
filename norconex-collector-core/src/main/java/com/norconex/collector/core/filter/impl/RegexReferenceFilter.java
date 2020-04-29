@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,25 +35,23 @@ import com.norconex.importer.handler.filter.OnMatch;
  * <p>
  * Filters URL based on a regular expression.
  * </p>
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;filter class="com.norconex.collector.core.filter.impl.RegexReferenceFilter"
- *          onMatch="[include|exclude]"
- *          caseSensitive="[false|true]" &gt;
- *      (regular expression)
- *  &lt;/filter&gt;
- * </pre>
+ * {@nx.xml.usage
+ * <filter class="com.norconex.collector.core.filter.impl.RegexReferenceFilter"
+ *     onMatch="[include|exclude]"
+ *     caseSensitive="[false|true]">
+ *   (regular expression)
+ * </filter>
+ * }
  *
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ * <filter class="com.norconex.collector.core.filter.impl.RegexReferenceFilter"
+ *     onMatch="exclude">
+ *   .*&#47;login/.*
+ * </filter>
+ * }
  * <p>
- * The following will reject documents having "/login/" in their reference.
+ * The above will reject documents having "/login/" in their reference.
  * </p>
- * <pre>
- *  &lt;filter class="com.norconex.collector.core.filter.impl.RegexReferenceFilter"
- *          onMatch="exclude"&gt;
- *      .*&#47;login/.*
- *  &lt;/filter&gt;
- * </pre>
  * @author Pascal Essiembre
  * @see Pattern
  */

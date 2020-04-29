@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,27 +37,25 @@ import com.norconex.importer.handler.filter.OnMatch;
  * Accepts or rejects a reference using regular expression to match
  * a metadata field value.
  * </p>
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;filter class="com.norconex.collector.core.filter.impl.RegexMetadataFilter"
- *          onMatch="[include|exclude]"
- *          caseSensitive="[false|true]"
- *          field="(metadata field to holding the value to match)"&gt;
- *      (regular expression of value to match)
- *  &lt;/filter&gt;
- * </pre>
+ * {@nx.xml.usage
+ * <filter class="com.norconex.collector.core.filter.impl.RegexMetadataFilter"
+ *     onMatch="[include|exclude]"
+ *     caseSensitive="[false|true]"
+ *     field="(metadata field to holding the value to match)">
+ *   (regular expression of value to match)
+ * </filter>
+ * }
  *
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ * <filter class="com.norconex.collector.core.filter.impl.RegexMetadataFilter"
+ *     onMatch="exclude" field="Content-Type">
+ *   application/zip
+ * </filter>
+ * }
  * <p>
  * Used in a web context, the following example filters out Zip documents base
  * on HTTP metadata "Content-Type".
  * </p>
- * <pre>
- *  &lt;filter class="com.norconex.collector.core.filter.impl.RegexMetadataFilter"
- *          onMatch="exclude" field="Content-Type"&gt;
- *      application/zip
- *  &lt;/filter&gt;
- * </pre>
  *
  * @author Pascal Essiembre
  * @see Pattern

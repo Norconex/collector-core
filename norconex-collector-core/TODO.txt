@@ -1,5 +1,13 @@
 TODO:
 ==============
+
+- Have Collector add these new default fields:
+    - Collector start date
+    - Crawler start date
+    - Document fetch date
+    - Collector Id
+    - Crawler Id
+
 - Put back previous data store tests that now applies to CrawlReferenceService.
 
 - Re-introduce CommitCommand? Or is it no longer applicable? 
