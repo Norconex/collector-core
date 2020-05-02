@@ -211,6 +211,7 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        b.append(getName() + " - ");
         if (crawlRef != null) {
             b.append(crawlRef.getReference()).append(" - ");
         }

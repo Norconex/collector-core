@@ -352,7 +352,8 @@ public abstract class Crawler
             getEventManager().fire(
                     CrawlerEvent.create(CRAWLER_CLEAN_END, this));
         } catch (IOException e) {
-            throw new CollectorException("Could clean crawler directory.");
+            throw new CollectorException(
+                    "Could not clean crawler directory.", e);
         }
     }
 
