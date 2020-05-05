@@ -321,6 +321,7 @@ public abstract class Crawler
         CommitterContext committerContext = CommitterContext.build()
                 .setEventManager(getEventManager())
                 .setWorkDir(getWorkDir().resolve("committer"))
+                .setStreamFactory(getStreamFactory())
                 .create();
         committers.init(committerContext);
 
