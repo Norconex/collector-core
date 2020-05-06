@@ -67,8 +67,8 @@ public class CollectorTest {
         assertEquals(22, crawlA.getNumThreads(),
                 "crawlA");
         assertEquals("crawlAFilter", ((ExtensionReferenceFilter)
-                crawlA.getReferenceFilters().get(0)).getExtensions(),
-                "crawlA");
+                crawlA.getReferenceFilters().get(0))
+                        .getExtensions().iterator().next(), "crawlA");
         assertEquals("F", ((ReplaceTransformer)
                 crawlA.getImporterConfig().getPreParseHandlers().get(0))
                         .getReplacements().get(0).getToValue(),
@@ -84,8 +84,8 @@ public class CollectorTest {
                 (MockCrawlerConfig) cfg.getCrawlerConfigs().get(1);
         assertEquals(1, crawlB.getNumThreads(), "crawlB");
         assertEquals("defaultFilter", ((ExtensionReferenceFilter)
-                crawlB.getReferenceFilters().get(0)).getExtensions(),
-                "crawlB");
+                crawlB.getReferenceFilters().get(0)).getExtensions()
+                        .iterator().next(), "crawlB");
         assertEquals("B", ((ReplaceTransformer)
                 crawlB.getImporterConfig().getPreParseHandlers().get(0))
                         .getReplacements().get(0).getToValue(),
