@@ -22,7 +22,7 @@ import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_RUN_BEGIN
 import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_RUN_END;
 import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_STOP_BEGIN;
 import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_STOP_END;
-import static com.norconex.collector.core.crawler.CrawlerEvent.DOCUMENT_COMMITTED_REMOVE;
+import static com.norconex.collector.core.crawler.CrawlerEvent.DOCUMENT_COMMITTED_DELETE;
 import static com.norconex.collector.core.crawler.CrawlerEvent.DOCUMENT_IMPORTED;
 import static com.norconex.collector.core.crawler.CrawlerEvent.REJECTED_ERROR;
 import static com.norconex.collector.core.crawler.CrawlerEvent.REJECTED_IMPORT;
@@ -924,7 +924,7 @@ public abstract class Crawler
         committers.delete(new DeleteRequest(
                 doc.getReference(), getNullSafeMetadata(doc)));
         getEventManager().fire(CrawlerEvent.create(
-                DOCUMENT_COMMITTED_REMOVE, this, doc.getDocInfo(), doc));
+                DOCUMENT_COMMITTED_DELETE, this, doc.getDocInfo(), doc));
     }
 
 //TODO make enum if never mixed, and add "default" --------------------------------------------

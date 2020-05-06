@@ -54,7 +54,7 @@ public class CommitModuleStage
 
         //TODO really pass Committers here?  Pass null isntead?
         ctx.fireCrawlerEvent(
-                CrawlerEvent.DOCUMENT_COMMITTED_ADD,
+                CrawlerEvent.DOCUMENT_COMMITTED_UPSERT,
                 ctx.getDocInfo(), ctx.getCommitters());
         return true;
     }

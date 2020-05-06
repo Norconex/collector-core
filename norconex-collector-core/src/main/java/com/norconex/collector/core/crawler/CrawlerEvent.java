@@ -109,15 +109,15 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
      */
     public static final String DOCUMENT_POSTIMPORTED = "DOCUMENT_POSTIMPORTED";
     /**
-     * A document was submitted to a committer for addition.
+     * A document was submitted to a committer for upsert.
      */
-    public static final String DOCUMENT_COMMITTED_ADD =
-            "DOCUMENT_COMMITTED_ADD";
+    public static final String DOCUMENT_COMMITTED_UPSERT =
+            "DOCUMENT_COMMITTED_UPSERT";
     /**
      * A document was submitted to a committer for removal.
      */
-    public static final String DOCUMENT_COMMITTED_REMOVE =
-            "DOCUMENT_COMMITTED_REMOVE";
+    public static final String DOCUMENT_COMMITTED_DELETE =
+            "DOCUMENT_COMMITTED_DELETE";
     /**
      * A document metadata fields were successfully retrieved.
      */
