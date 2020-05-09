@@ -571,8 +571,8 @@ public abstract class Collector {
         ClassFinder.findSubTypes(ICommitter.class, n -> !n.startsWith(
                 "com.norconex.committer.core")).forEach(c -> {
             try {
-                classes.add(Class.forName(c, true, Collector.class.getClassLoader()));
-            } catch (ClassNotFoundException | NoClassDefFoundError e) {
+                classes.add(c);
+            } catch (NoClassDefFoundError e) {
                 if (LOG.isDebugEnabled()) {
                     LOG.error("Could not get version for {}.\n", c, e);
                 } else {
