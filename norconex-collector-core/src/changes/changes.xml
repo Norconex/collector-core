@@ -54,6 +54,10 @@
         New CrawlDoc, CrawlDocInfo, and CrawlDocMetadata (either new
         or renamed).
       </action>
+      <action dev="essiembre" type="add">
+        New Crawler#isQueueInitialized() method to support asynchronous 
+        reference queueing.
+      </action>
       <action dev="essiembre" type="update">
         NitriteDataStore now default crawl store implementation.
       </action>

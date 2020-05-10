@@ -941,6 +941,10 @@ public abstract class Crawler
         }
     }
 
+    protected boolean isQueueInitialized() {
+        return true;
+    }
+
     private final class ProcessReferencesRunnable implements Runnable {
         //private final ImporterPipelineContext importerContextPrototype;
         private final ProcessFlags flags;
@@ -974,8 +978,12 @@ public abstract class Crawler
                 while (!isStopped()) {
                     try {
                         if (!processNextReference(statusUpdater, flags)) {
-//                                        importerContextPrototype)) {
-                            break;
+                            if (isQueueInitialized()) {
+                                break;
+                            }
+                            LOG.info("References are still being queued. "
+                                    + "Waiting for new references...");
+                            Sleeper.sleepSeconds(1);
                         }
                     } catch (Exception e) {
                         LOG.error(
