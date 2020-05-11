@@ -40,7 +40,57 @@ import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterConfig;
 
 /**
+ * <p>
  * Base Collector configuration.
+ * </p>
+ *
+ * <h3>XML Configuration</h3>
+ * <p>
+ * Subclasses inherit the following XML configuration items.
+ * </p>
+ *
+ * {@nx.xml #collector
+ * <workDir>
+ *   (Directory where generated files are written. Defaults to "./work")
+ * </workDir>
+ * <tempDir>
+ *   (Directory where generated files are written. Defaults to the working
+ *   directory + "./temp")
+ * </tempDir>
+ * <eventListeners>
+ *   <!-- Repeat as needed. -->
+ *   <listener class="(IEventListener implementation class name.)"/>
+ * </eventListeners>
+ * <maxConcurrentCrawlers>
+ *   (Maximum number of crawlers that can run simultaneously.
+ *    Only applicable when more than one crawler is configured.
+ *    Defaults to -1, unlimited.)
+ * </maxConcurrentCrawlers>
+ * <maxMemoryPool>
+ *   (Maximum number of bytes used for memory caching of data. E.g.,
+ *    when processing documents. Can use....xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Defaults to 1 GB.)
+ * </maxMemoryPool>
+ * <maxMemoryInstance>
+ * </maxMemoryInstance>
+ *
+ * maxMemoryPool combinedmaxMemoryInstance maximum number of bytes used formemory by each cached stream instance created
+ *
+ * <crawlerDefaults>
+ *   <!-- All crawler options defined in a "crawler" section (except for
+ *        the crawler "id") can be set here as default shared between
+ *        multiple crawlers. Configuration blocks defined for a specific
+ *        crawler always takes precedence. -->
+ * </crawlerDefaults>
+ * }
+ * {@nx.xml
+ * <crawlers>
+ *   <!-- You need to define at least one crawler. -->
+ *   <crawler id="(Unique identifier for this crawler)">
+ *     <!-- Crawler settings -->
+ *   </crawler>
+ * </crawlers>
+ * }
+ *
  * @author Pascal Essiembre
  */
 public abstract class CollectorConfig implements IXMLConfigurable {
@@ -59,14 +109,11 @@ public abstract class CollectorConfig implements IXMLConfigurable {
 
     private Path workDir = DEFAULT_WORK_DIR;
 
-    // tempDir are for files that can be deleted by the OS or else.
-    // default to system temp dir.
-    // when left null, defaults to collector workdir + /temp
     private Path tempDir = null;
     private int maxMemoryPool = ImporterConfig.DEFAULT_MAX_MEM_POOL;
     private int maxMemoryInstance = ImporterConfig.DEFAULT_MAX_MEM_INSTANCE;
 
-    private int maxParallelCrawlers = -1;
+    private int maxConcurrentCrawlers = -1;
 
     private final List<IEventListener<?>> eventListeners = new ArrayList<>();
 
@@ -137,11 +184,26 @@ public abstract class CollectorConfig implements IXMLConfigurable {
         this.workDir = workDir;
     }
 
-    //TODO document these and their defaults
-    //TODO since 3.0.0
+    /**
+     * Gets the temporary directory where files can be deleted safely by the OS
+     * or other processes when the collector is not running.
+     * When <code>null</code> the collector should assume {@link #getWorkDir()}
+     * + <code>/temp</code>.
+     * @return temporary directory
+     * @since 3.0.0
+     */
     public Path getTempDir() {
         return tempDir;
     }
+    /**
+    /**
+     * Sets the temporary directory where files can be deleted safely by the OS
+     * or other processes when the collector is not running.
+     * When <code>null</code> the collector should assume {@link #getWorkDir()}
+     * + <code>/temp</code>.
+     * @param tempDir temporary directory
+     * @since 3.0.0
+     */
     public void setTempDir(Path tempDir) {
         this.tempDir = tempDir;
     }
@@ -159,26 +221,45 @@ public abstract class CollectorConfig implements IXMLConfigurable {
     }
 
     /**
-     * Gets the maximum number of crawlers that can be executed in parallel at
-     * any given time.
+     * Gets the maximum number of crawlers that can be executed concurrently.
      * Default is <code>-1</code>, which means no maximum.
      * @return maximum crawlers to be executed in parallel
      * @since 1.10.0
+     * @deprecated Since 2.0.0, use {@link #getMaxConcurrentCrawlers()}
      */
+    @Deprecated
     public int getMaxParallelCrawlers() {
-        return maxParallelCrawlers;
+        return getMaxConcurrentCrawlers();
     }
     /**
-     * Sets the maximum number of crawlers that can be executed in parallel at
-     * any given time.
+     * Sets the maximum number of crawlers that can be executed concurrently.
      * Use <code>-1</code> for no maximum.
      * @param maxParallelCrawlers number of maximum parallel crawlers
      * @since 1.10.0
+     * @deprecated Since 2.0.0, use {@link #setMaxConcurrentCrawlers(int)}
      */
+    @Deprecated
     public void setMaxParallelCrawlers(int maxParallelCrawlers) {
-        this.maxParallelCrawlers = maxParallelCrawlers;
+        setMaxConcurrentCrawlers(maxParallelCrawlers);
     }
-
+    /**
+     * Gets the maximum number of crawlers that can be executed concurrently.
+     * Default is <code>-1</code>, which means no maximum.
+     * @return maximum crawlers to be executed concurrently
+     * @since 2.0.0
+     */
+    public int getMaxConcurrentCrawlers() {
+        return maxConcurrentCrawlers;
+    }
+    /**
+     * Sets the maximum number of crawlers that can be executed concurrently.
+     * Use <code>-1</code> for no maximum.
+     * @param maxConcurrentCrawlers maximum number of concurrent crawlers
+     * @since 2.0.0
+     */
+    public void setMaxConcurrentCrawlers(int maxConcurrentCrawlers) {
+        this.maxConcurrentCrawlers = maxConcurrentCrawlers;
+    }
 
     /**
      * Gets event listeners.
@@ -244,7 +325,7 @@ public abstract class CollectorConfig implements IXMLConfigurable {
     public void saveToXML(XML xml) {
         xml.setAttribute("id", getId());
         xml.addElement("workDir", getWorkDir());
-        xml.addElement("maxParallelCrawlers", getMaxParallelCrawlers());
+        xml.addElement("maxConcurrentCrawlers", getMaxConcurrentCrawlers());
         xml.addElementList("eventListeners", "listener", eventListeners);
         xml.addElementList("crawlers", "crawler", getCrawlerConfigs());
         saveCollectorConfigToXML(xml);
@@ -253,6 +334,9 @@ public abstract class CollectorConfig implements IXMLConfigurable {
 
     @Override
     public final void loadFromXML(XML xml) {
+        xml.checkDeprecated(
+                "maxParallelCrawlers", "maxConcurrentCrawlers", true);
+
         long then = System.currentTimeMillis();
         String collectorId = xml.getString("@id", null);
         if (StringUtils.isBlank(collectorId)) {
@@ -261,8 +345,8 @@ public abstract class CollectorConfig implements IXMLConfigurable {
         }
         setId(collectorId);
         setWorkDir(xml.getPath("workDir", getWorkDir()));
-        setMaxParallelCrawlers(xml.getInteger(
-                "maxParallelCrawlers", getMaxParallelCrawlers()));
+        setMaxConcurrentCrawlers(xml.getInteger(
+                "maxConcurrentCrawlers", getMaxConcurrentCrawlers()));
         setEventListeners(xml.getObjectListImpl(
                 IEventListener.class, "eventListeners/listener", eventListeners));
 
@@ -277,7 +361,6 @@ public abstract class CollectorConfig implements IXMLConfigurable {
         loadCollectorConfigFromXML(xml);
 
         long elapsed = System.currentTimeMillis() - then;
-        //TODO make debug?
         if (LOG.isInfoEnabled()) {
             LOG.info("\"{}\" Collector XML configuration loaded in {} "
                     + "(workdir={})", collectorId,

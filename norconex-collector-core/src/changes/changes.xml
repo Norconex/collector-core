@@ -116,6 +116,10 @@
       <action dev="essiembre" type="update">
         Dates now takes the zone into consideration.  
       </action>
+      <action dev="essiembre" type="update">
+        Collector "maxParallelCrawlers" is now deprecated in favor of  
+        "maxConcurrentCrawlers".
+      </action>
       <action dev="essiembre" type="remove">
         Removed "data" package in favor of "reference" package.
       </action>
