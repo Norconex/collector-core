@@ -14,6 +14,8 @@
  */
 package com.norconex.collector.core.crawler;
 
+import static com.norconex.collector.core.crawler.Crawler.ReferenceProcessStatus.MAX_REACHED;
+import static com.norconex.collector.core.crawler.Crawler.ReferenceProcessStatus.QUEUE_EMPTY;
 import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_CLEAN_BEGIN;
 import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_CLEAN_END;
 import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_INIT_BEGIN;
@@ -533,8 +535,14 @@ public abstract class Crawler
         }
     }
 
+    protected enum ReferenceProcessStatus {
+        MAX_REACHED,
+        QUEUE_EMPTY,
+        OK;
+    }
+
     // return <code>true</code> if more references to process
-    protected boolean processNextReference(
+    protected ReferenceProcessStatus processNextReference(
             final JobStatusUpdater statusUpdater,
             final ProcessFlags flags) {
 //            final ImporterPipelineContext contextPrototype) {
@@ -546,7 +554,7 @@ public abstract class Crawler
 //        if (!context.isDelete() && isMaxDocuments()) {
             LOG.info("Maximum documents reached: {}",
                     getCrawlerConfig().getMaxDocuments());
-            return false;
+            return ReferenceProcessStatus.MAX_REACHED;
         }
         CrawlDocInfo queuedDocInfo =
                 crawlDocInfoService.nextQueued().orElse(null);
@@ -576,11 +584,11 @@ public abstract class Crawler
                 LOG.trace("Is reference queue empty? {}", queueEmpty);
             }
             if (activeCount == 0 && queueEmpty) {
-                return false;
+                return ReferenceProcessStatus.QUEUE_EMPTY;
             }
             Sleeper.sleepMillis(MINIMUM_DELAY);
         }
-        return true;
+        return ReferenceProcessStatus.OK;
     }
 
     private void registerMonitoringMbean() {
@@ -977,13 +985,18 @@ public abstract class Crawler
             try {
                 while (!isStopped()) {
                     try {
-                        if (!processNextReference(statusUpdater, flags)) {
+                        ReferenceProcessStatus status =
+                                processNextReference(statusUpdater, flags);
+                        if (status == MAX_REACHED) {
+                            stop(suite.getJobStatus(suite.getRootJob()), suite);
+                            break;
+                        } else if (status == QUEUE_EMPTY) {
                             if (isQueueInitialized()) {
                                 break;
                             }
                             LOG.info("References are still being queued. "
                                     + "Waiting for new references...");
-                            Sleeper.sleepSeconds(1);
+                            Sleeper.sleepSeconds(5);
                         }
                     } catch (Exception e) {
                         LOG.error(
