@@ -42,7 +42,7 @@ public class CollectorTest {
     public void testWriteRead() {
         MockCollectorConfig config = new MockCollectorConfig();
         config.setId("test-collector");
-        config.setMaxParallelCrawlers(100);
+        config.setMaxConcurrentCrawlers(100);
         config.setEventListeners(new MockCollectorEventListener());
 
         MockCrawlerConfig crawlerCfg = new MockCrawlerConfig();

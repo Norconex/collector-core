@@ -23,7 +23,7 @@
 
   <workDir>/wordir</workDir>
 
-  <maxParallelCrawlers>50</maxParallelCrawlers>
+  <maxConcurrentCrawlers>50</maxConcurrentCrawlers>
  
   <eventListeners>
     <listener class="com.norconex.collector.core.MockCollectorEventListener">

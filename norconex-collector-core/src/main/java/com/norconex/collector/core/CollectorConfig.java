@@ -73,7 +73,7 @@ import com.norconex.importer.ImporterConfig;
  * <maxMemoryInstance>
  * </maxMemoryInstance>
  *
- * maxMemoryPool combinedmaxMemoryInstance maximum number of bytes used formemory by each cached stream instance created
+ *  <!-- maxMemoryPool combinedmaxMemoryInstance maximum number of bytes used formemory by each cached stream instance created -->
  *
  * <crawlerDefaults>
  *   <!-- All crawler options defined in a "crawler" section (except for

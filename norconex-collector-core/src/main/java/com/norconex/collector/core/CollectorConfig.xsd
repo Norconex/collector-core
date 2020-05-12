@@ -27,7 +27,7 @@
                     type="xs:string" minOccurs="0" maxOccurs="1"/>
          -->
          
-        <xs:element name="maxParallelCrawlers"
+        <xs:element name="maxConcurrentCrawlers"
                     type="xs:int" minOccurs="0" maxOccurs="1"/>
                              
         <xs:element name="eventListeners"
