@@ -34,6 +34,7 @@ import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -428,9 +429,9 @@ public abstract class Collector {
 
         if (!crawlerList.isEmpty()) {
             int maxCrawlers = crawlerList.size();
-            if (collConfig.getMaxParallelCrawlers() > 0) {
+            if (collConfig.getMaxConcurrentCrawlers() > 0) {
                 maxCrawlers = Math.min(
-                        maxCrawlers, collConfig.getMaxParallelCrawlers());
+                        maxCrawlers, collConfig.getMaxConcurrentCrawlers());
             }
             rootJob = new AsyncJobGroup(getId(), maxCrawlers, crawlerList);
         }
@@ -552,13 +553,20 @@ public abstract class Collector {
         versions.add(releaseVersion("Collector Core", Collector.class));
         versions.add(releaseVersion("Importer", Importer.class));
         versions.add(releaseVersion("JEF", IJob.class));
-        versions.add(releaseVersion("Committer Core", ICommitter.class));
         versions.add(releaseVersion("Lang", ClassFinder.class));
+        versions.add("Committer(s):");
+        versions.add(releaseVersion("  Core", ICommitter.class));
 
         for (Class<?> c : nonCoreClasspathCommitters()) {
-            versions.add(releaseVersion("Committer "
-                    + c.getClass().getSimpleName(), c.getClass()));
+            versions.add(releaseVersion("  " + StringUtils.removeEndIgnoreCase(
+                    c.getSimpleName(), "Committer"), c));
         }
+
+        versions.add("Runtime:");
+        versions.add("  Name:             " + SystemUtils.JAVA_RUNTIME_NAME);
+        versions.add("  Version:          " + SystemUtils.JAVA_RUNTIME_VERSION);
+        versions.add("  Vendor:           " + SystemUtils.JAVA_VENDOR);
+
         return versions;
     }
     private String releaseVersion(String moduleName, Class<?> cls) {

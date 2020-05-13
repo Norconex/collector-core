@@ -361,8 +361,8 @@ public abstract class CollectorConfig implements IXMLConfigurable {
         loadCollectorConfigFromXML(xml);
 
         long elapsed = System.currentTimeMillis() - then;
-        if (LOG.isInfoEnabled()) {
-            LOG.info("\"{}\" Collector XML configuration loaded in {} "
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("\"{}\" Collector XML configuration loaded in {} "
                     + "(workdir={})", collectorId,
                     DurationFormatter.FULL.format(elapsed), workDir);
         }
