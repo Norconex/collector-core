@@ -28,14 +28,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -556,7 +557,6 @@ public abstract class Collector {
         versions.add(releaseVersion("Lang", ClassFinder.class));
         versions.add("Committer(s):");
         versions.add(releaseVersion("  Core", ICommitter.class));
-
         for (Class<?> c : nonCoreClasspathCommitters()) {
             versions.add(releaseVersion("  " + StringUtils.removeEndIgnoreCase(
                     c.getSimpleName(), "Committer"), c));
@@ -574,20 +574,18 @@ public abstract class Collector {
                 + VersionUtil.getDetailedVersion(cls, "undefined");
     }
 
-    private List<Class<?>> nonCoreClasspathCommitters() {
-        List<Class<?>> classes = new ArrayList<>();
-        ClassFinder.findSubTypes(ICommitter.class, n -> !n.startsWith(
-                "com.norconex.committer.core")).forEach(c -> {
-            try {
-                classes.add(c);
-            } catch (NoClassDefFoundError e) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.error("Could not get version for {}.\n", c, e);
-                } else {
-                    LOG.warn("Could not get version for {}: {}\n",
-                            c, ExceptionUtils.getRootCauseMessage(e));
+    private Set<Class<?>> nonCoreClasspathCommitters() {
+        Set<Class<?>> classes = new HashSet<>();
+        if (collectorConfig == null) {
+            return classes;
+        }
+        collectorConfig.getCrawlerConfigs().forEach(crawlerConfig -> {
+            crawlerConfig.getCommitters().forEach(committer -> {
+                if (!committer.getClass().getName().startsWith(
+                        "com.norconex.committer.core")) {
+                    classes.add(committer.getClass());
                 }
-            }
+            });
         });
         return classes;
     }

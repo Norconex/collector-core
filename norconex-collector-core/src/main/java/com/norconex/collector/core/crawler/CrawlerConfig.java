@@ -395,7 +395,7 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
     /**
      * Gets Committers responsible for persisting information
      * to a target location/repository.
-     * @return list of Committers
+     * @return list of Committers (never <code>null</code>)
      */
     public List<ICommitter> getCommitters() {
         return Collections.unmodifiableList(committers);

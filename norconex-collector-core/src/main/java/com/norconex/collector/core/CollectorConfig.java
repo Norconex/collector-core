@@ -145,7 +145,7 @@ public abstract class CollectorConfig implements IXMLConfigurable {
 
     /**
      * Gets crawler configurations.
-     * @return crawler configurations
+     * @return crawler configurations (never <code>null</code>)
      * @since 1.7.0
      */
     public List<CrawlerConfig> getCrawlerConfigs() {
