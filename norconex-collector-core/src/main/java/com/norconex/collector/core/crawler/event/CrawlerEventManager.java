@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,12 @@ import com.norconex.collector.core.crawler.ICrawler;
 
 /**
  * Manage event listeners and log events.  Events are logged
- * using Log4j with the INFO level.  
+ * using Log4j with the INFO level.
  * Each events have their own Log4j appenders, following this pattern:
  * <pre>
  *    CrawlerEvent.&lt;EVENT_ID&gt;
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  */
 public class CrawlerEventManager {
@@ -38,7 +38,7 @@ public class CrawlerEventManager {
     private final ICrawlerEventListener[] listeners;
     private final ICrawler crawler;
     private static final int ID_PRINT_WIDTH = 25;
-    
+
     public CrawlerEventManager(
             ICrawler crawler, ICrawlerEventListener[] listeners) {
         this.crawler = crawler;
@@ -59,15 +59,16 @@ public class CrawlerEventManager {
             listener.crawlerEvent(crawler, event);
         }
     }
-    
+
     private void logEvent(CrawlerEvent event) {
-        Logger log =  LogManager.getLogger(CrawlerEvent.class.getSimpleName() 
+        Logger log =  LogManager.getLogger(CrawlerEvent.class.getSimpleName()
                 + "." + event.getEventType());
         if (log.isInfoEnabled()) {
-            log.info(getLogMessage(event, log.isDebugEnabled()));
+            log.info(crawler.getId() + ": " 
+                    + getLogMessage(event, log.isDebugEnabled()));
         }
     }
-    
+
     private String getLogMessage(CrawlerEvent event, boolean includeSubject) {
         StringBuilder b = new StringBuilder();
         b.append(StringUtils.leftPad(event.getEventType(), ID_PRINT_WIDTH));
@@ -77,7 +78,7 @@ public class CrawlerEventManager {
         }
         if (includeSubject) {
             b.append(" (");
-            b.append(Objects.toString(event.getSubject(), 
+            b.append(Objects.toString(event.getSubject(),
                     "No additional information available."));
             b.append(")");
         }
