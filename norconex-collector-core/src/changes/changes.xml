@@ -7,6 +7,12 @@
   </properties>
   <body>
 
+    <release version="1.10.1-SNAPSHOT" date="2020-??-??" description="Maintenance release">
+      <action dev="essiembre" type="update">
+        Now logging crawler id with events. 
+      </action>
+    </release>
+    
     <release version="1.10.0" date="2019-12-22" description="Feature release">
       <action dev="essiembre" type="add">
         Added "unmanaged" attribute to "logsDir" configuration option to prevent
