@@ -58,6 +58,10 @@
         New Crawler#isQueueInitialized() method to support asynchronous 
         reference queueing.
       </action>
+      <action dev="essiembre" type="add">
+        Now logging throughput (documents per seconds) and estimated remaining
+        time.
+      </action>
       <action dev="essiembre" type="update">
         NitriteDataStore now default crawl store implementation.
       </action>

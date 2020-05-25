@@ -42,7 +42,6 @@ import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
@@ -113,10 +112,7 @@ public abstract class Crawler
             LoggerFactory.getLogger(Crawler.class);
 
     private static final int DOUBLE_PROGRESS_SCALE = 4;
-    private static final int DOUBLE_PERCENT_SCALE = -2;
     private static final int MINIMUM_DELAY = 1;
-    private static final long STATUS_LOGGING_INTERVAL =
-            TimeUnit.SECONDS.toMillis(5);
     private static final InheritableThreadLocal<Crawler> INSTANCE =
             new InheritableThreadLocal<>();
 
@@ -130,13 +126,8 @@ public abstract class Crawler
     private Path downloadDir;
 
     private boolean stopped;
-    // This processedCount does not take into account alternate references such
-    // as redirects. It is a cleaner representation for end-users and speed
-    // things a bit bit not having to obtain that value from the database at
-    // every progress change.,
-    private long processedCount;
-    private long lastStatusLoggingTime;
 
+    private CrawlerMetrics metrics;
     private IDataStoreEngine dataStoreEngine;
     private CrawlDocInfoService crawlDocInfoService;
 
@@ -261,20 +252,24 @@ public abstract class Crawler
 
         boolean resume = initCrawler();
 
+        //TODO move stopwatch to metrics
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
 
         importer = new Importer(
                 getCrawlerConfig().getImporterConfig(),
                 getEventManager());
-        processedCount = crawlDocInfoService.getProcessedCount();
+
+        metrics = new CrawlerMetrics(
+                crawlDocInfoService.getProcessedCount());
 
         if (Boolean.getBoolean("enableJMX")) {
             registerMonitoringMbean();
         }
 
         try {
-            getEventManager().fire(CrawlerEvent.create(CRAWLER_RUN_BEGIN, this));
+            getEventManager().fire(
+                    CrawlerEvent.create(CRAWLER_RUN_BEGIN, this));
             //TODO rename "beforeExecution and afterExecution"?
             prepareExecution(statusUpdater, suite, resume);
 
@@ -284,7 +279,6 @@ public abstract class Crawler
                         + "a unique identifier (id).");
             }
 
-            lastStatusLoggingTime = System.currentTimeMillis();
             doExecute(statusUpdater, suite);
         } finally {
             try {
@@ -421,7 +415,7 @@ public abstract class Crawler
 //            committer.commit();
 //        }
 
-        LOG.info("{} reference(s) processed.", processedCount);
+        LOG.info("{} reference(s) processed.", metrics.getProcessedCount());
 
         LOG.debug("Removing empty directories");
         FileUtil.deleteEmptyDirs(getDownloadDir().toFile());
@@ -459,7 +453,8 @@ public abstract class Crawler
 
     protected boolean isMaxDocuments() {
         return getCrawlerConfig().getMaxDocuments() > -1
-                && processedCount >= getCrawlerConfig().getMaxDocuments();
+                && metrics.getProcessedCount()
+                        >= getCrawlerConfig().getMaxDocuments();
     }
 
     protected void reprocessCacheOrphans(
@@ -514,6 +509,7 @@ public abstract class Crawler
             final ProcessFlags flags) {
 //            final ImporterPipelineContext contextPrototype) {
 
+        metrics.startTracking();
 
         int numThreads = getCrawlerConfig().getNumThreads();
         final CountDownLatch latch = new CountDownLatch(numThreads);
@@ -610,7 +606,7 @@ public abstract class Crawler
 
     private void setProgress(JobStatusUpdater statusUpdater) {
         long queued = crawlDocInfoService.getQueuedCount();
-        long processed = processedCount;
+        long processed = metrics.getProcessedCount();
         long total = queued + processed;
 
         double progress = 0;
@@ -628,16 +624,7 @@ public abstract class Crawler
                 + " references processed out of "
                 + NumberFormat.getIntegerInstance().format(total));
 
-        if (LOG.isInfoEnabled()) {
-            long currentTime = System.currentTimeMillis();
-            if (currentTime - lastStatusLoggingTime > STATUS_LOGGING_INTERVAL) {
-                lastStatusLoggingTime = currentTime;
-                int percent = BigDecimal.valueOf(progress).movePointLeft(
-                        DOUBLE_PERCENT_SCALE).intValue();
-                LOG.info("{}% completed ({} processed/{} total)",
-                        percent, processed, total);
-            }
-        }
+        metrics.setTotalDocuments(total);
     }
 
     //TODO given latest changes in implementing methods, shall we only consider
@@ -863,7 +850,7 @@ public abstract class Crawler
 
         //--- Mark reference as Processed --------------------------------------
         try {
-            processedCount++;
+            metrics.incrementProcessedCount();
             crawlDocInfoService.processed(docInfo);
             markReferenceVariationsAsProcessed(docInfo);
         } catch (Exception e) {
