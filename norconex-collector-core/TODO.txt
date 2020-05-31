@@ -5,6 +5,9 @@ TODO:
   - Test MVStore with default commit delay instead of committing after every 
     change.
   - Test MVStore integrity if objects are not cloned before saved.
+  - Trigger compaction once in a while to reduce huge store size.
+  - Keep tack of counts by having counters in memory instead of querying
+    for count.
 
 - Have Collector add these new default fields:
     - Collector start date
