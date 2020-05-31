@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import java.io.Closeable;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,29 +43,37 @@ public class CrawlDocInfoService implements Closeable {
 //    *   <li><b>Cached:</b> When crawling is over, processed references will be
 //    *       cached on the next run.</li>
 //    * </ul>
-    // Commit on every put() is required if we want to guarantee
-    // recovery on a cold JVM/OS/System crash.
+
+    //TODO Commit on every put() is required if we want to guarantee
+    // recovery on a cold JVM/OS/System crash. But do we care to reprocess
+    // a handful of docs?
     //TODO if performance is too impacted, make it a configurable
     //option to offer guarantee or not?
 
     //TODO so we can report better... have more states? processed is vague..
     //should we have rejected/accepted instead?
 
-    private static final String PROP_STAGE = "processingStage";
-    private final IDataStore<CrawlDocInfo> store;
-    private final IDataStore<CrawlDocInfo> cache;
-    private boolean open;
-    private String crawlerId;
+//    private static final String PROP_STAGE = "processingStage";
 
-    @SuppressWarnings("unchecked")
+    // new ones
+    private IDataStore<CrawlDocInfo> queue;
+    private IDataStore<CrawlDocInfo> active;
+    //TODO split into rejected/accepted?
+    private IDataStore<CrawlDocInfo> processed;
+    private IDataStore<CrawlDocInfo> cached;
+
+    private final IDataStoreEngine storeEngine;
+    private final String crawlerId;
+
+    private boolean open;
+
     public CrawlDocInfoService(
             String crawlerId, IDataStoreEngine storeEngine,
             Class<? extends CrawlDocInfo> type) {
-        this.crawlerId = crawlerId;
-        this.store = (IDataStore<CrawlDocInfo>) storeEngine.openStore(
-                crawlerId + "-store", type);
-        this.cache = (IDataStore<CrawlDocInfo>) storeEngine.openStore(
-                crawlerId + "-cache", type);
+        this.crawlerId = Objects.requireNonNull(
+                crawlerId, "'crawlerId' must not be null.");
+        this.storeEngine = Objects.requireNonNull(
+                storeEngine, "'storeEngine' must not be null.");
     }
 
     // return true if resuming, false otherwise
@@ -73,18 +82,28 @@ public class CrawlDocInfoService implements Closeable {
             throw new IllegalStateException("Already open.");
         }
 
+        queue = storeEngine.openStore("queued", CrawlDocInfo.class);
+        active = storeEngine.openStore("active", CrawlDocInfo.class);
+        processed = storeEngine.openStore("processed", CrawlDocInfo.class);
+        cached = storeEngine.openStore("cached", CrawlDocInfo.class);
+
         boolean resuming = !isQueueEmpty() || !isActiveEmpty();
 
         if (resuming) {
 
             // Active -> Queued
-            LOG.debug("Moving any {} active URLs back in the queue.",
-                    crawlerId);
-            store.modifyBy(PROP_STAGE, Stage.ACTIVE, Stage.QUEUED);
+            LOG.debug("Moving any {} active URLs back into queue.", crawlerId);
+            active.forEach((k, v) -> {
+                queue.save(k, v);
+                return true;
+            });
+            active.clear();
 
             if (LOG.isInfoEnabled()) {
+                //TODO use total count to track progress independently
                 long processedCount = getProcessedCount();
-                long totalCount = store.count();
+                long totalCount =
+                        processedCount + queue.count() + cached.count();
                 LOG.info("RESUMING {} at {} ({}/{}).",
                         crawlerId,
                         PercentFormatter.format(
@@ -94,23 +113,30 @@ public class CrawlDocInfoService implements Closeable {
         } else {
             //TODO really clear cache or keep to have longer history of
             // each items?
-            cache.clear();
-
-            store.deleteBy(PROP_STAGE, Stage.ACTIVE);
-            store.deleteBy(PROP_STAGE, Stage.QUEUED);
+            cached.clear();
+            active.clear();
+            queue.clear();
 
             // Valid Processed -> Cached
             LOG.debug("Caching any valid references from previous run.");
 
-            store.findBy(PROP_STAGE, Stage.PROCESSED).forEach((ref) -> {
-                if (ref.getState().isGoodState()) {
-                    cache.save(ref);
-                }
-                store.deleteById(ref.getReference());
-            });
+            //TODO make swap a method on store engine?
+
+            // cached -> swap
+            storeEngine.renameStore(cached, "swap");
+            IDataStore<CrawlDocInfo> swap = cached;
+
+            // processed -> cached
+            storeEngine.renameStore(processed, "cached");
+            cached = processed;
+
+            // swap -> processed
+            storeEngine.renameStore(swap, "processed");
+            processed = swap;
+
 
             if (LOG.isInfoEnabled()) {
-                long cacheCount = cache.count();
+                long cacheCount = cached.count();
                 if (cacheCount > 0) {
                     LOG.info("STARTING an incremental crawl from previous {} "
                             + "valid references.", cacheCount);
@@ -124,86 +150,97 @@ public class CrawlDocInfoService implements Closeable {
         return resuming;
     }
 
-    public IDataStore<CrawlDocInfo> getDataStore() {
-        return store;
-    }
-
     public Stage getProcessingStage(String id) {
-        Optional<CrawlDocInfo> ref = store.findById(id);
-        if (ref.isPresent()) {
-            return ref.get().getProcessingStage();
+        if (active.exists(id)) {
+            return Stage.ACTIVE;
         }
-        //TODO return NONE instead of null?
+        if (queue.exists(id)) {
+            return Stage.QUEUED;
+        }
+        if (processed.exists(id)) {
+            return Stage.PROCESSED;
+        }
         return null;
     }
 
     //--- Active ---
 
     public long getActiveCount() {
-        return store.countBy(PROP_STAGE, Stage.ACTIVE);
+        return active.count();
     }
     public boolean isActiveEmpty() {
-        return !store.existsBy(PROP_STAGE, Stage.ACTIVE);
+        return active.isEmpty();
     }
-
+    public boolean forEachActive(BiPredicate<String, CrawlDocInfo> predicate) {
+        return active.forEach(predicate);
+    }
 
     //--- Processed ---
 
     public long getProcessedCount() {
-        return store.countBy(PROP_STAGE, Stage.PROCESSED);
+        return processed.count();
     }
-    public synchronized void processed(CrawlDocInfo crawlRef) {
-        crawlRef.setProcessingStage(Stage.PROCESSED);
-        store.save(crawlRef);
-        boolean deleted = cache.deleteById(crawlRef.getReference());
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Saved processed: {} (Deleted from cache: {})",
-                    crawlRef.getReference(), deleted);
-        }
+    public boolean isProcessedEmpty() {
+        return processed.isEmpty();
+    }
+    public synchronized void processed(CrawlDocInfo docInfo) {
+        Objects.requireNonNull(docInfo, "'docInfo' must not be null.");
+        processed.save(docInfo.getReference(), docInfo);
+        boolean cacheDeleted = cached.delete(docInfo.getReference());
+        boolean activeDeleted = active.delete(docInfo.getReference());
+        LOG.debug("Saved processed: {} "
+                + "(Deleted from cache: {}; Deleted from active: {})",
+                docInfo.getReference(), cacheDeleted, activeDeleted);
+    }
+    public boolean forEachProcessed(
+            BiPredicate<String, CrawlDocInfo> predicate) {
+        return processed.forEach(predicate);
     }
 
     //--- Queue ---
 
-    public long getQueuedCount() {
-        return store.countBy(PROP_STAGE, Stage.QUEUED);
-    }
-    public void queue(CrawlDocInfo ref) {
-        Objects.requireNonNull(ref, "'ref' must not be null.");
-        ref.setProcessingStage(Stage.QUEUED);
-        store.save(ref);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Saved queued: {}", ref.getReference());
-        }
-    }
-    public synchronized Optional<CrawlDocInfo> nextQueued() {
-        Optional<CrawlDocInfo> ref =
-                store.findFirstBy(PROP_STAGE, Stage.QUEUED);
-        if (ref.isPresent()) {
-            ref.get().setProcessingStage(Stage.ACTIVE);
-            store.save(ref.get());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Saved active: {}", ref.get().getReference());
-            }
-        }
-        return ref;
-    }
     public boolean isQueueEmpty() {
-        return !store.existsBy(PROP_STAGE, Stage.QUEUED);
+        return queue.isEmpty();
     }
+
+    public long getQueueCount() {
+        return queue.count();
+    }
+    public void queue(CrawlDocInfo docInfo) {
+        Objects.requireNonNull(docInfo, "'docInfo' must not be null.");
+        queue.save(docInfo.getReference(), docInfo);
+        LOG.debug("Saved queued: {}", docInfo.getReference());
+    }
+    // get and delete and mark as active
+    public synchronized Optional<CrawlDocInfo> pollQueue() {
+        Optional<CrawlDocInfo> docInfo = queue.deleteFirst();
+        if (docInfo.isPresent()) {
+            active.save(docInfo.get().getReference(), docInfo.get());
+            LOG.debug("Saved active: {}", docInfo.get().getReference());
+        }
+        return docInfo;
+    }
+    public boolean forEachQueued(
+            BiPredicate<String, CrawlDocInfo> predicate) {
+        return queue.forEach(predicate);
+    }
+
 
     //--- Cache ---
 
-    public Optional<CrawlDocInfo> getCached(String cachedReference) {
-        return cache.findById(cachedReference);
+    public Optional<CrawlDocInfo> getCached(String id) {
+        return cached.find(id);
     }
-    public Iterable<CrawlDocInfo> getCachedIterable() {
-        return cache.findAll();
+    public boolean forEachCached(
+            BiPredicate<String, CrawlDocInfo> predicate) {
+        return cached.forEach(predicate);
     }
+
+
 
     @Override
     public void close() {
-        store.close();
-        cache.close();
+        storeEngine.close();
         open = false;
     }
 }

@@ -22,20 +22,18 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringExclude;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.collector.core.store.Id;
-import com.norconex.collector.core.store.Index;
 import com.norconex.importer.doc.DocInfo;
 
 /**
  * @author Pascal Essiembre
  */
-@Id("reference")
 public class CrawlDocInfo extends DocInfo {
 
     //TODO create @ignore metadata to prevent storing some fields?
 
     private static final long serialVersionUID = 1L;
 
+    //TODO make this a top-level enum.
     public enum Stage {
         QUEUED, ACTIVE, PROCESSED /*, CACHED*/;
 
@@ -54,9 +52,6 @@ public class CrawlDocInfo extends DocInfo {
     private String contentChecksum;
     private ZonedDateTime crawlDate;
 
-    @Index
-    private Stage processingStage;
-
     public CrawlDocInfo() {
         super();
     }
@@ -73,7 +68,8 @@ public class CrawlDocInfo extends DocInfo {
     }
 
 
-//------ parent root reference is not used..........................
+    //TODO Get rid of parentRootReference? (not used?)
+    // Store an embedded trail instead?
     public String getParentRootReference() {
         return parentRootReference;
     }
@@ -124,14 +120,6 @@ public class CrawlDocInfo extends DocInfo {
      */
     public void setCrawlDate(ZonedDateTime crawlDate) {
         this.crawlDate = crawlDate;
-    }
-
-    public Stage getProcessingStage() {
-        return processingStage;
-    }
-
-    public void setProcessingStage(Stage processingStage) {
-        this.processingStage = processingStage;
     }
 
     @Override

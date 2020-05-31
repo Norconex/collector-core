@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,7 +116,12 @@ public final class DataStoreImporter extends CollectorException {
                 reader.beginArray();
                 long cnt = 0;
                 while (reader.hasNext()) {
-                    store.save(gson.fromJson(reader, type));
+                    reader.beginObject();
+                    reader.nextName();
+                    String id = reader.nextString();
+                    reader.nextName();
+                    store.save(id, gson.fromJson(reader, type));
+                    reader.endObject();
                     cnt++;
                     logProgress(cnt, false);
                 }

@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.mutable.MutableLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,8 +105,8 @@ public final class DataStoreExporter extends CollectorException {
 
         LOG.info("Exporting {} entries from \"{}\".", qty, store.getName());
 
-        long cnt = 0;
-        long lastPercent = 0;
+        MutableLong cnt = new MutableLong();
+        MutableLong lastPercent = new MutableLong();
         writer.beginObject();
         writer.name("collector").value(crawler.getCollector().getId());
         writer.name("crawler").value(crawler.getId());
@@ -113,15 +114,26 @@ public final class DataStoreExporter extends CollectorException {
         writer.name("type").value(type.getName());
         writer.name("records");
         writer.beginArray();
-        for (Object obj : store.findAll()) {
-            gson.toJson(obj, type, writer);
-            cnt++;
-            long percent = Math.floorDiv(cnt * 100, qty);
-            if (percent != lastPercent) {
-                LOG.info(" {}%", percent);
+
+        store.forEach((id, obj) -> {
+            try {
+                writer.beginObject();
+                writer.name("id").value(id);
+                writer.name("object");
+                gson.toJson(obj, type, writer);
+                writer.endObject();
+                long c = cnt.incrementAndGet();
+                long percent = Math.floorDiv(c * 100, qty);
+                if (percent != lastPercent.longValue()) {
+                    LOG.info(" {}%", percent);
+                }
+                lastPercent.setValue(percent);
+                return true;
+            } catch (IOException e) {
+                throw new DataStoreException("Could not export " + id, e);
             }
-            lastPercent = percent;
-        }
+        });
+
         writer.endArray();
         writer.endObject();
         writer.flush();

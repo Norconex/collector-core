@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -52,6 +53,8 @@ class CrawlerMetrics {
 
     private static final long METRICS_LOGGING_INTERVAL =
             TimeUnit.SECONDS.toMillis(5);
+    private static final long ONE_SECOND_MILLIS =
+            TimeUnit.SECONDS.toMillis(1);
 
     // timestamp up to minute => qty processed
     private final Map<Long, AtomicInteger> seconds = new FifoMap<>(61);
@@ -68,11 +71,11 @@ class CrawlerMetrics {
             .withOuterLastSeparator(" and ")
             .withOuterSeparator(", ")
             .withUnitPrecision(2)
-            .withLowestUnit(DurationUnit.MINUTE);
+            .withLowestUnit(DurationUnit.SECOND);
 
     private long lastLoggingMillis = System.currentTimeMillis();
     private long startFromSeconds =
-            (lastLoggingMillis / TimeUnit.SECONDS.toMillis(1)) + 1;
+            (lastLoggingMillis / ONE_SECOND_MILLIS) + 1;
     private long totalDocuments;
 
     public CrawlerMetrics(long processedCount) {
@@ -93,13 +96,13 @@ class CrawlerMetrics {
     public void startTracking() {
         lastLoggingMillis = System.currentTimeMillis();
         startFromSeconds =
-                (lastLoggingMillis / TimeUnit.SECONDS.toMillis(1)) + 1;
+                (lastLoggingMillis / ONE_SECOND_MILLIS) + 1;
     }
 
     public void incrementProcessedCount() {
         long nowMillis = System.currentTimeMillis();
         processedCount.incrementAndGet();
-        long nowSeconds = nowMillis / TimeUnit.SECONDS.toMillis(1);
+        long nowSeconds = nowMillis / ONE_SECOND_MILLIS;
         seconds.computeIfAbsent(
                 nowSeconds, k -> new AtomicInteger()).incrementAndGet();
 
@@ -119,34 +122,44 @@ class CrawlerMetrics {
 
         StringBuilder b = new StringBuilder();
 
+        b.append("METRICS:");
+
         // Percentage
-        b.append("PROGRESS: ");
+        label(b, "Progress");
         String percent = BigDecimal.valueOf(processedCount.longValue())
                 .divide(BigDecimal.valueOf(totalDocuments), 2, DOWN)
                 .stripTrailingZeros().toPlainString();
         b.append(percent).append("% (");
         b.append(processedCount.longValue()).append('/');
         b.append(totalDocuments);
-        b.append("). THROUGHPUT: ");
+        b.append(")");
 
         // Docs per seconds
         BigDecimal lastAverage = null;
         String sep = "";
         for (IntervalMetrics interval : intervals) {
             if (nowSeconds - startFromSeconds > interval.intervalSeconds) {
+                if (StringUtils.isBlank(sep)) {
+                    label(b, "Throughput");
+                }
                 lastAverage = interval.average(nowSeconds);
                 b.append(sep)
-                 .append("Last ")
-                 .append(interval.intervalSeconds)
-                 .append(" seconds: ")
                  .append(lastAverage.toPlainString())
-                 .append(" docs/sec.");
+                 .append(" docs/sec (last ")
+                 .append(interval.intervalSeconds)
+                 .append("s)");
                 sep = " | ";
             }
         }
 
+        // Elasped time (for current session, which could be resumed)
+        label(b, "Elapsed time");
+        b.append(durationFormatter.format(
+                nowMillis - (startFromSeconds * ONE_SECOND_MILLIS)));
+
+        // Remaining time
         if (lastAverage != null && lastAverage.doubleValue() > 0d) {
-            b.append("EST. REMAINING TIME: ");
+            label(b, "Remaining time");
             b.append(durationFormatter.format(BigDecimal.valueOf(
                     totalDocuments - processedCount.longValue())
                             .divide(lastAverage, 3, RoundingMode.DOWN)
@@ -156,6 +169,10 @@ class CrawlerMetrics {
         if (LOG.isInfoEnabled()) {
             LOG.info(b.toString());
         }
+    }
+
+    private void label(StringBuilder b, String label) {
+        b.append("\n    " + StringUtils.rightPad(label, 15) + ": ");
     }
 
     public long getProcessedCount() {

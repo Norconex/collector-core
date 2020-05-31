@@ -37,21 +37,6 @@ public class CommitModuleStage
                     doc.getInputStream()));
         }
 
-//        ICommitter committer = ctx.getConfig().getCommitter();
-//        if (committer != null) {
-//            Doc doc = ctx.getDocument();
-//            try {
-//                committer.upsert(new UpsertRequest(
-//                        doc.getReference(),
-//                        doc.getMetadata(),
-//                        doc.getInputStream()));
-//            } catch (CommitterException e) {
-//                throw new CollectorException(
-//                        "Could not upsert document: " + doc.getReference(), e);
-//            }
-//        }
-
-
         //TODO really pass Committers here?  Pass null isntead?
         ctx.fireCrawlerEvent(
                 CrawlerEvent.DOCUMENT_COMMITTED_UPSERT,

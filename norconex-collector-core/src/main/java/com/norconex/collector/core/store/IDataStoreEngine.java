@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.norconex.collector.core.crawler.Crawler;
 
 public interface IDataStoreEngine extends Closeable {
 
+    //TODO really make it depend on crawler, or pass args instead?
     void init(Crawler crawler);
     boolean clean();
     @Override
@@ -29,6 +30,10 @@ public interface IDataStoreEngine extends Closeable {
 
     <T> IDataStore<T> openStore(String name, Class<T> type);
     boolean dropStore(String name);
+
+    // returns true if target was deleted
+    boolean renameStore(IDataStore<?> dataStore, String newName);
+
     Set<String> getStoreNames();
     Optional<Class<?>> getStoreType(String name);
 }

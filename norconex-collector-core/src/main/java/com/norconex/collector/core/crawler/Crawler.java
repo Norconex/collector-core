@@ -39,6 +39,7 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,6 +54,7 @@ import javax.management.ObjectName;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableLong;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -466,18 +468,16 @@ public abstract class Crawler
         }
         LOG.info("Reprocessing any cached/orphan references...");
 
-        long count = 0;
-        for (CrawlDocInfo ref : crawlDocInfoService.getCachedIterable()) {
-            executeQueuePipeline(ref);
-            count++;
-        }
-        if (count > 0) {
-//            ImporterPipelineContext contextPrototype =
-//                    new ImporterPipelineContext(this);
-//            contextPrototype.setOrphan(true);
+        MutableLong count = new MutableLong();
+        crawlDocInfoService.forEachCached((k, v) -> {
+            executeQueuePipeline(v);
+            count.increment();
+            return true;
+        });
+
+        if (count.longValue() > 0) {
             processReferences(
                     statusUpdater, suite, new ProcessFlags().orphan());
-//            processReferences(statusUpdater, suite, contextPrototype);
         }
         LOG.info("Reprocessed {} cached/orphan references.", count);
     }
@@ -487,12 +487,14 @@ public abstract class Crawler
     protected void deleteCacheOrphans(
             JobStatusUpdater statusUpdater, JobSuite suite) {
         LOG.info("Deleting orphan references (if any)...");
-        long count = 0;
-        for (CrawlDocInfo ref : crawlDocInfoService.getCachedIterable()) {
-            crawlDocInfoService.queue(ref);
-            count++;
-        }
-        if (count > 0) {
+
+        MutableLong count = new MutableLong();
+        crawlDocInfoService.forEachCached((k, v) -> {
+            crawlDocInfoService.queue(v);
+            count.increment();
+            return true;
+        });
+        if (count.longValue() > 0) {
 //            ImporterPipelineContext contextPrototype =
 //                    new ImporterPipelineContext(this);
 //            contextPrototype.setDelete(true);
@@ -552,24 +554,24 @@ public abstract class Crawler
                     getCrawlerConfig().getMaxDocuments());
             return ReferenceProcessStatus.MAX_REACHED;
         }
-        CrawlDocInfo queuedDocInfo =
-                crawlDocInfoService.nextQueued().orElse(null);
+        Optional<CrawlDocInfo> queuedDocInfo =
+                crawlDocInfoService.pollQueue();
 //        context.setDocInfo(queuedDocInfo);
 
         LOG.trace("Processing next reference from Queue: {}",
                 queuedDocInfo);
-        if (queuedDocInfo != null) {
+        if (queuedDocInfo.isPresent()) {
             StopWatch watch = null;
             if (LOG.isDebugEnabled()) {
                 watch = new StopWatch();
                 watch.start();
             }
-            processNextQueuedCrawlData(queuedDocInfo, flags);// context);
+            processNextQueuedCrawlData(queuedDocInfo.get(), flags);// context);
             setProgress(statusUpdater);
             if (LOG.isDebugEnabled()) {
                 watch.stop();
                 LOG.debug("{} to process: {}", watch,
-                        queuedDocInfo.getReference());
+                        queuedDocInfo.get().getReference());
             }
         } else {
             long activeCount = crawlDocInfoService.getActiveCount();
@@ -605,7 +607,9 @@ public abstract class Crawler
     }
 
     private void setProgress(JobStatusUpdater statusUpdater) {
-        long queued = crawlDocInfoService.getQueuedCount();
+        //TODO maintain counts in session, initialized on start
+        // in case of resumes
+        long queued = crawlDocInfoService.getQueueCount();
         long processed = metrics.getProcessedCount();
         long total = queued + processed;
 

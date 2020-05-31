@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,35 +16,24 @@ package com.norconex.collector.core.store;
 
 import java.io.Closeable;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 
 // Stores anything for fast retreival.
-// When created we can specify a few things, like if it acts as a queue,
-// what property should be serialized, etc.
 public interface IDataStore<T> extends Closeable {
 
     String getName();
 
-    void save(T object);
-    Optional<T> findById(String id);
-    Iterable<T> findBy(String property, Object value);
-    Optional<T> findFirstBy(String property, Object value);
-    Iterable<T> findAll();
-//    <V> V findPropertyValue(String id, String property);
-    boolean existsById(String id);
-    boolean existsBy(String property, Object value);
+    void save(String id, T object);
+    Optional<T> find(String id);
+    Optional<T> findFirst();
+    boolean exists(String id);
     long count();
-    long countBy(String property, Object value);
-    boolean deleteById(String id);
-    long deleteBy(String property, Object value);
-
-    boolean modifyById(String id, String property, Object value);
-    // filterProperty is also targetProperty:
-    long modifyBy(
-            String filterProperty, Object filterValue, Object newValue);
-    long modifyBy(
-            String filterProperty, Object filterValue,
-            String targetProperty, Object newValue);
-    long clear();
+    boolean delete(String id);
+    // returns deleted item
+    Optional<T> deleteFirst();
+    void clear();
     @Override
     void close();
+    boolean forEach(BiPredicate<String, T> predicate);
+    boolean isEmpty();
 }

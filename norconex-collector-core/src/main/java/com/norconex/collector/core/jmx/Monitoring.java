@@ -31,7 +31,7 @@ public class Monitoring implements MonitoringMBean {
 
     @Override
     public long getQueuedCount() {
-        return service.getQueuedCount();
+        return service.getQueueCount();
     }
 
 }

@@ -65,17 +65,21 @@ public final class ChecksumStageUtil {
 
         // Get old checksum from cache
         CrawlDocInfo cachedCrawlRef = ctx.getCachedDocInfo();
-        String oldChecksum = null;
-        if (cachedCrawlRef != null) {
-            if (isMeta) {
-                oldChecksum = cachedCrawlRef.getMetaChecksum();
-            } else {
-                oldChecksum = cachedCrawlRef.getContentChecksum();
-            }
-        } else {
+
+        // if there was nothing in cache, or what is in cache is a deleted
+        // doc, consider as new.
+        if (cachedCrawlRef == null
+                || CrawlState.DELETED.isOneOf(cachedCrawlRef.getState())) {
             LOG.debug("ACCEPTED {} checkum (new): Reference={}",
                     type, crawlRef.getReference());
             return true;
+        }
+
+        String oldChecksum = null;
+        if (isMeta) {
+            oldChecksum = cachedCrawlRef.getMetaChecksum();
+        } else {
+            oldChecksum = cachedCrawlRef.getContentChecksum();
         }
 
         // Compare checksums

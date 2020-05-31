@@ -1,5 +1,5 @@
 <!--
-   Copyright 2014-2019 Norconex Inc.
+   Copyright 2014-2020 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
   <name>Norconex Collector Core</name>
 
   <properties>
-    <nitrite.version>3.2.0</nitrite.version>
+    <h2.version>1.4.200</h2.version>
   </properties>
 
   <inceptionYear>2014</inceptionYear>
@@ -47,13 +47,12 @@
       <artifactId>norconex-jef</artifactId>
     </dependency>
     
-    
-    <!-- NOSQL for crawl store -->
+    <!-- NOSQL/KeyValue for crawl store -->
     <dependency>
-        <groupId>org.dizitart</groupId>
-        <artifactId>nitrite</artifactId>
-        <version>3.4.1</version>
-    </dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2-mvstore</artifactId>
+      <version>${h2.version}</version>
+    </dependency>    
     
 <!--     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>

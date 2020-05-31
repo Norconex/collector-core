@@ -63,9 +63,6 @@
         time.
       </action>
       <action dev="essiembre" type="update">
-        NitriteDataStore now default crawl store implementation.
-      </action>
-      <action dev="essiembre" type="update">
         Now always resume previous incomplete executions. Can now "clean"
         to start fresh.
       </action>
@@ -141,7 +138,7 @@
       </action>
       <action dev="essiembre" type="remove">
         Remove all previously available crawl store implementions in favor
-        of new NitriteDataStore.
+        of new MVStoreDataStore.
       </action>
     </release>
 

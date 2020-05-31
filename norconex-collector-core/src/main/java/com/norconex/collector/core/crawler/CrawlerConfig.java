@@ -32,7 +32,7 @@ import com.norconex.collector.core.filter.IReferenceFilter;
 import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
 import com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer;
 import com.norconex.collector.core.store.IDataStoreEngine;
-import com.norconex.collector.core.store.impl.nitrite.NitriteDataStoreEngine;
+import com.norconex.collector.core.store.impl.mvstore.MVStoreDataStoreEngine;
 import com.norconex.committer.core3.ICommitter;
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.event.IEventListener;
@@ -73,7 +73,7 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
     private final List<Class<? extends Exception>> stopOnExceptions =
             new ArrayList<>();
 
-    private IDataStoreEngine dataStoreEngine = new NitriteDataStoreEngine();
+    private IDataStoreEngine dataStoreEngine = new MVStoreDataStoreEngine();// NitriteDataStoreEngine();
 
     private final List<IReferenceFilter> referenceFilters = new ArrayList<>();
     private final List<IMetadataFilter> metadataFilters = new ArrayList<>();

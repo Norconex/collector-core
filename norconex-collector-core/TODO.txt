@@ -1,6 +1,11 @@
 TODO:
 ==============
 
+- Performance: 
+  - Test MVStore with default commit delay instead of committing after every 
+    change.
+  - Test MVStore integrity if objects are not cloned before saved.
+
 - Have Collector add these new default fields:
     - Collector start date
     - Crawler start date

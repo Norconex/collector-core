@@ -34,22 +34,25 @@ import com.norconex.collector.core.MockCollector;
 import com.norconex.collector.core.MockCollectorConfig;
 import com.norconex.collector.core.crawler.MockCrawler;
 import com.norconex.collector.core.crawler.MockCrawlerConfig;
-import com.norconex.collector.core.doc.CrawlDocInfo.Stage;
 import com.norconex.collector.core.store.IDataStore;
 import com.norconex.collector.core.store.IDataStoreEngine;
-import com.norconex.collector.core.store.impl.nitrite.NitriteDataStoreEngine;
+import com.norconex.collector.core.store.impl.mvstore.MVStoreDataStoreEngine;
 import com.norconex.commons.lang.EqualsUtil;
+import com.norconex.commons.lang.TimeIdGenerator;
 import com.norconex.commons.lang.file.ContentType;
 
 public class DataStoreEngineTest {
 
-    // Not using @TempDir as it fails on windows sometimes (OS lock issue)
-    private Path tempFolder;
+    // Not using @TempDir as it fails on windows sometimes (OS lock issue) or all test will use same store, breaking
+    //@TempDir
+    public Path tempFolder;
     private TestObject obj;
 
     @BeforeEach
-    public void setup() throws IOException {
-        tempFolder = Files.createTempDirectory("nitrite");
+    public void setup(/*@TempDir Path tempFolder*/) throws IOException {
+        //this.tempFolder = tempFolder;
+        this.tempFolder = Files.createTempDirectory(
+                "datastore-" + TimeIdGenerator.next());
         // Test pojo record
         obj = new TestObject();
         obj.setReference("areference");
@@ -57,77 +60,79 @@ public class DataStoreEngineTest {
         obj.setContentChecksum("checksumvalue");
         obj.setParentRootReference("parentReference");
         obj.setContentType(ContentType.TEXT);
-        obj.setProcessingStage(Stage.PROCESSED);
+//        obj.setProcessingStage(Stage.PROCESSED);
         obj.setValid(true);
     }
     @AfterEach
     public void tearDown() {
+//        tempFolder = null;
         tempFolder.toFile().deleteOnExit();
     }
 
     @DataStoreTest
-    public void testFindById(IDataStoreEngine f) {
+    public void testFind(IDataStoreEngine f) {
         savePojo(f, obj);
         inNewStoreSession(f, (store) -> {
-            TestObject newPojo = store.findById("areference").get();
+            TestObject newPojo = store.find("areference").get();
             Assertions.assertEquals(obj, newPojo);
         });
     }
+//    @DataStoreTest
+//    public void testFindBy(IDataStoreEngine f) {
+//        savePojo(f, obj);
+//        inNewStoreSession(f, (store) -> {
+//            Assertions.assertEquals(obj, store.findFirstBy(
+//                    "contentChecksum", "checksumvalue").get());
+//            Assertions.assertEquals(obj, store.findFirstBy("count", 66).get());
+//            Assertions.assertFalse(store.findFirstBy(
+//                    "parentRootReference", "none").isPresent());
+//        });
+//    }
+//    @DataStoreTest
+//    public void testFindFirstBy(IDataStoreEngine f) {
+//        // Saving two entries, only the first one should be returned
+//        savePojo(f, obj);
+//        obj.setReference("breference");
+//        savePojo(f, obj);
+//        inNewStoreSession(f, (store) -> {
+//            Assertions.assertEquals("areference", store.findFirstBy(
+//                    "contentChecksum", "checksumvalue").get().getReference());
+//            Assertions.assertEquals("areference", store.findFirstBy(
+//                    "count", 66).get().getReference());
+//        });
+//    }
     @DataStoreTest
-    public void testFindBy(IDataStoreEngine f) {
-        savePojo(f, obj);
-        inNewStoreSession(f, (store) -> {
-            Assertions.assertEquals(obj, store.findFirstBy(
-                    "contentChecksum", "checksumvalue").get());
-            Assertions.assertEquals(obj, store.findFirstBy("count", 66).get());
-            Assertions.assertFalse(store.findFirstBy(
-                    "parentRootReference", "none").isPresent());
-        });
-    }
-    @DataStoreTest
-    public void testFindFirstBy(IDataStoreEngine f) {
-        // Saving two entries, only the first one should be returned
-        savePojo(f, obj);
-        obj.setReference("breference");
-        savePojo(f, obj);
-        inNewStoreSession(f, (store) -> {
-            Assertions.assertEquals("areference", store.findFirstBy(
-                    "contentChecksum", "checksumvalue").get().getReference());
-            Assertions.assertEquals("areference", store.findFirstBy(
-                    "count", 66).get().getReference());
-        });
-    }
-    @DataStoreTest
-    public void testFindAll(IDataStoreEngine f) {
+    public void testForEach(IDataStoreEngine f) {
         // Saving two entries, make sure they are retreived
         savePojo(f, obj);
         TestObject obj2 = new TestObject("breference", 67, "blah", "ipsum");
         savePojo(f, obj2);
         inNewStoreSession(f, (store) -> {
-            for (TestObject p : store.findAll()) {
-                Assertions.assertTrue(EqualsUtil.equalsAny(p, obj, obj2));
-            }
+            store.forEach((k, v) -> {
+                Assertions.assertTrue(EqualsUtil.equalsAny(v, obj, obj2));
+                return true;
+            });
         });
     }
 
     @DataStoreTest
-    public void testExistsById(IDataStoreEngine f) {
+    public void testExists(IDataStoreEngine f) {
         savePojo(f, obj);
         inNewStoreSession(f, (store) -> {
-            Assertions.assertTrue(store.existsById("areference"));
-            Assertions.assertFalse(store.existsById("breference"));
+            Assertions.assertTrue(store.exists("areference"));
+            Assertions.assertFalse(store.exists("breference"));
         });
     }
-    @DataStoreTest
-    public void testExistsBy(IDataStoreEngine f) {
-        savePojo(f, obj);
-        inNewStoreSession(f, (store) -> {
-            Assertions.assertTrue(
-                    store.existsBy("contentChecksum", "checksumvalue"));
-            Assertions.assertFalse(store.existsBy("contentChecksum", "nope"));
-        });
-    }
-
+//    @DataStoreTest
+//    public void testExistsBy(IDataStoreEngine f) {
+//        savePojo(f, obj);
+//        inNewStoreSession(f, (store) -> {
+//            Assertions.assertTrue(
+//                    store.existsBy("contentChecksum", "checksumvalue"));
+//            Assertions.assertFalse(store.existsBy("contentChecksum", "nope"));
+//        });
+//    }
+//
     @DataStoreTest
     public void testCount(IDataStoreEngine f) {
         savePojo(f, obj);
@@ -142,124 +147,124 @@ public class DataStoreEngineTest {
             Assertions.assertEquals(2, store.count());
         });
     }
-    @DataStoreTest
-    public void testCountBy(IDataStoreEngine f) {
-        savePojo(f, obj);
-        inNewStoreSession(f, (store) -> {
-            Assertions.assertEquals(
-                    1, store.countBy("contentChecksum", "checksumvalue"));
-            Assertions.assertEquals(
-                    0, store.countBy("parentRootReference", "none"));
-        });
-        // add another one and try again
-        obj.setReference("breference");
-        obj.setCount(67);
-        savePojo(f, obj);
+//    @DataStoreTest
+//    public void testCountBy(IDataStoreEngine f) {
+//        savePojo(f, obj);
+//        inNewStoreSession(f, (store) -> {
+//            Assertions.assertEquals(
+//                    1, store.countBy("contentChecksum", "checksumvalue"));
+//            Assertions.assertEquals(
+//                    0, store.countBy("parentRootReference", "none"));
+//        });
+//        // add another one and try again
+//        obj.setReference("breference");
+//        obj.setCount(67);
+//        savePojo(f, obj);
+//
+//        inNewStoreSession(f, (store) -> {
+//            Assertions.assertEquals(
+//                    2, store.countBy("contentChecksum", "checksumvalue"));
+//            Assertions.assertEquals(1, store.countBy("count", 66));
+//            Assertions.assertEquals(1, store.countBy("count", 67));
+//        });
+//    }
 
-        inNewStoreSession(f, (store) -> {
-            Assertions.assertEquals(
-                    2, store.countBy("contentChecksum", "checksumvalue"));
-            Assertions.assertEquals(1, store.countBy("count", 66));
-            Assertions.assertEquals(1, store.countBy("count", 67));
-        });
-    }
-
     @DataStoreTest
-    public void testDeleteById(IDataStoreEngine f) {
+    public void testDelete(IDataStoreEngine f) {
         savePojo(f, obj);
         inNewStoreSession(f, (store) -> {
             Assertions.assertEquals(1, store.count());
-            Assertions.assertTrue(store.deleteById(obj.getReference()));
+            Assertions.assertTrue(store.delete(obj.getReference()));
         });
         inNewStoreSession(f, (store) -> {
             Assertions.assertEquals(0, store.count());
         });
     }
-    @DataStoreTest
-    public void testDeleteBy(IDataStoreEngine f) {
-        savePojo(f, obj);
-        // add 2nd:
-        obj.setReference("breference");
-        obj.setCount(67);
-        savePojo(f, obj);
-        // add 3rd:
-        obj.setReference("creference");
-        obj.setCount(67);
-        savePojo(f, obj);
-
-        inNewStoreSession(f, (store) -> {
-            Assertions.assertEquals(3, store.count());
-            Assertions.assertEquals(2, store.deleteBy("count", 67));
-        });
-        inNewStoreSession(f, (store) -> {
-            Assertions.assertEquals(1, store.count());
-        });
-    }
-
-    @DataStoreTest
-    public void testModifyById(IDataStoreEngine f) {
-        savePojo(f, obj);
-        inNewStoreSession(f, (store) -> {
-            Assertions.assertTrue(
-                    store.modifyById(obj.getReference(), "count", 99));
-            Assertions.assertEquals(1, store.count());
-        });
-        inNewStoreSession(f, (store) -> {
-            Assertions.assertEquals(
-                    99, store.findById(obj.getReference()).get().getCount());
-        });
-    }
-    @DataStoreTest
-    public void testModifyBy4Args(IDataStoreEngine f) {
-        savePojo(f, obj);
-        // add 2nd:
-        obj.setReference("breference");
-        obj.setCount(67);
-        savePojo(f, obj);
-        // add 3rd:
-        obj.setReference("creference");
-        obj.setCount(67);
-        savePojo(f, obj);
-
-        inNewStoreSession(f, (store) -> {
-            Assertions.assertEquals(3, store.count());
-            Assertions.assertEquals(2,
-                    store.modifyBy("count", 67, "contentChecksum", "newVal"));
-        });
-        inNewStoreSession(f, (store) -> {
-            Assertions.assertEquals("checksumvalue",
-                    store.findById("areference").get().getContentChecksum());
-            Assertions.assertEquals("newVal",
-                    store.findById("breference").get().getContentChecksum());
-            Assertions.assertEquals("newVal",
-                    store.findById("creference").get().getContentChecksum());
-        });
-    }
-    @DataStoreTest
-    public void testModifyBy3Args(IDataStoreEngine f) {
-        savePojo(f, obj);
-        // add 2nd:
-        obj.setReference("breference");
-        obj.setCount(67);
-        savePojo(f, obj);
-        // add 3rd:
-        obj.setReference("creference");
-        obj.setCount(67);
-        savePojo(f, obj);
-
-        inNewStoreSession(f, (store) -> {
-            Assertions.assertEquals(3, store.count());
-            Assertions.assertEquals(2, store.modifyBy("count", 67, 99));
-        });
-        inNewStoreSession(f, (store) -> {
-            Assertions.assertEquals(
-                    66, store.findById("areference").get().getCount());
-            Assertions.assertEquals(
-                    99, store.findById("breference").get().getCount());
-            Assertions.assertEquals(
-                    99, store.findById("creference").get().getCount());
-        });
-    }
+//    @DataStoreTest
+//    public void testDeleteBy(IDataStoreEngine f) {
+//        savePojo(f, obj);
+//        // add 2nd:
+//        obj.setReference("breference");
+//        obj.setCount(67);
+//        savePojo(f, obj);
+//        // add 3rd:
+//        obj.setReference("creference");
+//        obj.setCount(67);
+//        savePojo(f, obj);
+//
+//        inNewStoreSession(f, (store) -> {
+//            Assertions.assertEquals(3, store.count());
+//            Assertions.assertEquals(2, store.deleteBy("count", 67));
+//        });
+//        inNewStoreSession(f, (store) -> {
+//            Assertions.assertEquals(1, store.count());
+//        });
+//    }
+//
+//    @DataStoreTest
+//    public void testModifyById(IDataStoreEngine f) {
+//        savePojo(f, obj);
+//        inNewStoreSession(f, (store) -> {
+//            Assertions.assertTrue(
+//                    store.modifyById(obj.getReference(), "count", 99));
+//            Assertions.assertEquals(1, store.count());
+//        });
+//        inNewStoreSession(f, (store) -> {
+//            Assertions.assertEquals(
+//                    99, store.findById(obj.getReference()).get().getCount());
+//        });
+//    }
+//    @DataStoreTest
+//    public void testModifyBy4Args(IDataStoreEngine f) {
+//        savePojo(f, obj);
+//        // add 2nd:
+//        obj.setReference("breference");
+//        obj.setCount(67);
+//        savePojo(f, obj);
+//        // add 3rd:
+//        obj.setReference("creference");
+//        obj.setCount(67);
+//        savePojo(f, obj);
+//
+//        inNewStoreSession(f, (store) -> {
+//            Assertions.assertEquals(3, store.count());
+//            Assertions.assertEquals(2,
+//                    store.modifyBy("count", 67, "contentChecksum", "newVal"));
+//        });
+//        inNewStoreSession(f, (store) -> {
+//            Assertions.assertEquals("checksumvalue",
+//                    store.findById("areference").get().getContentChecksum());
+//            Assertions.assertEquals("newVal",
+//                    store.findById("breference").get().getContentChecksum());
+//            Assertions.assertEquals("newVal",
+//                    store.findById("creference").get().getContentChecksum());
+//        });
+//    }
+//    @DataStoreTest
+//    public void testModifyBy3Args(IDataStoreEngine f) {
+//        savePojo(f, obj);
+//        // add 2nd:
+//        obj.setReference("breference");
+//        obj.setCount(67);
+//        savePojo(f, obj);
+//        // add 3rd:
+//        obj.setReference("creference");
+//        obj.setCount(67);
+//        savePojo(f, obj);
+//
+//        inNewStoreSession(f, (store) -> {
+//            Assertions.assertEquals(3, store.count());
+//            Assertions.assertEquals(2, store.modifyBy("count", 67, 99));
+//        });
+//        inNewStoreSession(f, (store) -> {
+//            Assertions.assertEquals(
+//                    66, store.findById("areference").get().getCount());
+//            Assertions.assertEquals(
+//                    99, store.findById("breference").get().getCount());
+//            Assertions.assertEquals(
+//                    99, store.findById("creference").get().getCount());
+//        });
+//    }
 
     @DataStoreTest
     public void testClear(IDataStoreEngine f) {
@@ -270,7 +275,8 @@ public class DataStoreEngineTest {
         savePojo(f, obj);
 
         inNewStoreSession(f, (store) -> {
-            Assertions.assertEquals(2, store.clear());
+            store.clear();
+//            Assertions.assertEquals(2, store.clear());
         });
         inNewStoreSession(f, (store) -> {
             Assertions.assertEquals(0, store.count());
@@ -279,15 +285,17 @@ public class DataStoreEngineTest {
 
     private void savePojo(IDataStoreEngine f, TestObject testPojo) {
         inNewStoreSession(f, (store) -> {
-            store.save(testPojo);
+            store.save(testPojo.getReference(), testPojo);
         });
     }
+
+
 
 
     private void inNewStoreSession(
             IDataStoreEngine engine, Consumer<IDataStore<TestObject>> c) {
         MockCollectorConfig collConfig = new MockCollectorConfig();
-        collConfig.setWorkDir(tempFolder);
+        collConfig.setWorkDir(tempFolder.resolve("mvstore"));//"" + TimeIdGenerator.next()));
         MockCollector coll = new MockCollector(collConfig);
         MockCrawlerConfig crawlConfig = new MockCrawlerConfig();
         crawlConfig.setDataStoreEngine(engine);
@@ -303,7 +311,8 @@ public class DataStoreEngineTest {
 
     static Stream<IDataStoreEngine> dataStoreEngineProvider() {
         return Stream.of(
-                new NitriteDataStoreEngine()
+                new MVStoreDataStoreEngine()
+//                new NitriteDataStoreEngine()
         );
     }
 
