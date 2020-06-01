@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -22,34 +22,55 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 /**
 * <p>
 * MVStore configuration parameters.  For advanced use only.
+* Differences from MVStore defaults:
+* All data size values are expected to be set in bytes.
+* Light compression is enabled by default (compress = 1)
 * </p>
+* <p>
+* For more info:
+* </p>
+* <ul>
+*   <li><a href="http://www.h2database.com/html/mvstore.html">
+*       MVStore documentation</a></li>
+*   <li><a href="https://javadoc.io/doc/com.h2database/h2-mvstore/latest/">
+*       Javadoc</a></li>
+* </ul>
 * @since 1.10.0
 * @author Pascal Essiembre
 */
 public class MVStoreDataStoreConfig {
 
-   private Integer pageSplitSize;
-   private Integer compress;
+   private Long pageSplitSize;
+   private Integer compress = 1;
    private Integer cacheConcurrency;
-   private Integer cacheSize;
+   private Long cacheSize;
    private Integer autoCompactFillRate;
-   private Integer autoCommitBufferSize;
-   private Integer autoCommitDelay;
+   private Long autoCommitBufferSize;
+   private Long autoCommitDelay;
 
-   public Integer getPageSplitSize() {
+   /**
+    * Get the max memory page size in bytes before splitting it, in bytes.
+    * Defaults to 16KB.
+    * @return page size
+    */
+   public Long getPageSplitSize() {
        return pageSplitSize;
    }
-   public void setPageSplitSize(Integer pageSplitSize) {
+   // Default is 4KB for memory, and  16KB for disk, set in bytes.
+   public void setPageSplitSize(Long pageSplitSize) {
        this.pageSplitSize = pageSplitSize;
    }
 
+   // Default does not compress
    public Integer getCompress() {
        return compress;
    }
+   // Default does not compress
    public void setCompress(Integer compress) {
        this.compress = compress;
    }
 
+   // Default is 16 segments
    public Integer getCacheConcurrency() {
        return cacheConcurrency;
    }
@@ -57,13 +78,15 @@ public class MVStoreDataStoreConfig {
        this.cacheConcurrency = cacheConcurrency;
    }
 
-   public Integer getCacheSize() {
+   // Default is 16 MB, set in MB, set in bytes.
+   public Long getCacheSize() {
        return cacheSize;
    }
-   public void setCacheSize(Integer cacheSize) {
+   public void setCacheSize(Long cacheSize) {
        this.cacheSize = cacheSize;
    }
 
+   // Default is 40 %
    public Integer getAutoCompactFillRate() {
        return autoCompactFillRate;
    }
@@ -71,17 +94,19 @@ public class MVStoreDataStoreConfig {
        this.autoCompactFillRate = autoCompactFillRate;
    }
 
-   public Integer getAutoCommitBufferSize() {
+   // Default is 1024 KB, set in bytes.
+   public Long getAutoCommitBufferSize() {
        return autoCommitBufferSize;
    }
-   public void setAutoCommitBufferSize(Integer autoCommitBufferSize) {
+   public void setAutoCommitBufferSize(Long autoCommitBufferSize) {
        this.autoCommitBufferSize = autoCommitBufferSize;
    }
 
-   public Integer getAutoCommitDelay() {
+   // Default is 1000 ms
+   public Long getAutoCommitDelay() {
        return autoCommitDelay;
    }
-   public void setAutoCommitDelay(Integer autoCommitDelay) {
+   public void setAutoCommitDelay(Long autoCommitDelay) {
        this.autoCommitDelay = autoCommitDelay;
    }
 

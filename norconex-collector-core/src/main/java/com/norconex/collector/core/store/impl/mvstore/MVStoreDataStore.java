@@ -24,22 +24,18 @@ import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 
 import com.norconex.collector.core.store.IDataStore;
-import com.norconex.commons.lang.bean.BeanUtil;
 
 //TODO extract Ids and Indices in a generic way before creating
 // a datastore (passing as argument) or in a utility class.
 public class MVStoreDataStore<T> implements IDataStore<T> {
 
-//    private final MVStore mvstore;
     private final MVMap<String, T> map;
     private String name;
-//    private final Class<T> type;
 
     public MVStoreDataStore(MVStore mvstore, String name) {
         super();
-        /*this.mvstore = */ requireNonNull(mvstore, "'mvstore' must not be null.");
+        requireNonNull(mvstore, "'mvstore' must not be null.");
         this.name = requireNonNull(name, "'name' must not be null.");
-//        this.type = requireNonNull(type, "'type' must not be null.");
         map = mvstore.openMap(name);
     }
 
@@ -56,11 +52,11 @@ public class MVStoreDataStore<T> implements IDataStore<T> {
 
     @Override
     public void save(String id, T object) {
-        //TODO test if cloning is necessary.  MVStore doc says values
-        // cannot be changed after stored... but maybe if we commit
-        // right after it is persisted, so fine?
-        map.put(id, BeanUtil.clone(object));
-        map.store.commit();
+        // MVStore doc says values cannot be changed after stored... 
+        // but testings shows it is OK for us and faster.
+        // If issues arise, re-introduce cloning.
+//        map.put(id, BeanUtil.clone(object));
+        map.put(id, object);
     }
 
     @Override
@@ -90,7 +86,6 @@ public class MVStoreDataStore<T> implements IDataStore<T> {
     @Override
     public boolean delete(String id) {
         boolean existed = map.remove(id) != null;
-        map.store.commit();
         return existed;
     }
 
@@ -99,7 +94,6 @@ public class MVStoreDataStore<T> implements IDataStore<T> {
         String id = map.firstKey();
         if (id != null) {
             T removed = map.remove(id);
-            map.store.commit();
             return Optional.ofNullable(removed);
         }
         return Optional.empty();
@@ -113,12 +107,11 @@ public class MVStoreDataStore<T> implements IDataStore<T> {
     @Override
     public void clear() {
         map.clear();
-        map.store.commit();
     }
 
     @Override
     public void close() {
-        //NOOP, Closed implicitely when engine is closed.
+        //NOOP, Closed implicitly when engine is closed.
     }
 
     // returns true if was all read

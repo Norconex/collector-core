@@ -34,6 +34,7 @@ import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.collector.core.store.DataStoreException;
 import com.norconex.collector.core.store.IDataStore;
 import com.norconex.collector.core.store.IDataStoreEngine;
+import com.norconex.commons.lang.unit.DataUnit;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
@@ -71,7 +72,8 @@ public class MVStoreDataStoreEngine
 
         MVStore.Builder builder = new MVStore.Builder();
         if (cfg.getPageSplitSize() != null) {
-            builder.pageSplitSize(cfg.getPageSplitSize());
+            //MVStore expects it as bytes
+            builder.pageSplitSize(asInt(cfg.getPageSplitSize()));
         }
         if (Integer.valueOf(1).equals(cfg.getCompress())) {
             builder.compress();
@@ -83,13 +85,17 @@ public class MVStoreDataStoreEngine
             builder.cacheConcurrency(cfg.getCacheConcurrency());
         }
         if (cfg.getCacheSize() != null) {
-            builder.cacheSize(cfg.getCacheSize());
+            //MVStore expects it as megabytes
+            builder.cacheSize(
+                    DataUnit.B.to(cfg.getCacheSize(), DataUnit.MB).intValue());
         }
         if (cfg.getAutoCompactFillRate() != null) {
             builder.autoCompactFillRate(cfg.getAutoCompactFillRate());
         }
         if (cfg.getAutoCommitBufferSize() != null) {
-            builder.autoCommitBufferSize(cfg.getAutoCommitBufferSize());
+            //MVStore expects it as kilobyutes
+            builder.autoCommitBufferSize(DataUnit.B.to(
+                    cfg.getAutoCommitBufferSize(), DataUnit.KB).intValue());
         }
         if (Integer.valueOf(0).equals(cfg.getAutoCommitDelay())) {
             builder.autoCommitDisabled();
@@ -100,12 +106,19 @@ public class MVStoreDataStoreEngine
         mvstore = builder.open();
 
         if (cfg.getAutoCommitDelay() != null) {
-            mvstore.setAutoCommitDelay(cfg.getAutoCommitDelay());
+            //MVStore expects it as milliseconds
+            mvstore.setAutoCommitDelay(cfg.getAutoCommitDelay().intValue());
         }
 
         storeTypes = mvstore.openMap(STORE_TYPES_KEY);
 
         mvstore.commit();
+    }
+    private Integer asInt(Long l) {
+        if (l == null) {
+            return null;
+        }
+        return l.intValue();
     }
 
     @Override
@@ -130,6 +143,8 @@ public class MVStoreDataStoreEngine
     public synchronized void close() {
         LOG.info("Closing data store engine...");
         if (mvstore != null && !mvstore.isClosed()) {
+            LOG.info("Compacting data store...");
+            mvstore.compactMoveChunks();
             mvstore.close();
         }
         mvstore = null;
@@ -176,19 +191,20 @@ public class MVStoreDataStoreEngine
 
     @Override
     public void loadFromXML(XML xml) {
-        cfg.setPageSplitSize(xml.getInteger(
-                "pageSplitSize", cfg.getPageSplitSize()));
+        cfg.setPageSplitSize(
+                xml.getDataSize("pageSplitSize", cfg.getPageSplitSize()));
         cfg.setCompress(xml.getInteger("compress", cfg.getCompress()));
         cfg.setCacheConcurrency(xml.getInteger(
                 "cacheConcurrency", cfg.getCacheConcurrency()));
-        cfg.setCacheSize(xml.getInteger("cacheSize", cfg.getCacheSize()));
+        cfg.setCacheSize(xml.getDataSize("cacheSize", cfg.getCacheSize()));
         cfg.setAutoCompactFillRate(xml.getInteger(
                 "autoCompactFillRate", cfg.getAutoCompactFillRate()));
-        cfg.setAutoCommitBufferSize(xml.getInteger(
+        cfg.setAutoCommitBufferSize(xml.getDataSize(
                 "autoCommitBufferSize", cfg.getAutoCommitBufferSize()));
-        cfg.setAutoCommitDelay(xml.getInteger(
+        cfg.setAutoCommitDelay(xml.getDurationMillis(
                 "autoCommitDelay", cfg.getAutoCommitDelay()));
     }
+
     @Override
     public void saveToXML(XML xml) {
         xml.addElement("pageSplitSize", cfg.getPageSplitSize());

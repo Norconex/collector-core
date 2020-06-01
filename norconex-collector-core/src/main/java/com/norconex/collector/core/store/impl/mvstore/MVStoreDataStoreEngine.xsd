@@ -18,13 +18,13 @@
   <xs:element name="dataStoreEngine">
     <xs:complexType>
       <xs:all>
-        <xs:element name="pageSplitSize" type="NullableInteger" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="pageSplitSize" type="xs:string" minOccurs="0" maxOccurs="1"/>
         <xs:element name="compress" type="NullableInteger" minOccurs="0" maxOccurs="1"/>
         <xs:element name="cacheConcurrency" type="NullableInteger" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="cacheSize" type="NullableInteger" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="cacheSize" type="xs:string" minOccurs="0" maxOccurs="1"/>
         <xs:element name="autoCompactFillRate" type="NullableInteger" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="autoCommitBufferSize" type="NullableInteger" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="autoCommitDelay" type="NullableInteger" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="autoCommitBufferSize" type="xs:string" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="autoCommitDelay" type="xs:string" minOccurs="0" maxOccurs="1"/>
       </xs:all>
       <xs:attribute name="class" type="xs:string"/>
     </xs:complexType>
