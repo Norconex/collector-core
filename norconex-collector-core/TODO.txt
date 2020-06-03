@@ -2,12 +2,14 @@ TODO:
 ==============
 
 - Performance: 
-  - Test MVStore with default commit delay instead of committing after every 
-    change.
-  - Test MVStore integrity if objects are not cloned before saved.
-  - Trigger compaction once in a while to reduce huge store size.
   - Keep tack of counts by having counters in memory instead of querying
-    for count.
+    for count.  And have maxXXX for different types instead of just
+    "maxDocuments" which can be ambiguous.
+    - Have options for tracking progress:
+      - Do not track
+      - Track only %
+      - Track detailed (what is now)
+      - Track full/verbose (adding counts for each states) 
 
 - Have Collector add these new default fields:
     - Collector start date

@@ -51,35 +51,42 @@ public final class ChecksumStageUtil {
     // return false if checksum is rejected/unmodified
     private static boolean resolveChecksum(boolean isMeta, String newChecksum,
             DocumentPipelineContext ctx, Object subject) {
-        CrawlDocInfo crawlRef = ctx.getDocInfo();
+        CrawlDocInfo docInfo = ctx.getDocInfo();
 
         // Set new checksum on crawlData + metadata
         String type;
         if (isMeta) {
-            crawlRef.setMetaChecksum(newChecksum);
+            docInfo.setMetaChecksum(newChecksum);
             type = "metadata";
         } else {
-            crawlRef.setContentChecksum(newChecksum);
+            docInfo.setContentChecksum(newChecksum);
             type = "document";
         }
 
         // Get old checksum from cache
-        CrawlDocInfo cachedCrawlRef = ctx.getCachedDocInfo();
+        CrawlDocInfo cachedDocInfo = ctx.getCachedDocInfo();
 
         // if there was nothing in cache, or what is in cache is a deleted
         // doc, consider as new.
-        if (cachedCrawlRef == null
-                || CrawlState.DELETED.isOneOf(cachedCrawlRef.getState())) {
+        if (cachedDocInfo == null
+                || CrawlState.DELETED.isOneOf(cachedDocInfo.getState())) {
             LOG.debug("ACCEPTED {} checkum (new): Reference={}",
-                    type, crawlRef.getReference());
+                    type, docInfo.getReference());
+
+            // Prevent not having status when finalizing document on embedded docs
+            // (which otherwise do not have a status. 
+            // But if already has a status, keep it.
+            if (docInfo.getState() == null) {
+                docInfo.setState(CrawlState.NEW);
+            }
             return true;
         }
 
         String oldChecksum = null;
         if (isMeta) {
-            oldChecksum = cachedCrawlRef.getMetaChecksum();
+            oldChecksum = cachedDocInfo.getMetaChecksum();
         } else {
-            oldChecksum = cachedCrawlRef.getContentChecksum();
+            oldChecksum = cachedDocInfo.getContentChecksum();
         }
 
         // Compare checksums
@@ -87,17 +94,17 @@ public final class ChecksumStageUtil {
                 && Objects.equals(newChecksum, oldChecksum)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("REJECTED {} checkum (unmodified): Reference={}",
-                        type, crawlRef.getReference());
+                        type, docInfo.getReference());
             }
-            crawlRef.setState(CrawlState.UNMODIFIED);
+            docInfo.setState(CrawlState.UNMODIFIED);
             ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_UNMODIFIED,
                     ctx.getDocInfo(), subject);
             return false;
         }
 
-        crawlRef.setState(CrawlState.MODIFIED);
+        docInfo.setState(CrawlState.MODIFIED);
         LOG.debug("ACCEPTED {} checksum (modified): Reference={}",
-                type, crawlRef.getReference());
+                type, docInfo.getReference());
         return true;
     }
 }

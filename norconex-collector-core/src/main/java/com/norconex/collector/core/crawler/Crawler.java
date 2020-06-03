@@ -824,18 +824,9 @@ public abstract class Crawler
                     // GRACE_ONCE:
                     // Delete if previous state exists and is a bad state,
                     // but not already marked as deleted.
-                    if (cachedDocInfo == null) {
-                        // If graced once and has no cache, it means it
-                        // was likely marked as invalid (dropped from cache
-                        // by some store implementations).
-                        // Then we assume it is ready to be deleted at the low
-                        // risk of sending a deletion request previously sent
-                        // (no harm).  This is to fix
-                        // https://github.com/Norconex/collector-http/issues/635
-                        //TODO handle better (make sure "processedInvalid"
-                        // is no longer wiped by datastore on startup).
-                        deleteReference(doc);
-                    } else if (!cachedDocInfo.getState().isOneOf(CrawlState.DELETED)) {
+                    if (cachedDocInfo != null
+                            && !cachedDocInfo.getState().isOneOf(
+                                    CrawlState.DELETED)) {
                         if (!cachedDocInfo.getState().isGoodState()) {
                             deleteReference(doc);
                         } else {
