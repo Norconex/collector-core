@@ -65,7 +65,7 @@ public class MockCrawler extends Crawler {
     }
 
     @Override
-    protected CrawlDocInfo createEmbeddedCrawlReference(
+    protected CrawlDocInfo createChildDocInfo(
             String embeddedReference, CrawlDocInfo parentCrawlRef) {
         throw new UnsupportedOperationException();
     }

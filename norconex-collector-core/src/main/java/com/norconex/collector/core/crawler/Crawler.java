@@ -746,16 +746,26 @@ public abstract class Crawler
         }
         finalizeDocumentProcessing(doc);
         ImporterResponse[] children = response.getNestedResponses();
-        for (ImporterResponse child : children) {
+        for (ImporterResponse childResponse : children) {
 //TODO have a createEmbeddedDoc method instead?
-            CrawlDocInfo embeddedCrawlRef = createEmbeddedCrawlReference(
-                    child.getReference(), docInfo);
-            CrawlDocInfo embeddedCachedCrawlRef =
+            CrawlDocInfo childDocInfo = createChildDocInfo(
+                    childResponse.getReference(), docInfo);
+            CrawlDocInfo childCachedDocInfo =
                     crawlDocInfoService.getCached(
-                            child.getReference()).orElse(null);
-            processImportResponse(child, new CrawlDoc(
-                    embeddedCrawlRef, embeddedCachedCrawlRef,
-                    child.getDocument().getInputStream()));
+                            childResponse.getReference()).orElse(null);
+
+            // Here we create a CrawlDoc since the document from the response
+            // is (or can be) just a Doc, which does not hold all required
+            // properties for crawling.
+            //TODO refactor Doc vs CrawlDoc to have only one instance
+            // so we do not have to create such copy?
+            CrawlDoc childCrawlDoc = new CrawlDoc(
+                    childDocInfo, childCachedDocInfo,
+                    childResponse.getDocument().getInputStream());
+            childCrawlDoc.getMetadata().putAll(
+                    childResponse.getDocument().getMetadata());
+
+            processImportResponse(childResponse, childCrawlDoc);
 //                    embeddedCrawlRef, embeddedCachedCrawlRef);
         }
     }
@@ -875,7 +885,7 @@ public abstract class Crawler
             CrawlDocInfo crawlRef);
 
 
-    protected abstract CrawlDocInfo createEmbeddedCrawlReference(
+    protected abstract CrawlDocInfo createChildDocInfo(
             String embeddedReference, CrawlDocInfo parentCrawlRef);
 
     protected abstract ImporterResponse executeImporterPipeline(
