@@ -126,7 +126,7 @@ class CrawlerMetrics {
 
         // Percentage
         label(b, "Progress");
-        String percent = BigDecimal.valueOf(processedCount.longValue())
+        String percent = BigDecimal.valueOf(processedCount.longValue() * 100)
                 .divide(BigDecimal.valueOf(totalDocuments), 2, DOWN)
                 .stripTrailingZeros().toPlainString();
         b.append(percent).append("% (");
