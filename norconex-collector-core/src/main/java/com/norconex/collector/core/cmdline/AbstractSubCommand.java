@@ -105,6 +105,11 @@ public abstract class AbstractSubCommand implements Runnable {
     }
 
     protected void loadConfig() {
+        if (getConfigFile() == null || !getConfigFile().toFile().isFile()) {
+            printErr("Configuration file does not exist or is not valid: "
+                    + getConfigFile().toFile().getAbsolutePath());
+            System.exit(0);
+        }
         ErrorHandlerCapturer eh = new ErrorHandlerCapturer(getClass());
         new ConfigurationLoader()
                 .setVariablesFile(getVariablesFile())
