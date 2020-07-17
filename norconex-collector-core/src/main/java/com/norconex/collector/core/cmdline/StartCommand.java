@@ -29,7 +29,7 @@ import picocli.CommandLine.Option;
  */
 @Command(
     name = "start",
-    description = "Start the Collector."
+    description = "Start the Collector"
 )
 public class StartCommand extends AbstractSubCommand {
 
