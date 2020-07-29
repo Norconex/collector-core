@@ -1,5 +1,5 @@
 <!--
-   Copyright 2014-2019 Norconex Inc.
+   Copyright 2014-2020 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -171,6 +171,7 @@
           <artifactId>sonar-maven-plugin</artifactId>
           <version>2.5</version>
         </plugin>
+        <!-- 
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
@@ -201,6 +202,7 @@
             </dependency>
           </dependencies>
         </plugin>
+         -->
       </plugins>
     </pluginManagement>
     <plugins>
@@ -266,10 +268,10 @@
           <source>1.7</source>
           <detectLinks>false</detectLinks>
           <links>
-            <link>https://www.norconex.com/product/commons-lang/apidocs/</link>
-            <link>https://www.norconex.com/jef/api/latest/apidocs/</link>
-            <link>https://www.norconex.com/collectors/importer/latest/apidocs/</link>
-            <link>https://www.norconex.com/collectors/committer-core/latest/apidocs/</link>
+            <link>https://opensource.norconex.com/commons/lang/v1/apidocs/</link>
+            <link>https://opensource.norconex.com/jef/api/v4/apidocs/</link>
+            <link>https://opensource.norconex.com/importer/v2/apidocs/</link>
+            <link>https://opensource.norconex.com/committers/core/v2/apidocs/</link>
             <link>https://commons.apache.org/proper/commons-configuration/javadocs/v1.10/apidocs/</link>
             <link>https://api.mongodb.com/java/current/</link>
           </links>
@@ -340,6 +342,7 @@
           </execution>
         </executions>
       </plugin>
+      <!-- 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
@@ -363,6 +366,7 @@
           </execution>
         </executions>
       </plugin>
+       -->
       <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
@@ -401,7 +405,7 @@
   <distributionManagement>
     <site>
       <id>norconex-site-deployment</id>
-      <url>${site.baseurl}/collectors/collector-core/latest</url>
+      <url>${site.baseurl}/collectors/core/v1</url>
     </site>
     <snapshotRepository>
       <id>ossrh</id>
@@ -413,6 +417,7 @@
     </repository>
   </distributionManagement>
 
+  <!-- 
   <reporting>
     <plugins>
       <plugin>
@@ -442,7 +447,7 @@
           <header><![CDATA[
             <style>div.aboutLanguage .siteLink {font-size: 2em;}</style>
             <span class="siteLink">
-              <a href="https://www.norconex.com/collectors/collector-core">Norconex Collector Core</a>
+              <a href="https://opensource.norconex.com/collectors/core">Norconex Collector Core</a>
             </span>
             ]]>
           </header>
@@ -468,10 +473,10 @@
           <source>1.7</source>
           <detectLinks>false</detectLinks>
           <links>
-            <link>https://www.norconex.com/product/commons-lang/apidocs/</link>
-            <link>https://www.norconex.com/jef/api/latest/apidocs/</link>
-            <link>https://www.norconex.com/collectors/importer/latest/apidocs/</link>
-            <link>https://www.norconex.com/collectors/committer-core/latest/apidocs/</link>
+            <link>https://opensource.norconex.com/commons/lang/v1/apidocs/</link>
+            <link>https://opensource.norconex.com/jef/api/v4/apidocs/</link>
+            <link>https://opensource.norconex.com/importer/v2/apidocs/</link>
+            <link>https://opensource.norconex.com/committers/core/v2/apidocs/</link>
             <link>https://commons.apache.org/proper/commons-configuration/javadocs/v1.10/apidocs/</link>
             <link>https://api.mongodb.com/java/current/</link>
           </links>
@@ -489,12 +494,13 @@
       </plugin>
     </plugins>
   </reporting>
+  -->
 
   <organization>
     <name>Norconex Inc.</name>
     <url>https://www.norconex.com</url>
   </organization>
-  <url>https://www.norconex.com/collectors/collector-core</url>
+  <url>https://opensource.norconex.com/collectors/core</url>
   <description>Norconex Collector Core contains core functionalities shared between collectors.</description>
   <issueManagement>
     <system>GitHub</system>
