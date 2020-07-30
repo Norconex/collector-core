@@ -218,7 +218,7 @@
   <distributionManagement>
     <site>
       <id>norconex-site-deployment</id>
-      <url>${site.baseurl}/collectors/collector-core/latest</url>
+      <url>${site.baseurl}/collectors/core/v2</url>
     </site>
   </distributionManagement>
 <!-- 
@@ -248,7 +248,7 @@
           <header><![CDATA[
             <style>div.aboutLanguage .siteLink {font-size: 2em;}</style>
             <span class="siteLink">
-              <a href="https://www.norconex.com/collectors/collector-core">Norconex Collector Core</a>
+              <a href="https://opensource.norconex.com/collectors/core">Norconex Collector Core</a>
             </span>
             ]]>
           </header>
@@ -266,7 +266,7 @@
             </script>
             <a style="font-size: 1.4em;" href="https://github.com/norconex/collector-core/issues">Submit an Issue</a>
             &nbsp;&nbsp;|&nbsp;&nbsp;
-            <a style="font-size: 1.4em;" href="https://www.norconex.com">www.norconex.com</a>
+            <a style="font-size: 1.4em;" href="https://norconex.com">norconex.com</a>
             ]]>
           </footer>
           <show>protected</show>
@@ -274,10 +274,10 @@
           <source>1.7</source>
           <detectLinks>false</detectLinks>
           <links>
-            <link>https://www.norconex.com/product/commons-lang/apidocs/</link>
-            <link>https://www.norconex.com/jef/api/latest/apidocs/</link>
-            <link>https://www.norconex.com/collectors/importer/latest/apidocs/</link>
-            <link>https://www.norconex.com/collectors/committer-core/latest/apidocs/</link>
+            <link>https://opensource.norconex.com/commons/lang/v2/apidocs/</link>
+            <link>https://opensource.norconex.com/jef/api/v5/apidocs/</link>
+            <link>https://opensource.norconex.com/importer/v3/apidocs/</link>
+            <link>https://opensource.norconex.com/committers/core/v3/apidocs/</link>
             <link>https://api.mongodb.com/java/current/</link>
           </links>
         </configuration>
@@ -296,7 +296,7 @@
   </reporting>
  -->
 
-  <url>https://www.norconex.com/collectors/collector-core</url>
+  <url>https://opensource.norconex.com/collectors/core</url>
   <description>Norconex Collector Core contains core functionalities shared between collectors.</description>
   <issueManagement>
     <system>GitHub</system>

@@ -46,6 +46,8 @@ import com.norconex.commons.lang.time.DurationUnit;
  */
 class CrawlerMetrics {
 
+//    IntSummaryStatistics
+
     //TODO clean this class and make it more central and userul.
 
     private static final Logger LOG =

@@ -8,7 +8,7 @@ For any inquiries about Norconex Collector Core, please contact
 Norconex Inc. at info@norconex.com.
 
 This product website and documentation is located at:
-https://www.norconex.com/collectors/collector-core
+https://opensource.norconex.com/collectors/core
 
 Norconex licenses:
 ==================

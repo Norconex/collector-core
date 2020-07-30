@@ -1,5 +1,5 @@
 <!-- 
-   Copyright 2014 Norconex Inc.
+   Copyright 2014-2020 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,7 +38,15 @@
         <include>third-party/**</include>
         <include>*.txt</include>
       </includes>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory>./</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${basedir}</directory>
+      <includes>
+        <include>LICENSE</include>
+        <include>CHANGES.xml</include>
+      </includes>
+      <outputDirectory>./</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/site/apidocs</directory>
@@ -50,7 +58,7 @@
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/shared-resources</directory>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory>./</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/generated-sources/license</directory>
@@ -60,12 +68,6 @@
       <outputDirectory>third-party</outputDirectory>
     </fileSet>
   </fileSets>
-  <files>
-    <file>
-      <source>src/main/assembly/log4j.properties</source>
-      <outputDirectory>/classes</outputDirectory>
-    </file>
-  </files>
   <dependencySets>
     <dependencySet>
       <excludes>
