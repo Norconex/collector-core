@@ -183,6 +183,10 @@ public class CrawlDocInfoService implements Closeable {
     public boolean isProcessedEmpty() {
         return processed.isEmpty();
     }
+    public Optional<CrawlDocInfo> getProcessed(String id) {
+        return processed.find(id);
+    }
+
     public synchronized void processed(CrawlDocInfo docInfo) {
         Objects.requireNonNull(docInfo, "'docInfo' must not be null.");
         processed.save(docInfo.getReference(), docInfo);

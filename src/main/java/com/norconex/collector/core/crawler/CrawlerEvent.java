@@ -175,7 +175,7 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
      * crawl data.
      * @return crawl data
      */
-    public CrawlDocInfo getCrawlReference() {
+    public CrawlDocInfo getCrawlDocInfo() {
         return crawlRef;
     }
 //    public ICrawlData getCrawlData() {

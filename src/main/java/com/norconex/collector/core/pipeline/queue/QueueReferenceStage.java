@@ -53,10 +53,13 @@ public class QueueReferenceStage
         //CrawlDocInfoService?
         if (Stage.ACTIVE.is(stage)) {
             debug("Already being processed: %s", ref);
+//            return false;
         } else if (Stage.QUEUED.is(stage)) {
             debug("Already queued: %s", ref);
+//            return false;
         } else if (Stage.PROCESSED.is(stage)) {
             debug("Already processed: %s", ref);
+//            return false;
         } else {
             ctx.getDocInfoService().queue(ctx.getDocInfo());
 //            refStore.queue(ctx.getCrawlData().clone());
