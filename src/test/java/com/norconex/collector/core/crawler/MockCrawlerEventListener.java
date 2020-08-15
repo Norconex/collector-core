@@ -14,7 +14,6 @@
  */
 package com.norconex.collector.core.crawler;
 
-import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.commons.lang.event.Event;
 import com.norconex.commons.lang.event.IEventListener;
 
