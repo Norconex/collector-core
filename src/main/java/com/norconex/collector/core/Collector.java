@@ -190,7 +190,12 @@ public abstract class Collector {
         try {
             initCollector();
             eventManager.fire(CollectorEvent.create(COLLECTOR_RUN_BEGIN, this));
-            jobSuite.execute();
+            //TODO when JEF is replaced, this should be handled better:
+            if (!jobSuite.execute()) {
+                throw new CollectorException(
+                        "Collector execution was reported unsuccessful. "
+                      + "Check the logs for more details.");
+            }
         } finally {
             try {
                 destroyCollector();
@@ -394,11 +399,12 @@ public abstract class Collector {
 
         if (status == null
                 || !status.isState(JobState.RUNNING, JobState.UNKNOWN)) {
-            String curState =
-                    (status != null ? " State: " + status.getState() : "");
+//            String curState =
+//                    (status != null ? " State: " + status.getState() : "");
             throw new CollectorException(
                     "This collector cannot be stopped since it is NOT "
-                  + "running." + curState);
+                  + "running. Last known state: "
+                  + (status != null ? status.getState() : "[undefined]"));
         } else if (LOG.isDebugEnabled()) {
             LOG.debug("Suite state: {}", status.getState());
         }

@@ -40,7 +40,7 @@ public class CollectorCommandLauncher {
         if (args.length == 0) {
             cmdLine.getErr().println("No arguments provided.");
             cmdLine.usage(cmdLine.getOut());
-            System.exit(0);
+            System.exit(-1);
         }
 
         int exitCode = cmdLine.execute(args);

@@ -17,6 +17,7 @@ package com.norconex.collector.core.cmdline;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -38,7 +39,7 @@ import picocli.CommandLine.Spec;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public abstract class AbstractSubCommand implements Runnable {
+public abstract class AbstractSubCommand implements Callable<Integer> {
 
     @ParentCommand
     private CollectorCommand parent;
@@ -104,11 +105,12 @@ public abstract class AbstractSubCommand implements Runnable {
         return crawlers;
     }
 
-    protected void loadConfig() {
+    protected int loadConfig() {
         if (getConfigFile() == null || !getConfigFile().toFile().isFile()) {
             printErr("Configuration file does not exist or is not valid: "
                     + getConfigFile().toFile().getAbsolutePath());
-            System.exit(0);
+            return -1;
+//            System.exit(0);
         }
         ErrorHandlerCapturer eh = new ErrorHandlerCapturer(getClass());
         new ConfigurationLoader()
@@ -122,14 +124,25 @@ public abstract class AbstractSubCommand implements Runnable {
             printErr();
             eh.getErrors().stream().forEach(er ->
                     printErr(er.getMessage()));
-            System.exit(0);
+            return  -1;
+//            System.exit(0);
         }
+        return 0;
     }
 
     @Override
-    public void run() {
-        loadConfig();
-        runCommand();
+    public Integer call() throws Exception {
+        int exitVal = loadConfig();
+        if (exitVal != 0) {
+            return exitVal;
+        }
+        try {
+            runCommand();
+            return 0;
+        } catch (Exception e) {
+            printErr("ERROR: " + e.getLocalizedMessage());
+            return -1;
+        }
     }
 
     protected abstract void runCommand();

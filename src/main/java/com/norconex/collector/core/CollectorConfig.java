@@ -68,7 +68,7 @@ import com.norconex.importer.ImporterConfig;
  * </maxConcurrentCrawlers>
  * <maxMemoryPool>
  *   (Maximum number of bytes used for memory caching of data. E.g.,
- *    when processing documents. Can use....xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Defaults to 1 GB.)
+ *    when processing documents. Defaults to 1 GB.)
  * </maxMemoryPool>
  * <maxMemoryInstance>
  * </maxMemoryInstance>
