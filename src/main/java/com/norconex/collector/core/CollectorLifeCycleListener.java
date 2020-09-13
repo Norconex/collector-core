@@ -1,4 +1,4 @@
-/* Copyright 2018-2019 Norconex Inc.
+/* Copyright 2018-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,10 @@ import com.norconex.commons.lang.event.IEventListener;
  * @since 2.0.0
  */
 public class CollectorLifeCycleListener
-        implements IEventListener<CollectorEvent<Collector>> {
+        implements IEventListener<CollectorEvent> {
 
     @Override
-    public final void accept(CollectorEvent<Collector> event) {
+    public final void accept(CollectorEvent event) {
         if (event == null) {
             return;
         }
@@ -50,7 +50,7 @@ public class CollectorLifeCycleListener
         }
     }
 
-    protected void onCollectorEvent(CollectorEvent<Collector> event) {
+    protected void onCollectorEvent(CollectorEvent event) {
         //NOOP
     }
 
@@ -61,28 +61,28 @@ public class CollectorLifeCycleListener
      * {@link CollectorEvent#COLLECTOR_STOP_END} event.
      * @param event collector event
      */
-    protected void onCollectorShutdown(CollectorEvent<Collector> event) {
+    protected void onCollectorShutdown(CollectorEvent event) {
         //NOOP
     }
-    protected void onCollectorError(CollectorEvent<Collector> event) {
+    protected void onCollectorError(CollectorEvent event) {
         //NOOP
     }
-    protected void onCollectorRunBegin(CollectorEvent<Collector> event) {
+    protected void onCollectorRunBegin(CollectorEvent event) {
         //NOOP
     }
-    protected void onCollectorRunEnd(CollectorEvent<Collector> event) {
+    protected void onCollectorRunEnd(CollectorEvent event) {
         //NOOP
     }
-    protected void onCollectorStopBegin(CollectorEvent<Collector> event) {
+    protected void onCollectorStopBegin(CollectorEvent event) {
         //NOOP
     }
-    protected void onCollectorStopEnd(CollectorEvent<Collector> event) {
+    protected void onCollectorStopEnd(CollectorEvent event) {
         //NOOP
     }
-    protected void onCollectorCleanBegin(CollectorEvent<Collector> event) {
+    protected void onCollectorCleanBegin(CollectorEvent event) {
         //NOOP
     }
-    protected void onCollectorCleanEnd(CollectorEvent<Collector> event) {
+    protected void onCollectorCleanEnd(CollectorEvent event) {
         //NOOP
     }
 }

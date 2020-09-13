@@ -14,7 +14,10 @@
  */
 package com.norconex.collector.core.crawler;
 
+import java.nio.file.Path;
+
 import com.norconex.collector.core.Collector;
+import com.norconex.collector.core.MockCollector;
 import com.norconex.collector.core.doc.CrawlDoc;
 import com.norconex.collector.core.doc.CrawlDocInfo;
 import com.norconex.collector.core.pipeline.importer.ImporterPipelineContext;
@@ -23,6 +26,10 @@ import com.norconex.jef5.status.JobStatusUpdater;
 import com.norconex.jef5.suite.JobSuite;
 
 public class MockCrawler extends Crawler {
+
+    public MockCrawler(String id, Path workdir) {
+        this(id, new MockCollector("collector-" + id, workdir));
+    }
 
     public MockCrawler(CrawlerConfig config, Collector collector) {
         super(config, collector);

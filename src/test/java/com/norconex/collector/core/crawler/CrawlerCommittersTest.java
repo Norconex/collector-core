@@ -19,7 +19,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -28,6 +27,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.norconex.collector.core.doc.CrawlDoc;
+import com.norconex.collector.core.doc.CrawlDocInfo;
 import com.norconex.committer.core3.CommitterContext;
 import com.norconex.committer.core3.CommitterException;
 import com.norconex.committer.core3.UpsertRequest;
@@ -75,23 +76,29 @@ public class CrawlerCommittersTest {
         XMLFileCommitter xmlNoModif = new XMLFileCommitter();
         xmlNoModif.setIndent(4);
 
-        CrawlerCommitters committers = new CrawlerCommitters(
-                new CachedStreamFactory(),
-                Arrays.asList(modifyTitle, addKeyword, xmlNoModif));
+        MockCrawler crawler = new MockCrawler("test", folder);
+        crawler.getCrawlerConfig().setCommitters(
+                modifyTitle, addKeyword, xmlNoModif);
+
+        CrawlerCommitterService committers = new CrawlerCommitterService(crawler);
 
         // The test document
         Properties meta = new Properties();
         meta.set("title", "original title");
         meta.set("keyword", "original keyword");
-        UpsertRequest req = new UpsertRequest("ref", meta,
-                IOUtils.toInputStream("original content", UTF_8));
 
+        CrawlDoc doc = new CrawlDoc(
+                new CrawlDocInfo("ref"),
+                new CachedStreamFactory()
+                    .newInputStream(
+                            IOUtils.toInputStream("original content", UTF_8)));
+        doc.getMetadata().putAll(meta);
 
         // Perform the addition
         CommitterContext ctx =
                 CommitterContext.build().setWorkDir(folder).create();
         committers.init(ctx);
-        committers.upsert(req);
+        committers.upsert(doc);//req);
         committers.close();
 
         // Test committed data

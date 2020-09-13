@@ -24,7 +24,6 @@ import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_RUN_BEGIN
 import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_RUN_END;
 import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_STOP_BEGIN;
 import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_STOP_END;
-import static com.norconex.collector.core.crawler.CrawlerEvent.DOCUMENT_COMMITTED_DELETE;
 import static com.norconex.collector.core.crawler.CrawlerEvent.DOCUMENT_IMPORTED;
 import static com.norconex.collector.core.crawler.CrawlerEvent.REJECTED_ERROR;
 import static com.norconex.collector.core.crawler.CrawlerEvent.REJECTED_IMPORT;
@@ -76,13 +75,11 @@ import com.norconex.collector.core.store.DataStoreExporter;
 import com.norconex.collector.core.store.DataStoreImporter;
 import com.norconex.collector.core.store.IDataStoreEngine;
 import com.norconex.committer.core3.CommitterContext;
-import com.norconex.committer.core3.DeleteRequest;
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.event.EventManager;
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory;
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.time.DurationFormatter;
 import com.norconex.importer.Importer;
 import com.norconex.importer.response.ImporterResponse;
@@ -121,7 +118,7 @@ public abstract class Crawler
     private final CrawlerConfig config;
     private final Collector collector;
     private Importer importer;
-    private final CrawlerCommitters committers;
+    private final CrawlerCommitterService committers;
 
     private Path workDir;
     private Path tempDir;
@@ -143,8 +140,7 @@ public abstract class Crawler
         Objects.requireNonNull(config, "'collector' must not be null");
         this.config = config;
         this.collector = collector;
-        this.committers = new CrawlerCommitters(
-                this.collector.getStreamFactory(), config.getCommitters());
+        this.committers = new CrawlerCommitterService(this);
         INSTANCE.set(this);
     }
 
@@ -161,7 +157,7 @@ public abstract class Crawler
         return collector.getEventManager();
     }
 
-    public CrawlerCommitters getCommitters() {
+    public CrawlerCommitterService getCommitterService() {
         return committers;
     }
 
@@ -180,7 +176,8 @@ public abstract class Crawler
 
     @Override
     public void stop(JobStatus jobStatus, JobSuite suite) {
-        getEventManager().fire(CrawlerEvent.create(CRAWLER_STOP_BEGIN, this));
+        getEventManager().fire(
+                new CrawlerEvent.Builder(CRAWLER_STOP_BEGIN, this).build());
         stopped = true;
         LOG.info("Stopping the crawler.");
     }
@@ -271,7 +268,7 @@ public abstract class Crawler
 
         try {
             getEventManager().fire(
-                    CrawlerEvent.create(CRAWLER_RUN_BEGIN, this));
+                    new CrawlerEvent.Builder(CRAWLER_RUN_BEGIN, this).build());
             //TODO rename "beforeExecution and afterExecution"?
             prepareExecution(statusUpdater, suite, resume);
 
@@ -299,7 +296,9 @@ public abstract class Crawler
     }
 
     protected boolean initCrawler() {
-        getEventManager().fire(CrawlerEvent.create(CRAWLER_INIT_BEGIN, this));
+        getEventManager().fire(new CrawlerEvent.Builder(
+                CRAWLER_INIT_BEGIN, this).message(
+                        "Initializing key crawler components...").build());
 
         //--- Ensure good state/config ---
         if (StringUtils.isBlank(config.getId())) {
@@ -324,7 +323,8 @@ public abstract class Crawler
         committers.init(committerContext);
 
         boolean resuming = crawlDocInfoService.open();
-        getEventManager().fire(CrawlerEvent.create(CRAWLER_INIT_END, this));
+        getEventManager().fire(new CrawlerEvent.Builder(CRAWLER_INIT_END, this)
+                .message("Crawler initialized successfully.").build());
         return resuming;
     }
 
@@ -342,14 +342,15 @@ public abstract class Crawler
 
     public void clean() {
         initCrawler();
-        getEventManager().fire(CrawlerEvent.create(CRAWLER_CLEAN_BEGIN, this));
+        getEventManager().fire(
+                new CrawlerEvent.Builder(CRAWLER_CLEAN_BEGIN, this).build());
         try {
             committers.clean();
             destroyCrawler();
             FileUtils.deleteDirectory(getTempDir().toFile());
             FileUtils.deleteDirectory(getWorkDir().toFile());
             getEventManager().fire(
-                    CrawlerEvent.create(CRAWLER_CLEAN_END, this));
+                    new CrawlerEvent.Builder(CRAWLER_CLEAN_END, this).build());
         } catch (IOException e) {
             throw new CollectorException(
                     "Could not clean crawler directory.", e);
@@ -422,11 +423,10 @@ public abstract class Crawler
         LOG.debug("Removing empty directories");
         FileUtil.deleteEmptyDirs(getDownloadDir().toFile());
 
-        if (!isStopped()) {
-            getEventManager().fire(CrawlerEvent.create(CRAWLER_RUN_END, this));
-        } else {
-            getEventManager().fire(CrawlerEvent.create(CRAWLER_STOP_END, this));
-        }
+        getEventManager().fire(new CrawlerEvent.Builder(
+                (isStopped() ? CRAWLER_STOP_END : CRAWLER_RUN_END),
+                this).build());
+
         LOG.info("Crawler {}", (isStopped() ? "stopped." : "completed."));
     }
 
@@ -699,7 +699,10 @@ public abstract class Crawler
             // class?
             docInfo.setState(CrawlState.ERROR);
             getEventManager().fire(
-                    CrawlerEvent.create(REJECTED_ERROR, this, docInfo, e));
+                    new CrawlerEvent.Builder(REJECTED_ERROR, this)
+                            .crawlDocInfo(docInfo)
+                            .exception(e)
+                            .build());
             if (LOG.isDebugEnabled()) {
                 LOG.info("Could not process document: {} ({})",
                         reference, e.getMessage(), e);
@@ -731,15 +734,21 @@ public abstract class Crawler
         CrawlDocInfo docInfo = doc.getDocInfo();
 
         if (response.isSuccess()) {
-            getEventManager().fire(CrawlerEvent.create(
-                    DOCUMENT_IMPORTED, this, docInfo, response));
+            getEventManager().fire(
+                    new CrawlerEvent.Builder(DOCUMENT_IMPORTED, this)
+                        .crawlDocInfo(docInfo)
+                        .subject(response)
+                        .build());
             //Doc wrappedDoc = wrapDocument(crawlRef, doc);
             executeCommitterPipeline(this, doc);//, //wrappedDoc,
 //                    docInfo, cachedDocInfo);
         } else {
             docInfo.setState(CrawlState.REJECTED);
-            getEventManager().fire(CrawlerEvent.create(
-                    REJECTED_IMPORT, this, docInfo, response));
+            getEventManager().fire(
+                    new CrawlerEvent.Builder(REJECTED_IMPORT, this)
+                        .crawlDocInfo(docInfo)
+                        .subject(response)
+                        .build());
             LOG.debug("Importing unsuccessful for \"{}\": {}",
                     docInfo.getReference(),
                     response.getImporterStatus().getDescription());
@@ -895,13 +904,6 @@ public abstract class Crawler
     protected abstract void executeCommitterPipeline(
             Crawler crawler, CrawlDoc doc);
 
-    private Properties getNullSafeMetadata(CrawlDoc doc) {
-        if (doc == null) {
-            return new Properties();
-        }
-        return doc.getMetadata();
-    }
-
     private SpoiledReferenceStrategy getSpoiledStateStrategy(
             CrawlDocInfo crawlData) {
         ISpoiledReferenceStrategizer strategyResolver =
@@ -921,10 +923,9 @@ public abstract class Crawler
         LOG.debug("Deleting reference: {}", doc.getReference());
 
         doc.getDocInfo().setState(CrawlState.DELETED);
-        committers.delete(new DeleteRequest(
-                doc.getReference(), getNullSafeMetadata(doc)));
-        getEventManager().fire(CrawlerEvent.create(
-                DOCUMENT_COMMITTED_DELETE, this, doc.getDocInfo(), doc));
+
+        // Event triggered by service
+        committers.delete(doc);
     }
 
 //TODO make enum if never mixed, and add "default" --------------------------------------------

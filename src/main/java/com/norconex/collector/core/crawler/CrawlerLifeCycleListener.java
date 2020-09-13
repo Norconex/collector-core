@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,10 @@ import com.norconex.commons.lang.event.IEventListener;
  * @since 2.0.0
  */
 public class CrawlerLifeCycleListener
-        implements IEventListener<CrawlerEvent<Crawler>> {
+        implements IEventListener<CrawlerEvent/*  */> {
 
     @Override
-    public final void accept(CrawlerEvent<Crawler> event) {
+    public final void accept(CrawlerEvent event) {
         if (event == null) {
             return;
         }
@@ -51,7 +51,7 @@ public class CrawlerLifeCycleListener
         }
     }
 
-    protected void onCrawlerEvent(CrawlerEvent<Crawler> event) {
+    protected void onCrawlerEvent(CrawlerEvent event) {
         //NOOP
     }
     /**
@@ -60,31 +60,31 @@ public class CrawlerLifeCycleListener
      * {@link CrawlerEvent#CRAWLER_STOP_END} event.
      * @param event crawler event
      */
-    protected void onCrawlerShutdown(CrawlerEvent<Crawler> event) {
+    protected void onCrawlerShutdown(CrawlerEvent event) {
         //NOOP
     }
-    protected void onCrawlerInitBegin(CrawlerEvent<Crawler> event) {
+    protected void onCrawlerInitBegin(CrawlerEvent event) {
         //NOOP
     }
-    protected void onCrawlerInitEnd(CrawlerEvent<Crawler> event) {
+    protected void onCrawlerInitEnd(CrawlerEvent event) {
         //NOOP
     }
-    protected void onCrawlerRunBegin(CrawlerEvent<Crawler> event) {
+    protected void onCrawlerRunBegin(CrawlerEvent event) {
         //NOOP
     }
-    protected void onCrawlerRunEnd(CrawlerEvent<Crawler> event) {
+    protected void onCrawlerRunEnd(CrawlerEvent event) {
         //NOOP
     }
-    protected void onCrawlerStopBegin(CrawlerEvent<Crawler> event) {
+    protected void onCrawlerStopBegin(CrawlerEvent event) {
         //NOOP
     }
-    protected void onCrawlerStopEnd(CrawlerEvent<Crawler> event) {
+    protected void onCrawlerStopEnd(CrawlerEvent event) {
         //NOOP
     }
-    protected void onCrawlerCleanBegin(CrawlerEvent<Crawler> event) {
+    protected void onCrawlerCleanBegin(CrawlerEvent event) {
         //NOOP
     }
-    protected void onCrawlerCleanEnd(CrawlerEvent<Crawler> event) {
+    protected void onCrawlerCleanEnd(CrawlerEvent event) {
         //NOOP
     }
 }

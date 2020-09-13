@@ -16,56 +16,48 @@ package com.norconex.collector.core.crawler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.CollectorException;
+import com.norconex.collector.core.doc.CrawlDoc;
 import com.norconex.committer.core3.CommitterContext;
 import com.norconex.committer.core3.CommitterException;
 import com.norconex.committer.core3.DeleteRequest;
 import com.norconex.committer.core3.ICommitter;
 import com.norconex.committer.core3.UpsertRequest;
-import com.norconex.commons.lang.io.CachedInputStream;
-import com.norconex.commons.lang.io.CachedStreamFactory;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.collection.CollectionUtil;
 
 /**
  * Wrapper around multiple Committers so they can all be handled as one.
  * @author Pascal Essiembre
  * @since 3.0.0
  */
-public class CrawlerCommitters {//implements ICommitter {
+public class CrawlerCommitterService {
 
     private static final Logger LOG =
-            LoggerFactory.getLogger(CrawlerCommitters.class);
+            LoggerFactory.getLogger(CrawlerCommitterService.class);
 
     private final List<ICommitter> committers = new ArrayList<>();
-    private final CachedStreamFactory cacheFactory;
+    private final Crawler crawler;
 
-    public CrawlerCommitters(
-            CachedStreamFactory cacheFactory, List<ICommitter> committers) {
+    public CrawlerCommitterService(Crawler crawler) {
         super();
-        if (committers != null) {
-            this.committers.addAll(committers);
-        }
-        this.cacheFactory = cacheFactory;
+        CollectionUtil.setAll(
+                committers, crawler.getCrawlerConfig().getCommitters());
+        this.crawler = crawler;
+
     }
 
     public boolean isEmpty() {
         return committers.isEmpty();
     }
-
-
-//    public List<ICommitter> getCommitters() {
-//        return committers;
-//    }
 
     public void init(CommitterContext baseContext) {
         MutableInt idx = new MutableInt();
@@ -77,39 +69,49 @@ public class CrawlerCommitters {//implements ICommitter {
         });
     }
 
-    public void upsert(UpsertRequest upsertRequest) {
-        CachedInputStream content = CachedInputStream.cache(
-                upsertRequest.getContent(), cacheFactory);
+    /**
+     * Updates or inserts a document using all accepting committers.
+     * @param doc the document to upsert
+     * @return committers having accepted/upserted the document
+     */
+    public List<ICommitter> upsert(CrawlDoc doc) {
+        List<ICommitter> actuals = new ArrayList<>();
+        if (!committers.isEmpty()) {
+            executeAll("upsert", c -> {
+                UpsertRequest req = toUpserRequest(doc);
+                if (c.accept(req)) {
+                    actuals.add(c);
+                    c.upsert(req);
+                    doc.getInputStream().rewind();
+                }
+            });
+        }
+        fireCommitterRequestEvent(
+                CrawlerEvent.DOCUMENT_COMMITTED_UPSERT, actuals, doc);
 
-        // if more than one committer, create copies first. Else,
-        // sends straight
-        executeAll("upsert", c -> {
-            if (c.accept(upsertRequest)) {
-                Properties meta = new Properties();
-                meta.loadFromMap(upsertRequest.getMetadata());
-                UpsertRequest req = new UpsertRequest(
-                        upsertRequest.getReference(), meta, content);
-                c.upsert(req);
-                content.rewind();
-            }
-        });
+        return actuals;
     }
 
-    public void delete(DeleteRequest deleteRequest) {
-        // if more than one committer, create copies first. Else,
-        // sends straight
-        executeAll("delete", c -> {
-            DeleteRequest req = deleteRequest;
-            if (committers.size() > 1) {
-                Properties meta = new Properties();
-                meta.loadFromMap(deleteRequest.getMetadata());
-                req = new DeleteRequest(
-                        deleteRequest.getReference(), meta);
-            }
-            if (c.accept(req)) {
-                c.delete(req);
-            }
-        });
+    /**
+     * Delete a document operation using all accepting committers.
+     * @param doc the document to delete
+     * @return committers having accepted/deleted the document
+     */
+    public List<ICommitter> delete(CrawlDoc doc) {
+        List<ICommitter> actuals = new ArrayList<>();
+        if (!committers.isEmpty()) {
+            executeAll("delete", c -> {
+                DeleteRequest req = toDeleteRequest(doc);
+                if (c.accept(req)) {
+                    actuals.add(c);
+                    c.delete(req);
+                    // no doc content rewind necessary
+                }
+            });
+        }
+        fireCommitterRequestEvent(
+                CrawlerEvent.DOCUMENT_COMMITTED_DELETE, actuals, doc);
+        return actuals;
     }
 
     public void close() {
@@ -140,6 +142,33 @@ public class CrawlerCommitters {//implements ICommitter {
         }
     }
 
+    // invoked for each committer to avoid tempering
+    private UpsertRequest toUpserRequest(CrawlDoc doc) {
+        return new UpsertRequest(
+                doc.getReference(),
+                doc.getMetadata(),
+                doc.getInputStream());
+    }
+    // invoked for each committer to avoid tempering
+    private DeleteRequest toDeleteRequest(CrawlDoc doc) {
+        return new DeleteRequest(doc.getReference(), doc.getMetadata());
+    }
+
+    private void fireCommitterRequestEvent(
+            String eventName, List<ICommitter> targets, CrawlDoc doc) {
+        String msg = "Committers: " + (
+                targets.isEmpty()
+                ? "none"
+                : targets.stream().map(c -> c.getClass().getSimpleName())
+                        .collect(Collectors.joining(",")));
+        crawler.getEventManager().fire(new CrawlerEvent.Builder(
+                eventName, crawler)
+                    .crawlDocInfo(doc.getDocInfo())
+                    .subject(targets)
+                    .message(msg)
+                    .build());
+    }
+
     @Override
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
@@ -150,8 +179,9 @@ public class CrawlerCommitters {//implements ICommitter {
     }
     @Override
     public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+        return CrawlerCommitterService.class.getSimpleName() + '[' +
+                committers.stream().map(c -> c.getClass().getSimpleName())
+                        .collect(Collectors.joining(",")) + ']';
     }
 
     @FunctionalInterface

@@ -20,11 +20,12 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.crawler.Crawler;
-import com.norconex.collector.core.crawler.CrawlerCommitters;
+import com.norconex.collector.core.crawler.CrawlerCommitterService;
 import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.crawler.CrawlerEvent;
 import com.norconex.collector.core.doc.CrawlDocInfo;
 import com.norconex.collector.core.doc.CrawlDocInfoService;
+import com.norconex.commons.lang.event.EventManager;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
 import com.norconex.commons.lang.pipeline.Pipeline;
 
@@ -77,8 +78,8 @@ public abstract class AbstractPipelineContext {
         return crawler.getDocInfoService();
     }
 
-    public CrawlerCommitters getCommitters() {
-        return crawler.getCommitters();
+    public CrawlerCommitterService getCommitters() {
+        return crawler.getCommitterService();
     }
 
     /**
@@ -89,8 +90,15 @@ public abstract class AbstractPipelineContext {
      */
     public void fireCrawlerEvent(
             String event, CrawlDocInfo docInfo, Object subject) {
-        crawler.getEventManager().fire(CrawlerEvent.create(
-                event, crawler, docInfo, subject));
+        crawler.getEventManager().fire(
+                new CrawlerEvent.Builder(event, crawler)
+                    .crawlDocInfo(docInfo)
+                    .subject(subject)
+                    .build());
+    }
+
+    public EventManager getEventManager() {
+        return crawler.getEventManager();
     }
 
     @Override

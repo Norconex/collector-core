@@ -183,13 +183,17 @@ public abstract class Collector {
      * Starts all crawlers defined in configuration.
      */
     public void start() {
+
+        Thread.currentThread().setName(getId());
+
         // Version intro
         LOG.info("\n{}", getReleaseVersions());
 
         lock();
         try {
             initCollector();
-            eventManager.fire(CollectorEvent.create(COLLECTOR_RUN_BEGIN, this));
+            eventManager.fire(new CollectorEvent.Builder(
+                    COLLECTOR_RUN_BEGIN, this).build());
             //TODO when JEF is replaced, this should be handled better:
             if (!jobSuite.execute()) {
                 throw new CollectorException(
@@ -200,7 +204,8 @@ public abstract class Collector {
             try {
                 destroyCollector();
             } finally {
-                eventManager.fire(CollectorEvent.create(COLLECTOR_RUN_END, this));
+                eventManager.fire(new CollectorEvent.Builder(
+                        COLLECTOR_RUN_END, this).build());
             }
             eventManager.clearListeners();
             unlock();
@@ -208,13 +213,16 @@ public abstract class Collector {
     }
 
     public void clean() {
+        Thread.currentThread().setName(getId() + "/CLEAN");
         lock();
         try {
             initCollector();
-            eventManager.fire(CollectorEvent.create(COLLECTOR_CLEAN_BEGIN, this));
+            eventManager.fire(new CollectorEvent.Builder(
+                    COLLECTOR_CLEAN_BEGIN, this).build());
             getCrawlers().forEach(Crawler::clean);
             destroyCollector();
-            eventManager.fire(CollectorEvent.create(COLLECTOR_CLEAN_END, this));
+            eventManager.fire(new CollectorEvent.Builder(
+                    COLLECTOR_CLEAN_END, this).build());
         } finally {
             eventManager.clearListeners();
             unlock();
@@ -222,33 +230,35 @@ public abstract class Collector {
     }
 
     public void importDataStore(List<Path> inFiles) {
+        Thread.currentThread().setName(getId() + "/IMPORT");
         lock();
         try {
             initCollector();
-            eventManager.fire(
-                    CollectorEvent.create(COLLECTOR_STORE_IMPORT_BEGIN, this));
+            eventManager.fire(new CollectorEvent.Builder(
+                    COLLECTOR_STORE_IMPORT_BEGIN, this).build());
             inFiles.forEach(f -> {
                 getCrawlers().forEach(c -> c.importDataStore(f));
             });
             destroyCollector();
-            eventManager.fire(
-                    CollectorEvent.create(COLLECTOR_STORE_IMPORT_END, this));
+            eventManager.fire(new CollectorEvent.Builder(
+                    COLLECTOR_STORE_IMPORT_END, this).build());
         } finally {
             eventManager.clearListeners();
             unlock();
         }
     }
     public void exportDataStore(Path dir) {
+        Thread.currentThread().setName(getId() + "/EXPORT");
         lock();
         try {
             initCollector();
-            eventManager.fire(
-                    CollectorEvent.create(COLLECTOR_STORE_EXPORT_BEGIN, this));
+            eventManager.fire(new CollectorEvent.Builder(
+                    COLLECTOR_STORE_EXPORT_BEGIN, this).build());
             //TODO zip all exported data stores in a single file?
             getCrawlers().forEach(c -> c.exportDataStore(dir));
             destroyCollector();
-            eventManager.fire(
-                    CollectorEvent.create(COLLECTOR_STORE_EXPORT_END, this));
+            eventManager.fire(new CollectorEvent.Builder(
+                    COLLECTOR_STORE_EXPORT_END, this).build());
         } finally {
             eventManager.clearListeners();
             unlock();
@@ -378,6 +388,9 @@ public abstract class Collector {
      * different JVM instance than the instance we want to stop.
      */
     public void stop() {
+
+        Thread.currentThread().setName(getId() + "/STOP");
+
         // It is currently necessary to create the crawlers from config
         // so that the suite is created properly and jobs stopped properly.
         createCrawlers();
@@ -612,7 +625,7 @@ public abstract class Collector {
                   + "the running Collector instance to complete or stop the "
                   + "Collector and try again.");
         }
-        new Thread((Runnable) () -> {
+        new Thread(() -> {
             try {
                 FileUtils.touch(lck.toFile());
                 while(lck.toFile().exists()) {

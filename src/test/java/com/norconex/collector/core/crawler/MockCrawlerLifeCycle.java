@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  */
 package com.norconex.collector.core.crawler;
 
-import static com.norconex.collector.core.CollectorEvent.COLLECTOR_RUN_END;
 import static com.norconex.collector.core.CollectorEvent.COLLECTOR_RUN_BEGIN;
-import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_RUN_END;
+import static com.norconex.collector.core.CollectorEvent.COLLECTOR_RUN_END;
 import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_RUN_BEGIN;
+import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_RUN_END;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -86,14 +86,18 @@ public final class MockCrawlerLifeCycle {
         for (Object obj: objects) {
             eventManager.addListenersFromScan(obj);
         }
-        eventManager.fire(CollectorEvent.create(COLLECTOR_RUN_BEGIN, collector));
-        eventManager.fire(CrawlerEvent.create(CRAWLER_RUN_BEGIN, crawler));
+        eventManager.fire(new CollectorEvent.Builder(
+                COLLECTOR_RUN_BEGIN, collector).build());
+        eventManager.fire(new CrawlerEvent.Builder(
+                CRAWLER_RUN_BEGIN, crawler).build());
         try {
             executable.execute();
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
-        eventManager.fire(CrawlerEvent.create(CRAWLER_RUN_END, crawler));
-        eventManager.fire(CollectorEvent.create(COLLECTOR_RUN_END, collector));
+        eventManager.fire(new CrawlerEvent.Builder(
+                CRAWLER_RUN_END, crawler).build());
+        eventManager.fire(new CollectorEvent.Builder(
+                COLLECTOR_RUN_END, collector).build());
     }
 }

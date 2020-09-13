@@ -16,6 +16,7 @@ package com.norconex.collector.core.crawler;
 
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -25,10 +26,9 @@ import com.norconex.commons.lang.event.Event;
 /**
  * A crawler event.
  * @author Pascal Essiembre
- * @param <T> Collector for this event
  * @since 2.0.0
  */
-public class CrawlerEvent<T extends Crawler> extends Event<T> {
+public class CrawlerEvent extends Event {
 
     private static final long serialVersionUID = 1L;
 
@@ -40,7 +40,6 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
      * The crawler has been initialized.
      */
     public static final String CRAWLER_INIT_END = "CRAWLER_INIT_END";
-
 
     /**
      * The crawler started.
@@ -133,40 +132,43 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
     public static final String DOCUMENT_SAVED = "DOCUMENT_SAVED";
 
 
-    private final CrawlDocInfo crawlRef;
+    private final CrawlDocInfo crawlDocInfo;
     private final Object subject;
     //TODO keep a reference to actual document?
 
 
-    /**
-     * New crawler event.
-     * @param name event name
-     * @param source crawler responsible for triggering the event
-     * @param crawlRef information about a document being crawled
-     * @param subject other relevant source related to the event
-     * @param exception exception tied to this event (may be <code>null</code>)
-     */
-    public CrawlerEvent(String name, T source,
-            CrawlDocInfo crawlRef, Object subject, Throwable exception) {
-        super(name, source, exception);
-        this.crawlRef = crawlRef;
-        this.subject = subject;
+    public static class Builder extends Event.Builder<Builder> {
+
+        private CrawlDocInfo crawlDocInfo;
+        private Object subject;
+
+        public Builder(String name, Crawler source) {
+            super(name, source);
+        }
+
+        public Builder crawlDocInfo(CrawlDocInfo crawlDocInfo) {
+            this.crawlDocInfo = crawlDocInfo;
+            return this;
+        }
+        public Builder subject(Object subject) {
+            this.subject = subject;
+            return this;
+        }
+
+        @Override
+        public CrawlerEvent build() {
+            return new CrawlerEvent(this);
+        }
     }
 
-    public static CrawlerEvent<Crawler> create(String name, Crawler crawler) {
-        return create(name, crawler, null);
-    }
-    public static CrawlerEvent<Crawler> create(
-            String name, Crawler crawler, CrawlDocInfo crawlRef) {
-        return create(name, crawler, crawlRef, null, null);
-    }
-    public static CrawlerEvent<Crawler> create(String name, Crawler crawler,
-            CrawlDocInfo crawlRef, Object subject) {
-        return create(name, crawler, crawlRef, subject, null);
-    }
-    public static CrawlerEvent<Crawler> create(String name, Crawler crawler,
-            CrawlDocInfo crawlRef, Object subject, Throwable exception) {
-        return new CrawlerEvent<>(name, crawler, crawlRef, subject, exception);
+    /**
+     * New event.
+     * @param b builder
+     */
+    protected CrawlerEvent(Builder b) {
+        super(b);
+        this.crawlDocInfo = b.crawlDocInfo;
+        this.subject = b.subject;
     }
 
     /**
@@ -176,15 +178,22 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
      * @return crawl data
      */
     public CrawlDocInfo getCrawlDocInfo() {
-        return crawlRef;
+        return crawlDocInfo;
     }
-//    public ICrawlData getCrawlData() {
-//        return crawlData;
-//    }
 
+    /**
+     * Gets the subject. That is, other relevant source related to the event.
+     * @return the subject
+     */
     public Object getSubject() {
         return subject;
     }
+
+    @Override
+    public Crawler getSource() {
+        return (Crawler) super.getSource();
+    }
+
 
 //    public boolean isCrawlerStartup() {
 //        return is(CRAWLER_RUN_BEGIN);
@@ -211,15 +220,20 @@ public class CrawlerEvent<T extends Crawler> extends Event<T> {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append(getName() + " - ");
-        if (crawlRef != null) {
-            b.append(crawlRef.getReference()).append(" - ");
+        // always print the reference if we have it
+        if (crawlDocInfo != null) {
+            b.append(crawlDocInfo.getReference()).append(" - ");
         }
-        if (subject != null) {
+
+        // print the first value set in that order: message, subject, source
+        if (StringUtils.isNotBlank(getMessage())) {
+            b.append(getMessage());
+        } else if (subject != null) {
             b.append(subject.toString());
         } else {
             b.append(Objects.toString(source));
         }
+
         return b.toString();
     }
 }

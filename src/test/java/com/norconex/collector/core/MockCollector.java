@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 package com.norconex.collector.core;
 
 import java.nio.file.Path;
-import java.util.Optional;
+import java.util.Objects;
 
 import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.collector.core.crawler.CrawlerConfig;
@@ -30,7 +30,7 @@ public class MockCollector extends Collector {
         getCollectorConfig().setWorkDir(workdir);
     }
     public MockCollector(CollectorConfig collectorConfig) {
-        super(Optional.of(collectorConfig).get());
+        super(Objects.requireNonNull(collectorConfig));
     }
 
     @Override

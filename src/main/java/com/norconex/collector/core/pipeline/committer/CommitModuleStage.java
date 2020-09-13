@@ -14,11 +14,8 @@
  */
 package com.norconex.collector.core.pipeline.committer;
 
-import com.norconex.collector.core.crawler.CrawlerEvent;
 import com.norconex.collector.core.pipeline.DocumentPipelineContext;
-import com.norconex.committer.core3.UpsertRequest;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
-import com.norconex.importer.doc.Doc;
 
 /**
  * Common pipeline stage for committing documents.
@@ -29,18 +26,9 @@ public class CommitModuleStage
     @Override
     public boolean execute(DocumentPipelineContext ctx) {
 
-        if (!ctx.getCommitters().isEmpty()) {
-            Doc doc = ctx.getDocument();
-            ctx.getCommitters().upsert(new UpsertRequest(
-                    doc.getReference(),
-                    doc.getMetadata(),
-                    doc.getInputStream()));
-        }
+        // Event triggered by service
+        ctx.getCommitters().upsert(ctx.getDocument());
 
-        //TODO really pass Committers here?  Pass null isntead?
-        ctx.fireCrawlerEvent(
-                CrawlerEvent.DOCUMENT_COMMITTED_UPSERT,
-                ctx.getDocInfo(), ctx.getCommitters());
         return true;
     }
 }

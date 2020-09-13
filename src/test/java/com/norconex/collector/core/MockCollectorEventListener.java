@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.norconex.commons.lang.event.IEventListener;
 
 public class MockCollectorEventListener
-        implements IEventListener<CollectorEvent<Collector>> {
+        implements IEventListener<CollectorEvent> {
 
 //    private final String test = "MockCollectorEventListener";
 
     @Override
-    public void accept(CollectorEvent<Collector> t) {
+    public void accept(CollectorEvent t) {
         if (t.is(CollectorEvent.COLLECTOR_RUN_BEGIN)) {
 
         } else if (t.is(CollectorEvent.COLLECTOR_RUN_END)) {

@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,9 @@ import com.norconex.commons.lang.event.Event;
 /**
  * A crawler event.
  * @author Pascal Essiembre
- * @param <T> Collector for this event
  * @since 2.0.0
  */
-public class CollectorEvent<T extends Collector> extends Event<T> {
+public class CollectorEvent extends Event {
 
     private static final long serialVersionUID = 1L;
 
@@ -57,26 +56,32 @@ public class CollectorEvent<T extends Collector> extends Event<T> {
 
     //TODO have COLLECTOR_RESUMED???
 
+    public static class Builder extends Event.Builder<Builder> {
+
+        public Builder(String name, Collector source) {
+            super(name, source);
+        }
+
+        @Override
+        public CollectorEvent build() {
+            return new CollectorEvent(this);
+        }
+    }
+
     /**
-     * New collector event.
-     * @param name event name
-     * @param source collector responsible for triggering the event
-     * @param exception exception tied to this event (may be <code>null</code>)
+     * New event. Name and source cannot be <code>null</code>.
+     * @param b builder
      */
-    public CollectorEvent(String name, T source, Throwable exception) {
-        super(name, source, exception);
+    protected CollectorEvent(Builder b) {
+        super(b);
     }
 
-    public static CollectorEvent<Collector> create(
-            String name, Collector collector) {
-        return create(name, collector, null);
-    }
-    public static CollectorEvent<Collector> create(
-            String name, Collector collector, Throwable exception) {
-        return new CollectorEvent<>(name, collector, exception);
+    @Override
+    public Collector getSource() {
+        return (Collector) super.getSource();
     }
 
-    public boolean isCollectorShutdown(Event<?> event) {
+    public boolean isCollectorShutdown(Event/* <?> */ event) {
         return is(COLLECTOR_RUN_END, COLLECTOR_ERROR, COLLECTOR_STOP_END);
     }
 
