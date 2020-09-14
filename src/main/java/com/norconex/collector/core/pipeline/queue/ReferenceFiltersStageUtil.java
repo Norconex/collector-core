@@ -69,10 +69,10 @@ public final class ReferenceFiltersStageUtil {
 
             // Deal with exclude and non-OnMatch filters
             if (accepted) {
-                LOG.debug("ACCEPTED document reference{}. Reference={}"
+                LOG.debug("ACCEPTED reference{}: {}"
                         + " Filter={}", msg, ref, filter);
             } else {
-                LOG.debug("REJECTED document reference{}. Reference={}"
+                LOG.debug("REJECTED reference{}: {}"
                         + " Filter={}", msg, ref, filter);
                 fireDocumentRejected(filter, ctx);
                 return true;

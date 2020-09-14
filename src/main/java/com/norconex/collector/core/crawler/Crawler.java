@@ -298,7 +298,7 @@ public abstract class Crawler
     protected boolean initCrawler() {
         getEventManager().fire(new CrawlerEvent.Builder(
                 CRAWLER_INIT_BEGIN, this).message(
-                        "Initializing key crawler components...").build());
+                        "Initializing crawler \"" + getId() + "\"...").build());
 
         //--- Ensure good state/config ---
         if (StringUtils.isBlank(config.getId())) {
@@ -324,7 +324,8 @@ public abstract class Crawler
 
         boolean resuming = crawlDocInfoService.open();
         getEventManager().fire(new CrawlerEvent.Builder(CRAWLER_INIT_END, this)
-                .message("Crawler initialized successfully.").build());
+                .message("Crawler \"" + getId()
+                        + "\" initialized successfully.").build());
         return resuming;
     }
 
@@ -343,17 +344,23 @@ public abstract class Crawler
     public void clean() {
         initCrawler();
         getEventManager().fire(
-                new CrawlerEvent.Builder(CRAWLER_CLEAN_BEGIN, this).build());
+                new CrawlerEvent.Builder(CRAWLER_CLEAN_BEGIN, this)
+                    .message("Cleaning cached crawler \""
+                            + getId() + "\" data...")
+                    .build());
         try {
             committers.clean();
             destroyCrawler();
             FileUtils.deleteDirectory(getTempDir().toFile());
             FileUtils.deleteDirectory(getWorkDir().toFile());
             getEventManager().fire(
-                    new CrawlerEvent.Builder(CRAWLER_CLEAN_END, this).build());
+                    new CrawlerEvent.Builder(CRAWLER_CLEAN_END, this)
+                        .message("Done cleaning crawler \""
+                                + getId() + "\".")
+                        .build());
         } catch (IOException e) {
-            throw new CollectorException(
-                    "Could not clean crawler directory.", e);
+            throw new CollectorException("Could not clean \"" + getId()
+                    + "\" crawler directory.", e);
         }
     }
 

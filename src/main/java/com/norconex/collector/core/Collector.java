@@ -218,11 +218,16 @@ public abstract class Collector {
         try {
             initCollector();
             eventManager.fire(new CollectorEvent.Builder(
-                    COLLECTOR_CLEAN_BEGIN, this).build());
+                    COLLECTOR_CLEAN_BEGIN, this)
+                        .message("Cleaning cached collector data (does not "
+                               + "impact previously committed data)...")
+                        .build());
             getCrawlers().forEach(Crawler::clean);
             destroyCollector();
             eventManager.fire(new CollectorEvent.Builder(
-                    COLLECTOR_CLEAN_END, this).build());
+                    COLLECTOR_CLEAN_END, this)
+                        .message("Done cleaning collector.")
+                        .build());
         } finally {
             eventManager.clearListeners();
             unlock();
@@ -560,9 +565,9 @@ public abstract class Collector {
 
     public String getReleaseVersions() {
         StringBuilder b = new StringBuilder()
-                .append(NORCONEX_ASCII)
-                .append("\nVersion of the Collector and key components:\n")
-                .append("\n");
+            .append(NORCONEX_ASCII)
+            .append("\nVersions of the Collector and its main components:\n")
+            .append("\n");
         releaseVersions().stream().forEach(s -> b.append(s + '\n'));
         return b.toString();
     }

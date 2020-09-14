@@ -104,7 +104,7 @@ public class CrawlDocInfoService implements Closeable {
                 long processedCount = getProcessedCount();
                 long totalCount =
                         processedCount + queue.count() + cached.count();
-                LOG.info("RESUMING {} at {} ({}/{}).",
+                LOG.info("RESUMING \"{}\" at {} ({}/{}).",
                         crawlerId,
                         PercentFormatter.format(
                                 processedCount, totalCount, 2, Locale.ENGLISH),
