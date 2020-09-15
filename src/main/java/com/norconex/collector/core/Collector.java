@@ -566,7 +566,7 @@ public abstract class Collector {
     public String getReleaseVersions() {
         StringBuilder b = new StringBuilder()
             .append(NORCONEX_ASCII)
-            .append("\nVersions of the Collector and its main components:\n")
+            .append("\nCollector and main components:\n")
             .append("\n");
         releaseVersions().stream().forEach(s -> b.append(s + '\n'));
         return b.toString();

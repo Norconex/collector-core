@@ -14,6 +14,8 @@
  */
 package com.norconex.collector.core.pipeline;
 
+import java.util.function.Consumer;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -23,6 +25,7 @@ import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.collector.core.crawler.CrawlerCommitterService;
 import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.crawler.CrawlerEvent;
+import com.norconex.collector.core.crawler.CrawlerEvent.Builder;
 import com.norconex.collector.core.doc.CrawlDocInfo;
 import com.norconex.collector.core.doc.CrawlDocInfoService;
 import com.norconex.commons.lang.event.EventManager;
@@ -78,8 +81,24 @@ public abstract class AbstractPipelineContext {
         return crawler.getDocInfoService();
     }
 
-    public CrawlerCommitterService getCommitters() {
+    public CrawlerCommitterService getCommitterService() {
         return crawler.getCommitterService();
+    }
+
+    public EventManager getEventManager() {
+        return crawler.getEventManager();
+    }
+
+    //TODO reduce some of below methods.
+    public void fire(CrawlerEvent event) {
+        getEventManager().fire(event);
+    }
+    public void fire(String eventName, Consumer<CrawlerEvent.Builder> builder) {
+        Builder b = new Builder(eventName, crawler);
+        if (builder != null) {
+            builder.accept(b);
+        }
+        fire(b.build());
     }
 
     /**
@@ -87,7 +106,9 @@ public abstract class AbstractPipelineContext {
      * @param event the event name
      * @param docInfo crawl data
      * @param subject subject triggering the event
+     * @deprecated
      */
+    @Deprecated
     public void fireCrawlerEvent(
             String event, CrawlDocInfo docInfo, Object subject) {
         crawler.getEventManager().fire(
@@ -95,10 +116,6 @@ public abstract class AbstractPipelineContext {
                     .crawlDocInfo(docInfo)
                     .subject(subject)
                     .build());
-    }
-
-    public EventManager getEventManager() {
-        return crawler.getEventManager();
     }
 
     @Override

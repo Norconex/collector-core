@@ -74,7 +74,7 @@ public final class ChecksumStageUtil {
                     type, docInfo.getReference());
 
             // Prevent not having status when finalizing document on embedded docs
-            // (which otherwise do not have a status. 
+            // (which otherwise do not have a status.
             // But if already has a status, keep it.
             if (docInfo.getState() == null) {
                 docInfo.setState(CrawlState.NEW);
@@ -97,8 +97,17 @@ public final class ChecksumStageUtil {
                         type, docInfo.getReference());
             }
             docInfo.setState(CrawlState.UNMODIFIED);
-            ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_UNMODIFIED,
-                    ctx.getDocInfo(), subject);
+
+            StringBuilder s = new StringBuilder();
+            if (subject != null) {
+                s.append(subject.getClass().getSimpleName() + " - ");
+            }
+            s.append("Checksum=" + StringUtils.abbreviate(newChecksum, 200));
+
+            ctx.fire(CrawlerEvent.REJECTED_UNMODIFIED, b -> b
+                    .crawlDocInfo(ctx.getDocInfo())
+                    .subject(subject)
+                    .message(s.toString()));
             return false;
         }
 

@@ -27,7 +27,7 @@ public class CommitModuleStage
     public boolean execute(DocumentPipelineContext ctx) {
 
         // Event triggered by service
-        ctx.getCommitters().upsert(ctx.getDocument());
+        ctx.getCommitterService().upsert(ctx.getDocument());
 
         return true;
     }

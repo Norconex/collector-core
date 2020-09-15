@@ -734,17 +734,21 @@ public abstract class Crawler
 
     private void processImportResponse(
             ImporterResponse response, CrawlDoc doc) {
-//            CrawlDocInfo docInfo,
-//            CrawlDocInfo cachedDocInfo) {
 
-//        CrawlDoc doc = (CrawlDoc) response.getDocument();
         CrawlDocInfo docInfo = doc.getDocInfo();
+
+        String msg = response.getImporterStatus().toString();
+        if (response.getNestedResponses().length > 0) {
+            msg += "(" + response.getNestedResponses().length
+                    + " nested responses.)";
+        }
 
         if (response.isSuccess()) {
             getEventManager().fire(
                     new CrawlerEvent.Builder(DOCUMENT_IMPORTED, this)
                         .crawlDocInfo(docInfo)
                         .subject(response)
+                        .message(msg)
                         .build());
             //Doc wrappedDoc = wrapDocument(crawlRef, doc);
             executeCommitterPipeline(this, doc);//, //wrappedDoc,
@@ -755,6 +759,7 @@ public abstract class Crawler
                     new CrawlerEvent.Builder(REJECTED_IMPORT, this)
                         .crawlDocInfo(docInfo)
                         .subject(response)
+                        .message(msg)
                         .build());
             LOG.debug("Importing unsuccessful for \"{}\": {}",
                     docInfo.getReference(),
