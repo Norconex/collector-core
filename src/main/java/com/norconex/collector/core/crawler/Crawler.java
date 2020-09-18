@@ -112,8 +112,6 @@ public abstract class Crawler
 
     private static final int DOUBLE_PROGRESS_SCALE = 4;
     private static final int MINIMUM_DELAY = 1;
-    private static final InheritableThreadLocal<Crawler> INSTANCE =
-            new InheritableThreadLocal<>();
 
     private final CrawlerConfig config;
     private final Collector collector;
@@ -141,11 +139,6 @@ public abstract class Crawler
         this.config = config;
         this.collector = collector;
         this.committers = new CrawlerCommitterService(this);
-        INSTANCE.set(this);
-    }
-
-    public static Crawler get() {
-        return INSTANCE.get();
     }
 
     /**
