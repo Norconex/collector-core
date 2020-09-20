@@ -19,10 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.mutable.MutableInt;
 
 import com.norconex.collector.core.Collector;
 import com.norconex.commons.lang.config.ConfigurationLoader;
@@ -140,7 +143,17 @@ public abstract class AbstractSubCommand implements Callable<Integer> {
             runCommand();
             return 0;
         } catch (Exception e) {
-            printErr("ERROR: " + e.getLocalizedMessage());
+            // TODO make a util method somewhere
+            MutableInt mi = new MutableInt();
+            ExceptionUtils.getThrowableList(e).forEach(ex -> {
+                int i = mi.getAndIncrement();
+                String msg = ex.getLocalizedMessage();
+                if (i == 0) {
+                    printErr("ERROR: " + msg);
+                } else {
+                    printErr(StringUtils.repeat(' ', i * 2) + "→ " + msg);
+                }
+            });
             return -1;
         }
     }

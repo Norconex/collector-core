@@ -72,7 +72,7 @@ public class CollectorEvent extends Event {
      * New event. Name and source cannot be <code>null</code>.
      * @param b builder
      */
-    protected CollectorEvent(Builder b) {
+    CollectorEvent(Builder b) {
         super(b);
     }
 

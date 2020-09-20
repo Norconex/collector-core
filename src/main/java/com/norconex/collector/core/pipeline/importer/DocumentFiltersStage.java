@@ -65,16 +65,18 @@ public class DocumentFiltersStage
                                 .getDocInfo().getReference(), filter));
                 }
             } else {
-                ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_FILTER,
-                        ctx.getDocInfo(), filter);
+                ctx.fire(CrawlerEvent.REJECTED_FILTER, b -> b
+                        .crawlDocInfo(ctx.getDocInfo())
+                        .subject(filter));
                 ctx.getDocInfo().setState(CrawlState.REJECTED);
                 return false;
             }
         }
         if (hasIncludes && !atLeastOneIncludeMatch) {
-            ctx.fireCrawlerEvent(CrawlerEvent.REJECTED_FILTER,
-                    ctx.getDocInfo(),
-                    "No \"include\" document filters matched.");
+            ctx.fire(CrawlerEvent.REJECTED_FILTER, b -> b
+                    .crawlDocInfo(ctx.getDocInfo())
+                    .subject(filters)
+                    .message("No \"include\" document filters matched."));
             ctx.getDocInfo().setState(CrawlState.REJECTED);
             return false;
         }

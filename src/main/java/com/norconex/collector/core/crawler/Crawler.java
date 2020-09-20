@@ -519,7 +519,7 @@ public abstract class Crawler
 
         for (int i = 0; i < numThreads; i++) {
             final int threadIndex = i + 1;
-            LOG.debug("Crawler thread #{} started.", threadIndex);
+            LOG.debug("Crawler thread #{} starting...", threadIndex);
             pool.execute(new ProcessReferencesRunnable(
                     suite, statusUpdater, latch, flags, threadIndex)); //contextPrototype));
         }
@@ -979,8 +979,15 @@ public abstract class Crawler
             Thread.currentThread().setName(statusUpdater.getJobId()
                     + "/" + threadIndex);
 
-            JobSuite.setCurrentJobId(statusUpdater.getJobId());
+            LOG.debug("Crawler thread #{} started.", threadIndex);
+
             try {
+                getEventManager().fire(new CrawlerEvent.Builder(
+                        CrawlerEvent.CRAWLER_RUN_THREAD_BEGIN, Crawler.this)
+                            .subject(Thread.currentThread())
+                            .build());
+                JobSuite.setCurrentJobId(statusUpdater.getJobId());
+
                 while (!isStopped()) {
                     try {
                         ReferenceProcessStatus status =
@@ -1008,6 +1015,10 @@ public abstract class Crawler
                 LOG.error("Problem in thread execution.", e);
             } finally {
                 latch.countDown();
+                getEventManager().fire(new CrawlerEvent.Builder(
+                        CrawlerEvent.CRAWLER_RUN_THREAD_END, Crawler.this)
+                            .subject(Thread.currentThread())
+                            .build());
             }
         }
     }

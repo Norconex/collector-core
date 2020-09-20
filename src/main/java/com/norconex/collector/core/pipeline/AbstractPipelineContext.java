@@ -39,7 +39,6 @@ import com.norconex.commons.lang.pipeline.Pipeline;
 public abstract class AbstractPipelineContext {
 
     private final Crawler crawler;
-//    private CrawlDocInfo docInfo;
 
     /**
      * Constructor.
@@ -49,18 +48,7 @@ public abstract class AbstractPipelineContext {
     public AbstractPipelineContext(Crawler crawler) {
         super();
         this.crawler = crawler;
-        //this(crawler, null);
     }
-
-//    /**
-//     * Constructor.
-//     * @param crawler the crawler
-//     * @param docInfo current crawl docInfo
-//     */
-//    public AbstractPipelineContext(Crawler crawler, CrawlDocInfo docInfo) {
-//        this.crawler = crawler;
-//        this.docInfo = docInfo;
-//    }
 
     public Crawler getCrawler() {
         return crawler;
@@ -69,13 +57,6 @@ public abstract class AbstractPipelineContext {
     public CrawlerConfig getConfig() {
         return crawler.getCrawlerConfig();
     }
-
-//    public CrawlDocInfo getDocInfo() {
-//        return docInfo;
-//    }
-//    public void setDocInfo(CrawlDocInfo docInfo) {
-//        this.docInfo = docInfo;
-//    }
 
     public CrawlDocInfoService getDocInfoService() {
         return crawler.getDocInfoService();
@@ -89,10 +70,14 @@ public abstract class AbstractPipelineContext {
         return crawler.getEventManager();
     }
 
-    //TODO reduce some of below methods.
     public void fire(CrawlerEvent event) {
         getEventManager().fire(event);
     }
+    /**
+     * Fires a crawler event with the current crawler as source.
+     * @param eventName the event name
+     * @param builder event builder consumer
+     */
     public void fire(String eventName, Consumer<CrawlerEvent.Builder> builder) {
         Builder b = new Builder(eventName, crawler);
         if (builder != null) {

@@ -93,8 +93,9 @@ public final class ReferenceFiltersStageUtil {
 
     private static void fireDocumentRejected(
             Object subject, DocInfoPipelineContext ctx) {
-        ctx.fireCrawlerEvent(REJECTED_FILTER, ctx.getDocInfo(), subject);
-
+        ctx.fire(REJECTED_FILTER, b -> b
+                .crawlDocInfo(ctx.getDocInfo())
+                .subject(subject));
     }
 
     private static boolean isIncludeFilter(IReferenceFilter filter) {

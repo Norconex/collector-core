@@ -69,8 +69,9 @@ public class SaveDocumentStage
         try (OutputStream out =
                 FileUtils.openOutputStream(downloadFile.toFile())) {
             IOUtils.copy(ctx.getDocument().getInputStream(), out);
-            ctx.fireCrawlerEvent(
-                    DOCUMENT_SAVED, ctx.getDocInfo(), downloadFile);
+            ctx.fire(DOCUMENT_SAVED, b -> b
+                    .crawlDocInfo(ctx.getDocInfo())
+                    .subject(downloadFile));
         } catch (IOException e) {
             throw new CollectorException("Cannot save document: "
                             + ctx.getDocInfo().getReference(), e);

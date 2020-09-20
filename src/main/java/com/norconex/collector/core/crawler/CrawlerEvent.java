@@ -42,13 +42,24 @@ public class CrawlerEvent extends Event {
     public static final String CRAWLER_INIT_END = "CRAWLER_INIT_END";
 
     /**
-     * The crawler started.
+     * The crawler started crawling.
      */
     public static final String CRAWLER_RUN_BEGIN = "CRAWLER_RUN_BEGIN";
     /**
-     * The crawler completed execution (without being stopped).
+     * The crawler completed crawling execution (without being stopped).
      */
     public static final String CRAWLER_RUN_END = "CRAWLER_RUN_END";
+
+    /**
+     * The crawler started a new crawling thread.
+     */
+    public static final String CRAWLER_RUN_THREAD_BEGIN =
+            "CRAWLER_RUN_THREAD_BEGIN";
+    /**
+     * The crawler completed execution of a crawling thread.
+     */
+    public static final String CRAWLER_RUN_THREAD_END =
+            "CRAWLER_RUN_THREAD_END";
 
     /**
      * Issued when a request to stop the crawler has been received.
@@ -165,7 +176,7 @@ public class CrawlerEvent extends Event {
      * New event.
      * @param b builder
      */
-    protected CrawlerEvent(Builder b) {
+    CrawlerEvent(Builder b) {
         super(b);
         this.crawlDocInfo = b.crawlDocInfo;
         this.subject = b.subject;
