@@ -143,17 +143,23 @@ public abstract class AbstractSubCommand implements Callable<Integer> {
             runCommand();
             return 0;
         } catch (Exception e) {
-            // TODO make a util method somewhere
-            MutableInt mi = new MutableInt();
-            ExceptionUtils.getThrowableList(e).forEach(ex -> {
-                int i = mi.getAndIncrement();
-                String msg = ex.getLocalizedMessage();
-                if (i == 0) {
-                    printErr("ERROR: " + msg);
-                } else {
-                    printErr(StringUtils.repeat(' ', i * 2) + "→ " + msg);
-                }
-            });
+            if (e instanceof NullPointerException && e.getMessage() == null) {
+                //TODO maybe cache message and if blank always print
+                //stacktrace regardless of exception type?
+                printErr("ERROR: " + ExceptionUtils.getStackTrace(e));
+            } else {
+                // TODO make a util method somewhere
+                MutableInt mi = new MutableInt();
+                ExceptionUtils.getThrowableList(e).forEach(ex -> {
+                    int i = mi.getAndIncrement();
+                    String msg = ex.getLocalizedMessage();
+                    if (i == 0) {
+                        printErr("ERROR: " + msg);
+                    } else {
+                        printErr(StringUtils.repeat(' ', i * 2) + "→ " + msg);
+                    }
+                });
+            }
             return -1;
         }
     }
