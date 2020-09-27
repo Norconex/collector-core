@@ -11,6 +11,9 @@
       <action dev="essiembre" type="update">
         Now logging crawler id with events. 
       </action>
+      <action dev="essiembre" type="update">
+        Norconex JEF 4.1.3, Norconex Commons Lang 1.15.2
+      </action>
     </release>
     
     <release version="1.10.0" date="2019-12-22" description="Feature release">
