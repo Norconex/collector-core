@@ -52,6 +52,7 @@ import javax.management.ObjectName;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.apache.commons.lang3.time.StopWatch;
@@ -79,9 +80,11 @@ import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.event.EventManager;
 import com.norconex.commons.lang.file.FileUtil;
+import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.time.DurationFormatter;
 import com.norconex.importer.Importer;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.response.ImporterResponse;
 import com.norconex.jef5.job.AbstractResumableJob;
 import com.norconex.jef5.status.JobStatus;
@@ -773,14 +776,18 @@ public abstract class Crawler
             // properties for crawling.
             //TODO refactor Doc vs CrawlDoc to have only one instance
             // so we do not have to create such copy?
+            Doc childResponseDoc = childResponse.getDocument();
             CrawlDoc childCrawlDoc = new CrawlDoc(
                     childDocInfo, childCachedDocInfo,
-                    childResponse.getDocument().getInputStream());
-            childCrawlDoc.getMetadata().putAll(
-                    childResponse.getDocument().getMetadata());
+                    childResponseDoc == null
+                            ? CachedInputStream.cache(new NullInputStream(0))
+                            : childResponseDoc.getInputStream());
+            if (childResponseDoc != null) {
+                childCrawlDoc.getMetadata().putAll(
+                        childResponseDoc.getMetadata());
+            }
 
             processImportResponse(childResponse, childCrawlDoc);
-//                    embeddedCrawlRef, embeddedCachedCrawlRef);
         }
     }
 
