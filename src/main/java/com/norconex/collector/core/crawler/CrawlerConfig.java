@@ -41,9 +41,91 @@ import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterConfig;
 
 /**
+ * <p>
  * Base Crawler configuration. Crawlers usually read this configuration upon
  * starting up.  Once execution has started, it should not be changed
  * to avoid unexpected behaviors.
+ * </p>
+ *
+ * <p>
+ * Concrete implementations inherit the following XML configuration
+ * options (typically within a <code>&lt;crawler&gt;</code> tag):
+ * </p>
+ *
+ * {@nx.xml #init
+ *
+ *   <numThreads>(maximum number of threads)</numThreads>
+ *   <maxDocuments>(maximum number of documents to crawl)</maxDocuments>
+ *   <orphansStrategy>[PROCESS|IGNORE|DELETE]</orphansStrategy>
+ *
+ *   <stopOnExceptions>
+ *     <!-- Repeatable -->
+ *     <exception>(fully qualified class name of a an exception)</exception>
+ *   </stopOnExceptions>
+ *
+ *   <eventListeners>
+ *     <!-- Repeatable -->
+ *     <listener class="(IEventListener implementation)"/>
+ *   </eventListeners>
+ *
+ *   <crawlDataStoreEngine class="(ICrawlURLDatabaseFactory implementation)" />
+ * }
+ *
+ * {@nx.xml #pipeline-queue
+ *   <referenceFilters>
+ *     <!-- Repeatable -->
+ *     <filter
+ *         class="(IReferenceFilter implementation)"
+ *         onMatch="[include|exclude]" />
+ *   </referenceFilters>
+ * }
+ *
+ * {@nx.xml #pipeline-import
+ *   <metadataFilters>
+ *     <!-- Repeatable -->
+ *     <filter
+ *         class="(IMetadataFilter implementation)"
+ *         onMatch="[include|exclude]" />
+ *   </metadataFilters>
+ *
+ *   <documentFilters>
+ *     <!-- Repeatable -->
+ *     <filter class="(IDocumentFilter implementation)" />
+ *   </documentFilters>
+ * }
+ *
+ * {@nx.xml #import
+ *   <importer>
+ *     <preParseHandlers>
+ *       <!-- Repeatable -->
+ *       <handler class="(an handler class from the Importer module)"/>
+ *     </preParseHandlers>
+ *     <documentParserFactory class="(IDocumentParser implementation)" />
+ *     <postParseHandlers>
+ *       <!-- Repeatable -->
+ *       <handler class="(an handler class from the Importer module)"/>
+ *     </postParseHandlers>
+ *     <responseProcessors>
+ *       <!-- Repeatable -->
+ *       <responseProcessor
+ *              class="(IImporterResponseProcessor implementation)" />
+ *     </responseProcessors>
+ *   </importer>
+ * }
+ *
+ * {@nx.xml #checksum-doc
+ *   <documentChecksummer class="(IDocumentChecksummer implementation)" />
+ * }
+ *
+ * {@nx.xml #pipeline-committer
+ *   <spoiledReferenceStrategizer
+ *       class="(ISpoiledReferenceStrategizer implementation)" />
+ *
+ *   <committers>
+ *     <committer class="(ICommitter implementation)" />
+ *   </committers>
+ * }
+ *
  * @author Pascal Essiembre
  */
 public abstract class CrawlerConfig implements IXMLConfigurable {
