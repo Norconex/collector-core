@@ -50,15 +50,15 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
 
     public enum OrphansStrategy {
         /**
-         * Deleting orphans sends them to the Committer for deletions and
-         * they are removed from the internal reference cache.
-         */
-        DELETE,
-        /**
          * Processing orphans tries to obtain and process them again,
          * normally.
          */
         PROCESS,
+        /**
+         * Deleting orphans sends them to the Committer for deletions and
+         * they are removed from the internal reference cache.
+         */
+        DELETE,
         /**
          * Ignoring orphans effectively does nothing with them
          * (not deleted, not processed).
