@@ -23,7 +23,6 @@
 
   <crawlerDefaults>
     <numThreads>1</numThreads>
-    <workDir>defaultWorkdir</workDir>
     <referenceFilters>
       <filter class="com.norconex.collector.core.filter.impl.ExtensionReferenceFilter"
           onMatch="exclude" caseSensitive="true">defaultFilter</filter>
@@ -51,7 +50,6 @@
 
     <crawler id="myCrawlerA">
       <numThreads>22</numThreads>
-      <workDir>crawlAWorkdir</workDir>
       <referenceFilters>
         <filter class="com.norconex.collector.core.filter.impl.ExtensionReferenceFilter"
             onMatch="exclude" caseSensitive="true">crawlAFilter</filter>
