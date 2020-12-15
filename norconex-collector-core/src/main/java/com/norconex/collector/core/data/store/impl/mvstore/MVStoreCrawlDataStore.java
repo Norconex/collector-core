@@ -123,7 +123,7 @@ public class MVStoreCrawlDataStore extends AbstractCrawlDataStore {
             // Invalid Processed -> Cached
             for (String key : datastoreMap.get(Name.processedInvalid).keySet()) {
                 ICrawlData processedInvalid = datastoreMap.get(Name.processedInvalid).remove(key);
-                if (processedInvalid.getState().isOneOf(CrawlState.ERROR, CrawlState.BAD_STATUS)) {
+                if (processedInvalid.getState().isOneOf(CrawlState.ERROR, CrawlState.BAD_STATUS, CrawlState.NOT_FOUND)) {
                     datastoreMap.get(Name.cached).put(key, processedInvalid);
                 }
             }
