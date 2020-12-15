@@ -119,8 +119,14 @@ public class MVStoreCrawlDataStore extends AbstractCrawlDataStore {
             mapCached.clear();
             mapActive.clear();
             mapQueued.clear();
-            mapProcessedInvalid.clear();
-
+            
+            // Invalid Processed -> Cached
+            for (String key : datastoreMap.get(Name.processedInvalid).keySet()) {
+                ICrawlData processedInvalid = datastoreMap.get(Name.processedInvalid).remove(key);
+                if (processedInvalid.getState().isOneOf(CrawlState.ERROR, CrawlState.BAD_STATUS)) {
+                    datastoreMap.get(Name.cached).put(key, processedInvalid);
+                }
+            }
             // Valid Processed -> Cached
             for (String key : mapProcessedValid.keySet()) {
                 ICrawlData processed = mapProcessedValid.remove(key);
