@@ -311,11 +311,11 @@ public abstract class Crawler
 
         //--- Committers ---
         // index will be appended to committer workdir for each one
-        CommitterContext committerContext = CommitterContext.build()
+        CommitterContext committerContext = CommitterContext.builder()
                 .setEventManager(getEventManager())
                 .setWorkDir(getWorkDir().resolve("committer"))
                 .setStreamFactory(getStreamFactory())
-                .create();
+                .build();
         committers.init(committerContext);
 
         boolean resuming = crawlDocInfoService.open();

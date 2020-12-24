@@ -148,7 +148,7 @@ public abstract class AbstractSubCommand implements Callable<Integer> {
                 //stacktrace regardless of exception type?
                 printErr("ERROR: " + ExceptionUtils.getStackTrace(e));
             } else {
-                // TODO make a util method somewhere
+                // TODO Consider using Nx Lang ExceptionUtil
                 MutableInt mi = new MutableInt();
                 ExceptionUtils.getThrowableList(e).forEach(ex -> {
                     int i = mi.getAndIncrement();

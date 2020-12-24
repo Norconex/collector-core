@@ -96,7 +96,7 @@ public class CrawlerCommittersTest {
 
         // Perform the addition
         CommitterContext ctx =
-                CommitterContext.build().setWorkDir(folder).create();
+                CommitterContext.builder().setWorkDir(folder).build();
         committers.init(ctx);
         committers.upsert(doc);//req);
         committers.close();
