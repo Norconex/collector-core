@@ -48,7 +48,7 @@ public abstract class BaseCrawlDataStoreTest {
 
     @Rule
     public final TemporaryFolder tempFolder = new TemporaryFolder();
-    
+
     private ICrawlDataStore crawlStore;
     private ICrawlerConfig crawlerConfig;
 
@@ -74,7 +74,7 @@ public abstract class BaseCrawlDataStoreTest {
         // the tempFolder is re-created at each test
         crawlStore = createCrawlDataStore(crawlerConfig, tempFolder, false);
     }
-    
+
     @After
     public void tearDown() throws Exception {
         if (crawlStore != null) {
@@ -98,13 +98,13 @@ public abstract class BaseCrawlDataStoreTest {
         config.setWorkDir(tempFolder.getRoot());
         return config;
     }
-    
+
     protected void resetDatabase(boolean resume) {
         if (crawlStore != null) {
             crawlStore.close();
         }
         crawlStore = createCrawlDataStore(getCrawlerConfig(), getTempfolder(), resume);
-    }    
+    }
     protected void cacheReference(String ref) {
         ICrawlData crawlData = createCrawlData(ref);
         crawlStore.processed(crawlData);
@@ -130,22 +130,22 @@ public abstract class BaseCrawlDataStoreTest {
     }
     protected void setCrawlState(ICrawlData crawlData, CrawlState crawlState) {
         ((BaseCrawlData) crawlData).setState(crawlState);
-        
+
     }
-    
+
     protected abstract ICrawlDataStore createCrawlDataStore(
             ICrawlerConfig config, TemporaryFolder tempFolder, boolean resume);
 
 
     //--- Tests ----------------------------------------------------------------
-    
+
     @Test
     public void testWriteReadNulls() throws Exception {
         String ref = "http://testrefnulls.com";
         ICrawlData dataIn = createCrawlData(ref);
         crawlStore.processed(dataIn);
         moveProcessedToCache();
-        ICrawlData dataOut = (ICrawlData) crawlStore.getCached(ref);
+        ICrawlData dataOut = crawlStore.getCached(ref);
         assertEquals(dataIn, dataOut);
     }
     @Test
@@ -164,7 +164,7 @@ public abstract class BaseCrawlDataStoreTest {
         ICrawlData dataOut = crawlStore.getCached(ref);
         assertEquals(dataIn, dataOut);
     }
-    
+
     @Test
     public void testQueue() throws Exception {
         String ref = "https://www.norconex.com/";
@@ -316,11 +316,11 @@ public abstract class BaseCrawlDataStoreTest {
         resetDatabase(false);
         assertTrue(crawlStore.isCacheEmpty());
     }
-    
+
     /**
      * When instantiating a new impl with the resume option set to false, the
      * previous cache is deleted and the previous processed becomes the cache.
-     * BUT the invalid processed refs should get deleted.
+     * As of 1.10.1, invalid processed refs are also kept.
      * @throws Exception something went wrong
      */
     @Test
@@ -337,13 +337,18 @@ public abstract class BaseCrawlDataStoreTest {
         setCrawlState(next, CrawlState.NOT_FOUND);
         crawlStore.processed(next);
 
-        // Instantiate a new impl with the "resume" option set to false. Since
-        // the ref is invalid, it should not be cached.
+        // Instantiate a new impl with the "resume" option set to false. All
+        // processed refs should be moved to cache.
         resetDatabase(false);
 
-        // Make sure the ref was NOT cached
+        // Make sure the ref was cached
         ICrawlData cached = crawlStore.getCached(ref);
-        assertNull(cached);
+        assertNotNull(cached);
+        assertFalse(crawlStore.isCacheEmpty());
+
+        // Instantiate again a new impl with the "resume" option set to
+        // false. There were no processed ref, so cache should be empty.
+        resetDatabase(false);
         assertTrue(crawlStore.isCacheEmpty());
     }
 
