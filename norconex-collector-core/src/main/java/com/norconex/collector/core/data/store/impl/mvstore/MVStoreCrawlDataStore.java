@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.h2.mvstore.MVMap;
 import org.h2.mvstore.MVStore;
 
+import com.norconex.collector.core.data.CrawlState;
 import com.norconex.collector.core.data.ICrawlData;
 import com.norconex.collector.core.data.store.AbstractCrawlDataStore;
 import com.norconex.collector.core.data.store.CrawlDataStoreException;
@@ -119,12 +120,15 @@ public class MVStoreCrawlDataStore extends AbstractCrawlDataStore {
             mapCached.clear();
             mapActive.clear();
             mapQueued.clear();
-            
+
             // Invalid Processed -> Cached
-            for (String key : datastoreMap.get(Name.processedInvalid).keySet()) {
-                ICrawlData processedInvalid = datastoreMap.get(Name.processedInvalid).remove(key);
-                if (processedInvalid.getState().isOneOf(CrawlState.ERROR, CrawlState.BAD_STATUS, CrawlState.NOT_FOUND)) {
-                    datastoreMap.get(Name.cached).put(key, processedInvalid);
+            for (String key : mapProcessedInvalid.keySet()) {
+                ICrawlData processedInvalid = mapProcessedInvalid.remove(key);
+                if (processedInvalid.getState().isOneOf(
+                        CrawlState.ERROR,
+                        CrawlState.BAD_STATUS,
+                        CrawlState.NOT_FOUND)) {
+                    mapCached.put(key, processedInvalid);
                 }
             }
             // Valid Processed -> Cached
