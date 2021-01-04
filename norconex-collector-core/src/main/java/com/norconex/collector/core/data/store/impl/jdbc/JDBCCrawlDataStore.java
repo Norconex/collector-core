@@ -41,29 +41,29 @@ import com.norconex.collector.core.data.store.CrawlDataStoreException;
 
 public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
 
-    private static final Logger LOG = 
+    private static final Logger LOG =
             LogManager.getLogger(JDBCCrawlDataStore.class);
-    
+
     public static final String TABLE_QUEUE = "queue";
     public static final String TABLE_ACTIVE = "active";
     public static final String TABLE_CACHE = "cache";
     public static final String TABLE_PROCESSED_VALID = "valid";
     public static final String TABLE_PROCESSED_INVALID = "invalid";
-    
+
     private static final int NUMBER_OF_TABLES = 5;
     private static final int H2_ERROR_ALREADY_EXISTS = 23505;
 
     private final DataSource datasource;
     private final IJDBCSerializer serializer;
     private final String dbDir;
-    
+
     public JDBCCrawlDataStore(String path, boolean resume,
             IJDBCSerializer serializer) {
         super();
-        
+
         this.serializer = serializer;
         String fullPath = new File(path).getAbsolutePath();
-        
+
         LOG.info("Initializing crawl document reference store: " + fullPath);
 
         try {
@@ -87,15 +87,17 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
                 LOG.debug("Processed count: " + getProcessedCount());
                 LOG.debug("Putting active references back in the queue...");
             }
-            copyCrawlDatasToQueue(TABLE_ACTIVE);
+            copyCrawlData(TABLE_ACTIVE, TABLE_QUEUE);
             LOG.debug("Cleaning active database...");
             sqlClearTable(TABLE_ACTIVE);
         } else if (incrementalRun) {
             LOG.info("Caching processed reference from last run (if any)...");
             LOG.debug("Rename processed table to cache...");
             sqlUpdate("DROP TABLE " + TABLE_CACHE);
-            sqlUpdate("ALTER TABLE " + TABLE_PROCESSED_VALID 
+            sqlUpdate("ALTER TABLE " + TABLE_PROCESSED_VALID
                     + " RENAME TO " + TABLE_CACHE);
+            copyCrawlData(TABLE_PROCESSED_INVALID, TABLE_CACHE);
+
             LOG.debug("Cleaning queue table...");
             sqlClearTable(TABLE_QUEUE);
             LOG.debug("Cleaning invalid references table...");
@@ -144,7 +146,7 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
 
     @Override
     public final synchronized ICrawlData nextQueued() {
-        ICrawlData crawlData = sqlFindCrawlData(TABLE_QUEUE, 
+        ICrawlData crawlData = sqlFindCrawlData(TABLE_QUEUE,
                 serializer.getNextQueuedCrawlDataSQL(),
                 serializer.getNextQueuedCrawlDataValues());
         if (crawlData != null) {
@@ -158,7 +160,7 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
     public final synchronized boolean isActive(String reference) {
         return sqlReferenceExists(TABLE_ACTIVE, reference);
     }
-    
+
     @Override
     public final synchronized int getActiveCount() {
         return sqlRecordCount(TABLE_ACTIVE);
@@ -166,7 +168,7 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
 
     @Override
     public synchronized ICrawlData getCached(String reference) {
-        return sqlFindCrawlData(TABLE_CACHE, 
+        return sqlFindCrawlData(TABLE_CACHE,
                 serializer.getCachedCrawlDataSQL(),
                 serializer.getCachedCrawlDataValues(reference));
     }
@@ -175,7 +177,7 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
     public final synchronized boolean isCacheEmpty() {
         return sqlRecordCount(TABLE_CACHE) == 0;
     }
-    
+
     @Override
     public final synchronized boolean isProcessed(String reference) {
         return sqlReferenceExists(TABLE_PROCESSED_VALID, reference)
@@ -191,7 +193,7 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
     @Override
     public Iterator<ICrawlData> getCacheIterator() {
         try {
-            final Connection conn = datasource.getConnection(); 
+            final Connection conn = datasource.getConnection();
             final Statement stmt = conn.createStatement(
                     ResultSet.TYPE_SCROLL_INSENSITIVE,
                     ResultSet.CONCUR_READ_ONLY);
@@ -204,30 +206,30 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
             return new CrawlDataIterator(TABLE_CACHE, rs, conn, stmt);
         } catch (SQLException e) {
             throw new CrawlDataStoreException(
-                    "Problem getting database cache iterator.", e);            
+                    "Problem getting database cache iterator.", e);
         }
     }
-    
-    
+
+
     @Override
     public void close() {
         // NOOP
     }
-    
+
     private boolean sqlReferenceExists(String table, String reference) {
         return sqlQueryInteger(serializer.getReferenceExistsSQL(table),
                 serializer.getReferenceExistsValues(table, reference)) > 0;
     }
-    
+
     private void sqlClearTable(String table) {
         sqlUpdate("DELETE FROM " + table);
     }
-    
+
     private void sqlDeleteCrawlData(String table, ICrawlData crawlData) {
         sqlUpdate(serializer.getDeleteCrawlDataSQL(table),
                 serializer.getDeleteCrawlDataValues(table, crawlData));
     }
-    
+
     private int sqlRecordCount(String table) {
         return sqlQueryInteger("SELECT count(*) FROM " + table);
     }
@@ -236,16 +238,17 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
         sqlUpdate(serializer.getInsertCrawlDataSQL(table),
                 serializer.getInsertCrawlDataValues(table, crawlData));
     }
-    
-    private void copyCrawlDatasToQueue(final String sourceTable) {
+
+    private void copyCrawlData(
+            final String sourceTable, final String targetTable) {
         ResultSetHandler<Void> h = new ResultSetHandler<Void>() {
             @Override
             public Void handle(ResultSet rs) throws SQLException {
                 while(rs.next()) {
-                    ICrawlData crawlData = 
+                    ICrawlData crawlData =
                             serializer.toCrawlData(sourceTable, rs);
                     if (crawlData != null) {
-                        queue(crawlData);
+                        sqlInsertCrawlData(targetTable, crawlData);
                     }
                 }
                 return null;
@@ -256,7 +259,7 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
                     serializer.getSelectCrawlDataSQL(sourceTable), h);
         } catch (SQLException e) {
             throw new CrawlDataStoreException(
-                    "Problem loading crawl data from database.", e);            
+                    "Problem loading crawl data from database.", e);
         }
     }
 
@@ -278,17 +281,17 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
           return new QueryRunner(datasource).query(sql, h, params);
       } catch (SQLException e) {
           throw new CrawlDataStoreException(
-                  "Problem running database query.", e);            
+                  "Problem running database query.", e);
       }
     }
-    
+
     private int sqlQueryInteger(String sql, Object... params) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("SQL: " + sql);
         }
         try {
             Object value = new QueryRunner(datasource).query(
-                    sql, new ScalarHandler<Object>(), params);
+                    sql, new ScalarHandler<>(), params);
             if (value == null) {
                 return 0;
             }
@@ -299,7 +302,7 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
             }
         } catch (SQLException e) {
             throw new CrawlDataStoreException(
-                    "Problem getting database scalar value.", e);            
+                    "Problem getting database scalar value.", e);
         }
     }
     private void sqlUpdate(String sql, Object... params) {
@@ -310,11 +313,11 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
             new QueryRunner(datasource).update(sql, params);
         } catch (SQLException e) {
             if (alreadyExists(e)) {
-                LOG.debug("Already exists in table. SQL Error:" 
+                LOG.debug("Already exists in table. SQL Error:"
                         + e.getMessage());
             } else {
                 throw new CrawlDataStoreException(
-                        "Problem updating database.", e);            
+                        "Problem updating database.", e);
             }
         }
     }
@@ -322,7 +325,7 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
     private boolean alreadyExists(SQLException e) {
         return e.getErrorCode() == H2_ERROR_ALREADY_EXISTS;
     }
-    
+
     private DataSource createDataSource(String dbDir) {
         BasicDataSource ds = new BasicDataSource();
         ds.setDriverClassName("org.h2.Driver");
@@ -334,7 +337,7 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
     private boolean ensureTablesExist() throws SQLException {
         ArrayListHandler arrayListHandler = new ArrayListHandler();
         Connection conn = null;
-        try {                
+        try {
             conn = datasource.getConnection();
             List<Object[]> tables = arrayListHandler.handle(
                     conn.getMetaData().getTables(
@@ -361,7 +364,7 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
             sqlUpdate(sql);
         }
     }
-    
+
     private final class CrawlDataIterator implements Iterator<ICrawlData> {
         private final ResultSet rs;
         private final Connection conn;

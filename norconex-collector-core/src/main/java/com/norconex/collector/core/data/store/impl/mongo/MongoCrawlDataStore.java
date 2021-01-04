@@ -191,7 +191,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
     @Override
     public boolean isQueueEmpty() {
-        return (int) collRefs.count(eq(IMongoSerializer.FIELD_STAGE, 
+        return (int) collRefs.count(eq(IMongoSerializer.FIELD_STAGE,
                 Stage.QUEUED.name()), new CountOptions().limit(1)) == 0;
     }
 
@@ -292,8 +292,10 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
 
     private void processedToCached() {
         Bson filter = and(
-                eq(IMongoSerializer.FIELD_STAGE, Stage.PROCESSED.name()),
-                eq(IMongoSerializer.FIELD_IS_VALID, true));
+                eq(IMongoSerializer.FIELD_STAGE, Stage.PROCESSED
+                        .name())/*
+                                 * , eq(IMongoSerializer.FIELD_IS_VALID, true)
+                                 */);
         MongoCursor<Document> cursor = collRefs.find(filter).iterator();
 
         // Add them to cache in batch
@@ -315,7 +317,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
     }
 
     private static final int maxRetries = 5;
-    
+
     private void upsertOne(MongoCollection<Document> coll, Bson filter, Document document) {
         for (int retry = 0; retry < maxRetries; ++retry) {
             try {
@@ -329,7 +331,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
             }
         }
     }
-    
+
     private void bulkWrite(MongoCollection<Document> coll, List<WriteModel<Document>> list) {
         for (int retry = 0; retry < maxRetries; ++retry) {
             try {
@@ -343,7 +345,7 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
             }
         }
     }
-    
+
     private void deleteAllDocuments(MongoCollection<Document> coll) {
         coll.deleteMany(new Document());
     }
