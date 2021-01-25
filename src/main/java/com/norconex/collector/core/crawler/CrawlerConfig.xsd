@@ -23,7 +23,7 @@
       <xs:element name="stopOnExceptions" minOccurs="0" maxOccurs="1">
         <xs:complexType>
           <xs:all>
-            <xs:element name="exception" minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="exception" minOccurs="0" maxOccurs="unbounded">
               <xs:simpleType>
                 <xs:restriction base="xs:string">
                   <xs:minLength value="1"/>
@@ -62,21 +62,21 @@
   <xs:complexType name="listenersType">
     <xs:all>
       <xs:element name="listener" type="anyComplexRequiredClassType" 
-          minOccurs="1" maxOccurs="unbounded"/>
+          minOccurs="0" maxOccurs="unbounded"/>
     </xs:all>
   </xs:complexType>
 
   <xs:complexType name="filterType">
     <xs:all>
       <xs:element name="filter" type="anyComplexRequiredClassType" 
-          minOccurs="1" maxOccurs="unbounded"/>
+          minOccurs="0" maxOccurs="unbounded"/>
     </xs:all>
   </xs:complexType>
 
   <xs:complexType name="committersType">
     <xs:all>
       <xs:element name="committer" type="anyComplexRequiredClassType" 
-          minOccurs="1" maxOccurs="unbounded"/>
+          minOccurs="0" maxOccurs="unbounded"/>
     </xs:all>
   </xs:complexType>
 
