@@ -49,7 +49,7 @@
   <xs:complexType name="listenersType">
     <xs:all>
       <xs:element name="listener" 
-          type="anyComplexWithClassType" minOccurs="1" maxOccurs="unbounded"/>
+          type="anyComplexWithClassType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:all>
   </xs:complexType>
 
