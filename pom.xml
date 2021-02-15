@@ -28,6 +28,8 @@
 
   <properties>
     <h2.version>1.4.200</h2.version>
+    <mongodb.version>4.2.0</mongodb.version>
+    <testcontainers.version>1.15.1</testcontainers.version>
   </properties>
 
   <inceptionYear>2014</inceptionYear>
@@ -53,23 +55,12 @@
       <artifactId>h2-mvstore</artifactId>
       <version>${h2.version}</version>
     </dependency>    
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongodb-driver-sync</artifactId>
+      <version>${mongodb.version}</version>
+    </dependency>
     
-<!--     <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-annotation</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
- -->
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
@@ -79,45 +70,11 @@
       <artifactId>jackson-datatype-jdk8</artifactId>
     </dependency>
     
-    
-    
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
     </dependency>      
     
-    <!-- 
-        Maybe reintroduce the following if we still want to ship with
-        a few crawl store implementations.
-      -->
-    <!--
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-dbcp2</artifactId>
-      <version>2.1.1</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-dbutils</groupId>
-      <artifactId>commons-dbutils</artifactId>
-      <version>1.7</version>
-    </dependency>
-    <dependency>
-      <groupId>org.mongodb</groupId>
-      <artifactId>mongodb-driver</artifactId>
-      <version>3.5.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.fakemongo</groupId>
-      <artifactId>fongo</artifactId>
-      <version>2.1.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>1.4.197</version>
-    </dependency>
-    -->
 
     <!-- Tests and provided. -->
     <dependency>
@@ -146,6 +103,18 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jcl-over-slf4j</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>mongodb</artifactId>
+      <version>${testcontainers.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
     
@@ -221,80 +190,6 @@
       <url>${site.baseurl}/collectors/core/v2</url>
     </site>
   </distributionManagement>
-<!-- 
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.7</version>
-        <configuration>
-          <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
-          <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-        </configuration>
-        <reportSets>
-          <reportSet>
-            <reports>
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.9.1</version>
-        <configuration>
-          <overview>${basedir}/src/main/javadoc/overview.html</overview>
-          <header><![CDATA[
-            <style>div.aboutLanguage .siteLink {font-size: 2em;}</style>
-            <span class="siteLink">
-              <a href="https://opensource.norconex.com/collectors/core">Norconex Collector Core</a>
-            </span>
-            ]]>
-          </header>
-          <footer><![CDATA[
-            <script type="text/javascript">
-              var _gaq = _gaq || [];
-              _gaq.push(['_setAccount', 'UA-23162620-1']);
-              _gaq.push(['_setDomainName', 'norconex.com']);
-              _gaq.push(['_trackPageview']);
-              (function() {
-                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-              })();
-            </script>
-            <a style="font-size: 1.4em;" href="https://github.com/norconex/collector-core/issues">Submit an Issue</a>
-            &nbsp;&nbsp;|&nbsp;&nbsp;
-            <a style="font-size: 1.4em;" href="https://norconex.com">norconex.com</a>
-            ]]>
-          </footer>
-          <show>protected</show>
-          <nodeprecated>false</nodeprecated>
-          <source>1.7</source>
-          <detectLinks>false</detectLinks>
-          <links>
-            <link>https://opensource.norconex.com/commons/lang/v2/apidocs/</link>
-            <link>https://opensource.norconex.com/jef/api/v5/apidocs/</link>
-            <link>https://opensource.norconex.com/importer/v3/apidocs/</link>
-            <link>https://opensource.norconex.com/committers/core/v3/apidocs/</link>
-            <link>https://api.mongodb.com/java/current/</link>
-          </links>
-        </configuration>
-        <reportSets>
-          <reportSet>
-            <id>default</id>
-            <configuration>
-            </configuration>
-            <reports>
-              <report>javadoc</report>
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-    </plugins>
-  </reporting>
- -->
 
   <url>https://opensource.norconex.com/collectors/core</url>
   <description>Norconex Collector Core contains core functionalities shared between collectors.</description>

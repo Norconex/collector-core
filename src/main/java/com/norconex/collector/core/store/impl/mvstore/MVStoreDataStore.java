@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,12 @@ import org.h2.mvstore.MVStore;
 
 import com.norconex.collector.core.store.IDataStore;
 
-//TODO extract Ids and Indices in a generic way before creating
-// a datastore (passing as argument) or in a utility class.
 public class MVStoreDataStore<T> implements IDataStore<T> {
 
     private final MVMap<String, T> map;
     private String name;
 
-    public MVStoreDataStore(MVStore mvstore, String name) {
+    MVStoreDataStore(MVStore mvstore, String name) {
         super();
         requireNonNull(mvstore, "'mvstore' must not be null.");
         this.name = requireNonNull(name, "'name' must not be null.");
@@ -52,10 +50,10 @@ public class MVStoreDataStore<T> implements IDataStore<T> {
 
     @Override
     public void save(String id, T object) {
-        // MVStore doc says values cannot be changed after stored... 
+        // MVStore doc says values cannot be changed after stored...
         // but testings shows it is OK for us and faster.
         // If issues arise, re-introduce cloning.
-//        map.put(id, BeanUtil.clone(object));
+        //    map.put(id, BeanUtil.clone(object))
         map.put(id, object);
     }
 
@@ -85,8 +83,7 @@ public class MVStoreDataStore<T> implements IDataStore<T> {
 
     @Override
     public boolean delete(String id) {
-        boolean existed = map.remove(id) != null;
-        return existed;
+        return map.remove(id) != null;
     }
 
     @Override

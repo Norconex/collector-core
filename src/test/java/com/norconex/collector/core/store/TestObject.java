@@ -1,4 +1,4 @@
-package com.norconex.collector.core.store.impl;
+package com.norconex.collector.core.store;
 
 import com.norconex.collector.core.doc.CrawlDocInfo;
 

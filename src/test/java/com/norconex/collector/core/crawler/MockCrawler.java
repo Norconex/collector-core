@@ -42,6 +42,9 @@ public class MockCrawler extends Crawler {
     public void initMockCrawler() {
         super.initCrawler();
     }
+    public void destroyMockCrawler() {
+        super.destroyCrawler();
+    }
 
     @Override
     protected void prepareExecution(JobStatusUpdater statusUpdater,
