@@ -1,6 +1,14 @@
 TODO:
 ==============
 
+- Add placeholders for making file-base logging sharing same base path
+  as work dir.
+
+- Add global disable feature where appropriate so it does not have to be in 
+  each class.
+
+- Have ability to turn off backups (off by defaults?).
+
 - Performance: 
   - Keep tack of counts by having counters in memory instead of querying
     for count.  And have maxXXX for different types instead of just
