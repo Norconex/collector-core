@@ -1,6 +1,8 @@
 TODO:
 ==============
 
+- Force crawler to stop after X amount of time of no progress.
+
 - Add placeholders for making file-base logging sharing same base path
   as work dir.
 
