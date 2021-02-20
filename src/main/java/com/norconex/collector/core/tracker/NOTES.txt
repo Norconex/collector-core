@@ -1,0 +1,36 @@
+
+
+Eventually have here code to register with external monitoring system,
+such as prometheus.
+
+Also, make it so that some metrics could be serializable (data store)
+or volatile.
+
+Something like this:
+
+// track serializable vs volatile
+// log to stdout or not (just in crawl store or for internal use
+// maybe allow a few basic types. E.g., "int.processed=02"
+
+// Trackers could be :
+
+base class is observable and has:
+
+  String uniqueId;
+  <T> value
+  Class<T> type
+  boolean volatile?
+  LogLevel logLevel (off by default).
+
+impl. specific methods, e.g.:
+
+  increment()
+
+
+Each above trackers would be stored in a Map, or an object wrapping a map:
+
+
+Also have ability to register event listeners for those wanting to react
+to trackers.
+
+

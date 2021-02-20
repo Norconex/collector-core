@@ -86,8 +86,6 @@ import com.norconex.commons.lang.time.DurationFormatter;
 import com.norconex.importer.Importer;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.response.ImporterResponse;
-import com.norconex.jef5.job.AbstractResumableJob;
-import com.norconex.jef5.status.JobStatus;
 import com.norconex.jef5.status.JobStatusUpdater;
 import com.norconex.jef5.suite.JobSuite;
 
@@ -108,7 +106,7 @@ import com.norconex.jef5.suite.JobSuite;
 //TODO document that logger should print thread name to see which crawler
 //is running?
 public abstract class Crawler
-        extends AbstractResumableJob {
+        { //extends AbstractResumableJob {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(Crawler.class);
@@ -157,7 +155,7 @@ public abstract class Crawler
         return committers;
     }
 
-    @Override
+//    @Override
     public String getId() {
         return config.getId();
     }
@@ -170,8 +168,8 @@ public abstract class Crawler
         return stopped;
     }
 
-    @Override
-    public void stop(JobStatus jobStatus, JobSuite suite) {
+//    @Override
+    public void stop() { //JobStatus jobStatus, JobSuite suite) {
         getEventManager().fire(
                 new CrawlerEvent.Builder(CRAWLER_STOP_BEGIN, this).build());
         stopped = true;

@@ -44,11 +44,12 @@
       <groupId>com.norconex.collectors</groupId>
       <artifactId>norconex-committer-core</artifactId>
     </dependency>
+<!-- 
     <dependency>
       <groupId>com.norconex.jef</groupId>
       <artifactId>norconex-jef</artifactId>
     </dependency>
-    
+ -->    
     <!-- NOSQL/KeyValue for crawl store -->
     <dependency>
       <groupId>com.h2database</groupId>
