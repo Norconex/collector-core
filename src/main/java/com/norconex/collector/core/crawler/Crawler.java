@@ -941,7 +941,7 @@ public abstract class Crawler
     }
 
 //TODO make enum if never mixed, and add "default" --------------------------------------------
-    private final class ProcessFlags {
+    protected final class ProcessFlags {
         private boolean delete;
         private boolean orphan;
         private ProcessFlags delete() {
