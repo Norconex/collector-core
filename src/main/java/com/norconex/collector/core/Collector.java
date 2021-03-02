@@ -1,4 +1,4 @@
-/* Copyright 2014-2020 Norconex Inc.
+/* Copyright 2014-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,14 +50,6 @@ import com.norconex.commons.lang.event.EventManager;
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.importer.Importer;
-import com.norconex.jef5.job.IJob;
-import com.norconex.jef5.job.group.AsyncJobGroup;
-import com.norconex.jef5.shutdown.ShutdownException;
-import com.norconex.jef5.status.JobState;
-import com.norconex.jef5.status.JobStatus;
-import com.norconex.jef5.status.JobSuiteStatus;
-import com.norconex.jef5.suite.JobSuite;
-import com.norconex.jef5.suite.JobSuiteConfig;
 
 /**
  * Base implementation of a Collector.
@@ -88,7 +80,6 @@ public abstract class Collector {
     private final CollectorConfig collectorConfig;
 
     private final List<Crawler> crawlers = new ArrayList<>();
-    private JobSuite jobSuite;
 
     private final EventManager eventManager;
 
@@ -134,17 +125,17 @@ public abstract class Collector {
 
     //TODO Should we deprecate this since IJobSuiteFactory has createJobSuite
     //which can be overwritten if need be, instead of exposing it?
-    /**
-     * Gets the job suite or <code>null</code> if the the collector
-     * was not yet started or is no longer running.
-     * @return JobSuite
-     * @deprecated Since 2.0.0
-     */
-    @Deprecated
-    //TODO try to deprecate
-    public JobSuite getJobSuite() {
-        return jobSuite;
-    }
+//    /**
+//     * Gets the job suite or <code>null</code> if the the collector
+//     * was not yet started or is no longer running.
+//     * @return JobSuite
+//     * @deprecated Since 2.0.0
+//     */
+//    @Deprecated
+//    //TODO try to deprecate
+//    public JobSuite getJobSuite() {
+//        return jobSuite;
+//    }
 
     public synchronized Path getWorkDir() {
         if (workDir == null) {
@@ -194,12 +185,21 @@ public abstract class Collector {
             initCollector();
             eventManager.fire(new CollectorEvent.Builder(
                     COLLECTOR_RUN_BEGIN, this).build());
+
+            //TODO vvvvvvvvvvvvvvvvvvvvvv HANDLE Better
+            //TODO replicate/migrate here what is necessary from JEF:
+            //TODO     implement delayed start instead of threaded upon start
+            //TODO     implement max threads for running crawlers
+
+            getCrawlers().forEach(Crawler::start);
+
             //TODO when JEF is replaced, this should be handled better:
-            if (!jobSuite.execute()) {
-                throw new CollectorException(
-                        "Collector execution was reported unsuccessful. "
-                      + "Check the logs for more details.");
-            }
+//            if (!jobSuite.execute()) {
+//                throw new CollectorException(
+//                        "Collector execution was reported unsuccessful. "
+//                      + "Check the logs for more details.");
+//            }
+            //TODO ^^^^^^^^^^^^^^^^^^^^^^ HANDLE Better
         } finally {
             try {
                 destroyCollector();
@@ -275,7 +275,7 @@ public abstract class Collector {
         // Ensure clean state
         tempDir = null;
         workDir = null;
-        jobSuite = null;
+//        jobSuite = null;
 
         // Print out versions
         //TODO centralize the printing of versions
@@ -347,7 +347,8 @@ public abstract class Collector {
                 getTempDir());
 
         //--- JEF Job Suite ---
-        jobSuite = createJobSuite();
+//        jobSuite = createJobSuite();
+        createJobSuite();
 
         //--- Print release versions ---
 //        printReleaseVersions();
@@ -368,25 +369,26 @@ public abstract class Collector {
         }
     }
 
-    /**
-     * Gets the state of this collector. If the collector is not running,
-     * {@link JobState#UNKNOWN} is returned.
-     * @return execution state
-     * @since 1.10.0
-     * @deprecated Since 2.0.0
-     */
-    //TODO try to deprecate (do not rely on JEF???)
-    @Deprecated
-    public JobState getState() {
-        JobSuite suite = getJobSuite();
-        if (suite != null) {
-            JobStatus status = suite.getRootStatus();
-            if (status != null) {
-                return status.getState();
-            }
-        }
-        return JobState.UNKNOWN;
-    }
+    // TODO reimplement a get state and offer it via JMX as well.
+//    /**
+//     * Gets the state of this collector. If the collector is not running,
+//     * {@link JobState#UNKNOWN} is returned.
+//     * @return execution state
+//     * @since 1.10.0
+//     * @deprecated Since 2.0.0
+//     */
+//    //TODO try to deprecate (do not rely on JEF???)
+//    @Deprecated
+//    public JobState getState() {
+//        JobSuite suite = getJobSuite();
+//        if (suite != null) {
+//            JobStatus status = suite.getRootStatus();
+//            if (status != null) {
+//                return status.getState();
+//            }
+//        }
+//        return JobState.UNKNOWN;
+//    }
 
     /**
      * Stops a running instance of this Collector. The caller can be a
@@ -400,66 +402,79 @@ public abstract class Collector {
         // so that the suite is created properly and jobs stopped properly.
         createCrawlers();
 
-        if (jobSuite == null) {
-            jobSuite = createJobSuite();
-            //jobSuite = snap
-        }
-        JobSuiteStatus suiteStatus = null;
-        try {
-            suiteStatus = JobSuiteStatus.getInstance(jobSuite);
-        } catch (IOException e) {
-            throw new CollectorException(
-                    "Could not obtain job status of: " + getId(), e);
-        }
+//        if (jobSuite == null) {
+//            jobSuite = createJobSuite();
+//            //jobSuite = snap
+//        }
+        createJobSuite();
+//        JobSuiteStatus suiteStatus = null;
+//        try {
+//            suiteStatus = JobSuiteStatus.getInstance(jobSuite);
+//        } catch (IOException e) {
+//            throw new CollectorException(
+//                    "Could not obtain job status of: " + getId(), e);
+//        }
 
 //        JobStatus status = jobSuite.getRootStatus();
-        JobStatus status = suiteStatus.getRootStatus();
+//        JobStatus status = suiteStatus.getRootStatus();
 
-        if (status == null
-                || !status.isState(JobState.RUNNING, JobState.UNKNOWN)) {
-//            String curState =
-//                    (status != null ? " State: " + status.getState() : "");
-            throw new CollectorException(
-                    "This collector cannot be stopped since it is NOT "
-                  + "running. Last known state: "
-                  + (status != null ? status.getState() : "[undefined]"));
-        } else if (LOG.isDebugEnabled()) {
-            LOG.debug("Suite state: {}", status.getState());
-        }
 
-        try {
-            LOG.info("Making a stop request...");
-            jobSuite.stop();
-            LOG.info("Stop request made.");
-            LOG.info("PLEASE NOTE: To ensure a clean stop, "
-                    + "crawlers may wait until they are done with documents "
-                    + "currently being processed. If an urgent stop is "
-                    + "required or you do not want to wait, manually kill "
-                    + "the process.");
-            //TODO wait for stop confirmation before setting to null?
-            jobSuite = null;
-        } catch (ShutdownException e) {
-            throw new CollectorException(
-                    "Could not stop collector: " + getId(), e);
-        }
+
+        //TODO rework this status-thing:
+        LOG.warn("TODO: stop logic + rework status");
+
+//        if (status == null
+//                || !status.isState(JobState.RUNNING, JobState.UNKNOWN)) {
+////            String curState =
+////                    (status != null ? " State: " + status.getState() : "");
+//            throw new CollectorException(
+//                    "This collector cannot be stopped since it is NOT "
+//                  + "running. Last known state: "
+//                  + (status != null ? status.getState() : "[undefined]"));
+//        } else if (LOG.isDebugEnabled()) {
+//            LOG.debug("Suite state: {}", status.getState());
+//        }
+//
+//        try {
+//            LOG.info("Making a stop request...");
+//            jobSuite.stop();
+//            LOG.info("Stop request made.");
+//            LOG.info("PLEASE NOTE: To ensure a clean stop, "
+//                    + "crawlers may wait until they are done with documents "
+//                    + "currently being processed. If an urgent stop is "
+//                    + "required or you do not want to wait, manually kill "
+//                    + "the process.");
+//            //TODO wait for stop confirmation before setting to null?
+//            jobSuite = null;
+//        } catch (ShutdownException e) {
+//            throw new CollectorException(
+//                    "Could not stop collector: " + getId(), e);
+//        }
     }
 
 //    @Override
-    public JobSuite createJobSuite() {
+//    public JobSuite createJobSuite() {
+    public void createJobSuite() {
         CollectorConfig collConfig = getCollectorConfig();
 
         List<Crawler> crawlerList = getCrawlers();
 
-        IJob rootJob = null;
+//        IJob rootJob = null;
 
-        if (!crawlerList.isEmpty()) {
-            int maxCrawlers = crawlerList.size();
-            if (collConfig.getMaxConcurrentCrawlers() > 0) {
-                maxCrawlers = Math.min(
-                        maxCrawlers, collConfig.getMaxConcurrentCrawlers());
-            }
-            rootJob = new AsyncJobGroup(getId(), maxCrawlers, crawlerList);
-        }
+
+
+        //TODO implement collConfig.getMaxConcurrentCrawlers()
+
+
+
+//        if (!crawlerList.isEmpty()) {
+//            int maxCrawlers = crawlerList.size();
+//            if (collConfig.getMaxConcurrentCrawlers() > 0) {
+//                maxCrawlers = Math.min(
+//                        maxCrawlers, collConfig.getMaxConcurrentCrawlers());
+//            }
+////            rootJob = new AsyncJobGroup(getId(), maxCrawlers, crawlerList);
+//        }
 //
 //        if (crawlerList.size() > 1) {
 //            int maxCrawlers = crawlerList.size();
@@ -472,16 +487,16 @@ public abstract class Collector {
 //            rootJob = crawlerList.get(0);
 //        }
 
-        JobSuiteConfig suiteConfig = new JobSuiteConfig();
+  //      JobSuiteConfig suiteConfig = new JobSuiteConfig();
 
         //TODO have a base workdir, which is used to figure out where to put
         // everything (log, progress), and make log and progress overwritable.
 
-        suiteConfig.setWorkdir(collConfig.getWorkDir());
+//        suiteConfig.setWorkdir(collConfig.getWorkDir());
 
-        JobSuite suite = new JobSuite(rootJob, suiteConfig);
+//        JobSuite suite = new JobSuite(rootJob, suiteConfig);
         LOG.info("Collector with {} crawler(s) created.", crawlerList.size());
-        return suite;
+//        return suite;
     }
 
     /**
@@ -577,7 +592,7 @@ public abstract class Collector {
         versions.add(releaseVersion("Collector", getClass()));
         versions.add(releaseVersion("Collector Core", Collector.class));
         versions.add(releaseVersion("Importer", Importer.class));
-        versions.add(releaseVersion("JEF", IJob.class));
+//        versions.add(releaseVersion("JEF", IJob.class));
         versions.add(releaseVersion("Lang", ClassFinder.class));
         versions.add("Committer(s):");
         versions.add(releaseVersion("  Core", ICommitter.class));
