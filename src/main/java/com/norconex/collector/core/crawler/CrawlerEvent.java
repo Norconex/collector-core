@@ -1,4 +1,4 @@
-/* Copyright 2018-2020 Norconex Inc.
+/* Copyright 2018-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,6 +137,17 @@ public class CrawlerEvent extends Event {
      * A document was successfully retrieved for processing.
      */
     public static final String DOCUMENT_FETCHED = "DOCUMENT_FETCHED";
+
+    /**
+     * A document reference was queued in the data store for processing.
+     */
+    public static final String DOCUMENT_QUEUED = "DOCUMENT_QUEUED";
+
+    /**
+     * A document was processed (successfully or not).
+     */
+    public static final String DOCUMENT_PROCESSED = "DOCUMENT_PROCESSED";
+
     /**
      * A document was saved.
      */

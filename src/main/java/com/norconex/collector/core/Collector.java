@@ -123,20 +123,6 @@ public abstract class Collector {
         return INSTANCE.get();
     }
 
-    //TODO Should we deprecate this since IJobSuiteFactory has createJobSuite
-    //which can be overwritten if need be, instead of exposing it?
-//    /**
-//     * Gets the job suite or <code>null</code> if the the collector
-//     * was not yet started or is no longer running.
-//     * @return JobSuite
-//     * @deprecated Since 2.0.0
-//     */
-//    @Deprecated
-//    //TODO try to deprecate
-//    public JobSuite getJobSuite() {
-//        return jobSuite;
-//    }
-
     public synchronized Path getWorkDir() {
         if (workDir == null) {
             workDir = createCollectorSubDirectory(Optional.ofNullable(
@@ -193,12 +179,6 @@ public abstract class Collector {
 
             getCrawlers().forEach(Crawler::start);
 
-            //TODO when JEF is replaced, this should be handled better:
-//            if (!jobSuite.execute()) {
-//                throw new CollectorException(
-//                        "Collector execution was reported unsuccessful. "
-//                      + "Check the logs for more details.");
-//            }
             //TODO ^^^^^^^^^^^^^^^^^^^^^^ HANDLE Better
         } finally {
             try {
@@ -275,23 +255,7 @@ public abstract class Collector {
         // Ensure clean state
         tempDir = null;
         workDir = null;
-//        jobSuite = null;
 
-        // Print out versions
-        //TODO centralize the printing of versions
-//        new Formatter().f
-
-//        // Version intro
-//        LOG.info('\n' + getReleaseVersions());
-
-//        LOG.info('\n' +String.format(NORCONEX_ASCII));
-//        LOG.info("Version of the Collector and key components:");
-//        getReleaseVersions().stream().forEach(LOG::info);
-
-
-        //TODO listeners are removed after everything and not kept
-        // because we support adding them after config is added.  Shall we???
-//        eventManager.clearListeners();
         crawlers.clear();
 
         // recreate everything
@@ -348,7 +312,7 @@ public abstract class Collector {
 
         //--- JEF Job Suite ---
 //        jobSuite = createJobSuite();
-        createJobSuite();
+//        createJobSuite();
 
         //--- Print release versions ---
 //        printReleaseVersions();
@@ -406,7 +370,7 @@ public abstract class Collector {
 //            jobSuite = createJobSuite();
 //            //jobSuite = snap
 //        }
-        createJobSuite();
+//        createJobSuite();
 //        JobSuiteStatus suiteStatus = null;
 //        try {
 //            suiteStatus = JobSuiteStatus.getInstance(jobSuite);
@@ -452,52 +416,52 @@ public abstract class Collector {
 //        }
     }
 
-//    @Override
-//    public JobSuite createJobSuite() {
-    public void createJobSuite() {
-        CollectorConfig collConfig = getCollectorConfig();
-
-        List<Crawler> crawlerList = getCrawlers();
-
-//        IJob rootJob = null;
-
-
-
-        //TODO implement collConfig.getMaxConcurrentCrawlers()
-
-
-
-//        if (!crawlerList.isEmpty()) {
-//            int maxCrawlers = crawlerList.size();
-//            if (collConfig.getMaxConcurrentCrawlers() > 0) {
-//                maxCrawlers = Math.min(
-//                        maxCrawlers, collConfig.getMaxConcurrentCrawlers());
-//            }
-////            rootJob = new AsyncJobGroup(getId(), maxCrawlers, crawlerList);
-//        }
+////    @Override
+////    public JobSuite createJobSuite() {
+//    public void createJobSuite() {
+//        CollectorConfig collConfig = getCollectorConfig();
 //
-//        if (crawlerList.size() > 1) {
-//            int maxCrawlers = crawlerList.size();
-//            if (collConfig.getMaxParallelCrawlers() > 0) {
-//                maxCrawlers = Math.min(
-//                        maxCrawlers, collConfig.getMaxParallelCrawlers());
-//            }
-//            rootJob = new AsyncJobGroup(getId(), maxCrawlers, crawlerList);
-//        } else if (crawlerList.size() == 1) {
-//            rootJob = crawlerList.get(0);
-//        }
-
-  //      JobSuiteConfig suiteConfig = new JobSuiteConfig();
-
-        //TODO have a base workdir, which is used to figure out where to put
-        // everything (log, progress), and make log and progress overwritable.
-
-//        suiteConfig.setWorkdir(collConfig.getWorkDir());
-
-//        JobSuite suite = new JobSuite(rootJob, suiteConfig);
-        LOG.info("Collector with {} crawler(s) created.", crawlerList.size());
-//        return suite;
-    }
+//        List<Crawler> crawlerList = getCrawlers();
+//
+////        IJob rootJob = null;
+//
+//
+//
+//        //TODO implement collConfig.getMaxConcurrentCrawlers()
+//
+//
+//
+////        if (!crawlerList.isEmpty()) {
+////            int maxCrawlers = crawlerList.size();
+////            if (collConfig.getMaxConcurrentCrawlers() > 0) {
+////                maxCrawlers = Math.min(
+////                        maxCrawlers, collConfig.getMaxConcurrentCrawlers());
+////            }
+//////            rootJob = new AsyncJobGroup(getId(), maxCrawlers, crawlerList);
+////        }
+////
+////        if (crawlerList.size() > 1) {
+////            int maxCrawlers = crawlerList.size();
+////            if (collConfig.getMaxParallelCrawlers() > 0) {
+////                maxCrawlers = Math.min(
+////                        maxCrawlers, collConfig.getMaxParallelCrawlers());
+////            }
+////            rootJob = new AsyncJobGroup(getId(), maxCrawlers, crawlerList);
+////        } else if (crawlerList.size() == 1) {
+////            rootJob = crawlerList.get(0);
+////        }
+//
+//  //      JobSuiteConfig suiteConfig = new JobSuiteConfig();
+//
+//        //TODO have a base workdir, which is used to figure out where to put
+//        // everything (log, progress), and make log and progress overwritable.
+//
+////        suiteConfig.setWorkdir(collConfig.getWorkDir());
+//
+////        JobSuite suite = new JobSuite(rootJob, suiteConfig);
+//        LOG.info("Collector with {} crawler(s) created.", crawlerList.size());
+////        return suite;
+//    }
 
     /**
      * Gets the event manager.
@@ -554,18 +518,6 @@ public abstract class Collector {
         return collectorConfig.getId();
     }
 
-    //TODO remove for good? Always (re)create from config if we want to
-    // restart cleanly.
-//    /**
-//     * Set the provided crawlers on this collector (overwriting any existing).
-//     * @param crawlers crawlers to set
-//     */
-//    public void setCrawlers(List<Crawler> crawlers) {
-//        CollectionUtil.setAll(this.crawlers, crawlers);
-//        collectorConfig.setCrawlerConfigs(this.crawlers.stream().map(
-//                crawler -> crawler.getCrawlerConfig()).collect(
-//                        Collectors.toList()));
-//    }
     /**
      * Gets all crawler instances in this collector.
      * @return crawlers
@@ -592,7 +544,6 @@ public abstract class Collector {
         versions.add(releaseVersion("Collector", getClass()));
         versions.add(releaseVersion("Collector Core", Collector.class));
         versions.add(releaseVersion("Importer", Importer.class));
-//        versions.add(releaseVersion("JEF", IJob.class));
         versions.add(releaseVersion("Lang", ClassFinder.class));
         versions.add("Committer(s):");
         versions.add(releaseVersion("  Core", ICommitter.class));
@@ -600,12 +551,10 @@ public abstract class Collector {
             versions.add(releaseVersion("  " + StringUtils.removeEndIgnoreCase(
                     c.getSimpleName(), "Committer"), c));
         }
-
         versions.add("Runtime:");
         versions.add("  Name:             " + SystemUtils.JAVA_RUNTIME_NAME);
         versions.add("  Version:          " + SystemUtils.JAVA_RUNTIME_VERSION);
         versions.add("  Vendor:           " + SystemUtils.JAVA_VENDOR);
-
         return versions;
     }
     private String releaseVersion(String moduleName, Class<?> cls) {

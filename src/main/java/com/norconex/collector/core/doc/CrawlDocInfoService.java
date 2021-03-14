@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Norconex Inc.
+/* Copyright 2019-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import java.util.function.BiPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.collector.core.crawler.Crawler;
+import com.norconex.collector.core.crawler.CrawlerEvent;
 import com.norconex.collector.core.doc.CrawlDocInfo.Stage;
 import com.norconex.collector.core.store.IDataStore;
 import com.norconex.collector.core.store.IDataStoreEngine;
@@ -62,18 +64,13 @@ public class CrawlDocInfoService implements Closeable {
     private IDataStore<CrawlDocInfo> processed;
     private IDataStore<CrawlDocInfo> cached;
 
-    private final IDataStoreEngine storeEngine;
-    private final String crawlerId;
+    private final Crawler crawler;
 
     private boolean open;
 
-    public CrawlDocInfoService(
-            String crawlerId, IDataStoreEngine storeEngine,
-            Class<? extends CrawlDocInfo> type) {
-        this.crawlerId = Objects.requireNonNull(
-                crawlerId, "'crawlerId' must not be null.");
-        this.storeEngine = Objects.requireNonNull(
-                storeEngine, "'storeEngine' must not be null.");
+    public CrawlDocInfoService(Crawler crawler) {
+        this.crawler = Objects.requireNonNull(
+                crawler, "'crawler' must not be null.");
     }
 
     // return true if resuming, false otherwise
@@ -81,6 +78,8 @@ public class CrawlDocInfoService implements Closeable {
         if (open) {
             throw new IllegalStateException("Already open.");
         }
+
+        IDataStoreEngine storeEngine = crawler.getDataStoreEngine();
 
         queue = storeEngine.openStore("queued", CrawlDocInfo.class);
         active = storeEngine.openStore("active", CrawlDocInfo.class);
@@ -92,7 +91,8 @@ public class CrawlDocInfoService implements Closeable {
         if (resuming) {
 
             // Active -> Queued
-            LOG.debug("Moving any {} active URLs back into queue.", crawlerId);
+            LOG.debug("Moving any {} active URLs back into queue.",
+                    crawler.getId());
             active.forEach((k, v) -> {
                 queue.save(k, v);
                 return true;
@@ -105,7 +105,7 @@ public class CrawlDocInfoService implements Closeable {
                 long totalCount =
                         processedCount + queue.count() + cached.count();
                 LOG.info("RESUMING \"{}\" at {} ({}/{}).",
-                        crawlerId,
+                        crawler.getId(),
                         PercentFormatter.format(
                                 processedCount, totalCount, 2, Locale.ENGLISH),
                         processedCount, totalCount);
@@ -195,6 +195,10 @@ public class CrawlDocInfoService implements Closeable {
         LOG.debug("Saved processed: {} "
                 + "(Deleted from cache: {}; Deleted from active: {})",
                 docInfo.getReference(), cacheDeleted, activeDeleted);
+        crawler.getEventManager().fire(new CrawlerEvent.Builder(
+                CrawlerEvent.DOCUMENT_PROCESSED, crawler)
+                    .crawlDocInfo(docInfo)
+                    .build());
     }
     public boolean forEachProcessed(
             BiPredicate<String, CrawlDocInfo> predicate) {
@@ -214,6 +218,10 @@ public class CrawlDocInfoService implements Closeable {
         Objects.requireNonNull(docInfo, "'docInfo' must not be null.");
         queue.save(docInfo.getReference(), docInfo);
         LOG.debug("Saved queued: {}", docInfo.getReference());
+        crawler.getEventManager().fire(new CrawlerEvent.Builder(
+                CrawlerEvent.DOCUMENT_QUEUED, crawler)
+                    .crawlDocInfo(docInfo)
+                    .build());
     }
     // get and delete and mark as active
     public synchronized Optional<CrawlDocInfo> pollQueue() {
@@ -244,7 +252,7 @@ public class CrawlDocInfoService implements Closeable {
 
     @Override
     public void close() {
-        storeEngine.close();
+        crawler.getDataStoreEngine().close();
         open = false;
     }
 }
