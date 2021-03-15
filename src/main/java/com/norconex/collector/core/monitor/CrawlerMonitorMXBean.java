@@ -1,4 +1,4 @@
-/* Copyright 2014-2020 Norconex Inc.
+/* Copyright 2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,26 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.collector.core.jmx;
+package com.norconex.collector.core.monitor;
 
-import com.norconex.collector.core.doc.CrawlDocInfoService;
+import java.util.Map;
 
-public class Monitoring implements MonitoringMBean {
+public interface CrawlerMonitorMXBean {
 
-    private final CrawlDocInfoService service;
+    Map<String, Long> getEventCounts();
 
-    public Monitoring(CrawlDocInfoService service) {
-        this.service = service;
-    }
+    long getProcessedCount();
 
-    @Override
-    public long getProcessedCount() {
-        return service.getProcessedCount();
-    }
+    long getQueuedCount();
 
-    @Override
-    public long getQueuedCount() {
-        return service.getQueueCount();
-    }
-
+    long getActiveCount();
 }

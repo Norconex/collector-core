@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Norconex Inc.
+/* Copyright 2019-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,9 @@ import picocli.CommandLine.Command;
 public class StopCommand extends AbstractSubCommand {
     @Override
     public void runCommand() {
-        getCollector().stop();
+        // Because the collector we stop may be running in a separate JVM
+        // instance, we do not call "close()" directly.  We issue the request
+        // instead and the running Collector will react to the request.
+        getCollector().fireStopRequest();
     }
 }

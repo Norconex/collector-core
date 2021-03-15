@@ -1,4 +1,4 @@
-/* Copyright 2014-2020 Norconex Inc.
+/* Copyright 2014-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,26 +29,14 @@ import static com.norconex.collector.core.crawler.CrawlerEvent.REJECTED_ERROR;
 import static com.norconex.collector.core.crawler.CrawlerEvent.REJECTED_IMPORT;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.NumberFormat;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
@@ -67,7 +55,8 @@ import com.norconex.collector.core.doc.CrawlDocInfo;
 import com.norconex.collector.core.doc.CrawlDocInfoService;
 import com.norconex.collector.core.doc.CrawlDocMetadata;
 import com.norconex.collector.core.doc.CrawlState;
-import com.norconex.collector.core.jmx.Monitoring;
+import com.norconex.collector.core.monitor.CrawlerMonitor;
+import com.norconex.collector.core.monitor.CrawlerMonitorJMX;
 import com.norconex.collector.core.pipeline.importer.ImporterPipelineContext;
 import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
 import com.norconex.collector.core.spoil.SpoiledReferenceStrategy;
@@ -82,14 +71,9 @@ import com.norconex.commons.lang.event.EventManager;
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
-import com.norconex.commons.lang.time.DurationFormatter;
 import com.norconex.importer.Importer;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.response.ImporterResponse;
-import com.norconex.jef5.job.AbstractResumableJob;
-import com.norconex.jef5.status.JobStatus;
-import com.norconex.jef5.status.JobStatusUpdater;
-import com.norconex.jef5.suite.JobSuite;
 
 /**
  * <p>Abstract crawler implementation providing a common base to building
@@ -108,12 +92,11 @@ import com.norconex.jef5.suite.JobSuite;
 //TODO document that logger should print thread name to see which crawler
 //is running?
 public abstract class Crawler
-        extends AbstractResumableJob {
+        { //extends AbstractResumableJob {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(Crawler.class);
 
-    private static final int DOUBLE_PROGRESS_SCALE = 4;
     private static final int MINIMUM_DELAY = 1;
 
     private final CrawlerConfig config;
@@ -127,7 +110,8 @@ public abstract class Crawler
 
     private boolean stopped;
 
-    private CrawlerMetrics metrics;
+    private CrawlerMonitor monitor;
+    private CrawlProgressLogger progressLogger;
     private IDataStoreEngine dataStoreEngine;
     private CrawlDocInfoService crawlDocInfoService;
 
@@ -153,11 +137,14 @@ public abstract class Crawler
         return collector.getEventManager();
     }
 
+    public CrawlerMonitor getMonitor() {
+        return monitor;
+    }
+
     public CrawlerCommitterService getCommitterService() {
         return committers;
     }
 
-    @Override
     public String getId() {
         return config.getId();
     }
@@ -170,8 +157,7 @@ public abstract class Crawler
         return stopped;
     }
 
-    @Override
-    public void stop(JobStatus jobStatus, JobSuite suite) {
+    public void stop() {
         getEventManager().fire(
                 new CrawlerEvent.Builder(CRAWLER_STOP_BEGIN, this).build());
         stopped = true;
@@ -241,54 +227,59 @@ public abstract class Crawler
         return downloadDir;
     }
 
-    @Override
-    protected void startExecution(
-            JobStatusUpdater statusUpdater, JobSuite suite) {
-
+    /**
+     * Starts crawling.
+     */
+    public void start() {
         boolean resume = initCrawler();
-
-        //TODO move stopwatch to metrics
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
-
         importer = new Importer(
                 getCrawlerConfig().getImporterConfig(),
                 getEventManager());
-
-        metrics = new CrawlerMetrics(
-                crawlDocInfoService.getProcessedCount());
+        monitor = new CrawlerMonitor(this);
+        //TODO make interval configurable
+        //TODO make general logging messages verbosity configurable
+        progressLogger = new CrawlProgressLogger(
+                monitor, 30 * 1000);
+        progressLogger.startTracking();
 
         if (Boolean.getBoolean("enableJMX")) {
-            registerMonitoringMbean();
+            CrawlerMonitorJMX.register(this);
         }
 
         try {
             getEventManager().fire(
                     new CrawlerEvent.Builder(CRAWLER_RUN_BEGIN, this).build());
-            //TODO rename "beforeExecution and afterExecution"?
-            prepareExecution(statusUpdater, suite, resume);
+            logUsefulInfo();
+            beforeCrawlerExecution(resume);
 
             //TODO move this code to a config validator class?
             if (StringUtils.isBlank(getCrawlerConfig().getId())) {
                 throw new CollectorException("Crawler must be given "
                         + "a unique identifier (id).");
             }
-
-            doExecute(statusUpdater, suite);
+            doExecute();
         } finally {
             try {
-                stopWatch.stop();
-                if (LOG.isInfoEnabled()) {
-                    LOG.info("Crawler executed in {}.",
-                            DurationFormatter.FULL.withLocale(
-                                   Locale.ENGLISH).format(stopWatch.getTime()));
-                }
-                cleanupExecution(statusUpdater, suite/*, crawlDataStore*/);
+                afterCrawlerExecution();
             } finally {
+                progressLogger.stopTracking();
                 destroyCrawler();
             }
+            if (Boolean.getBoolean("enableJMX")) {
+                CrawlerMonitorJMX.unregister(this);
+            }
+            LOG.info("Execution Summary:{}",
+                    progressLogger.getExecutionSummary());
         }
+    }
 
+    private void logUsefulInfo() {
+        if (Boolean.getBoolean("enableJMX")) {
+            LOG.info("JMX support enabled.");
+        } else {
+            LOG.info("JMX support disabled. To enable, set -DenableJMX=true "
+                    + "system property as JVM argument.");
+        }
     }
 
     protected boolean initCrawler() {
@@ -306,8 +297,7 @@ public abstract class Crawler
         this.downloadDir = getWorkDir().resolve("downloads");
         this.dataStoreEngine = config.getDataStoreEngine();
         this.dataStoreEngine.init(this);
-        this.crawlDocInfoService = new CrawlDocInfoService(
-                getId(), dataStoreEngine, getCrawlReferenceType());
+        this.crawlDocInfoService = new CrawlDocInfoService(this);
 
         //--- Committers ---
         // index will be appended to committer workdir for each one
@@ -393,24 +383,34 @@ public abstract class Crawler
         committers.close();
     }
 
-    protected abstract void prepareExecution(
-            JobStatusUpdater statusUpdater, JobSuite suite, boolean resume);
+    // Really needed since we have events for that now?
+    /**
+     * Gives crawler implementations a chance to prepare before execution starts
+     * Invoked right after the {@link CrawlerEvent#CRAWLER_RUN_BEGIN} is fired.
+     * This method is different than the {@link #initCrawler()} method, which
+     * is invoked for any type of actions where as this one is only invoked
+     * before an effective request for crawling.
+     * @param resume whether the crawl is resuming from an unfinished session.
+     */
+    protected abstract void beforeCrawlerExecution(boolean resume);
+    /**
+     * Gives crawler implementations a chance to do something right after
+     * the crawler is done processing its last reference, before all resources
+     * are shut down.
+     * Invoked right after {@link CrawlerEvent#CRAWLER_STOP_END} or
+     * {@link CrawlerEvent#CRAWLER_RUN_END} (depending which of the two is
+     * triggered).
+     */
+    protected abstract void afterCrawlerExecution();
 
-    protected abstract void cleanupExecution(
-            JobStatusUpdater statusUpdater, JobSuite suite);
-
-
-    protected void doExecute(JobStatusUpdater statusUpdater, JobSuite suite) {
+    protected void doExecute() {
 
         //--- Process start/queued references ----------------------------------
         LOG.info("Crawling references...");
-//        ImporterPipelineContext contextPrototype =
-//                new ImporterPipelineContext(this);
-//        processReferences(statusUpdater, suite, contextPrototype);
-        processReferences(statusUpdater, suite, new ProcessFlags());
+        processReferences(new ProcessFlags());
 
         if (!isStopped()) {
-            handleOrphans(statusUpdater, suite);
+            handleOrphans();
         }
 
         //Can delete? Now done in destrowCrawler:
@@ -421,20 +421,15 @@ public abstract class Crawler
 //            committer.commit();
 //        }
 
-        LOG.info("{} reference(s) processed.", metrics.getProcessedCount());
-
         LOG.debug("Removing empty directories");
         FileUtil.deleteEmptyDirs(getDownloadDir().toFile());
-
         getEventManager().fire(new CrawlerEvent.Builder(
                 (isStopped() ? CRAWLER_STOP_END : CRAWLER_RUN_END),
                 this).build());
-
         LOG.info("Crawler {}", (isStopped() ? "stopped." : "completed."));
     }
 
-    protected void handleOrphans(
-            JobStatusUpdater statusUpdater, JobSuite suite) {
+    protected void handleOrphans() {
 
         OrphansStrategy strategy = config.getOrphansStrategy();
         if (strategy == null) {
@@ -445,25 +440,26 @@ public abstract class Crawler
         // If PROCESS, we do not care to validate if really orphan since
         // all cache items will be reprocessed regardless
         if (strategy == OrphansStrategy.PROCESS) {
-            reprocessCacheOrphans(statusUpdater, suite);
+            reprocessCacheOrphans();
             return;
         }
 
         if (strategy == OrphansStrategy.DELETE) {
-            deleteCacheOrphans(statusUpdater, suite);
+            deleteCacheOrphans();
         }
         // else, ignore (i.e. don't do anything)
         //TODO log how many where ignored (cache count)
     }
 
     protected boolean isMaxDocuments() {
+        //TODO replace check for "processedCount" vs "maxDocuments"
+        // with event counts vs max committed, max processed, max etc...
         return getCrawlerConfig().getMaxDocuments() > -1
-                && metrics.getProcessedCount()
+                && monitor.getProcessedCount()
                         >= getCrawlerConfig().getMaxDocuments();
     }
 
-    protected void reprocessCacheOrphans(
-            JobStatusUpdater statusUpdater, JobSuite suite) {
+    protected void reprocessCacheOrphans() {
         if (isMaxDocuments()) {
             LOG.info("Max documents reached. "
                     + "Not reprocessing orphans (if any).");
@@ -479,16 +475,14 @@ public abstract class Crawler
         });
 
         if (count.longValue() > 0) {
-            processReferences(
-                    statusUpdater, suite, new ProcessFlags().orphan());
+            processReferences(new ProcessFlags().orphan());
         }
         LOG.info("Reprocessed {} cached/orphan references.", count);
     }
 
     protected abstract void executeQueuePipeline(CrawlDocInfo ref);
 
-    protected void deleteCacheOrphans(
-            JobStatusUpdater statusUpdater, JobSuite suite) {
+    protected void deleteCacheOrphans() {
         LOG.info("Deleting orphan references (if any)...");
 
         MutableLong count = new MutableLong();
@@ -498,24 +492,12 @@ public abstract class Crawler
             return true;
         });
         if (count.longValue() > 0) {
-//            ImporterPipelineContext contextPrototype =
-//                    new ImporterPipelineContext(this);
-//            contextPrototype.setDelete(true);
-            processReferences(
-                    statusUpdater, suite, new ProcessFlags().delete());//  contextPrototype);
+            processReferences(new ProcessFlags().delete());
         }
         LOG.info("Deleted {} orphan references.", count);
     }
 
-
-    protected void processReferences(
-            final JobStatusUpdater statusUpdater,
-            final JobSuite suite,
-            final ProcessFlags flags) {
-//            final ImporterPipelineContext contextPrototype) {
-
-        metrics.startTracking();
-
+    protected void processReferences(final ProcessFlags flags) {
         int numThreads = getCrawlerConfig().getNumThreads();
         final CountDownLatch latch = new CountDownLatch(numThreads);
         ExecutorService pool = Executors.newFixedThreadPool(numThreads);
@@ -524,9 +506,8 @@ public abstract class Crawler
             final int threadIndex = i + 1;
             LOG.debug("Crawler thread #{} starting...", threadIndex);
             pool.execute(new ProcessReferencesRunnable(
-                    suite, statusUpdater, latch, flags, threadIndex)); //contextPrototype));
+                    latch, flags, threadIndex));
         }
-
         try {
             latch.await();
             pool.shutdown();
@@ -544,22 +525,15 @@ public abstract class Crawler
 
     // return <code>true</code> if more references to process
     protected ReferenceProcessStatus processNextReference(
-            final JobStatusUpdater statusUpdater,
             final ProcessFlags flags) {
-//            final ImporterPipelineContext contextPrototype) {
-
-//        ImporterPipelineContext context =
-//                new ImporterPipelineContext(contextPrototype);
 
         if (!flags.delete && isMaxDocuments()) {
-//        if (!context.isDelete() && isMaxDocuments()) {
             LOG.info("Maximum documents reached: {}",
                     getCrawlerConfig().getMaxDocuments());
             return ReferenceProcessStatus.MAX_REACHED;
         }
         Optional<CrawlDocInfo> queuedDocInfo =
                 crawlDocInfoService.pollQueue();
-//        context.setDocInfo(queuedDocInfo);
 
         LOG.trace("Processing next reference from Queue: {}",
                 queuedDocInfo);
@@ -569,8 +543,7 @@ public abstract class Crawler
                 watch = new StopWatch();
                 watch.start();
             }
-            processNextQueuedCrawlData(queuedDocInfo.get(), flags);// context);
-            setProgress(statusUpdater);
+            processNextQueuedCrawlData(queuedDocInfo.get(), flags);
             if (LOG.isDebugEnabled()) {
                 watch.stop();
                 LOG.debug("{} to process: {}", watch,
@@ -592,58 +565,13 @@ public abstract class Crawler
         return ReferenceProcessStatus.OK;
     }
 
-    private void registerMonitoringMbean() {
-        try {
-            MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-            String objName = "com.norconex.collector.crawler:type=" +
-                    getCrawlerConfig().getId();
-            LOG.info("Adding MBean for JMX monitoring: {}", objName);
-            ObjectName name = new ObjectName(objName);
-            Monitoring mbean = new Monitoring(crawlDocInfoService);
-            mbs.registerMBean(mbean, name);
-        } catch (MalformedObjectNameException |
-                 InstanceAlreadyExistsException |
-                 MBeanRegistrationException |
-                 NotCompliantMBeanException e) {
-            throw new CollectorException(e);
-        }
-    }
-
-    private void setProgress(JobStatusUpdater statusUpdater) {
-        //TODO maintain counts in session, initialized on start
-        // in case of resumes
-        long queued = crawlDocInfoService.getQueueCount();
-        long processed = metrics.getProcessedCount();
-        long total = queued + processed;
-
-        double progress = 0;
-
-        if (total != 0) {
-            progress = BigDecimal.valueOf(processed)
-                    .divide(BigDecimal.valueOf(total),
-                            DOUBLE_PROGRESS_SCALE, RoundingMode.DOWN)
-                    .doubleValue();
-        }
-        statusUpdater.setProgress(progress);
-
-        statusUpdater.setNote(
-                NumberFormat.getIntegerInstance().format(processed)
-                + " references processed out of "
-                + NumberFormat.getIntegerInstance().format(total));
-
-        metrics.setTotalDocuments(total);
-    }
-
     //TODO given latest changes in implementing methods, shall we only consider
     //using generics instead of having this wrapping method?
 //    protected abstract Doc wrapDocument(
 //            CrawlDocInfo crawlRef, Doc document);
 
 //TODO rely on events?
-    protected void initCrawlDoc(
-//            CrawlDocInfo crawlRef,
-//            CrawlDocInfo cachedCrawlRef,
-            CrawlDoc document) {
+    protected void initCrawlDoc(CrawlDoc document) {
         // default does nothing
     }
 
@@ -669,7 +597,6 @@ public abstract class Crawler
 
         try {
             if (flags.delete) {
-//            if (context.isDelete()) {
                 deleteReference(doc);
                 finalizeDocumentProcessing(doc);
                 return;
@@ -746,9 +673,7 @@ public abstract class Crawler
                         .subject(response)
                         .message(msg)
                         .build());
-            //Doc wrappedDoc = wrapDocument(crawlRef, doc);
-            executeCommitterPipeline(this, doc);//, //wrappedDoc,
-//                    docInfo, cachedDocInfo);
+            executeCommitterPipeline(this, doc);
         } else {
             docInfo.setState(CrawlState.REJECTED);
             getEventManager().fire(
@@ -764,7 +689,7 @@ public abstract class Crawler
         finalizeDocumentProcessing(doc);
         ImporterResponse[] children = response.getNestedResponses();
         for (ImporterResponse childResponse : children) {
-//TODO have a createEmbeddedDoc method instead?
+            //TODO have a createEmbeddedDoc method instead?
             CrawlDocInfo childDocInfo = createChildDocInfo(
                     childResponse.getReference(), docInfo);
             CrawlDocInfo childCachedDocInfo =
@@ -876,9 +801,12 @@ public abstract class Crawler
 
         //--- Mark reference as Processed --------------------------------------
         try {
-            metrics.incrementProcessedCount();
             crawlDocInfoService.processed(docInfo);
             markReferenceVariationsAsProcessed(docInfo);
+
+            progressLogger.logProgress();
+
+
         } catch (Exception e) {
             LOG.error("Could not mark reference as processed: {} ({})",
                     docInfo.getReference(), e.getMessage(), e);
@@ -899,7 +827,7 @@ public abstract class Crawler
      */
     protected void beforeFinalizeDocumentProcessing(CrawlDoc doc) {
         //NOOP
-//TODO rely on event instead???
+        //TODO rely on event instead???
     }
 
     protected abstract void markReferenceVariationsAsProcessed(
@@ -940,8 +868,8 @@ public abstract class Crawler
         committers.delete(doc);
     }
 
-//TODO make enum if never mixed, and add "default" --------------------------------------------
-    protected final class ProcessFlags {
+    //TODO make enum if never mixed, and add "default"
+    private final class ProcessFlags {
         private boolean delete;
         private boolean orphan;
         private ProcessFlags delete() {
@@ -959,32 +887,22 @@ public abstract class Crawler
     }
 
     private final class ProcessReferencesRunnable implements Runnable {
-        //private final ImporterPipelineContext importerContextPrototype;
         private final ProcessFlags flags;
-        private final JobSuite suite;
-        private final JobStatusUpdater statusUpdater;
         private final CountDownLatch latch;
         private final int threadIndex;
 
         private ProcessReferencesRunnable(
-                JobSuite suite,
-                JobStatusUpdater statusUpdater,
                 CountDownLatch latch,
                 ProcessFlags flags,
                 int threadIndex) {
-//                ImporterPipelineContext importerContextPrototype) {
-            this.suite = suite;
-            this.statusUpdater = statusUpdater;
             this.latch = latch;
             this.flags = flags;
             this.threadIndex = threadIndex;
-//            this.importerContextPrototype = importerContextPrototype;
         }
 
         @Override
         public void run() {
-            Thread.currentThread().setName(statusUpdater.getJobId()
-                    + "/" + threadIndex);
+            Thread.currentThread().setName(getId() + "#" + threadIndex);
 
             LOG.debug("Crawler thread #{} started.", threadIndex);
 
@@ -993,14 +911,21 @@ public abstract class Crawler
                         CrawlerEvent.CRAWLER_RUN_THREAD_BEGIN, Crawler.this)
                             .subject(Thread.currentThread())
                             .build());
-                JobSuite.setCurrentJobId(statusUpdater.getJobId());
-
                 while (!isStopped()) {
                     try {
                         ReferenceProcessStatus status =
-                                processNextReference(statusUpdater, flags);
+                                processNextReference(flags);
                         if (status == MAX_REACHED) {
-                            stop(suite.getJobStatus(suite.getRootJob()), suite);
+
+
+
+                            //TODO vvvvvvvvvvvvvv IMPLEMENT ALTERNATIVE
+//                            stop(suite.getJobStatus(suite.getRootJob()), suite);
+                            stop();
+                            // ^^^^^^^^^^^^^^ IMPLEMENT ALTERNATIVE
+
+
+
                             break;
                         } else if (status == QUEUE_EMPTY) {
                             if (isQueueInitialized()) {
@@ -1015,7 +940,7 @@ public abstract class Crawler
                               "An error occured that could compromise "
                             + "the stability of the crawler. Stopping "
                             + "excution to avoid further issues...", e);
-                        stop(suite.getJobStatus(suite.getRootJob()), suite);
+                        stop();
                     }
                 }
             } catch (Exception e) {

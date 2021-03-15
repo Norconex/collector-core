@@ -22,8 +22,6 @@ import com.norconex.collector.core.doc.CrawlDoc;
 import com.norconex.collector.core.doc.CrawlDocInfo;
 import com.norconex.collector.core.pipeline.importer.ImporterPipelineContext;
 import com.norconex.importer.response.ImporterResponse;
-import com.norconex.jef5.status.JobStatusUpdater;
-import com.norconex.jef5.suite.JobSuite;
 
 public class MockCrawler extends Crawler {
 
@@ -47,14 +45,11 @@ public class MockCrawler extends Crawler {
     }
 
     @Override
-    protected void prepareExecution(JobStatusUpdater statusUpdater,
-            JobSuite suite, boolean resume) {
+    protected void beforeCrawlerExecution(boolean resume) {
         throw new UnsupportedOperationException();
     }
-
     @Override
-    protected void cleanupExecution(JobStatusUpdater statusUpdater,
-            JobSuite suite) {
+    protected void afterCrawlerExecution() {
         throw new UnsupportedOperationException();
     }
 
@@ -92,9 +87,9 @@ public class MockCrawler extends Crawler {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    protected void resumeExecution(JobStatusUpdater statusUpdater,
-            JobSuite suite) {
-        throw new UnsupportedOperationException();
-    }
+//    @Override
+//    protected void resumeExecution(JobStatusUpdater statusUpdater,
+//            JobSuite suite) {
+//        throw new UnsupportedOperationException();
+//    }
 }
