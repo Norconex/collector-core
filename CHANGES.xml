@@ -7,7 +7,21 @@
   </properties>
   <body>
 
-    <release version="2.0.0-SNAPSHOT" date="2020-??-??" description="Major release">
+    <release version="2.0.0-SNAPSHOT" date="2021-??-??" description="Major release">
+      <action dev="essiembre" type="add">
+        New crawler events: 
+        DOCUMENT_QUEUED, DOCUMENT_PROCESSED.
+      </action>
+      <action dev="essiembre" type="add">
+        JMX reporting now returns active references and event counts.
+      </action>
+      <action dev="essiembre" type="add">
+        Now provides execution summary and the end of a crawler execution.
+      </action>
+    </release>
+    
+    <release version="2.0.0-M1" date="2021-03-01" 
+        description="Milestone towards next major release">
       <action dev="essiembre" type="add">
         Now supports providing multiple committers.
       </action>
@@ -22,11 +36,7 @@
         New crawler events: CRAWLER_INIT_BEGIN, CRAWLER_INIT_END,
         CRAWLER_RUN_BEGIN, CRAWLER_RUN_END,
         CRAWLER_STOP_BEGIN, CRAWLER_STOP_END,
-        CRAWLER_CLEAN_BEGIN, CRAWLER_CLEAN_END,
-        DOCUMENT_QUEUED, DOCUMENT_PROCESSED.
-      </action>
-      <action dev="essiembre" type="add">
-        JMX reporting now returns active references and event counts.
+        CRAWLER_CLEAN_BEGIN, CRAWLER_CLEAN_END.
       </action>
       <action dev="essiembre" type="add">
         New method on CrawlerEvent: isCrawlerShutdown.
@@ -65,9 +75,6 @@
       <action dev="essiembre" type="add">
         Now logging throughput (documents per seconds) and estimated remaining
         time.
-      </action>
-      <action dev="essiembre" type="add">
-        Now provides execution summary and the end of a crawler execution.
       </action>
       <action dev="essiembre" type="update">
         Now always resume previous incomplete executions. Can now "clean"

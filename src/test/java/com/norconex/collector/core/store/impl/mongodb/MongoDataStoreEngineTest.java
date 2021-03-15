@@ -38,14 +38,6 @@ class MongoDataStoreEngineTest extends AbstractDataStoreEngineTest {
         super(() -> createStoreEngine());
     }
 
-
-//    @Override
-//    @BeforeEach
-//    protected void beforeEach() throws IOException {
-//        super.beforeEach();
-//        mongoDBContainer.
-//    }
-
     private static MongoDataStoreEngine createStoreEngine() {
         String connStr = "mongodb://"
                 + mongoDBContainer.getHost() + ":"

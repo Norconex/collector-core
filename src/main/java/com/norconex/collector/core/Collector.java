@@ -34,7 +34,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
@@ -42,11 +41,14 @@ import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.collector.core.crawler.CrawlerConfig;
+import com.norconex.collector.core.stop.ICollectorStopper;
+import com.norconex.collector.core.stop.impl.FileBasedStopper;
 import com.norconex.committer.core3.ICommitter;
 import com.norconex.commons.lang.ClassFinder;
-import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.VersionUtil;
 import com.norconex.commons.lang.event.EventManager;
+import com.norconex.commons.lang.file.FileAlreadyLockedException;
+import com.norconex.commons.lang.file.FileLock;
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.importer.Importer;
@@ -76,20 +78,20 @@ public abstract class Collector {
             LoggerFactory.getLogger(Collector.class);
 
     public static final long LOCK_HEARTBEAT_INTERVAL = 5000;
-
-    private final CollectorConfig collectorConfig;
-
-    private final List<Crawler> crawlers = new ArrayList<>();
-
-    private final EventManager eventManager;
-
     private static final InheritableThreadLocal<Collector> INSTANCE =
             new InheritableThreadLocal<>();
+
+    private final CollectorConfig collectorConfig;
+    private final List<Crawler> crawlers = new ArrayList<>();
+    private final EventManager eventManager;
 
     private CachedStreamFactory streamFactory;
     private Path workDir;
     private Path tempDir;
-    private Path lock;
+    private FileLock lock;
+
+    //TODO make configurable
+    private final ICollectorStopper stopper = new FileBasedStopper();
 
     /**
      * Creates and configure a Collector with the provided
@@ -169,6 +171,7 @@ public abstract class Collector {
         lock();
         try {
             initCollector();
+            stopper.listenForStopRequest(this);
             eventManager.fire(new CollectorEvent.Builder(
                     COLLECTOR_RUN_BEGIN, this).build());
 
@@ -182,13 +185,12 @@ public abstract class Collector {
             //TODO ^^^^^^^^^^^^^^^^^^^^^^ HANDLE Better
         } finally {
             try {
-                destroyCollector();
-            } finally {
                 eventManager.fire(new CollectorEvent.Builder(
                         COLLECTOR_RUN_END, this).build());
+                destroyCollector();
+            } finally {
+                stopper.destroy();
             }
-            eventManager.clearListeners();
-            unlock();
         }
     }
 
@@ -271,197 +273,54 @@ public abstract class Collector {
                     + "a unique identifier (id).");
         }
 
-
-//TODO **************************
-//        // PREVENT RERUNNING A COLLECTOR INSTANCE MORE THAN ONCE
-//        // HAVE A CLONE OR EQUVALENT METHOD THAT COULD BE CALLED
-//        // ONLY WHEN A JOB IS DONE RUNNING.
-//        // THEN WE DO NOT HAVE TO CHECK IF THIS jvm INTANCE IS ALREAY RUNNING
-//        // OR NOT AND ENSURE ALL RESOURCES ARE DETROYED
-//
-//        if (jobSuite != null && jobSuite.getRootStatus().isRunning()) {
-//            LOG.debug("Collector currently running. Waiting a bit in case it's "
-//                    + "shutting down.");
-//            Sleeper.sleepMillis(JobHeartbeatGenerator.HEARTBEAT_INTERVAL * 2);
-//            if (jobSuite.getRootStatus().isRunning()) {
-//                throw new CollectorException(
-//                        "Collector is already running. Wait for it to complete "
-//                      + "before starting the same instance again, or stop "
-//                      + "the currently running instance first.");
-//            }
-//            System.out.println("DDDDDDD state: " + jobSuite.getRootStatus().getState());
-//
-//            System.out.println("DDDDDDD running? " + jobSuite.getRootStatus().isRunning());
-//        }
-
-
-
-
-//        if (jobSuite != null) {
-//            throw new CollectorException(
-//                    "Collector is already running. Wait for it to complete "
-//                  + "before starting the same instance again, or stop "
-//                  + "the currently running instance first.");
-//        }
-
         //--- Stream Cache Factory ---
         streamFactory = new CachedStreamFactory(
                 collectorConfig.getMaxMemoryPool(),
                 collectorConfig.getMaxMemoryInstance(),
                 getTempDir());
-
-        //--- JEF Job Suite ---
-//        jobSuite = createJobSuite();
-//        createJobSuite();
-
-        //--- Print release versions ---
-//        printReleaseVersions();
     }
 
     protected void destroyCollector() {
-        //TODO do not make jobSuite null so we can grab status?
-        // Or store latest status?
-        //jobSuite = null;
-        //workDir = null;
-
         try {
             FileUtil.delete(getTempDir().toFile());
         } catch (IOException e) {
             throw new CollectorException("Could not delete temp directory", e);
         } finally {
-            //tempDir = null;
+            eventManager.clearListeners();
+            unlock();
         }
     }
 
-    // TODO reimplement a get state and offer it via JMX as well.
-//    /**
-//     * Gets the state of this collector. If the collector is not running,
-//     * {@link JobState#UNKNOWN} is returned.
-//     * @return execution state
-//     * @since 1.10.0
-//     * @deprecated Since 2.0.0
-//     */
-//    //TODO try to deprecate (do not rely on JEF???)
-//    @Deprecated
-//    public JobState getState() {
-//        JobSuite suite = getJobSuite();
-//        if (suite != null) {
-//            JobStatus status = suite.getRootStatus();
-//            if (status != null) {
-//                return status.getState();
-//            }
-//        }
-//        return JobState.UNKNOWN;
-//    }
+    public void fireStopRequest() {
+        stopper.fireStopRequest();
+    }
 
     /**
      * Stops a running instance of this Collector. The caller can be a
      * different JVM instance than the instance we want to stop.
      */
     public void stop() {
+        if (!isRunning()) {
+            LOG.info("CANNOT STOP: Collector is not running.");
+            return;
+        }
 
         Thread.currentThread().setName(getId() + "/STOP");
+        eventManager.fire(new CollectorEvent.Builder(
+                CollectorEvent.COLLECTOR_STOP_BEGIN, this).build());
 
-        // It is currently necessary to create the crawlers from config
-        // so that the suite is created properly and jobs stopped properly.
-        createCrawlers();
-
-//        if (jobSuite == null) {
-//            jobSuite = createJobSuite();
-//            //jobSuite = snap
-//        }
-//        createJobSuite();
-//        JobSuiteStatus suiteStatus = null;
-//        try {
-//            suiteStatus = JobSuiteStatus.getInstance(jobSuite);
-//        } catch (IOException e) {
-//            throw new CollectorException(
-//                    "Could not obtain job status of: " + getId(), e);
-//        }
-
-//        JobStatus status = jobSuite.getRootStatus();
-//        JobStatus status = suiteStatus.getRootStatus();
-
-
-
-        //TODO rework this status-thing:
-        LOG.warn("TODO: stop logic + rework status");
-
-//        if (status == null
-//                || !status.isState(JobState.RUNNING, JobState.UNKNOWN)) {
-////            String curState =
-////                    (status != null ? " State: " + status.getState() : "");
-//            throw new CollectorException(
-//                    "This collector cannot be stopped since it is NOT "
-//                  + "running. Last known state: "
-//                  + (status != null ? status.getState() : "[undefined]"));
-//        } else if (LOG.isDebugEnabled()) {
-//            LOG.debug("Suite state: {}", status.getState());
-//        }
-//
-//        try {
-//            LOG.info("Making a stop request...");
-//            jobSuite.stop();
-//            LOG.info("Stop request made.");
-//            LOG.info("PLEASE NOTE: To ensure a clean stop, "
-//                    + "crawlers may wait until they are done with documents "
-//                    + "currently being processed. If an urgent stop is "
-//                    + "required or you do not want to wait, manually kill "
-//                    + "the process.");
-//            //TODO wait for stop confirmation before setting to null?
-//            jobSuite = null;
-//        } catch (ShutdownException e) {
-//            throw new CollectorException(
-//                    "Could not stop collector: " + getId(), e);
-//        }
+        try {
+            getCrawlers().forEach(Crawler::stop);
+        } finally {
+            try {
+                eventManager.fire(new CollectorEvent.Builder(
+                        CollectorEvent.COLLECTOR_STOP_END, this).build());
+                destroyCollector();
+            } finally {
+                stopper.destroy();
+            }
+        }
     }
-
-////    @Override
-////    public JobSuite createJobSuite() {
-//    public void createJobSuite() {
-//        CollectorConfig collConfig = getCollectorConfig();
-//
-//        List<Crawler> crawlerList = getCrawlers();
-//
-////        IJob rootJob = null;
-//
-//
-//
-//        //TODO implement collConfig.getMaxConcurrentCrawlers()
-//
-//
-//
-////        if (!crawlerList.isEmpty()) {
-////            int maxCrawlers = crawlerList.size();
-////            if (collConfig.getMaxConcurrentCrawlers() > 0) {
-////                maxCrawlers = Math.min(
-////                        maxCrawlers, collConfig.getMaxConcurrentCrawlers());
-////            }
-//////            rootJob = new AsyncJobGroup(getId(), maxCrawlers, crawlerList);
-////        }
-////
-////        if (crawlerList.size() > 1) {
-////            int maxCrawlers = crawlerList.size();
-////            if (collConfig.getMaxParallelCrawlers() > 0) {
-////                maxCrawlers = Math.min(
-////                        maxCrawlers, collConfig.getMaxParallelCrawlers());
-////            }
-////            rootJob = new AsyncJobGroup(getId(), maxCrawlers, crawlerList);
-////        } else if (crawlerList.size() == 1) {
-////            rootJob = crawlerList.get(0);
-////        }
-//
-//  //      JobSuiteConfig suiteConfig = new JobSuiteConfig();
-//
-//        //TODO have a base workdir, which is used to figure out where to put
-//        // everything (log, progress), and make log and progress overwritable.
-//
-////        suiteConfig.setWorkdir(collConfig.getWorkDir());
-//
-////        JobSuite suite = new JobSuite(rootJob, suiteConfig);
-//        LOG.info("Collector with {} crawler(s) created.", crawlerList.size());
-////        return suite;
-//    }
 
     /**
      * Gets the event manager.
@@ -578,48 +437,38 @@ public abstract class Collector {
         return classes;
     }
 
-    //TODO Move file-based (or port?) lock/unlock to Norconex Commons Lang
-    // util class?
-    // Will fail if collector is already locked (running)
-    // checks that lock is not older than X.  If so, consider it unlocked.
     protected synchronized void lock() {
         LOG.debug("Locking collector execution...");
-        Path lck = getWorkDir().resolve(".collector-lock");
-        if (lck.toFile().exists()
-                && System.currentTimeMillis() - lock.toFile().lastModified()
-                        > LOCK_HEARTBEAT_INTERVAL) {
+        lock = new FileLock(getWorkDir().resolve(".collector-lock"),
+                LOCK_HEARTBEAT_INTERVAL);
+        try {
+            lock.lock();
+        } catch (FileAlreadyLockedException e) {
             throw new CollectorException(
-                    "A running Collector instance is preventing the execution "
-                  + "of the attempted command. Please wait for "
-                  + "the running Collector instance to complete or stop the "
-                  + "Collector and try again.");
+                    "The collector you are attempting to run is already "
+                  + "running or executing a command. Wait for "
+                  + "it to complete or stop it and try again.");
+        } catch (IOException e) {
+            throw new CollectorException(
+                    "Could not create a collector execution lock.", e);
         }
-        new Thread(() -> {
-            try {
-                FileUtils.touch(lck.toFile());
-                while(lck.toFile().exists()) {
-                    FileUtils.touch(lck.toFile());
-                    Sleeper.sleepMillis(LOCK_HEARTBEAT_INTERVAL);
-                }
-            } catch (IOException e) {
-                throw new CollectorException(
-                        "Cannot update lock timestamp.", e);
-            }
-        }, getId() + " Lock Heartbeat");
-        lock = lck;
         LOG.debug("Collector execution locked");
     }
-    // Delete lock (or rename extension to ".done"?).
     protected synchronized void unlock() {
         try {
             if (lock != null) {
-                Files.deleteIfExists(lock);
+                lock.unlock();
             }
         } catch (IOException e) {
-            throw new CollectorException("Cannot delete lock.", e);
+            throw new CollectorException(
+                    "Cannot unlock collector execution.", e);
         }
         lock = null;
         LOG.debug("Collector execution unlocked");
+    }
+
+    public boolean isRunning() {
+        return lock != null && lock.isLocked();
     }
 
     @Override
