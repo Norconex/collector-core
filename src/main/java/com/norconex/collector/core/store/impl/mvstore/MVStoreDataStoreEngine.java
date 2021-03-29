@@ -179,7 +179,7 @@ public class MVStoreDataStoreEngine
 
     @Override
     public Set<String> getStoreNames() {
-        // do not return inner map.
+        // a fresh map instance is returned, so safe to remove entry.
         Set<String> names = mvstore.getMapNames();
         names.remove(STORE_TYPES_KEY);
         return names;

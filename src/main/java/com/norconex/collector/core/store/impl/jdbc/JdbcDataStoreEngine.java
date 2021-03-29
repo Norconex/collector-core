@@ -1,0 +1,296 @@
+/* Copyright 2021 Norconex Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.norconex.collector.core.store.impl.jdbc;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
+
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.norconex.collector.core.crawler.Crawler;
+import com.norconex.collector.core.store.DataStoreException;
+import com.norconex.collector.core.store.IDataStore;
+import com.norconex.collector.core.store.IDataStoreEngine;
+import com.norconex.commons.lang.file.FileUtil;
+import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
+import com.norconex.commons.lang.xml.XML;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
+/**
+ * <p>
+ * Data store engine using a JDBC-compatible database for storing
+ * crawl data.
+ * </p>
+ * <h3>Database JDBC driver</h3>
+ * <p>
+ * To use this data store engine, you need its JDBC database driver
+ * on the classpath.
+ * </p>
+ * <h3>Database datasource configuration</h3>
+ * <p>
+ * This JDBC data store engine uses
+ * <a href="https://github.com/brettwooldridge/HikariCP">Hikari</a> as the JDBC
+ * datasource implementation, which provides efficient connection-pooling.
+ * Refer to
+ * <a href="https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby">
+ * Hikari's documentation</a> for all configuration options.  The Hikari options
+ * are passed as-is, via <code>datasource</code> properties as shown below.
+ * </p>
+ *
+ * {@nx.xml.usage
+ * <dataStoreEngine class="com.norconex.collector.core.store.impl.jdbc.JdbcDataStoreEngine" />
+ *   <!-- Hikari datasource configuration properties: -->
+ *   <datasource>
+ *     <property name="(property name)">(property value)</property>
+ *   </datasource>
+ *   <tablePrefix>
+ *     (Optional prefix used for table creation. Default is the collector
+ *      id plus the crawler id, each followed by an underscore character.)
+ *   </tablePrefix>
+ * </dataStoreEngine>
+ * }
+ *
+ * {@nx.xml.example
+ * <dataStoreEngine class="JdbcDataStoreEngine" />
+ *   <datasource>
+ *     <property name="jdbcUrl">jdbc:mysql://localhost:33060/sample</property>
+ *     <property name="username">dbuser</property>
+ *     <property name="password">dbpwd</property>
+ *     <property name="connectionTimeout">1000</property>
+ *   </datasource>
+ * </dataStoreEngine>
+ * }
+ * <p>
+ * The above example contains basic settings for creating a MySQL data source.
+ * </p>
+ * @author Pascal Essiembre
+ */
+public class JdbcDataStoreEngine
+        implements IDataStoreEngine, IXMLConfigurable {
+
+    private static final Logger LOG =
+            LoggerFactory.getLogger(JdbcDataStoreEngine.class);
+
+    private static final String STORE_TYPES_NAME = "_storetypes";
+
+    // Non-configurable:
+    private HikariDataSource datasource;
+    private String tablePrefix;
+    // table id field is store name
+    private JdbcDataStore<String> storeTypes;
+
+    // Configurable:
+    private Properties configProperties = new Properties();
+
+    public Properties getConfigProperties() {
+        return configProperties;
+    }
+    public void setConfigProperties(Properties configProperties) {
+        this.configProperties = configProperties;
+    }
+    public String getTablePrefix() {
+        return tablePrefix;
+    }
+    public void setTablePrefix(String tablePrefix) {
+        this.tablePrefix = tablePrefix;
+    }
+
+    @Override
+    public void init(Crawler crawler) {
+        // create a clean table name prefix to avoid collisions in case
+        // multiple crawlers use the same DB.
+        this.tablePrefix = FileUtil.toSafeFileName(
+                crawler.getCollector().getId() + "_" + crawler.getId() + "_");
+
+        // create data source
+        datasource = new HikariDataSource(
+                new HikariConfig(configProperties.toProperties()));
+
+        // store types for each table
+        storeTypes = new JdbcDataStore<>(this, STORE_TYPES_NAME, String.class);
+    }
+
+    @Override
+    public boolean clean() {
+        // the table storing the store types is not returned by getStoreNames
+        // so we have to explicitly delete it.
+        dropStore(STORE_TYPES_NAME);
+        Set<String> names = getStoreNames();
+        if (!names.isEmpty()) {
+            names.stream().forEach(this::dropStore);
+            close();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void close() {
+        if (datasource != null) {
+            LOG.info("Closing JDBC data store engine datasource...");
+            datasource.close();
+            LOG.info("JDBC Data store engine datasource closed.");
+            datasource = null;
+        } else {
+            LOG.info("JDBC Data store engine datasource already closed.");
+        }
+    }
+
+    @Override
+    public <T> IDataStore<T> openStore(String storeName, Class<T> type) {
+        storeTypes.save(storeName, type.getName());
+        return new JdbcDataStore<>(this, storeName, type);
+    }
+
+    @Override
+    public boolean dropStore(String storeName) {
+        String tableName = tableName(storeName);
+        if (!tableExist(tableName)) {
+            return false;
+        }
+        try (Connection conn = datasource.getConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate("DROP TABLE " + tableName);
+                if (!conn.getAutoCommit()) {
+                    conn.commit();
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataStoreException(
+                    "Could not drop table '" + tableName + "'.", e);
+        }
+
+        if (storeName.equals(STORE_TYPES_NAME)) {
+            storeTypes = null;
+        } else {
+            storeTypes.delete(storeName);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean renameStore(IDataStore<?> dataStore, String newStoreName) {
+        JdbcDataStore<?> jdbcStore = (JdbcDataStore<?>) dataStore;
+        String oldStoreName = jdbcStore.getName();
+        boolean existed = ((JdbcDataStore<?>) dataStore).rename(newStoreName);
+        storeTypes.delete(oldStoreName);
+        storeTypes.save(newStoreName, jdbcStore.getType().getName());
+        return existed;
+    }
+
+    @Override
+    public Set<String> getStoreNames() {
+        Set<String> names = new HashSet<>();
+        try (Connection conn = datasource.getConnection()) {
+            try (ResultSet rs = conn.getMetaData().getTables(
+                    null, null, "%", new String[]{"TABLE"})) {
+                while (rs.next()) {
+                    String name = rs.getString(3);
+                    if (StringUtils.startsWithIgnoreCase(name, tablePrefix)
+                            && !name.equalsIgnoreCase(storeTypes.getName())) {
+                        names.add(name);
+                    }
+                }
+            }
+            return names;
+        } catch (SQLException e) {
+            throw new DataStoreException("Could not get store names.", e);
+        }
+    }
+
+    @Override
+    public Optional<Class<?>> getStoreType(String storeName) {
+        if (storeName == null) {
+            return Optional.empty();
+        }
+        Optional<String> typeStr = storeTypes.find(storeName);
+        if (typeStr.isPresent()) {
+            try {
+                return Optional.ofNullable(ClassUtils.getClass(typeStr.get()));
+            } catch (ClassNotFoundException e) {
+                throw new DataStoreException(
+                        "Could not determine type of: " + storeName, e);
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public void loadFromXML(XML xml) {
+        List<XML> nodes = xml.getXMLList("datasource/property");
+        for (XML node : nodes) {
+            String name = node.getString("@name");
+            String value = node.getString(".");
+            configProperties.add(name, value);
+        }
+        setTablePrefix(xml.getString("tablePrefix", getTablePrefix()));
+    }
+
+    @Override
+    public void saveToXML(XML xml) {
+        XML xmlDatasource = xml.addElement("datasource");
+        for (Entry<String, List<String>> entry : configProperties.entrySet()) {
+            List<String> values = entry.getValue();
+            for (String value : values) {
+                if (value != null) {
+                    xmlDatasource.addElement("property", value)
+                            .setAttribute("name", entry.getKey());
+                }
+            }
+        }
+        xml.addElement("tablePrefix", getTablePrefix());
+    }
+
+    Connection getConnection() {
+        try {
+            return datasource.getConnection();
+        } catch (SQLException e) {
+            throw new DataStoreException(
+                    "Could not get database connection.", e);
+        }
+    }
+    String tableName(String storeName) {
+        return tablePrefix + storeName;
+    }
+
+    boolean tableExist(String tableName) {
+        try (Connection conn = datasource.getConnection()) {
+            try (ResultSet rs = conn.getMetaData().getTables(
+                    null, null, "%", new String[]{"TABLE"})) {
+                while (rs.next()) {
+                    if (rs.getString(3).equalsIgnoreCase(tableName)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } catch (SQLException e) {
+            throw new DataStoreException(
+                    "Could not check if table '" + tableName + "' exists.", e);
+        }
+    }
+}

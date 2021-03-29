@@ -565,11 +565,6 @@ public abstract class Crawler
         return ReferenceProcessStatus.OK;
     }
 
-    //TODO given latest changes in implementing methods, shall we only consider
-    //using generics instead of having this wrapping method?
-//    protected abstract Doc wrapDocument(
-//            CrawlDocInfo crawlRef, Doc document);
-
 //TODO rely on events?
     protected void initCrawlDoc(CrawlDoc document) {
         // default does nothing
@@ -916,16 +911,7 @@ public abstract class Crawler
                         ReferenceProcessStatus status =
                                 processNextReference(flags);
                         if (status == MAX_REACHED) {
-
-
-
-                            //TODO vvvvvvvvvvvvvv IMPLEMENT ALTERNATIVE
-//                            stop(suite.getJobStatus(suite.getRootJob()), suite);
                             stop();
-                            // ^^^^^^^^^^^^^^ IMPLEMENT ALTERNATIVE
-
-
-
                             break;
                         } else if (status == QUEUE_EMPTY) {
                             if (isQueueInitialized()) {

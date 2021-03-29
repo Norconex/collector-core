@@ -15,9 +15,13 @@
 package com.norconex.collector.core.store.impl.mvstore;
 
 import com.norconex.collector.core.store.AbstractDataStoreEngineTest;
+import com.norconex.collector.core.store.IDataStoreEngine;
 
 public class MVStoreDataStoreEngineTest extends AbstractDataStoreEngineTest {
-    public MVStoreDataStoreEngineTest() {
-        super(MVStoreDataStoreEngine::new);
+
+    @Override
+    protected IDataStoreEngine createEngine() {
+        return new MVStoreDataStoreEngine();
     }
+
 }

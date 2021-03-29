@@ -252,7 +252,6 @@ public class CrawlDocInfoService implements Closeable {
 
     @Override
     public void close() {
-        crawler.getDataStoreEngine().close();
         open = false;
     }
 }

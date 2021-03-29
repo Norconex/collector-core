@@ -29,6 +29,7 @@
   <properties>
     <h2.version>1.4.200</h2.version>
     <mongodb.version>4.2.0</mongodb.version>
+    <hikaricp.version>4.0.3</hikaricp.version>
     <testcontainers.version>1.15.1</testcontainers.version>
   </properties>
 
@@ -45,7 +46,7 @@
       <artifactId>norconex-committer-core</artifactId>
     </dependency>
 
-    <!-- NOSQL/KeyValue for crawl store -->
+    <!-- Databases for crawl store -->
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2-mvstore</artifactId>
@@ -56,6 +57,17 @@
       <artifactId>mongodb-driver-sync</artifactId>
       <version>${mongodb.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.zaxxer</groupId>
+      <artifactId>HikariCP</artifactId>
+      <version>${hikaricp.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>${h2.version}</version>
+      <scope>test</scope>
+    </dependency>        
     
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>

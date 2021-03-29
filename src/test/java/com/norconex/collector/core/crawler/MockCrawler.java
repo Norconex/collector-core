@@ -1,4 +1,4 @@
-/* Copyright 2019-2020 Norconex Inc.
+/* Copyright 2019-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,12 +58,6 @@ public class MockCrawler extends Crawler {
         throw new UnsupportedOperationException();
     }
 
-//    @Override
-//    protected Doc wrapDocument(CrawlDocInfo ref,
-//            Doc document) {
-//        throw new UnsupportedOperationException();
-//    }
-
     @Override
     protected void markReferenceVariationsAsProcessed(CrawlDocInfo ref) {
         throw new UnsupportedOperationException();
@@ -86,10 +80,4 @@ public class MockCrawler extends Crawler {
             CrawlDoc doc) {
         throw new UnsupportedOperationException();
     }
-
-//    @Override
-//    protected void resumeExecution(JobStatusUpdater statusUpdater,
-//            JobSuite suite) {
-//        throw new UnsupportedOperationException();
-//    }
 }

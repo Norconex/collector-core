@@ -28,6 +28,8 @@ TODO:
     - Collector Id
     - Crawler Id
 
+- Document that, datastore database should be dedicated to a collector. 
+
 - Have new command line option for producing useful stats out of the crawl
   store.  Like the # of documents per each crawl state found in the store.
 

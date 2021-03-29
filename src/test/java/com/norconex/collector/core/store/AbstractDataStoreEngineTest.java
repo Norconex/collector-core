@@ -17,12 +17,13 @@ package com.norconex.collector.core.store;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.MockCollector;
 import com.norconex.collector.core.MockCollectorConfig;
@@ -31,9 +32,12 @@ import com.norconex.collector.core.crawler.MockCrawlerConfig;
 import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.file.ContentType;
 
-// uses inheritance instead of parameterized test because we need to
+// Uses inheritance instead of parameterized test because we need to
 // disable some store engine in some environments and report them as skipped.
 public abstract class AbstractDataStoreEngineTest {
+
+    private static final Logger LOG =
+            LoggerFactory.getLogger(AbstractDataStoreEngineTest.class);
 
     protected static final String TEST_STORE_NAME = "testStore";
 
@@ -41,12 +45,6 @@ public abstract class AbstractDataStoreEngineTest {
     public Path tempFolder;
 
     private TestObject obj;
-    private final Supplier<IDataStoreEngine> engineSupplier;
-
-    public AbstractDataStoreEngineTest(
-            Supplier<IDataStoreEngine> engineSupplier) {
-        this.engineSupplier = engineSupplier;
-    }
 
     @BeforeEach
     protected void beforeEach() throws IOException {
@@ -64,6 +62,8 @@ public abstract class AbstractDataStoreEngineTest {
             store.clear();
         });
     }
+
+    protected abstract IDataStoreEngine createEngine();
 
     @Test
     void testFind() {
@@ -188,6 +188,7 @@ public abstract class AbstractDataStoreEngineTest {
     @Test
     void testClear() {
         savePojo(obj);
+
         // add 2nd:
         obj.setReference("breference");
         obj.setCount(67);
@@ -209,18 +210,23 @@ public abstract class AbstractDataStoreEngineTest {
     }
 
     private void inNewStoreSession(Consumer<IDataStore<TestObject>> c) {
-        IDataStoreEngine engine = engineSupplier.get();
+        IDataStoreEngine engine = createEngine();
         MockCollectorConfig collConfig = new MockCollectorConfig();
         collConfig.setWorkDir(tempFolder.resolve("storeEngine"));
         MockCollector coll = new MockCollector(collConfig);
         MockCrawlerConfig crawlConfig = new MockCrawlerConfig();
         crawlConfig.setDataStoreEngine(engine);
         MockCrawler crawler = new MockCrawler(crawlConfig, coll);
-        crawler.initMockCrawler();
-        try (IDataStore<TestObject> store =
-                engine.openStore(TEST_STORE_NAME, TestObject.class)) {
-            c.accept(store);
+        try {
+            crawler.initMockCrawler();
+            LOG.debug("Start data store test...");
+            try (IDataStore<TestObject> store =
+                    engine.openStore(TEST_STORE_NAME, TestObject.class)) {
+                c.accept(store);
+            }
+            LOG.debug("Data store test done.");
+        } finally {
+            crawler.destroyMockCrawler();
         }
-        crawler.destroyMockCrawler();
     }
 }
