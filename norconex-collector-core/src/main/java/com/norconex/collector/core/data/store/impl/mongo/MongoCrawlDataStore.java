@@ -249,6 +249,12 @@ public class MongoCrawlDataStore extends AbstractCrawlDataStore {
     }
 
     @Override
+    public ICrawlData getProcessed(String reference) {
+        Document result = collRefs.find(referenceFilter(reference)).first();
+        return serializer.fromDocument(result);
+    }
+
+    @Override
     public int getProcessedCount() {
         return getReferencesCount(Stage.PROCESSED);
     }

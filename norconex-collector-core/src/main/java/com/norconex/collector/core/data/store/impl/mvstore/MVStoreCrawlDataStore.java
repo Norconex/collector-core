@@ -200,6 +200,15 @@ public class MVStoreCrawlDataStore extends AbstractCrawlDataStore {
     }
 
     @Override
+    public ICrawlData getProcessed(String reference) {
+        ICrawlData data = mapProcessedValid.get(reference);
+        if (data == null) {
+            data = mapProcessedInvalid.get(reference);
+        }
+        return data;
+    }
+
+    @Override
     public synchronized void processed(ICrawlData crawlData) {
         ICrawlData crawlDataCopy = crawlData.clone();
         String ref = crawlDataCopy.getReference();

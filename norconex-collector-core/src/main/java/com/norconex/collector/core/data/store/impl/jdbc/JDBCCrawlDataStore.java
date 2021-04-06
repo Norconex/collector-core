@@ -191,6 +191,19 @@ public class JDBCCrawlDataStore extends AbstractCrawlDataStore {
     }
 
     @Override
+    public ICrawlData getProcessed(String reference) {
+        ICrawlData data = sqlFindCrawlData(TABLE_PROCESSED_VALID,
+                serializer.getCachedCrawlDataSQL(),
+                serializer.getCachedCrawlDataValues(reference));
+        if (data == null) {
+            data = sqlFindCrawlData(TABLE_PROCESSED_INVALID,
+                    serializer.getCachedCrawlDataSQL(),
+                    serializer.getCachedCrawlDataValues(reference));
+        }
+        return data;
+    }
+
+    @Override
     public Iterator<ICrawlData> getCacheIterator() {
         try {
             final Connection conn = datasource.getConnection();

@@ -19,18 +19,18 @@ import java.util.Iterator;
 import com.norconex.collector.core.data.ICrawlData;
 
 /**
- * <p>Holds necessary information about all references (e.g. url, path, etc) 
+ * <p>Holds necessary information about all references (e.g. url, path, etc)
  * crawling activities.
  * </p>
  * <p>
  * The few stages a reference should have in most implementations are:</p>
  * <ul>
- *   <li><b>Queued:</b> References extracted from documents are first queued for 
+ *   <li><b>Queued:</b> References extracted from documents are first queued for
  *       future processing.</li>
  *   <li><b>Active:</b> A reference is being processed.</li>
- *   <li><b>Processed:</b> A reference has been processed.  If the same URL is 
+ *   <li><b>Processed:</b> A reference has been processed.  If the same URL is
  *       encountered again during the same run, it will be ignored.</li>
- *   <li><b>Cached:</b> When crawling is over, processed references will be 
+ *   <li><b>Cached:</b> When crawling is over, processed references will be
  *       cached on the next run.</li>
  * </ul>
  * @author Pascal Essiembre
@@ -39,7 +39,7 @@ public interface ICrawlDataStore {
 
     /**
      * <p>
-     * Queues a reference for future processing. 
+     * Queues a reference for future processing.
      * @param crawlData  the reference to eventually be processed
      */
     void queue(ICrawlData crawlData);
@@ -49,30 +49,30 @@ public interface ICrawlDataStore {
      * @return <code>true</code> if the queue is empty
      */
     boolean isQueueEmpty();
-    
+
     /**
-     * Gets the size of the reference queue (number of 
+     * Gets the size of the reference queue (number of
      * references left to process).
      * @return queue size
      */
     int getQueueSize();
 
     /**
-     * Whether the given reference is in the queue or not 
+     * Whether the given reference is in the queue or not
      * (waiting to be processed).
-     * @param reference the reference 
+     * @param reference the reference
      * @return <code>true</code> if the reference is in the queue
      */
     boolean isQueued(String reference);
-    
+
     /**
-     * Returns the next reference to be processed from the queue and marks it as 
-     * being "active" (i.e. currently being processed).  The returned reference 
+     * Returns the next reference to be processed from the queue and marks it as
+     * being "active" (i.e. currently being processed).  The returned reference
      * is effectively removed from the queue.
-     * @return next reference 
+     * @return next reference
      */
     ICrawlData nextQueued();
-    
+
     /**
      * Whether the given reference is currently being processed (i.e. active).
      * @param reference the reference
@@ -85,7 +85,7 @@ public interface ICrawlDataStore {
      * @return number of active references.
      */
     int getActiveCount();
-    
+
     /**
      * Gets the cached reference from previous time crawler was run
      * (e.g. for comparison purposes).
@@ -93,16 +93,16 @@ public interface ICrawlDataStore {
      * @return crawl data
      */
     ICrawlData getCached(String cacheReference);
-    
+
     /**
-     * Whether there are any references the the cache from a previous crawler 
+     * Whether there are any references the the cache from a previous crawler
      * run.
      * @return <code>true</code> if the cache is empty
      */
     boolean isCacheEmpty();
 
     /**
-     * Marks this reference as processed.  Processed references will not be 
+     * Marks this reference as processed.  Processed references will not be
      * processed again in the same crawl run.
      * @param crawlData processed reference
      */
@@ -122,11 +122,19 @@ public interface ICrawlDataStore {
     int getProcessedCount();
 
     /**
+     * Gets an already processed reference from the current crawl session.
+     * @param reference reference to get
+     * @return crawl data
+     * @since 1.10.1
+     */
+    ICrawlData getProcessed(String reference);
+
+    /**
      * Gets the cache iterator.
      * @return cache iterator
      */
     Iterator<ICrawlData> getCacheIterator();
-    
+
     /**
      * Closes a database connection. This method gets called a the end
      * of a crawling job to give a change to close the underlying connection
