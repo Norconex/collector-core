@@ -42,6 +42,7 @@ public class JdbcDataStore<T> implements IDataStore<T> {
     private String tableName;
     private String storeName;
     private final Class<T> type;
+    private final TableAdapter adapter;
 
     JdbcDataStore(
             JdbcDataStoreEngine engine,
@@ -50,6 +51,7 @@ public class JdbcDataStore<T> implements IDataStore<T> {
         super();
         this.engine = requireNonNull(engine, "'engine' must not be null.");
         this.type = requireNonNull(type, "'type' must not be null.");
+        this.adapter = engine.getTableAdapter();
         this.storeName = requireNonNull(
                 storeName, "'storeName' must not be null.");
         this.tableName = engine.tableName(storeName);
@@ -72,9 +74,9 @@ public class JdbcDataStore<T> implements IDataStore<T> {
                 "MERGE INTO <table> AS t "
               + "USING ("
               + "  SELECT "
-              + "    CAST(? AS VARCHAR(32672)) AS id,"
-              + "    CAST(? AS TIMESTAMP) AS modified,"
-              + "    CAST(? AS CLOB) AS json "
+              + "    CAST(? AS " + adapter.idType() + ") AS id,"
+              + "    CAST(? AS " + adapter.modifiedType() + ") AS modified,"
+              + "    CAST(? AS " + adapter.jsonType() + ") AS json "
               + "  FROM DUAL"
               + ") AS s "
               + "  ON t.id = s.id "
@@ -86,7 +88,7 @@ public class JdbcDataStore<T> implements IDataStore<T> {
               + "    t.modified = s.modified, "
               + "    t.json = s.json ",
                 stmt -> {
-                    stmt.setString(1, id);
+                    stmt.setString(1, adapter.serializableId(id));
                     stmt.setTimestamp(2, new Timestamp(currentTimeMillis()));
                     stmt.setClob(3, new StringReader(GSON.toJson(object)));
         });
@@ -96,7 +98,7 @@ public class JdbcDataStore<T> implements IDataStore<T> {
     public Optional<T> find(String id) {
         return executeRead(
                 "SELECT id, json FROM <table> WHERE id = ?",
-                stmt -> stmt.setString(1, id),
+                stmt -> stmt.setString(1, adapter.serializableId(id)),
                 this::firstObject);
     }
 
@@ -113,7 +115,7 @@ public class JdbcDataStore<T> implements IDataStore<T> {
     public boolean exists(String id) {
         return executeRead(
                 "SELECT 1 FROM <table> WHERE id = ?",
-                stmt -> stmt.setString(1, id),
+                stmt -> stmt.setString(1, adapter.serializableId(id)),
                 ResultSet::next);
     }
 
@@ -134,7 +136,7 @@ public class JdbcDataStore<T> implements IDataStore<T> {
     public boolean delete(String id) {
         return executeWrite(
                 "DELETE FROM <table> WHERE id = ?",
-                stmt -> stmt.setString(1, id)) > 0;
+                stmt -> stmt.setString(1, adapter.serializableId(id))) > 0;
     }
 
     @Override
@@ -187,9 +189,9 @@ public class JdbcDataStore<T> implements IDataStore<T> {
             try (Statement stmt = conn.createStatement()) {
                 stmt.executeUpdate(
                         "CREATE TABLE " + tableName + " ("
-                        + "id VARCHAR(32672) NOT NULL, "
-                        + "modified TIMESTAMP, "
-                        + "json CLOB, "
+                        + "id " + adapter.idType() + " NOT NULL, "
+                        + "modified " + adapter.modifiedType() + ", "
+                        + "json " + adapter.jsonType() + ", "
                         + "PRIMARY KEY (id) "
                         + ")");
                 stmt.executeUpdate(

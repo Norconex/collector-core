@@ -60,6 +60,13 @@ import com.zaxxer.hikari.HikariDataSource;
  * Hikari's documentation</a> for all configuration options.  The Hikari options
  * are passed as-is, via <code>datasource</code> properties as shown below.
  * </p>
+ * <h3>Data types</h3>
+ * <p>
+ * This class only use a few data types to store its data in a generic way.
+ * It will try to detect what data type to use for your database. If you
+ * get errors related to field data types not being supported, you have
+ * the option to redefined them.
+ * </p>
  *
  * {@nx.xml.usage
  * <dataStoreEngine class="com.norconex.collector.core.store.impl.jdbc.JdbcDataStoreEngine" />
@@ -71,6 +78,15 @@ import com.zaxxer.hikari.HikariDataSource;
  *     (Optional prefix used for table creation. Default is the collector
  *      id plus the crawler id, each followed by an underscore character.)
  *   </tablePrefix>
+ *   <!--
+ *     Optionally overwrite default SQL data type used.  You should only
+ *     use if you get data type-related errors.
+ *     -->
+ *   <dataTypes>
+ *     <varchar   use="(equivalent data type for your database)" />
+ *     <timestamp use="(equivalent data type for your database)" />
+ *     <text      use="(equivalent data type for your database)" />
+ *   </dataTypes>
  * </dataStoreEngine>
  * }
  *
@@ -102,9 +118,13 @@ public class JdbcDataStoreEngine
     private String tablePrefix;
     // table id field is store name
     private JdbcDataStore<String> storeTypes;
+    private TableAdapter tableAdapter;
 
     // Configurable:
     private Properties configProperties = new Properties();
+    private String varcharType;
+    private String timestapType;
+    private String textType;
 
     public Properties getConfigProperties() {
         return configProperties;
@@ -118,6 +138,24 @@ public class JdbcDataStoreEngine
     public void setTablePrefix(String tablePrefix) {
         this.tablePrefix = tablePrefix;
     }
+    public String getVarcharType() {
+        return varcharType;
+    }
+    public void setVarcharType(String varcharType) {
+        this.varcharType = varcharType;
+    }
+    public String getTimestapType() {
+        return timestapType;
+    }
+    public void setTimestapType(String timestapType) {
+        this.timestapType = timestapType;
+    }
+    public String getTextType() {
+        return textType;
+    }
+    public void setTextType(String textType) {
+        this.textType = textType;
+    }
 
     @Override
     public void init(Crawler crawler) {
@@ -130,8 +168,18 @@ public class JdbcDataStoreEngine
         datasource = new HikariDataSource(
                 new HikariConfig(configProperties.toProperties()));
 
+        tableAdapter = resolveTableAdapter();
+
         // store types for each table
         storeTypes = new JdbcDataStore<>(this, STORE_TYPES_NAME, String.class);
+    }
+
+    private TableAdapter resolveTableAdapter() {
+        return TableAdapter.detect(StringUtils.firstNonBlank(
+                datasource.getJdbcUrl(), datasource.getDriverClassName()))
+            .withIdType(varcharType)
+            .withModifiedType(timestapType)
+            .withJsonType(textType);
     }
 
     @Override
@@ -248,6 +296,16 @@ public class JdbcDataStoreEngine
             configProperties.add(name, value);
         }
         setTablePrefix(xml.getString("tablePrefix", getTablePrefix()));
+        setVarcharType(
+                xml.getString("dataTypes/varchar/@use", getVarcharType()));
+        setTimestapType(
+                xml.getString("dataTypes/timestamp/@use", getTimestapType()));
+        setTextType(xml.getString("dataTypes/text/@use", getTextType()));
+        for (XML node : nodes) {
+            String name = node.getString("@name");
+            String value = node.getString(".");
+            configProperties.add(name, value);
+        }
     }
 
     @Override
@@ -263,6 +321,14 @@ public class JdbcDataStoreEngine
             }
         }
         xml.addElement("tablePrefix", getTablePrefix());
+        XML dtXML = xml.addElement("dataTypes");
+        dtXML.addElement("varchar").setAttribute("use", getVarcharType());
+        dtXML.addElement("timestamp").setAttribute("use", getTimestapType());
+        dtXML.addElement("text").setAttribute("use", getTextType());
+    }
+
+    TableAdapter getTableAdapter() {
+        return tableAdapter;
     }
 
     Connection getConnection() {
@@ -293,4 +359,6 @@ public class JdbcDataStoreEngine
                     "Could not check if table '" + tableName + "' exists.", e);
         }
     }
+
+
 }
