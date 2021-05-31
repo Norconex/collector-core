@@ -48,7 +48,7 @@ import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.VersionUtil;
 import com.norconex.commons.lang.event.EventManager;
 import com.norconex.commons.lang.file.FileAlreadyLockedException;
-import com.norconex.commons.lang.file.FileLock;
+import com.norconex.commons.lang.file.FileLocker;
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.importer.Importer;
@@ -77,7 +77,6 @@ public abstract class Collector {
     private static final Logger LOG =
             LoggerFactory.getLogger(Collector.class);
 
-    public static final long LOCK_HEARTBEAT_INTERVAL = 5000;
     private static final InheritableThreadLocal<Collector> INSTANCE =
             new InheritableThreadLocal<>();
 
@@ -88,7 +87,7 @@ public abstract class Collector {
     private CachedStreamFactory streamFactory;
     private Path workDir;
     private Path tempDir;
-    private FileLock lock;
+    private FileLocker lock;
 
     //TODO make configurable
     private final ICollectorStopper stopper = new FileBasedStopper();
@@ -439,8 +438,7 @@ public abstract class Collector {
 
     protected synchronized void lock() {
         LOG.debug("Locking collector execution...");
-        lock = new FileLock(getWorkDir().resolve(".collector-lock"),
-                LOCK_HEARTBEAT_INTERVAL);
+        lock = new FileLocker(getWorkDir().resolve(".collector-lock"));
         try {
             lock.lock();
         } catch (FileAlreadyLockedException e) {
