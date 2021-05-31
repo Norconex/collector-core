@@ -14,7 +14,7 @@
     <Logger name="org.apache" level="WARN" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
-    <Logger name="com.zaxxer" level="DEBUG" additivity="false">
+    <Logger name="com.zaxxer" level="INFO" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
     <Root level="INFO">
