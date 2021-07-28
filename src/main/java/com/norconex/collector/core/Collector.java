@@ -26,6 +26,7 @@ import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_IMPORT_
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,6 +34,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -174,14 +182,19 @@ public abstract class Collector {
             eventManager.fire(new CollectorEvent.Builder(
                     COLLECTOR_RUN_BEGIN, this).build());
 
-            //TODO vvvvvvvvvvvvvvvvvvvvvv HANDLE Better
-            //TODO replicate/migrate here what is necessary from JEF:
-            //TODO     implement delayed start instead of threaded upon start
-            //TODO     implement max threads for running crawlers
+            List<Crawler> crawlers = getCrawlers();
+            int maxConcurrent = collectorConfig.getMaxConcurrentCrawlers();
+            if (maxConcurrent <= 0) {
+                maxConcurrent = crawlers.size();
+            }
 
-            getCrawlers().forEach(Crawler::start);
-
-            //TODO ^^^^^^^^^^^^^^^^^^^^^^ HANDLE Better
+            if (crawlers.size() == 1) {
+                // no concurrent crawlers, just start
+                crawlers.forEach(Crawler::start);
+            } else {
+                // Multilpe crawlers, run concurrently
+                startConcurrentCrawlers(maxConcurrent);
+            }
         } finally {
             try {
                 eventManager.fire(new CollectorEvent.Builder(
@@ -190,6 +203,42 @@ public abstract class Collector {
             } finally {
                 stopper.destroy();
             }
+        }
+    }
+
+    private void startConcurrentCrawlers(int poolSize) {
+        Duration d = collectorConfig.getCrawlersStartInterval();
+        if (d == null || d.toMillis() <= 0) {
+            startConcurrentCrawlers(
+                    poolSize,
+                    Executors::newFixedThreadPool,
+                    ExecutorService::execute);
+        } else {
+            startConcurrentCrawlers(
+                    poolSize,
+                    Executors::newScheduledThreadPool,
+                    (pool, run) -> {
+                        ((ScheduledExecutorService) pool).scheduleAtFixedRate(
+                                run, 0, d.toMillis(), TimeUnit.MILLISECONDS);
+                    });
+        }
+    }
+    private void startConcurrentCrawlers(
+            int poolSize,
+            Function<Integer, ExecutorService> poolSupplier,
+            BiConsumer<ExecutorService, Runnable> crawlerExecuter) {
+        final CountDownLatch latch = new CountDownLatch(poolSize);
+        ExecutorService pool = poolSupplier.apply(poolSize);
+        crawlers.forEach(c -> crawlerExecuter.accept(pool, () -> {
+            c.start();
+            latch.countDown();
+        }));
+        try {
+            latch.await();
+            pool.shutdown();
+        } catch (InterruptedException e) {
+             Thread.currentThread().interrupt();
+             throw new CollectorException(e);
         }
     }
 
@@ -274,8 +323,8 @@ public abstract class Collector {
 
         //--- Stream Cache Factory ---
         streamFactory = new CachedStreamFactory(
-                collectorConfig.getMaxMemoryPool(),
-                collectorConfig.getMaxMemoryInstance(),
+                (int) collectorConfig.getMaxMemoryPool(),
+                (int) collectorConfig.getMaxMemoryInstance(),
                 getTempDir());
     }
 

@@ -16,6 +16,7 @@ package com.norconex.collector.core;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,6 +36,7 @@ import com.norconex.collector.core.crawler.CrawlerConfigLoader;
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.event.IEventListener;
 import com.norconex.commons.lang.time.DurationFormatter;
+import com.norconex.commons.lang.time.DurationParser;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterConfig;
@@ -66,11 +68,17 @@ import com.norconex.importer.ImporterConfig;
  *    Only applicable when more than one crawler is configured.
  *    Defaults to -1, unlimited.)
  * </maxConcurrentCrawlers>
+ * <crawlersStartInterval>
+ *   (Millisecond interval between each crawlers start. Defaut starts them
+ *    all at once.)
+ * </crawlersStartInterval>
  * <maxMemoryPool>
- *   (Maximum number of bytes used for memory caching of data. E.g.,
+ *   (Maximum number of bytes used for memory caching of documents data. E.g.,
  *    when processing documents. Defaults to 1 GB.)
  * </maxMemoryPool>
  * <maxMemoryInstance>
+ *   (Maximum number of bytes used for memory caching of each individual
+ *    documents document. Defaults to 100 MB.)
  * </maxMemoryInstance>
  *
  *  <!-- maxMemoryPool combinedmaxMemoryInstance maximum number of bytes used formemory by each cached stream instance created -->
@@ -91,6 +99,12 @@ import com.norconex.importer.ImporterConfig;
  * </crawlers>
  * }
  *
+ * <p>
+ * XML configuration entries expecting millisecond durations
+ * can be provided in human-readable format (English only), as per
+ * {@link DurationParser} (e.g., "5 minutes and 30 seconds" or "5m30s").
+ * </p>
+ *
  * @author Pascal Essiembre
  */
 public abstract class CollectorConfig implements IXMLConfigurable {
@@ -109,11 +123,12 @@ public abstract class CollectorConfig implements IXMLConfigurable {
 
     private Path workDir = DEFAULT_WORK_DIR;
 
-    private Path tempDir = null;
-    private int maxMemoryPool = ImporterConfig.DEFAULT_MAX_MEM_POOL;
-    private int maxMemoryInstance = ImporterConfig.DEFAULT_MAX_MEM_INSTANCE;
+    private Path tempDir;
+    private long maxMemoryPool = ImporterConfig.DEFAULT_MAX_MEM_POOL;
+    private long maxMemoryInstance = ImporterConfig.DEFAULT_MAX_MEM_INSTANCE;
 
     private int maxConcurrentCrawlers = -1;
+    private Duration crawlersStartInterval;
 
     private final List<IEventListener<?>> eventListeners = new ArrayList<>();
 
@@ -207,16 +222,16 @@ public abstract class CollectorConfig implements IXMLConfigurable {
     public void setTempDir(Path tempDir) {
         this.tempDir = tempDir;
     }
-    public int getMaxMemoryPool() {
+    public long getMaxMemoryPool() {
         return maxMemoryPool;
     }
-    public void setMaxMemoryPool(int maxMemoryPool) {
+    public void setMaxMemoryPool(long maxMemoryPool) {
         this.maxMemoryPool = maxMemoryPool;
     }
-    public int getMaxMemoryInstance() {
+    public long getMaxMemoryInstance() {
         return maxMemoryInstance;
     }
-    public void setMaxMemoryInstance(int maxMemoryInstance) {
+    public void setMaxMemoryInstance(long maxMemoryInstance) {
         this.maxMemoryInstance = maxMemoryInstance;
     }
 
@@ -259,6 +274,25 @@ public abstract class CollectorConfig implements IXMLConfigurable {
      */
     public void setMaxConcurrentCrawlers(int maxConcurrentCrawlers) {
         this.maxConcurrentCrawlers = maxConcurrentCrawlers;
+    }
+
+    /**
+     * Gets the amount of time between each concurrent crawlers are started.
+     * Default is <code>null</code> (does not wait before launching concurrent
+     * crawlers).
+     * @return duration
+     * @since 2.0.0
+     */
+    public Duration getCrawlersStartInterval() {
+        return crawlersStartInterval;
+    }
+    /**
+     * Sets the amount of time in between each concurrent crawlers are started.
+     * @param crawlersStartInterval amount of time
+     * @since 2.0.0
+     */
+    public void setCrawlersStartInterval(Duration crawlersStartInterval) {
+        this.crawlersStartInterval = crawlersStartInterval;
     }
 
     /**
@@ -325,7 +359,11 @@ public abstract class CollectorConfig implements IXMLConfigurable {
     public void saveToXML(XML xml) {
         xml.setAttribute("id", getId());
         xml.addElement("workDir", getWorkDir());
+        xml.addElement("tempDir", getTempDir());
         xml.addElement("maxConcurrentCrawlers", getMaxConcurrentCrawlers());
+        xml.addElement("crawlersStartInterval", getCrawlersStartInterval());
+        xml.addElement("maxMemoryPool", getMaxMemoryPool());
+        xml.addElement("maxMemoryInstance", getMaxMemoryInstance());
         xml.addElementList("eventListeners", "listener", eventListeners);
         xml.addElementList("crawlers", "crawler", getCrawlerConfigs());
         saveCollectorConfigToXML(xml);
@@ -345,10 +383,16 @@ public abstract class CollectorConfig implements IXMLConfigurable {
         }
         setId(collectorId);
         setWorkDir(xml.getPath("workDir", getWorkDir()));
+        setTempDir(xml.getPath("tempDir", getTempDir()));
+        setEventListeners(xml.getObjectListImpl(IEventListener.class,
+                "eventListeners/listener", eventListeners));
         setMaxConcurrentCrawlers(xml.getInteger(
                 "maxConcurrentCrawlers", getMaxConcurrentCrawlers()));
-        setEventListeners(xml.getObjectListImpl(
-                IEventListener.class, "eventListeners/listener", eventListeners));
+        setCrawlersStartInterval(xml.getDuration(
+                "crawlersStartInterval", getCrawlersStartInterval()));
+        setMaxMemoryPool(xml.getDataSize("maxMemoryPool", getMaxMemoryPool()));
+        setMaxMemoryInstance(
+                xml.getDataSize("maxMemoryInstance", getMaxMemoryInstance()));
 
         if (crawlerConfigClass != null) {
             List<CrawlerConfig> cfgs = new CrawlerConfigLoader(

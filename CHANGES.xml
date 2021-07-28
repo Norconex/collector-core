@@ -13,6 +13,9 @@
         Added JdbcDataStoreEngine as a data store implementation.
       </action>
       <action dev="essiembre" type="add">
+        Added "crawlersStartInterval" configuration option.
+      </action>
+      <action dev="essiembre" type="add">
         New crawler events: 
         DOCUMENT_QUEUED, DOCUMENT_PROCESSED.
       </action>
@@ -26,6 +29,7 @@
         Removed JEF dependency in favor of improved JMX for tracking.
       </action>      
     </release>
+
     
     <release version="2.0.0-M1" date="2021-03-01" 
         description="Milestone towards next major release">

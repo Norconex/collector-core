@@ -189,6 +189,11 @@ public abstract class Crawler
         return collector;
     }
 
+    /**
+     * Gets the directory where files needing to be persisted between
+     * crawling sessions are kept.
+     * @return working directory, never <code>null</code>
+     */
     public Path getWorkDir() {
         if (workDir != null) {
             return workDir;
@@ -205,6 +210,13 @@ public abstract class Crawler
         workDir = dir;
         return workDir;
     }
+
+    /**
+     * Gets the directory where most temporary files are created for the
+     * duration of a crawling session. Those files are typically deleted
+     * after a crawling session.
+     * @return temporary directory, never <code>null</code>
+     */
     public Path getTempDir() {
         if (tempDir != null) {
             return tempDir;
