@@ -7,8 +7,8 @@
   </properties>
   <body>
 
-    <release version="2.0.0-SNAPSHOT" date="2021-??-??" 
-        description="Major release (changes since last milestone.)">
+    <release version="2.0.0-M2" date="2021-07-28" 
+        description="Changes since last milestone for this upcoming major release.">
       <action dev="essiembre" type="add">
         Added JdbcDataStoreEngine as a data store implementation.
       </action>
