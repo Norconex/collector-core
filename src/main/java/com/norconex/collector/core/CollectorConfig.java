@@ -185,7 +185,7 @@ public abstract class CollectorConfig implements IXMLConfigurable {
     /**
      * Gets the base directory location where files created during execution
      * are created.
-     * When <code>null</code> the collector will use {@value #DEFAULT_WORK_DIR}
+     * When <code>null</code> the collector will use <code>./work</code>.
      * at runtime.
      * @return working directory path
      */
@@ -195,7 +195,7 @@ public abstract class CollectorConfig implements IXMLConfigurable {
     /**
      * Sets the base directory location where files created during execution
      * are created.
-     * When <code>null</code> the collector will use {@value #DEFAULT_WORK_DIR}
+     * When <code>null</code> the collector will use <code>./work</code>.
      * at runtime.
      * @param workDir working directory path
      */
