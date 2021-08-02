@@ -69,22 +69,21 @@ import com.norconex.importer.doc.Doc;
  * will ignore the content while specifying none will only use the content.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;documentChecksummer
- *      class="com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer"
- *      disabled="[false|true]"
- *      combineFieldsAndContent="[false|true]"
- *      keep="[false|true]"
- *      targetField="(optional metadata field to store the checksum)"&gt;
- *    &lt;sourceFields&gt;
- *        (optional coma-separated list fields used to create checksum)
- *    &lt;/sourceFields&gt;
- *    &lt;sourceFieldsRegex&gt;
- *      (regular expression matching fields used to create checksum)
- *    &lt;/sourceFieldsRegex&gt;
- *  &lt;/documentChecksummer&gt;
- * </pre>
+ * {@nx.xml.usage
+ * <documentChecksummer
+ *     class="com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer"
+ *     disabled="[false|true]"
+ *     combineFieldsAndContent="[false|true]"
+ *     keep="[false|true]"
+ *     targetField="(optional metadata field to store the checksum)">
+ *   <sourceFields>
+ *       (optional coma-separated list fields used to create checksum)
+ *   </sourceFields>
+ *   <sourceFieldsRegex>
+ *     (regular expression matching fields used to create checksum)
+ *   </sourceFieldsRegex>
+ * </documentChecksummer>
+ * }
  * <p>
  * <code>targetField</code> is ignored unless the <code>keep</code>
  * attribute is set to <code>true</code>.
@@ -95,14 +94,12 @@ import com.norconex.importer.doc.Doc;
  * the checksum returned is always <code>null</code>.
  * </p>
  *
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ * <documentChecksummer class="MD5DocumentChecksummer" />
+ * }
  * <p>
- * The following uses the document body (default) to make the checksum.
+ * The above example uses the document body (default) to make the checksum.
  * </p>
- * <pre>
- *  &lt;documentChecksummer
- *      class="com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer" /&gt;
- * </pre>
  *
  * @author Pascal Essiembre
  */

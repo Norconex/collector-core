@@ -185,6 +185,8 @@ public abstract class CollectorConfig implements IXMLConfigurable {
     /**
      * Gets the base directory location where files created during execution
      * are created.
+     * When <code>null</code> the collector will use {@value #DEFAULT_WORK_DIR}
+     * at runtime.
      * @return working directory path
      */
     public Path getWorkDir() {
@@ -193,6 +195,8 @@ public abstract class CollectorConfig implements IXMLConfigurable {
     /**
      * Sets the base directory location where files created during execution
      * are created.
+     * When <code>null</code> the collector will use {@value #DEFAULT_WORK_DIR}
+     * at runtime.
      * @param workDir working directory path
      */
     public void setWorkDir(Path workDir) {
@@ -202,8 +206,8 @@ public abstract class CollectorConfig implements IXMLConfigurable {
     /**
      * Gets the temporary directory where files can be deleted safely by the OS
      * or other processes when the collector is not running.
-     * When <code>null</code> the collector should assume {@link #getWorkDir()}
-     * + <code>/temp</code>.
+     * When <code>null</code> the collector will use the working directory
+     * + <code>/temp</code> at runtime.
      * @return temporary directory
      * @since 3.0.0
      */
@@ -214,8 +218,8 @@ public abstract class CollectorConfig implements IXMLConfigurable {
     /**
      * Sets the temporary directory where files can be deleted safely by the OS
      * or other processes when the collector is not running.
-     * When <code>null</code> the collector should assume {@link #getWorkDir()}
-     * + <code>/temp</code>.
+     * When <code>null</code> the collector will use the working directory
+     * + <code>/temp</code> at runtime.
      * @param tempDir temporary directory
      * @since 3.0.0
      */

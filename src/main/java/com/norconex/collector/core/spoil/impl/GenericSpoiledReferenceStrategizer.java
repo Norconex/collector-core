@@ -49,30 +49,27 @@ import com.norconex.commons.lang.xml.XML;
  *   <tr><td>ERROR</td><td>GRACE_ONCE</td></tr>
  * </table>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;spoiledReferenceStrategizer
- *      class="com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer"
- *      fallbackStrategy="[DELETE|GRACE_ONCE|IGNORE]"&gt;
- *    &lt;mapping state="(any crawl state)" strategy="[DELETE|GRACE_ONCE|IGNORE]" /&gt;
- *    (repeat mapping tag as needed)
- *  &lt;/spoiledReferenceStrategizer&gt;
- * </pre>
+ * {@nx.xml.usage
+ * <spoiledReferenceStrategizer
+ *     class="com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer"
+ *     fallbackStrategy="[DELETE|GRACE_ONCE|IGNORE]">
+ *   <mapping state="(any crawl state)" strategy="[DELETE|GRACE_ONCE|IGNORE]" />
+ *   (repeat mapping tag as needed)
+ * </spoiledReferenceStrategizer>
+ * }
  *
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ * <spoiledReferenceStrategizer class="GenericSpoiledReferenceStrategizer">
+ *   <mapping state="NOT_FOUND" strategy="DELETE" />
+ *   <mapping state="BAD_STATUS" strategy="DELETE" />
+ *   <mapping state="ERROR" strategy="IGNORE" />
+ * </spoiledReferenceStrategizer>
+ * }
  * <p>
- * The following indicates we should ignore (do nothing) errors processing
+ * The above example indicates we should ignore (do nothing) errors processing
  * documents, and send a deletion request if they are not found or have
  * resulted in a bad status.
  * </p>
- * <pre>
- *  &lt;spoiledReferenceStrategizer
- *      class="com.norconex.collector.core.spoil.impl.GenericSpoiledReferenceStrategizer"&gt;
- *    &lt;mapping state="NOT_FOUND" strategy="DELETE" /&gt;
- *    &lt;mapping state="BAD_STATUS" strategy="DELETE" /&gt;
- *    &lt;mapping state="ERROR" strategy="IGNORE" /&gt;
- *  &lt;/spoiledReferenceStrategizer&gt;
- * </pre>
  *
  * @author Pascal Essiembre
  * @since 1.2.0

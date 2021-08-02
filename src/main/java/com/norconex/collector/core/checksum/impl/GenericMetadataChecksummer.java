@@ -56,33 +56,30 @@ import com.norconex.commons.lang.xml.XML;
  * together. Matching fields from both will be combined, in the order
  * provided/matched, starting with <code>sourceFields</code> entries.
  * </p>
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;metadataChecksummer
- *      class="com.norconex.collector.core.checksum.impl.GenericMetadataChecksummer"
- *      disabled="[false|true]"
- *      keep="[false|true]"
- *      targetField="(field to store checksum)"&gt;
- *    &lt;sourceFields&gt;
- *        (optional coma-separated list fields used to create checksum)
- *    &lt;/sourceFields&gt;
- *    &lt;sourceFieldsRegex&gt;
- *      (regular expression matching fields used to create checksum)
- *    &lt;/sourceFieldsRegex&gt;
- *  &lt;/metadataChecksummer&gt;
- * </pre>
+ * {@nx.xml.usage
+ * <metadataChecksummer
+ *     class="com.norconex.collector.core.checksum.impl.GenericMetadataChecksummer"
+ *     disabled="[false|true]"
+ *     keep="[false|true]"
+ *     targetField="(field to store checksum)">
+ *   <sourceFields>
+ *     (optional coma-separated list fields used to create checksum)
+ *   </sourceFields>
+ *   <sourceFieldsRegex>
+ *     (regular expression matching fields used to create checksum)
+ *   </sourceFieldsRegex>
+ * </metadataChecksummer>
+ * }
  *
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ * <metadataChecksummer class="GenericMetadataChecksummer">
+ *   <sourceFields>docLastModified,docSize</sourceFields>
+ * </metadataChecksummer>
+ * }
  * <p>
- * The following uses a combination of two (fictitious) fields called
+ * The above example uses a combination of two (fictitious) fields called
  * "docLastModified" and "docSize" to make the checksum.
  * </p>
- * <pre>
- *  &lt;metadataChecksummer
- *      class="com.norconex.collector.core.checksum.impl.GenericMetadataChecksummer"&gt;
- *    &lt;sourceFields&gt;docLastModified,docSize&lt;/sourceFields&gt;
- *  &lt;/metadataChecksummer&gt;
- * </pre>
  * @since 1.2.0
  * @author Pascal Essiembre
  */

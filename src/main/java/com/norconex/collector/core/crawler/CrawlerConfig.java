@@ -603,8 +603,8 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
         setDocumentFilters(xml.getObjectListImpl(IDocumentFilter.class,
                 "documentFilters/filter", documentFilters));
 
-        //TODO Make it so importer can be null (importing is then skipped)
-//        setImporterConfig(xml.getObject("importer", importerConfig));
+     //   ImporterConfig importerConfig = new ImporterConfig();
+        // set
 
         XML importerXML = xml.getXML("importer");
         if (importerXML != null) {

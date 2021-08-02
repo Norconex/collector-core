@@ -54,6 +54,7 @@ public class CollectorTest {
         XML.assertWriteRead(config, "collector");
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testOverwriteCrawlerDefaults() throws IOException {
         MockCollectorConfig cfg = new MockCollectorConfig();

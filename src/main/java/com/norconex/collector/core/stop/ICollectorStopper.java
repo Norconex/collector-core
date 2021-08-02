@@ -35,8 +35,8 @@ public interface ICollectorStopper {
      * Setup and/or start the stopper, which can be terminated
      * by invoking stop in the same or different JVM (see concrete
      * implementation for details).
-     * @throws CollectorStopperException could not setup Collector stopper.
      * @param collector the Collector
+     * @throws CollectorStopperException could not setup Collector stopper.
      */
     void listenForStopRequest(Collector collector)
             throws CollectorStopperException;

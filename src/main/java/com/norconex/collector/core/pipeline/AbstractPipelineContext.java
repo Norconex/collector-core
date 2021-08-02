@@ -26,7 +26,6 @@ import com.norconex.collector.core.crawler.CrawlerCommitterService;
 import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.crawler.CrawlerEvent;
 import com.norconex.collector.core.crawler.CrawlerEvent.Builder;
-import com.norconex.collector.core.doc.CrawlDocInfo;
 import com.norconex.collector.core.doc.CrawlDocInfoService;
 import com.norconex.commons.lang.event.EventManager;
 import com.norconex.commons.lang.pipeline.IPipelineStage;
@@ -84,23 +83,6 @@ public abstract class AbstractPipelineContext {
             builder.accept(b);
         }
         fire(b.build());
-    }
-
-    /**
-     * Fires an event.
-     * @param event the event name
-     * @param docInfo crawl data
-     * @param subject subject triggering the event
-     * @deprecated
-     */
-    @Deprecated
-    public void fireCrawlerEvent(
-            String event, CrawlDocInfo docInfo, Object subject) {
-        crawler.getEventManager().fire(
-                new CrawlerEvent.Builder(event, crawler)
-                    .crawlDocInfo(docInfo)
-                    .subject(subject)
-                    .build());
     }
 
     @Override

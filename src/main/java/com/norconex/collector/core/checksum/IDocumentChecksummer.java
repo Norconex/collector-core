@@ -18,29 +18,36 @@ import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.importer.doc.Doc;
 
 /**
- * Creates a checksum representing a a document. 
- * Checksums are used to quickly filter out documents that have already been 
+ * <p>
+ * Creates a checksum representing a a document.
+ * Checksums are used to quickly filter out documents that have already been
  * processed or that have changed since a previous run.
- * <br><br>  
- * Two or more {@link Doc} can hold different values, but 
+ * </p>
+ * <p>
+ * Two or more {@link Doc} can hold different values, but
  * be deemed logically the same.
- * Such documents do not have to be <em>equal</em>, but they should return the 
+ * Such documents do not have to be <em>equal</em>, but they should return the
  * same checksum.  An example of
- * this can be two different URLs pointing to the same document, where only a 
- * single instance should be kept. 
- * <br><br>
- * There are no strict rules that define what is equivalent or not.  
- * <br><br>
+ * this can be two different URLs pointing to the same document, where only a
+ * single instance should be kept.
+ * </p>
+ * <p>
+ * There are no strict rules that define what is equivalent or not.
+ * </p>
+ * <p>
  * Classes implementing {@link IXMLConfigurable} should offer the following
  * XML configuration usage:
- * <pre>
- *  &lt;documentChecksummer 
- *      class="(class)"&gt;
+ * </p>
+ * {@nx.xml
+ *  <documentChecksummer
+ *      class="(class)"
  *      keep="[false|true]"
- *      targetField="(optional metadata field to store the checksum)" /&gt;
- * </pre>
- * <code>targetField</code> is ignored unless the <code>keep</code> 
+ *      targetField="(optional metadata field to store the checksum)" />
+ * }
+ * <p>
+ * <code>targetField</code> is ignored unless the <code>keep</code>
  * attribute is set to <code>true</code>.
+ * </p>
  * @author Pascal Essiembre
  * @see AbstractDocumentChecksummer
  */
@@ -52,5 +59,5 @@ public interface IDocumentChecksummer {
      * @return a checksum value
      */
 	String createDocumentChecksum(Doc document);
-	
+
 }
