@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 package com.norconex.collector.core.checksum;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.text.TextMatcher;
 
 /**
  * Checksum utility methods.
@@ -65,6 +68,44 @@ public final class ChecksumUtil {
         }
         return checksum;
     }
+
+    public static String metadataChecksumMD5(
+            Properties metadata, TextMatcher fieldMatcher) {
+        String checksum =
+                checksumMD5(metadataChecksumPlain(metadata, fieldMatcher));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Metadata checksum (MD5) from {} : \"{}\".",
+                    fieldMatcher, checksum);
+        }
+        return checksum;
+    }
+    public static String metadataChecksumPlain(
+            Properties metadata, TextMatcher fieldMatcher) {
+        if (metadata == null || fieldMatcher == null
+                || isBlank(fieldMatcher.getPattern())) {
+            return null;
+        }
+
+        StringBuilder b = new StringBuilder();
+        Properties props = metadata.matchKeys(fieldMatcher);
+        if (!props.isEmpty()) {
+            List<String> sortedFields = new ArrayList<>(props.keySet());
+            // Sort to make sure field order does not affect checksum.
+            Collections.sort(sortedFields);
+            for (String field : sortedFields) {
+                appendValues(b, field, metadata.getStrings(field));
+            }
+        }
+
+        String checksum = b.toString();
+        if (LOG.isDebugEnabled() && StringUtils.isNotBlank(checksum)) {
+            LOG.debug("Metadata checksum (plain text) from {} : \"{}\".",
+                    StringUtils.join(props.keySet(), ','), checksum);
+        }
+        return StringUtils.trimToNull(checksum);
+    }
+
+    @Deprecated
     public static String metadataChecksumMD5(
             Properties properties, String fieldsRegex, List<String> fields) {
         String checksum = checksumMD5(
@@ -75,6 +116,7 @@ public final class ChecksumUtil {
         }
         return checksum;
     }
+    @Deprecated
     public static String metadataChecksumPlain(
             Properties metadata, String fieldsRegex, List<String> fields) {
 

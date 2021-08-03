@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-   Copyright 2017 Norconex Inc.
+   Copyright 2017-2021 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
+  <xs:include schemaLocation="/com/norconex/commons/lang/text/TextMatcher.xsd"></xs:include>
   <xs:include schemaLocation="../AbstractMetadataChecksummer.xsd"></xs:include>
   
   <xs:element name="metadataChecksummer">
@@ -23,20 +24,15 @@
       <xs:complexContent> 
         <xs:extension base="AbstractMetadataChecksummer">
           <xs:all>
-            <xs:element name="sourceFields" minOccurs="1" maxOccurs="1">
-              <xs:simpleType>
-                <xs:restriction base="xs:string">
-                  <xs:minLength value="1"/>
-                </xs:restriction>
-              </xs:simpleType>        
-            </xs:element>
-            <xs:element name="sourceFieldsRegex" minOccurs="0" maxOccurs="1">
-              <xs:simpleType>
-                <xs:restriction base="xs:string">
-                  <xs:minLength value="1"/>
-                </xs:restriction>
-              </xs:simpleType>        
-            </xs:element>
+
+            <!-- minOccurs should be 1 once sourceFields are taken out: -->
+            <xs:element name="fieldMatcher" type="TextMatcherType" minOccurs="0" maxOccurs="1" />  
+          
+            <!-- sourceFields[Regex] are deprecated: -->
+            <xs:element name="sourceFields" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="sourceFieldsRegex" type="xs:string" minOccurs="0" maxOccurs="1"/>
+
+            
           </xs:all>
           <xs:attribute name="disabled" type="xs:boolean"/>
         </xs:extension>

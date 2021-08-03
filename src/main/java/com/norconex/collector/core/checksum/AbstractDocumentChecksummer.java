@@ -41,17 +41,17 @@ import com.norconex.importer.doc.Doc;
  * </p><p>
  * Implementors should offer this XML configuration usage:
  * </p>
- * <pre>{@code
+ * {@nx.xml #usage
  * <documentChecksummer
  *    class="(subclass)"
  *    keep="[false|true]"
- *    targetField="(optional metadata field to store the checksum)"
+ *    toField="(optional metadata field to store the checksum)"
  *    onSet="[append|prepend|replace|optional]" />
- * }</pre>
+ * }
  * <p>
- * <code>targetField</code> is ignored unless the <code>keep</code>
- * </p>
+ * <code>toField</code> is ignored unless the <code>keep</code>
  * attribute is set to <code>true</code>.
+ * </p>
  * @author Pascal Essiembre
  */
 public abstract class AbstractDocumentChecksummer
@@ -61,14 +61,14 @@ public abstract class AbstractDocumentChecksummer
 			AbstractDocumentChecksummer.class);
 
 	private boolean keep;
-    private String targetField = CrawlDocMetadata.CHECKSUM_DOC;
+    private String toField = CrawlDocMetadata.CHECKSUM_DOC;
     private PropertySetter onSet;
 
     @Override
     public final String createDocumentChecksum(Doc document) {
         String checksum = doCreateDocumentChecksum(document);
         if (isKeep()) {
-            String field = getTargetField();
+            String field = getToField();
             if (StringUtils.isBlank(field)) {
                 field = CrawlDocMetadata.CHECKSUM_DOC;
             }
@@ -101,19 +101,42 @@ public abstract class AbstractDocumentChecksummer
 
     /**
      * Gets the metadata field to use to store the checksum value.
-     * Defaults to {@link CrawlDocMetadata#CHECKSUM_DOC}.
+     * Defaults to {@link CrawlDocMetadata#CHECKSUM_METADATA}.
      * Only applicable if {@link #isKeep()} returns {@code true}
      * @return metadata field name
+     * @deprecated Since 2.0.0, use {@link #getToField()}.
      */
+    @Deprecated
     public String getTargetField() {
-        return targetField;
+        return toField;
     }
     /**
      * Sets the metadata field name to use to store the checksum value.
      * @param targetField the metadata field name
+     * @deprecated Since 2.0.0, use {@link #setToField(String)}.
      */
+    @Deprecated
     public void setTargetField(String targetField) {
-        this.targetField = targetField;
+        this.toField = targetField;
+    }
+
+    /**
+     * Gets the metadata field to use to store the checksum value.
+     * Defaults to {@link CrawlDocMetadata#CHECKSUM_METADATA}.
+     * Only applicable if {@link #isKeep()} returns {@code true}
+     * @return metadata field name
+     * @since 2.0.0
+     */
+    public String getToField() {
+        return toField;
+    }
+    /**
+     * Sets the metadata field name to use to store the checksum value.
+     * @param toField the metadata field name
+     * @since 2.0.0
+     */
+    public void setToField(String toField) {
+        this.toField = toField;
     }
 
     /**
@@ -136,7 +159,11 @@ public abstract class AbstractDocumentChecksummer
     @Override
     public final void loadFromXML(XML xml) {
         setKeep(xml.getBoolean("@keep", keep));
-        setTargetField(xml.getString("@targetField", targetField));
+
+        xml.checkDeprecated("@targetField", "@toField", false);
+        setToField(xml.getString("@targetField", toField));
+        setToField(xml.getString("@toField", toField)); // overwrites above line
+
         setOnSet(PropertySetter.fromXML(xml, onSet));
         loadChecksummerFromXML(xml);
     }
@@ -145,7 +172,7 @@ public abstract class AbstractDocumentChecksummer
     @Override
     public final void saveToXML(XML xml) {
         xml.setAttribute("keep", isKeep());
-        xml.setAttribute("targetField", getTargetField());
+        xml.setAttribute("toField", getToField());
         PropertySetter.toXML(xml, getOnSet());
         saveChecksummerToXML(xml);
     }

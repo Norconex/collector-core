@@ -9,7 +9,11 @@
 
     <release version="2.0.0-SNAPSHOT" date="2021-??-??" 
         description="Changes since last milestone for this upcoming major release.">
-
+      <action dev="essiembre" type="update">
+        Where applicable, checksummers now use "toField" instead of 
+        "targetField", and "fieldMatcher" instead of "sourceFields" 
+        and "sourceFieldsRegex".
+      </action>
     </release>
 
     <release version="2.0.0-M2" date="2021-07-28" 

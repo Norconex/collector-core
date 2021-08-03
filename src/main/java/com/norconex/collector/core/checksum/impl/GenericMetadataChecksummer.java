@@ -14,11 +14,12 @@
  */
 package com.norconex.collector.core.checksum.impl;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -28,14 +29,15 @@ import com.norconex.collector.core.checksum.AbstractMetadataChecksummer;
 import com.norconex.collector.core.checksum.ChecksumUtil;
 import com.norconex.collector.core.checksum.IMetadataChecksummer;
 import com.norconex.collector.core.doc.CrawlDocMetadata;
-import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.text.TextMatcher;
+import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 
 /**
  * <p>
  * Generic implementation of {@link IMetadataChecksummer} that uses
- * specified source field names and their values for the checksum. The name
+ * specified field names and their values to create a checksum. The name
  * and values are simply returned as is, joined using this format:
  * <code>fieldName=fieldValue;fieldName=fieldValue;...</code>.
  * </p>
@@ -46,34 +48,32 @@ import com.norconex.commons.lang.xml.XML;
  * it stores it under the metadata field name
  * {@link CrawlDocMetadata#CHECKSUM_METADATA}.
  * </p>
- * <p>
- * <b>Since 1.9.0</b>, it is possible to use regular expressions to match
- * fields.
- * Use <code>sourceFields</code> to list all fields to use, separated by commas.
- * Use <code>sourceFieldsRegex</code> to match fields to use using a regular
- * expression.
- * Both <code>sourceFields</code> and <code>sourceFieldsRegex</code> can be used
- * together. Matching fields from both will be combined, in the order
- * provided/matched, starting with <code>sourceFields</code> entries.
- * </p>
  * {@nx.xml.usage
  * <metadataChecksummer
  *     class="com.norconex.collector.core.checksum.impl.GenericMetadataChecksummer"
  *     disabled="[false|true]"
  *     keep="[false|true]"
- *     targetField="(field to store checksum)">
- *   <sourceFields>
- *     (optional coma-separated list fields used to create checksum)
- *   </sourceFields>
- *   <sourceFieldsRegex>
- *     (regular expression matching fields used to create checksum)
- *   </sourceFieldsRegex>
+ *     toField="(optional field to store the checksum)">
+ *
+ *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ *     (expression matching fields used to create the checksum)
+ *   </fieldMatcher>
  * </metadataChecksummer>
  * }
  *
+ * <p>
+ * <code>toField</code> is ignored unless the <code>keep</code>
+ * attribute is set to <code>true</code>.
+ * </p>
+ * <p>
+ * This implementation can be disabled in your
+ * configuration by specifying <code>disabled="true"</code>. When disabled,
+ * the checksum returned is always <code>null</code>.
+ * </p>
+ *
  * {@nx.xml.example
  * <metadataChecksummer class="GenericMetadataChecksummer">
- *   <sourceFields>docLastModified,docSize</sourceFields>
+ *   <fieldMatcher method="csv">docLastModified,docSize</fieldMatcher>
  * </metadataChecksummer>
  * }
  * <p>
@@ -83,10 +83,10 @@ import com.norconex.commons.lang.xml.XML;
  * @since 1.2.0
  * @author Pascal Essiembre
  */
+@SuppressWarnings("javadoc")
 public class GenericMetadataChecksummer extends AbstractMetadataChecksummer {
 
-    private final List<String> sourceFields = new ArrayList<>();
-    private String sourceFieldsRegex;
+    private final TextMatcher fieldMatcher = new TextMatcher();
     private boolean disabled;
 
     @Override
@@ -94,31 +94,61 @@ public class GenericMetadataChecksummer extends AbstractMetadataChecksummer {
         if (disabled) {
             return null;
         }
-        return ChecksumUtil.metadataChecksumPlain(
-                metadata, getSourceFieldsRegex(), getSourceFields());
+        return ChecksumUtil.metadataChecksumPlain(metadata, fieldMatcher);
+    }
+
+    /**
+     * Gets the field matcher.
+     * @return field matcher
+     * @since 2.0.0
+     */
+    public TextMatcher getFieldMatcher() {
+        return fieldMatcher;
+    }
+    /**
+     * Sets the field matcher.
+     * @param fieldMatcher field matcher
+     * @since 2.0.0
+     */
+    public void setFieldMatcher(TextMatcher fieldMatcher) {
+        this.fieldMatcher.copyFrom(fieldMatcher);
     }
 
     /**
      * Gets the metadata fields used to construct a checksum.
      * @return fields to use for checksum
+     * @deprecated Since 2.0.0, use {@link #getFieldMatcher()}.
      */
+    @Deprecated
     public List<String> getSourceFields() {
-        return Collections.unmodifiableList(sourceFields);
+        if (fieldMatcher.getMethod() == Method.CSV
+                && StringUtils.isNotBlank(fieldMatcher.getPattern())) {
+            return Arrays.asList(
+                    fieldMatcher.getPattern().split("(?<!\\\\)\\|"));
+        }
+        return Collections.emptyList();
     }
     /**
      * Sets the metadata header fields used construct a checksum.
      * @param sourceFields fields to use for checksum
+     * @deprecated Since 2.0.0, use {@link #setFieldMatcher(TextMatcher)}.
      */
+    @Deprecated
     public void setSourceFields(String... sourceFields) {
         setSourceFields(Arrays.asList(sourceFields));
     }
     /**
      * Sets the metadata header fields used construct a checksum.
      * @param sourceFields fields to use for checksum
-     * @since 2.0.0
+     * @deprecated Since 2.0.0, use {@link #setFieldMatcher(TextMatcher)}.
      */
+    @Deprecated
     public void setSourceFields(List<String> sourceFields) {
-        CollectionUtil.setAll(this.sourceFields, sourceFields);
+        if (sourceFields != null) {
+            fieldMatcher.setMethod(Method.CSV);
+            fieldMatcher.setPattern(
+                    sourceFields.stream().collect(Collectors.joining(",")));
+        }
     }
 
     /**
@@ -126,18 +156,27 @@ public class GenericMetadataChecksummer extends AbstractMetadataChecksummer {
      * a checksum.
      * @return regular expression
      * @since 1.9.0
+     * @deprecated Since 2.0.0, use {@link #getFieldMatcher()}.
      */
+    @Deprecated
     public String getSourceFieldsRegex() {
-        return sourceFieldsRegex;
+        if (fieldMatcher.getMethod() == Method.REGEX
+                && StringUtils.isNotBlank(fieldMatcher.getPattern())) {
+            return fieldMatcher.getPattern();
+        }
+        return null;
     }
     /**
      * Sets the regular expression matching metadata fields used construct
      * a checksum.
      * @param sourceFieldsRegex regular expression
      * @since 1.9.0
+     * @deprecated Since 2.0.0, use {@link #setFieldMatcher(TextMatcher)}.
      */
+    @Deprecated
     public void setSourceFieldsRegex(String sourceFieldsRegex) {
-        this.sourceFieldsRegex = sourceFieldsRegex;
+        fieldMatcher.setMethod(Method.REGEX);
+        fieldMatcher.setPattern(sourceFieldsRegex);
     }
 
     /**
@@ -160,17 +199,18 @@ public class GenericMetadataChecksummer extends AbstractMetadataChecksummer {
     @Override
     protected void loadChecksummerFromXML(XML xml) {
         setDisabled(xml.getBoolean("@disabled", disabled));
-        setSourceFields(
-                xml.getDelimitedStringList("sourceFields", sourceFields));
-        setSourceFieldsRegex(
-                xml.getString("sourceFieldsRegex", getSourceFieldsRegex()));
+
+        xml.checkDeprecated("sourceFields", "fieldMatcher", false);
+        xml.checkDeprecated("sourceFieldsRegex", "fieldMatcher", false);
+        setSourceFields(xml.getDelimitedStringList("sourceFields"));
+        setSourceFieldsRegex(xml.getString("sourceFieldsRegex"));
+        fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
     }
 
     @Override
     protected void saveChecksummerToXML(XML xml) {
         xml.setAttribute("disabled", isDisabled());
-        xml.addDelimitedElementList("sourceFields", sourceFields);
-        xml.addElement("sourceFieldsRegex", getSourceFieldsRegex());
+        fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
     }
 
     @Override

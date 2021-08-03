@@ -15,10 +15,10 @@
 package com.norconex.collector.core.checksum.impl;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -31,7 +31,8 @@ import com.norconex.collector.core.checksum.AbstractDocumentChecksummer;
 import com.norconex.collector.core.checksum.ChecksumUtil;
 import com.norconex.collector.core.checksum.IDocumentChecksummer;
 import com.norconex.collector.core.doc.CrawlDocMetadata;
-import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.text.TextMatcher;
+import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.Doc;
 
@@ -50,22 +51,13 @@ import com.norconex.importer.doc.Doc;
  * {@link CrawlDocMetadata#CHECKSUM_METADATA}.
  * </p>
  * <p>
- * <b>Since 1.9.0</b>, it is possible to use regular expressions to match
- * fields.
- * Use <code>sourceFields</code> to list all fields to use, separated by commas.
- * Use <code>sourceFieldsRegex</code> to match fields to use using a regular
- * expression.
- * Both <code>sourceFields</code> and <code>sourceFieldsRegex</code> can be used
- * together. Matching fields from both will be combined, in the order
- * provided/matched, starting with <code>sourceFields</code> entries.
- * </p>
  * <p>
  * <b>Since 1.9.0</b>, it is possible to use a combination of document content
  * and fields to create the checksum by setting
  * <code>combineFieldsAndContent</code> to <code>true</code>.
- * If you combine fields and content but you don't define any source fields,
+ * If you combine fields and content but you don't define a field matcher,
  * it will be the equivalent of adding all fields.
- * If you do not combine the two, specifying one or more source fields
+ * If you do not combine the two, specifying a field matcher
  * will ignore the content while specifying none will only use the content.
  * </p>
  *
@@ -75,17 +67,15 @@ import com.norconex.importer.doc.Doc;
  *     disabled="[false|true]"
  *     combineFieldsAndContent="[false|true]"
  *     keep="[false|true]"
- *     targetField="(optional metadata field to store the checksum)">
- *   <sourceFields>
- *       (optional coma-separated list fields used to create checksum)
- *   </sourceFields>
- *   <sourceFieldsRegex>
- *     (regular expression matching fields used to create checksum)
- *   </sourceFieldsRegex>
+ *     toField="(optional metadata field to store the checksum)">
+ *
+ *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ *     (expression matching fields used to create the checksum)
+ *   </fieldMatcher>
  * </documentChecksummer>
  * }
  * <p>
- * <code>targetField</code> is ignored unless the <code>keep</code>
+ * <code>toField</code> is ignored unless the <code>keep</code>
  * attribute is set to <code>true</code>.
  * </p>
  * <p>
@@ -103,10 +93,10 @@ import com.norconex.importer.doc.Doc;
  *
  * @author Pascal Essiembre
  */
+@SuppressWarnings("javadoc")
 public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
 
-	private final List<String> sourceFields = new ArrayList<>();
-	private String sourceFieldsRegex;
+    private final TextMatcher fieldMatcher = new TextMatcher();
 	private boolean disabled;
 	private boolean combineFieldsAndContent;
 
@@ -117,15 +107,16 @@ public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
         }
 
         // fields
-        String fieldRegex = getSourceFieldsRegex();
-        boolean isSourceFieldsSet = isSourceFieldsSet();
+        TextMatcher fm = new TextMatcher(fieldMatcher);
+        boolean isSourceFieldsSet = isFieldMatcherSet();
         if (isCombineFieldsAndContent() && !isSourceFieldsSet) {
-            fieldRegex = ".*";
+            fm.setMethod(Method.REGEX);
+            fm.setPattern(".*");
         }
         StringBuilder b = new StringBuilder();
         if (isSourceFieldsSet || isCombineFieldsAndContent()) {
             String checksum = ChecksumUtil.metadataChecksumMD5(
-                    document.getMetadata(), fieldRegex, getSourceFields());
+                    document.getMetadata(), fieldMatcher);
             if (checksum != null) {
                 b.append(checksum);
                 b.append('|');
@@ -135,8 +126,7 @@ public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
         // document
         if (isCombineFieldsAndContent() || !isSourceFieldsSet) {
             try {
-                b.append(ChecksumUtil.checksumMD5(
-                        document.getInputStream()));
+                b.append(ChecksumUtil.checksumMD5(document.getInputStream()));
             } catch (IOException e) {
                 throw new CollectorException(
                         "Cannot create document checksum on : "
@@ -147,24 +137,49 @@ public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
         return StringUtils.trimToNull(b.toString());
     }
 
-    private boolean isSourceFieldsSet() {
-        return !sourceFields.isEmpty()
-                || StringUtils.isNotBlank(getSourceFieldsRegex());
+    /**
+     * Gets the field matcher.
+     * @return field matcher
+     * @since 2.0.0
+     */
+    public TextMatcher getFieldMatcher() {
+        return fieldMatcher;
+    }
+    /**
+     * Sets the field matcher.
+     * @param fieldMatcher field matcher
+     * @since 2.0.0
+     */
+    public void setFieldMatcher(TextMatcher fieldMatcher) {
+        this.fieldMatcher.copyFrom(fieldMatcher);
+    }
+
+    private boolean isFieldMatcherSet() {
+        return StringUtils.isNotBlank(fieldMatcher.getPattern());
     }
 
 	/**
      * Gets the fields used to construct a MD5 checksum.
      * @return fields to use to construct the checksum
      * @since 1.2.0
+     * @deprecated Since 2.0.0, use {@link #getFieldMatcher()}.
      */
+    @Deprecated
     public List<String> getSourceFields() {
-        return Collections.unmodifiableList(sourceFields);
+        if (fieldMatcher.getMethod() == Method.CSV
+                && StringUtils.isNotBlank(fieldMatcher.getPattern())) {
+            return Arrays.asList(
+                    fieldMatcher.getPattern().split("(?<!\\\\)\\|"));
+        }
+        return Collections.emptyList();
     }
     /**
      * Sets the fields used to construct a MD5 checksum.
      * @param sourceFields fields to use to construct the checksum
      * @since 1.2.0
+     * @deprecated Since 2.0.0, use {@link #setFieldMatcher(TextMatcher)}.
      */
+    @Deprecated
     public void setSourceFields(String... sourceFields) {
         setSourceFields(Arrays.asList(sourceFields));
     }
@@ -172,9 +187,15 @@ public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
      * Sets the fields used to construct a MD5 checksum.
      * @param sourceFields fields to use to construct the checksum
      * @since 2.0.0
+     * @deprecated Since 2.0.0, use {@link #setFieldMatcher(TextMatcher)}.
      */
+    @Deprecated
     public void setSourceFields(List<String> sourceFields) {
-        CollectionUtil.setAll(this.sourceFields, sourceFields);
+        if (sourceFields != null) {
+            fieldMatcher.setMethod(Method.CSV);
+            fieldMatcher.setPattern(
+                    sourceFields.stream().collect(Collectors.joining(",")));
+        }
     }
 
     /**
@@ -182,18 +203,28 @@ public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
      * a checksum.
      * @return regular expression
      * @since 1.9.0
+     * @deprecated Since 2.0.0, use {@link #getFieldMatcher()}.
+     * @deprecated Since 2.0.0, use {@link #setFieldMatcher(TextMatcher)}.
      */
+    @Deprecated
     public String getSourceFieldsRegex() {
-        return sourceFieldsRegex;
+        if (fieldMatcher.getMethod() == Method.REGEX
+                && StringUtils.isNotBlank(fieldMatcher.getPattern())) {
+            return fieldMatcher.getPattern();
+        }
+        return null;
     }
     /**
      * Sets the regular expression matching metadata fields used construct
      * a checksum.
      * @param sourceFieldsRegex regular expression
      * @since 1.9.0
+     * @deprecated Since 2.0.0, use {@link #setFieldMatcher(TextMatcher)}.
      */
+    @Deprecated
     public void setSourceFieldsRegex(String sourceFieldsRegex) {
-        this.sourceFieldsRegex = sourceFieldsRegex;
+        fieldMatcher.setMethod(Method.REGEX);
+        fieldMatcher.setPattern(sourceFieldsRegex);
     }
 
 	/**
@@ -236,19 +267,17 @@ public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
         setDisabled(xml.getBoolean("@disabled", disabled));
         setCombineFieldsAndContent(xml.getBoolean(
                 "@combineFieldsAndContent", combineFieldsAndContent));
-        setSourceFields(
-                xml.getDelimitedStringList("sourceFields", sourceFields));
-        setSourceFieldsRegex(
-                xml.getString("sourceFieldsRegex", sourceFieldsRegex));
+        xml.checkDeprecated("sourceFields", "fieldMatcher", false);
+        xml.checkDeprecated("sourceFieldsRegex", "fieldMatcher", false);
+        setSourceFields(xml.getDelimitedStringList("sourceFields"));
+        setSourceFieldsRegex(xml.getString("sourceFieldsRegex"));
+        fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
     }
 	@Override
 	protected void saveChecksummerToXML(XML xml) {
         xml.setAttribute("disabled", disabled);
         xml.setAttribute("combineFieldsAndContent", combineFieldsAndContent);
-        xml.addDelimitedElementList("sourceFields", sourceFields);
-        if (sourceFieldsRegex != null) {
-            xml.addElement("sourceFieldsRegex", sourceFieldsRegex);
-        }
+        fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
     }
 
     @Override

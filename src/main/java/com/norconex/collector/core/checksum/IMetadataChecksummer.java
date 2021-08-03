@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.norconex.collector.core.checksum;
 
 import com.norconex.commons.lang.map.Properties;
-import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.importer.doc.Doc;
 
 /**
@@ -37,26 +36,11 @@ import com.norconex.importer.doc.Doc;
  * <p>
  * There are no strict rules that define what is equivalent or not.
  * </p>
- * <p>
- * Classes implementing {@link IXMLConfigurable} should offer the following
- * XML configuration usage:
- * </p>
- * {@nx.xml
- * <metadataChecksummer
- *     class="(class)"
- *     keep="[false|true]"
- *     targetField="(optional metadata field to store the checksum)" />
- * }
- * <p>
- * <code>targetField</code> is ignored unless the <code>keep</code>
- * attribute is set to <code>true</code>.
- * </p>
  *
  * @author Pascal Essiembre
  * @see AbstractMetadataChecksummer
  */
 public interface IMetadataChecksummer {
-
 
     /**
      * Creates a metadata checksum.
