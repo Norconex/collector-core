@@ -17,7 +17,7 @@ package com.norconex.collector.core.crawler;
 import com.norconex.commons.lang.event.IEventListener;
 
 /**
- * Crawler event listener adapter for crawler startup/shutdown.
+ * Listener adapter for crawler events.
  * @author Pascal Essiembre
  * @since 2.0.0
  */
@@ -39,6 +39,10 @@ public class CrawlerLifeCycleListener
         } else if (event.is(CrawlerEvent.CRAWLER_RUN_END)) {
             onCrawlerRunEnd(event);
             onCrawlerShutdown(event);
+        } else if (event.is(CrawlerEvent.CRAWLER_RUN_THREAD_BEGIN)) {
+            onCrawlerRunThreadBegin(event);
+        } else if (event.is(CrawlerEvent.CRAWLER_RUN_THREAD_END)) {
+            onCrawlerRunThreadEnd(event);
         } else if (event.is(CrawlerEvent.CRAWLER_STOP_BEGIN)) {
             onCrawlerStopBegin(event);
         } else if (event.is(CrawlerEvent.CRAWLER_STOP_END)) {
@@ -73,6 +77,12 @@ public class CrawlerLifeCycleListener
         //NOOP
     }
     protected void onCrawlerRunEnd(CrawlerEvent event) {
+        //NOOP
+    }
+    protected void onCrawlerRunThreadBegin(CrawlerEvent event) {
+        //NOOP
+    }
+    protected void onCrawlerRunThreadEnd(CrawlerEvent event) {
         //NOOP
     }
     protected void onCrawlerStopBegin(CrawlerEvent event) {

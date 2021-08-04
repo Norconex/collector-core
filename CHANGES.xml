@@ -10,9 +10,12 @@
     <release version="2.0.0-SNAPSHOT" date="2021-??-??" 
         description="Changes since last milestone for this upcoming major release.">
       <action dev="essiembre" type="update">
-        Where applicable, checksummers now use "toField" instead of 
-        "targetField", and "fieldMatcher" instead of "sourceFields" 
-        and "sourceFieldsRegex".
+        Checksummers "targetField", "sourceFields", and "sourceFieldsRegex" 
+        are deprecated in favor of "toField" and "fieldMatcher".
+      </action>
+      <action dev="essiembre" type="update">
+        RegexMetadataFilter and RegexReferenceFilter have been deprecated
+        in favor or MetadataFilter and ReferenceFilter .
       </action>
     </release>
 

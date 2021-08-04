@@ -21,13 +21,12 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.filter.IDocumentFilter;
 import com.norconex.collector.core.filter.IMetadataFilter;
 import com.norconex.collector.core.filter.IReferenceFilter;
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.Doc;
@@ -37,18 +36,19 @@ import com.norconex.importer.handler.filter.OnMatch;
  * <p>
  * Filters URL based on a regular expression.
  * </p>
+ *
  * {@nx.xml.usage
- * <filter class="com.norconex.collector.core.filter.impl.RegexReferenceFilter"
- *     onMatch="[include|exclude]"
- *     caseSensitive="[false|true]">
- *   (regular expression)
+ * <filter class="com.norconex.collector.core.filter.impl.ReferenceFilter"
+ *     onMatch="[include|exclude]">
+ *   <valueMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ *     (Expression matching the document reference.)
+ *   </valueMatcher>
  * </filter>
  * }
  *
  * {@nx.xml.example
- * <filter class="com.norconex.collector.core.filter.impl.RegexReferenceFilter"
- *     onMatch="exclude">
- *   .*&#47;login/.*
+ * <filter class="ReferenceFilter" onMatch="exclude">
+ *   <valueMatcher method="regex">.*&#47;login/.*</valueMatcher>
  * </filter>
  * }
  * <p>
@@ -56,39 +56,45 @@ import com.norconex.importer.handler.filter.OnMatch;
  * </p>
  * @author Pascal Essiembre
  * @see Pattern
- * @deprecated Since 2.0.0, use {@link ReferenceFilter}
+ * @since 2.0.0
  */
-@Deprecated
-public class RegexReferenceFilter implements
+@SuppressWarnings("javadoc")
+public class ReferenceFilter implements
         IOnMatchFilter,
         IReferenceFilter,
         IDocumentFilter,
         IMetadataFilter,
         IXMLConfigurable {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(RegexReferenceFilter.class);
-
-    private boolean caseSensitive;
     private OnMatch onMatch;
-    private String regex;
-    private Pattern cachedPattern;
+    private final TextMatcher valueMatcher = new TextMatcher();
 
-    public RegexReferenceFilter() {
+    public ReferenceFilter() {
         this(null, OnMatch.INCLUDE);
     }
-    public RegexReferenceFilter(String regex) {
-        this(regex, OnMatch.INCLUDE);
+    public ReferenceFilter(TextMatcher valueMatcher) {
+        this(valueMatcher, OnMatch.INCLUDE);
     }
-    public RegexReferenceFilter(String regex, OnMatch onMatch) {
-        this(regex, onMatch, false);
-    }
-    public RegexReferenceFilter(
-            String regex, OnMatch onMatch, boolean caseSensitive) {
-        super();
+    public ReferenceFilter(
+            TextMatcher valueMatcher,
+            OnMatch onMatch) {
+        setValueMatcher(valueMatcher);
         setOnMatch(onMatch);
-        setCaseSensitive(caseSensitive);
-        setRegex(regex);
+    }
+
+    /**
+     * Gets the value matcher.
+     * @return value matcher
+     */
+    public TextMatcher getValueMatcher() {
+        return valueMatcher;
+    }
+    /**
+     * Sets the value matcher.
+     * @param valueMatcher value matcher
+     */
+    public void setValueMatcher(TextMatcher valueMatcher) {
+        this.valueMatcher.copyFrom(valueMatcher);
     }
 
     @Override
@@ -98,66 +104,26 @@ public class RegexReferenceFilter implements
     public void setOnMatch(OnMatch onMatch) {
         this.onMatch = onMatch;
     }
-    /**
-     * @return the regex
-     */
-    public String getRegex() {
-        return regex;
-    }
-    public boolean isCaseSensitive() {
-        return caseSensitive;
-    }
-    public final void setCaseSensitive(boolean caseSensitive) {
-        this.caseSensitive = caseSensitive;
-        cachedPattern = null;
-    }
-    public final void setRegex(String regex) {
-        this.regex = regex;
-        cachedPattern = null;
-    }
 
     @Override
-    public boolean acceptReference(String url) {
+    public boolean acceptReference(String reference) {
         boolean isInclude = getOnMatch() == OnMatch.INCLUDE;
-        if (StringUtils.isBlank(regex)) {
+        if (StringUtils.isBlank(valueMatcher.getPattern())) {
             return isInclude;
         }
-        boolean matches = getCachedPattern().matcher(url).matches();
+        boolean matches = valueMatcher.matches(reference);
         return matches && isInclude || !matches && !isInclude;
-    }
-
-    private synchronized Pattern getCachedPattern() {
-        if (cachedPattern != null) {
-            return cachedPattern;
-        }
-        Pattern p;
-        if (regex == null) {
-            p = Pattern.compile(".*");
-        } else {
-            int flags = Pattern.DOTALL;
-            if (!caseSensitive) {
-                flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-            }
-            p = Pattern.compile(regex, flags);
-        }
-        cachedPattern = p;
-        return p;
     }
 
     @Override
     public void loadFromXML(XML xml) {
-        LOG.warn("RegexReferenceFilter is deprecated in favor of "
-                + "ReferenceFilter.");
         setOnMatch(xml.getEnum("@onMatch", OnMatch.class, onMatch));
-        setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
-        setRegex(xml.getString("."));
-        cachedPattern = null;
+        valueMatcher.loadFromXML(xml.getXML("valueMatcher"));
     }
     @Override
     public void saveToXML(XML xml) {
         xml.setAttribute("onMatch", onMatch);
-        xml.setAttribute("caseSensitive", caseSensitive);
-        xml.setTextContent(regex);
+        valueMatcher.saveToXML(xml.addElement("valueMatcher"));
     }
 
     @Override
@@ -171,17 +137,16 @@ public class RegexReferenceFilter implements
 
     @Override
     public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other, "cachedPattern");
+        return EqualsBuilder.reflectionEquals(this, other);
     }
     @Override
     public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this, "cachedPattern");
+        return HashCodeBuilder.reflectionHashCode(this);
     }
     @Override
     public String toString() {
         return new ReflectionToStringBuilder(
                 this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .setExcludeFieldNames("cachedPattern")
                 .toString();
     }
 }

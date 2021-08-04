@@ -216,20 +216,9 @@ public class CrawlerEvent extends Event {
         return (Crawler) super.getSource();
     }
 
-
-//    public boolean isCrawlerStartup() {
-//        return is(CRAWLER_RUN_BEGIN);
-//    }
     public boolean isCrawlerShutdown() {
         return is(CRAWLER_RUN_END, CRAWLER_STOP_END);
     }
-//
-//    public boolean isCrawlerCleaning() {
-//        return is(CRAWLER_CLEAN_BEGIN);
-//    }
-//    public boolean isCrawlerCleaned() {
-//        return is(CRAWLER_CLEAN_END);
-//    }
 
     @Override
     public boolean equals(final Object other) {

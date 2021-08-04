@@ -1,4 +1,4 @@
-/* Copyright 2017-2020 Norconex Inc.
+/* Copyright 2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,25 +19,24 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.filter.OnMatch;
 
-@Deprecated
-public class RegexReferenceFilterTest {
+public class ReferenceFilterTest {
 
     @Test
     public void testCaseSensitivity() {
-        RegexReferenceFilter f = new RegexReferenceFilter();
+        ReferenceFilter f = new ReferenceFilter();
         f.setOnMatch(OnMatch.INCLUDE);
-        f.setRegex("case");
 
         // must match any case:
-        f.setCaseSensitive(false);
+        f.setValueMatcher(TextMatcher.regex("case").setIgnoreCase(true));
         assertTrue(f.acceptReference("case"));
         assertTrue(f.acceptReference("CASE"));
 
         // must match only matching case:
-        f.setCaseSensitive(true);
+        f.setValueMatcher(TextMatcher.regex("case").setIgnoreCase(false));
         assertTrue(f.acceptReference("case"));
         assertFalse(f.acceptReference("CASE"));
     }
@@ -45,9 +44,8 @@ public class RegexReferenceFilterTest {
 
     @Test
     public void testWriteRead() {
-        RegexReferenceFilter f = new RegexReferenceFilter();
-        f.setCaseSensitive(true);
-        f.setRegex(".*blah.*");
+        ReferenceFilter f = new ReferenceFilter();
+        f.setValueMatcher(TextMatcher.regex(".*blah.*"));
         f.setOnMatch(OnMatch.EXCLUDE);
         XML.assertWriteRead(f, "filter");
     }

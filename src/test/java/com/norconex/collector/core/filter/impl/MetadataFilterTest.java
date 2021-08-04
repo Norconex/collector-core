@@ -1,4 +1,4 @@
-/* Copyright 2017-2020 Norconex Inc.
+/* Copyright 2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,40 +14,20 @@
  */
 package com.norconex.collector.core.filter.impl;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.filter.OnMatch;
 
-@Deprecated
-public class RegexReferenceFilterTest {
-
-    @Test
-    public void testCaseSensitivity() {
-        RegexReferenceFilter f = new RegexReferenceFilter();
-        f.setOnMatch(OnMatch.INCLUDE);
-        f.setRegex("case");
-
-        // must match any case:
-        f.setCaseSensitive(false);
-        assertTrue(f.acceptReference("case"));
-        assertTrue(f.acceptReference("CASE"));
-
-        // must match only matching case:
-        f.setCaseSensitive(true);
-        assertTrue(f.acceptReference("case"));
-        assertFalse(f.acceptReference("CASE"));
-    }
-
+public class MetadataFilterTest {
 
     @Test
     public void testWriteRead() {
-        RegexReferenceFilter f = new RegexReferenceFilter();
-        f.setCaseSensitive(true);
-        f.setRegex(".*blah.*");
+        MetadataFilter f = new MetadataFilter();
+        f.setOnMatch(OnMatch.EXCLUDE);
+        f.setFieldMatcher(TextMatcher.basic("title"));
+        f.setValueMatcher(TextMatcher.regex(".*blah.*"));
         f.setOnMatch(OnMatch.EXCLUDE);
         XML.assertWriteRead(f, "filter");
     }

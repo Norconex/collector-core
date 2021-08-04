@@ -1,4 +1,4 @@
-/* Copyright 2014-2020 Norconex Inc.
+/* Copyright 2014-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ import com.norconex.importer.ImporterConfig;
  *     <listener class="(IEventListener implementation)"/>
  *   </eventListeners>
  *
- *   <crawlDataStoreEngine class="(ICrawlURLDatabaseFactory implementation)" />
+ *   <dataStoreEngine class="(IDataStoreEngine implementation)" />
  * }
  *
  * {@nx.xml #pipeline-queue

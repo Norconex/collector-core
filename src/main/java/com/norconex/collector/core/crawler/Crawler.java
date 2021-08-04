@@ -89,10 +89,7 @@ import com.norconex.importer.response.ImporterResponse;
  *
  * @author Pascal Essiembre
  */
-//TODO document that logger should print thread name to see which crawler
-//is running?
-public abstract class Crawler
-        { //extends AbstractResumableJob {
+public abstract class Crawler {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(Crawler.class);
@@ -424,14 +421,6 @@ public abstract class Crawler
         if (!isStopped()) {
             handleOrphans();
         }
-
-        //Can delete? Now done in destrowCrawler:
-//        ICommitter committer = getCrawlerConfig().getCommitter();
-//        if (committer != null) {
-//            LOG.info("Crawler {}: committing documents.",
-//                    (isStopped() ? "stopping" : "finishing"));
-//            committer.commit();
-//        }
 
         LOG.debug("Removing empty directories");
         FileUtil.deleteEmptyDirs(getDownloadDir().toFile());

@@ -1,4 +1,4 @@
-/* Copyright 2014-2020 Norconex Inc.
+/* Copyright 2014-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.filter.IDocumentFilter;
 import com.norconex.collector.core.filter.IMetadataFilter;
@@ -37,6 +39,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  * Accepts or rejects a reference using regular expression to match
  * a metadata field value.
  * </p>
+ *
  * {@nx.xml.usage
  * <filter class="com.norconex.collector.core.filter.impl.RegexMetadataFilter"
  *     onMatch="[include|exclude]"
@@ -59,11 +62,14 @@ import com.norconex.importer.handler.filter.OnMatch;
  *
  * @author Pascal Essiembre
  * @see Pattern
+ * @deprecated Since 2.0.0, use {@link MetadataFilter} instead.
  */
+@Deprecated
 public class RegexMetadataFilter implements IOnMatchFilter, IMetadataFilter,
         IDocumentFilter, IXMLConfigurable {
 
-    //TODO use Importer RegexMetadataFilter here?  Catching import exception
+    private static final Logger LOG =
+            LoggerFactory.getLogger(RegexMetadataFilter.class);
 
     private boolean caseSensitive;
     private String field;
@@ -162,6 +168,8 @@ public class RegexMetadataFilter implements IOnMatchFilter, IMetadataFilter,
 
     @Override
     public void loadFromXML(XML xml) {
+        LOG.warn("RegexMetadataFilter is deprecated in favor of "
+                + "MetadataFilter.");
         setField(xml.getString("@field"));
         setOnMatch(xml.getEnum("@onMatch", OnMatch.class, onMatch));
         setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
