@@ -15,7 +15,10 @@
       </action>
       <action dev="essiembre" type="update">
         RegexMetadataFilter and RegexReferenceFilter have been deprecated
-        in favor or MetadataFilter and ReferenceFilter .
+        in favor or MetadataFilter and ReferenceFilter.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed invalid configuration in POM "maven-dependency-plugin".
       </action>
     </release>
 
