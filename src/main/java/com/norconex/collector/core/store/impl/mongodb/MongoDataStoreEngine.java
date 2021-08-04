@@ -45,6 +45,19 @@ import com.norconex.commons.lang.text.StringUtil;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 
+/**
+ * <p>
+ * Data store engine using MongoDB for storing crawl data.
+ * </p>
+ *
+ * {@nx.xml.usage
+ * <dataStoreEngine class="com.norconex.collector.core.store.impl.mongodb.MongoDataStoreEngine" />
+ *   <connectionString>(MongoDB connection string.)</connectionString>
+ * </dataStoreEngine>
+ * }
+ *
+ * @author Pascal Essiembre
+ */
 public class MongoDataStoreEngine
         implements IDataStoreEngine, IXMLConfigurable {
 

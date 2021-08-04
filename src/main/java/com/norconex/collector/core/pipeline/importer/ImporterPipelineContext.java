@@ -35,27 +35,7 @@ import com.norconex.importer.response.ImporterResponse;
 public class ImporterPipelineContext extends DocumentPipelineContext {
 
     private ImporterResponse importerResponse;
-//    private boolean delete;
-//    private boolean orphan;
 
-//    /**
-//     * Constructor creating a copy of supplied context.
-//     * @param copiable the item to be copied
-//     * @since 1.9.0
-//     */
-//    public ImporterPipelineContext(ImporterPipelineContext copiable) {
-//        this(copiable.getCrawler());
-//        BeanUtil.copyProperties(this, copiable);
-//    }
-//
-//    /**
-//     * Constructor.
-//     * @param crawler the crawler
-//     * @since 1.9.0
-//     */
-//    public ImporterPipelineContext(Crawler crawler) {
-//        super(crawler, null);
-//    }
     /**
      * Constructor.
      * @param crawler the crawler
@@ -66,16 +46,6 @@ public class ImporterPipelineContext extends DocumentPipelineContext {
             CrawlDoc document) {
         super(crawler, document);
     }
-//    /**
-//     * Constructor.
-//     * @param crawler the crawler
-//     * @param document current crawl document
-//     */
-//    public ImporterPipelineContext(
-//            Crawler crawler,
-//            CrawlDoc document) {
-//        super(crawler, document);
-//    }
 
     public ImporterResponse getImporterResponse() {
         return importerResponse;
@@ -83,40 +53,6 @@ public class ImporterPipelineContext extends DocumentPipelineContext {
     public void setImporterResponse(ImporterResponse importerResponse) {
         this.importerResponse = importerResponse;
     }
-
-//    /**
-//     * Gets whether the document should be deleted.
-//     * @return <code>true</code> if should be deleted
-//     * @since 1.9.0
-//     */
-//    public boolean isDelete() {
-//        return delete;
-//    }
-//    /**
-//     * Sets whether the document should be deleted.
-//     * @param delete <code>true</code> if should be deleted
-//     * @since 1.9.0
-//     */
-//    public void setDelete(boolean delete) {
-//        this.delete = delete;
-//    }
-//
-//    /**
-//     * Gets whether the document is an orphan (no longer referenced).
-//     * @return <code>true</code> is an orphan
-//     * @since 1.9.0
-//     */
-//    public boolean isOrphan() {
-//        return orphan;
-//    }
-//    /**
-//     * Sets whether the document is an orphan (no longer referenced).
-//     * @param orphan <code>true</code> is an orphan
-//     * @since 1.9.0
-//     */
-//    public void setOrphan(boolean orphan) {
-//        this.orphan = orphan;
-//    }
 
     @Override
     public boolean equals(final Object other) {

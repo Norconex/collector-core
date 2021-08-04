@@ -40,33 +40,11 @@ import com.norconex.importer.doc.Doc;
 public class DocumentPipelineContext extends AbstractPipelineContext {
 
     private CrawlDoc document;
-//    private CrawlDocInfo cachedDocInfo;
 
-//    /**
-//     * Constructor.
-//     * @param crawler the crawler
-//     * @since 1.9.0
-//     */
-//    public DocumentPipelineContext(Crawler crawler) {
-//        super(crawler, null);
-//    }
-//    /**
-//     * Constructor.
-//     * @param crawler the crawler
-//     * @param docInfo current crawl data
-//     * @since 1.9.0
-//     */
-//    public DocumentPipelineContext(Crawler crawler, CrawlDocInfo docInfo) {
-//        super(crawler, docInfo);
-//    }
     public DocumentPipelineContext(
             Crawler crawler,
-//            CrawlDocInfo docInfo,
-//            CrawlDocInfo cachedDocInfo,
             CrawlDoc document) {
         super(Objects.requireNonNull(crawler, "'crawler' must not be null."));
-//        super(crawler, docInfo);
-//        this.cachedDocInfo = cachedDocInfo;
         this.document = Objects.requireNonNull(
                 document, "'document' must not be null.");
     }
@@ -87,24 +65,8 @@ public class DocumentPipelineContext extends AbstractPipelineContext {
      */
     public CrawlDocInfo getCachedDocInfo() {
         return document.getCachedDocInfo();
-//        return cachedDocInfo;
     }
-//    /**
-//     * Sets cached crawl data.
-//     * @param cachedDocInfo cached crawl data.
-//     * @since 1.9.0
-//     */
-//    public void setCachedDocInfo(CrawlDocInfo cachedDocInfo) {
-//        this.cachedDocInfo = cachedDocInfo;
-//    }
-//    /**
-//     * Sets document.
-//     * @param document a document
-//     * @since 1.9.0
-//     */
-//    public void setDocument(Doc document) {
-//        this.document = document;
-//    }
+
     public CachedInputStream getContent() {
         return getDocument().getInputStream();
     }

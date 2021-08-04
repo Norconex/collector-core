@@ -34,17 +34,6 @@ public class DocInfoPipelineContext extends AbstractPipelineContext {
 
     private CrawlDocInfo docInfo;
 
-//    /**
-//     * Constructor.
-//     * @param crawler the crawler
-//     * @since 1.9.0
-//     */
-//    public DocInfoPipelineContext(Crawler crawler) {
-//        super();
-//        this.crawler = crawler;
-//        //this(crawler, null);
-//    }
-
     /**
      * Constructor.
      * @param crawler the crawler

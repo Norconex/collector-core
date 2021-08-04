@@ -22,7 +22,6 @@ import com.norconex.collector.core.crawler.Crawler;
 
 public interface IDataStoreEngine extends Closeable {
 
-    //TODO really make it depend on crawler, or pass args instead?
     void init(Crawler crawler);
     boolean clean();
     @Override

@@ -30,8 +30,8 @@ import com.norconex.commons.lang.Sleeper;
 
 /**
  * Listens for STOP requests using a stop file.  The stop file
- * file has the same path of the suite index file location, with ".stop"
- * extension instead.
+ * file is created under the working directory as
+ * <code>.collector-stop</code>.
  *
  * @author Pascal Essiembre
  * @since 2.0.0

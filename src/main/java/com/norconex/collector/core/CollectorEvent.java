@@ -31,16 +31,9 @@ public class CollectorEvent extends Event {
     public static final String COLLECTOR_RUN_BEGIN = "COLLECTOR_RUN_BEGIN";
     public static final String COLLECTOR_RUN_END = "COLLECTOR_RUN_END";
     public static final String COLLECTOR_STOP_BEGIN = "COLLECTOR_STOP_BEGIN";
-    public static final String COLLECTOR_STOP_END = "COLLECTOR_STOP_END"; // <-- Realy an event? If stopped, it means nothing else
-//    public static final String COLLECTOR_ABORTED = "COLLECTOR_ABORTED"; // <-- Realy an event? If abborted, no event can be sent.
-    //TODO eliminate this one and rely on COMPLETED + status to find if failed/success?
-    //TODO have a COLLECTOR_FAILED instead (or in addition??)
-//    public static final String COLLECTOR_UNCOMPLETED = "COLLECTOR_UNCOMPLETED";
-//    public static final String COLLECTOR_COMPLETED = "COLLECTOR_COMPLETED";
-
+    public static final String COLLECTOR_STOP_END = "COLLECTOR_STOP_END";
     public static final String COLLECTOR_CLEAN_BEGIN = "COLLECTOR_CLEAN_BEGIN";
     public static final String COLLECTOR_CLEAN_END = "COLLECTOR_CLEAN_END";
-
     public static final String COLLECTOR_STORE_EXPORT_BEGIN =
             "COLLECTOR_STORE_EXPORT_BEGIN";
     public static final String COLLECTOR_STORE_EXPORT_END =
@@ -51,10 +44,8 @@ public class CollectorEvent extends Event {
             "COLLECTOR_STORE_IMPORT_END";
 
 
-    //TODO Add COLLECTOR_ERROR?
+    //TODO Not used. Needed?
     public static final String COLLECTOR_ERROR = "COLLECTOR_ERROR";
-
-    //TODO have COLLECTOR_RESUMED???
 
     public static class Builder extends Event.Builder<Builder> {
 
