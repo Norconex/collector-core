@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,13 +96,8 @@ public class CrawlerConfigLoader {
      */
     public List<CrawlerConfig> loadCrawlerConfigs(
             Path configFile, Path configVariables) {
-
         return loadCrawlerConfigs(new ConfigurationLoader().setVariablesFile(
                 configVariables).loadXML(configFile));
-
-//        ConfigurationLoader configLoader = new ConfigurationLoader();
-//        XML xml = configLoader.loadXML(configFile, configVariables);
-//        return loadCrawlerConfigs(xml);
     }
     public List<CrawlerConfig> loadCrawlerConfigs(XML xml) {
         try {
@@ -119,7 +114,6 @@ public class CrawlerConfigLoader {
                     }
                 }
                 loadCrawlerConfig(config, crawlerXML);
-//                        XMLConfigurationUtil.newXMLConfiguration(crawlerXML));
                 configs.add(config);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Crawler configuration loaded: "
@@ -149,7 +143,7 @@ public class CrawlerConfigLoader {
             return;
         }
         boolean loadingDefaults =
-                "crawlerDefaults".equalsIgnoreCase(xml.getName());//getRootElementName());
+                "crawlerDefaults".equalsIgnoreCase(xml.getName());
 
         if (!loadingDefaults) {
             String crawlerId = xml.getString("@id", null);
@@ -160,8 +154,5 @@ public class CrawlerConfigLoader {
         }
 
         xml.populate(config);
-
-//        XMLConfigurationUtil.loadFromXML(config, node);
     }
-
 }
