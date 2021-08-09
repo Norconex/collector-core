@@ -22,18 +22,19 @@ import com.norconex.importer.doc.Doc;
  * <p>
  * It is highly recommended to overwrite the <code>toString()</code> method
  * to representing this filter properly in human-readable form (e.g. logging).
- * It is a good idea to include specifics of this filter so crawler users 
+ * It is a good idea to include specifics of this filter so crawler users
  * can know exactly why documents got accepted/rejected if need be.
  * </p>
  * @author Pascal Essiembre
  */
+@FunctionalInterface
 public interface IDocumentFilter {
 
     /**
-     * Whether to accept a document.  
+     * Whether to accept a document.
      * @param document the document to accept/reject
      * @return <code>true</code> if accepted, <code>false</code> otherwise
      */
     boolean acceptDocument(Doc document);
-    
+
 }

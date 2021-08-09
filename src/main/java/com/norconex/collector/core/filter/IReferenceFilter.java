@@ -20,22 +20,23 @@ package com.norconex.collector.core.filter;
  * gets read or otherwise acquired.
  * <br><br>
  * It is highly recommended to overwrite the <code>toString()</code> method
- * to representing this filter properly in human-readable form 
+ * to representing this filter properly in human-readable form
  * (e.g. for logging by a crawler).
- * It is a good idea to include specifics of this filter so crawler users 
+ * It is a good idea to include specifics of this filter so crawler users
  * can know exactly why documents got accepted/rejected rejected if need be.
  * <br><br>
  * <p>Implementors also implementing IXMLConfigurable must name their XML tag
  * <code>filter</code> to ensure it gets loaded properly.</p>
  * @author Pascal Essiembre
  */
+@FunctionalInterface
 public interface IReferenceFilter {
 
     /**
-     * Whether to accept this reference.  
+     * Whether to accept this reference.
      * @param reference the reference to accept/reject
      * @return <code>true</code> if accepted, <code>false</code> otherwise
      */
     boolean acceptReference(String reference);
-    
+
 }
