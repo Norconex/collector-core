@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,6 @@ import com.norconex.importer.doc.Doc;
  * {@nx.xml.usage
  * <documentChecksummer
  *     class="com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer"
- *     disabled="[false|true]"
  *     combineFieldsAndContent="[false|true]"
  *     keep="[false|true]"
  *     toField="(optional metadata field to store the checksum)">
@@ -78,17 +77,19 @@ import com.norconex.importer.doc.Doc;
  * <code>toField</code> is ignored unless the <code>keep</code>
  * attribute is set to <code>true</code>.
  * </p>
- * <p>
- * This implementation can be disabled in your
- * configuration by specifying <code>disabled="true"</code>. When disabled,
- * the checksum returned is always <code>null</code>.
- * </p>
  *
  * {@nx.xml.example
  * <documentChecksummer class="MD5DocumentChecksummer" />
  * }
+ *
  * <p>
  * The above example uses the document body (default) to make the checksum.
+ * </p>
+ *
+ * <p>
+ * <b>Since 2.0.0</b>, a self-closing
+ * <code>&lt;documentChecksummer/&gt;</code> tag without any attributes
+ * is used to disable checksum generation.
  * </p>
  *
  * @author Pascal Essiembre
@@ -97,14 +98,10 @@ import com.norconex.importer.doc.Doc;
 public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
 
     private final TextMatcher fieldMatcher = new TextMatcher();
-	private boolean disabled;
 	private boolean combineFieldsAndContent;
 
     @Override
     public String doCreateDocumentChecksum(Doc document) {
-        if (disabled) {
-            return null;
-        }
 
         // fields
         TextMatcher fm = new TextMatcher(fieldMatcher);
@@ -227,21 +224,27 @@ public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
         fieldMatcher.setPattern(sourceFieldsRegex);
     }
 
-	/**
-	 * Whether this checksummer is disabled or not. When disabled, not
-	 * checksum will be created (the checksum will be <code>null</code>).
-	 * @return <code>true</code> if disabled
-	 */
+    /**
+     * Deprecated.
+     * @return always <code>false</code>
+     * @deprecated Since 2.0.0, not having a checksummer defined or
+     * setting one explicitly to <code>null</code> effectively disables
+     * it.
+     */
+    @Deprecated
 	public boolean isDisabled() {
-        return disabled;
+        return false;
     }
-	/**
-	 * Sets whether this checksummer is disabled or not. When disabled, not
-     * checksum will be created (the checksum will be <code>null</code>).
-	 * @param disabled <code>true</code> if disabled
-	 */
+    /**
+     * Deprecated. Invoking this method has no effect
+     * @param disabled argument is ignored
+     * @deprecated Since 2.0.0, not having a checksummer defined or
+     * setting one explicitly to <code>null</code> effectively disable
+     * it.
+     */
+    @Deprecated
     public void setDisabled(boolean disabled) {
-        this.disabled = disabled;
+        //NOOP
     }
 
     /**
@@ -264,18 +267,18 @@ public class MD5DocumentChecksummer extends AbstractDocumentChecksummer {
 
     @Override
 	protected void loadChecksummerFromXML(XML xml) {
-        setDisabled(xml.getBoolean("@disabled", disabled));
-        setCombineFieldsAndContent(xml.getBoolean(
-                "@combineFieldsAndContent", combineFieldsAndContent));
+        xml.checkDeprecated("@disabled",
+                "Use self-closing <documentChecksummer/>", false);
         xml.checkDeprecated("sourceFields", "fieldMatcher", false);
         xml.checkDeprecated("sourceFieldsRegex", "fieldMatcher", false);
+        setCombineFieldsAndContent(xml.getBoolean(
+                "@combineFieldsAndContent", combineFieldsAndContent));
         setSourceFields(xml.getDelimitedStringList("sourceFields"));
         setSourceFieldsRegex(xml.getString("sourceFieldsRegex"));
         fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
     }
 	@Override
 	protected void saveChecksummerToXML(XML xml) {
-        xml.setAttribute("disabled", disabled);
         xml.setAttribute("combineFieldsAndContent", combineFieldsAndContent);
         fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
     }

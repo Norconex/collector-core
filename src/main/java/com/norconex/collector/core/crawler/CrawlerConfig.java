@@ -155,7 +155,7 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
     private final List<Class<? extends Exception>> stopOnExceptions =
             new ArrayList<>();
 
-    private IDataStoreEngine dataStoreEngine = new MVStoreDataStoreEngine();// NitriteDataStoreEngine();
+    private IDataStoreEngine dataStoreEngine = new MVStoreDataStoreEngine();
 
     private final List<IReferenceFilter> referenceFilters = new ArrayList<>();
     private final List<IMetadataFilter> metadataFilters = new ArrayList<>();
@@ -602,9 +602,6 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
                 "metadataFilters/filter", metadataFilters));
         setDocumentFilters(xml.getObjectListImpl(IDocumentFilter.class,
                 "documentFilters/filter", documentFilters));
-
-     //   ImporterConfig importerConfig = new ImporterConfig();
-        // set
 
         XML importerXML = xml.getXML("importer");
         if (importerXML != null) {

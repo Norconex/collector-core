@@ -1,4 +1,4 @@
-/* Copyright 2014-2020 Norconex Inc.
+/* Copyright 2014-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,18 +30,22 @@ public class DocumentChecksumStage
 
     @Override
     public boolean execute(DocumentPipelineContext ctx) {
-        //TODO only if an INCREMENTAL run... else skip.
-        IDocumentChecksummer check =
+        IDocumentChecksummer checksummer =
                 ctx.getConfig().getDocumentChecksummer();
-        if (check == null
-                && !ctx.getDocInfo().getState().isNewOrModified()) {
-            // NEW is default state (?)
-            ctx.getDocInfo().setState(CrawlState.NEW);
+
+        // if there are no checksum defined and state is not new/modified,
+        // we treat all docs as new.
+        if (checksummer == null) {
+            if (ctx.getDocInfo().getState() == null
+                    || !ctx.getDocInfo().getState().isNewOrModified()) {
+                // NEW is default state (?)
+                ctx.getDocInfo().setState(CrawlState.NEW);
+            }
             return true;
         }
-        String newDocChecksum = check.createDocumentChecksum(ctx.getDocument());
+        String newDocChecksum =
+                checksummer.createDocumentChecksum(ctx.getDocument());
         return ChecksumStageUtil.resolveDocumentChecksum(
-                newDocChecksum, ctx, check);
+                newDocChecksum, ctx, checksummer);
     }
-
 }

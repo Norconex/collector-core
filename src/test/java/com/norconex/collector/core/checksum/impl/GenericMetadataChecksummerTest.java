@@ -31,6 +31,7 @@ import com.norconex.commons.lang.xml.XML;
 public class GenericMetadataChecksummerTest {
 
     @Test
+    @Deprecated
     public void testWriteRead() {
         GenericMetadataChecksummer c = new GenericMetadataChecksummer();
         c.setDisabled(true);

@@ -34,7 +34,10 @@
 
             
           </xs:all>
+
+          <!-- Deprecated: -->
           <xs:attribute name="disabled" type="xs:boolean"/>
+
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

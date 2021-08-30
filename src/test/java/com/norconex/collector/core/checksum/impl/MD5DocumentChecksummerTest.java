@@ -131,6 +131,7 @@ public class MD5DocumentChecksummerTest {
     }
 
     @Test
+    @Deprecated
     public void testWriteRead() {
         MD5DocumentChecksummer c = new MD5DocumentChecksummer();
         c.setDisabled(true);

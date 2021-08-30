@@ -1,4 +1,4 @@
-/* Copyright 2017-2020 Norconex Inc.
+/* Copyright 2017-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,10 @@
  */
 package com.norconex.collector.core.crawler;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer;
 import com.norconex.collector.core.crawler.CrawlerConfig.OrphansStrategy;
 import com.norconex.commons.lang.xml.XML;
 
@@ -33,5 +35,33 @@ public class CrawlerConfigTest {
         c.setNumThreads(3);
         c.setOrphansStrategy(OrphansStrategy.IGNORE);
         XML.assertWriteRead(c, "crawler");
+    }
+
+    @Test
+    public void testNullingDefaultsViaXml() {
+        MockCrawlerConfig c = new MockCrawlerConfig();
+        c.setId("id");
+
+        // Make sure default is set
+        Assertions.assertEquals(
+                new MD5DocumentChecksummer(), c.getDocumentChecksummer());
+
+        // make sure self-closed with attribute is not treated as null.
+        c.loadFromXML(new XML(
+                "<crawler id=\"id\">"
+              +   "<documentChecksummer keep=\"true\" />"
+              + "</crawler>"
+        ));
+        Assertions.assertTrue(
+                ((MD5DocumentChecksummer) c.getDocumentChecksummer()).isKeep());
+
+        // make sure self-closed without attribute is treated as null.
+        c.loadFromXML(new XML(
+                "<crawler id=\"id\">"
+              +   "<documentChecksummer />"
+              + "</crawler>"
+        ));
+        Assertions.assertNull(c.getDocumentChecksummer());
+
     }
 }

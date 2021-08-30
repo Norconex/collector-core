@@ -15,7 +15,6 @@
 package com.norconex.collector.core;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.event.Event;
 
@@ -82,6 +81,8 @@ public class CollectorEvent extends Event {
     }
     @Override
     public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
+        // Cannot use HashCodeBuilder.reflectionHashCode here to prevent
+        // "An illegal reflective access operation has occurred"
+        return super.hashCode();
     }
 }

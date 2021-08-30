@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,6 @@ import com.norconex.commons.lang.xml.XML;
  * {@nx.xml.usage
  * <metadataChecksummer
  *     class="com.norconex.collector.core.checksum.impl.GenericMetadataChecksummer"
- *     disabled="[false|true]"
  *     keep="[false|true]"
  *     toField="(optional field to store the checksum)">
  *
@@ -65,11 +64,6 @@ import com.norconex.commons.lang.xml.XML;
  * <code>toField</code> is ignored unless the <code>keep</code>
  * attribute is set to <code>true</code>.
  * </p>
- * <p>
- * This implementation can be disabled in your
- * configuration by specifying <code>disabled="true"</code>. When disabled,
- * the checksum returned is always <code>null</code>.
- * </p>
  *
  * {@nx.xml.example
  * <metadataChecksummer class="GenericMetadataChecksummer">
@@ -80,6 +74,13 @@ import com.norconex.commons.lang.xml.XML;
  * The above example uses a combination of two (fictitious) fields called
  * "docLastModified" and "docSize" to make the checksum.
  * </p>
+ *
+ * <p>
+ * <b>Since 2.0.0</b>, a self-closing
+ * <code>&lt;metadataChecksummer/&gt;</code> tag without any attributes
+ * is used to disable checksum generation.
+ * </p>
+ *
  * @since 1.2.0
  * @author Pascal Essiembre
  */
@@ -87,13 +88,9 @@ import com.norconex.commons.lang.xml.XML;
 public class GenericMetadataChecksummer extends AbstractMetadataChecksummer {
 
     private final TextMatcher fieldMatcher = new TextMatcher();
-    private boolean disabled;
 
     @Override
     protected String doCreateMetaChecksum(Properties metadata) {
-        if (disabled) {
-            return null;
-        }
         return ChecksumUtil.metadataChecksumPlain(metadata, fieldMatcher);
     }
 
@@ -180,26 +177,32 @@ public class GenericMetadataChecksummer extends AbstractMetadataChecksummer {
     }
 
     /**
-     * Whether this checksummer is disabled or not. When disabled, not
-     * checksum will be created (the checksum will be <code>null</code>).
-     * @return <code>true</code> if disabled
+     * Deprecated.
+     * @return always <code>false</code>
+     * @deprecated Since 2.0.0, not having a checksummer defined or
+     * setting one explicitly to <code>null</code> effectively disables
+     * it.
      */
+    @Deprecated
     public boolean isDisabled() {
-        return disabled;
+        return false;
     }
     /**
-     * Sets whether this checksummer is disabled or not. When disabled, not
-     * checksum will be created (the checksum will be <code>null</code>).
-     * @param disabled <code>true</code> if disabled
+     * Deprecated. Invoking this method has no effect
+     * @param disabled argument is ignored
+     * @deprecated Since 2.0.0, not having a checksummer defined or
+     * setting one explicitly to <code>null</code> effectively disable
+     * it.
      */
+    @Deprecated
     public void setDisabled(boolean disabled) {
-        this.disabled = disabled;
+        //NOOP
     }
 
     @Override
     protected void loadChecksummerFromXML(XML xml) {
-        setDisabled(xml.getBoolean("@disabled", disabled));
-
+        xml.checkDeprecated("@disabled",
+                "Use self-closing <metadataChecksummer/>", false);
         xml.checkDeprecated("sourceFields", "fieldMatcher", false);
         xml.checkDeprecated("sourceFieldsRegex", "fieldMatcher", false);
         setSourceFields(xml.getDelimitedStringList("sourceFields"));
@@ -209,7 +212,6 @@ public class GenericMetadataChecksummer extends AbstractMetadataChecksummer {
 
     @Override
     protected void saveChecksummerToXML(XML xml) {
-        xml.setAttribute("disabled", isDisabled());
         fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
     }
 
