@@ -47,10 +47,13 @@
       </xs:element>
       <xs:element name="referenceFilters" type="filterType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="metadataFilters" type="filterType" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="metadataChecksummer" type="anyComplexOptionalClassType" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="metadataDeduplicate" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
       <xs:element name="documentFilters" type="filterType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="importer" type="anyComplexType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="dataStoreEngine" type="anyComplexOptionalClassType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="documentChecksummer" type="anyComplexOptionalClassType" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="documentDeduplicate" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
       <xs:element name="committers" type="committersType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="spoiledReferenceStrategizer" type="anyComplexOptionalClassType" minOccurs="0" maxOccurs="1"/>
       <xs:element name="eventListeners" type="listenersType" minOccurs="0" maxOccurs="1"/>

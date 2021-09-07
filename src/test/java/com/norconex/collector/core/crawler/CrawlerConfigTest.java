@@ -17,6 +17,7 @@ package com.norconex.collector.core.crawler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.collector.core.checksum.impl.GenericMetadataChecksummer;
 import com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer;
 import com.norconex.collector.core.crawler.CrawlerConfig.OrphansStrategy;
 import com.norconex.commons.lang.xml.XML;
@@ -32,7 +33,10 @@ public class CrawlerConfigTest {
         MockCrawlerConfig c = new MockCrawlerConfig();
         c.setId("id");
         c.setMaxDocuments(33);
+        c.setMetadataChecksummer(new GenericMetadataChecksummer());
         c.setNumThreads(3);
+        c.setDocumentDeduplicate(true);
+        c.setMetadataDeduplicate(true);
         c.setOrphansStrategy(OrphansStrategy.IGNORE);
         XML.assertWriteRead(c, "crawler");
     }

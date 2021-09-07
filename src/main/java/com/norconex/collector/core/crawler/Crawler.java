@@ -88,6 +88,7 @@ import com.norconex.importer.response.ImporterResponse;
  * </pre>
  *
  * @author Pascal Essiembre
+ * @see CrawlerConfig
  */
 public abstract class Crawler {
 

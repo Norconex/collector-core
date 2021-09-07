@@ -9,6 +9,17 @@
 
     <release version="2.0.0-SNAPSHOT" date="2021-??-??" 
         description="Changes since last milestone for this upcoming major release.">
+      <action dev="essiembre" type="add">
+        Added deduplication configuration options via 
+        CrawlerConfig#setMetadataDeduplicate and 
+        CrawlerConfig#setDocumentDeduplicate
+      </action>
+      <action dev="essiembre" type="add">
+        New crawler event: REJECTED_DUPLICATE.
+      </action>
+      <action dev="essiembre" type="update">
+        Metadata checksummer now an element of CrawlerConfig.
+      </action>
       <action dev="essiembre" type="update">
         Checksummers "targetField", "sourceFields", and "sourceFieldsRegex" 
         are deprecated in favor of "toField" and "fieldMatcher".

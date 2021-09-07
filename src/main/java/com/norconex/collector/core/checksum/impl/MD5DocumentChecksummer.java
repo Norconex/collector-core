@@ -50,7 +50,7 @@ import com.norconex.importer.doc.Doc;
  * it stores it under the metadata field name
  * {@link CrawlDocMetadata#CHECKSUM_METADATA}.
  * </p>
- * <p>
+ *
  * <p>
  * <b>Since 1.9.0</b>, it is possible to use a combination of document content
  * and fields to create the checksum by setting

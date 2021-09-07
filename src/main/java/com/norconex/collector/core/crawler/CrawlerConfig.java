@@ -25,6 +25,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.collector.core.checksum.IDocumentChecksummer;
+import com.norconex.collector.core.checksum.IMetadataChecksummer;
 import com.norconex.collector.core.checksum.impl.MD5DocumentChecksummer;
 import com.norconex.collector.core.filter.IDocumentFilter;
 import com.norconex.collector.core.filter.IMetadataFilter;
@@ -113,8 +114,20 @@ import com.norconex.importer.ImporterConfig;
  *   </importer>
  * }
  *
+ * {@nx.xml #checksum-meta
+ *   <metadataChecksummer class="(IMetadataChecksummer implementation)" />
+ * }
+ *
+ * {@nx.xml #dedup-meta
+ *   <metadataDeduplicate>[false|true]</metadataDeduplicate>
+ * }
+ *
  * {@nx.xml #checksum-doc
  *   <documentChecksummer class="(IDocumentChecksummer implementation)" />
+ * }
+ *
+ * {@nx.xml #dedup-doc
+ *   <documentDeduplicate>[false|true]</documentDeduplicate>
  * }
  *
  * {@nx.xml #pipeline-committer
@@ -161,8 +174,14 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
     private final List<IMetadataFilter> metadataFilters = new ArrayList<>();
     private final List<IDocumentFilter> documentFilters = new ArrayList<>();
 
+    private IMetadataChecksummer metadataChecksummer;
+
     private ImporterConfig importerConfig = new ImporterConfig();
     private final List<ICommitter> committers = new ArrayList<>();
+
+
+    private boolean metadataDeduplicate;
+    private boolean documentDeduplicate;
 
     private IDocumentChecksummer documentChecksummer =
             new MD5DocumentChecksummer();
@@ -422,6 +441,24 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
     }
 
     /**
+     * Gets the metadata checksummer.
+     * @return metadata checksummer
+     * @since 2.0.0, moved from HTTP Collector <code>HttpCrawlerConfig</code>.
+     */
+    public IMetadataChecksummer getMetadataChecksummer() {
+        return metadataChecksummer;
+    }
+    /**
+     * Sets the metadata checksummer.
+     * @param metadataChecksummer metadata checksummer
+     * @since 2.0.0, moved from HTTP Collector <code>HttpCrawlerConfig</code>.
+     */
+    public void setMetadataChecksummer(
+            IMetadataChecksummer metadataChecksummer) {
+        this.metadataChecksummer = metadataChecksummer;
+    }
+
+    /**
      * Gets the document checksummer.
      * @return document checksummer
      */
@@ -559,6 +596,54 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
         this.eventListeners.clear();
     }
 
+    /**
+     * Gets whether to turn on deduplication based on metadata checksum.
+     * Ignored if {@link #getMetadataChecksummer()} returns <code>null</code>.
+     * Not recommended unless you know for sure your metadata
+     * checksum is acceptably unique.
+     * @return whether to turn on metadata-based deduplication
+     * @since 2.0.0
+     */
+    public boolean isMetadataDeduplicate() {
+        return metadataDeduplicate;
+    }
+    /**
+     * Sets whether to turn on deduplication based on metadata checksum.
+     * Ignored if {@link #getMetadataChecksummer()} returns <code>null</code>.
+     * Not recommended unless you know for sure your metadata
+     * checksum is acceptably unique.
+     * @param metadataDeduplicate <code>true</code> to turn on
+     *        metadata-based deduplication
+     * @since 2.0.0
+     */
+    public void setMetadataDeduplicate(boolean metadataDeduplicate) {
+        this.metadataDeduplicate = metadataDeduplicate;
+    }
+
+    /**
+     * Gets whether to turn on deduplication based on document checksum.
+     * Ignored if {@link #getDocumentChecksummer()} returns <code>null</code>.
+     * Not recommended unless you know for sure your document
+     * checksum is acceptably unique.
+     * @return whether to turn on document-based deduplication
+     * @since 2.0.0
+     */
+    public boolean isDocumentDeduplicate() {
+        return documentDeduplicate;
+    }
+    /**
+     * Sets whether to turn on deduplication based on document checksum.
+     * Ignored if {@link #getDocumentChecksummer()} returns <code>null</code>.
+     * Not recommended unless you know for sure your document
+     * checksum is acceptably unique.
+     * @param documentDeduplicate <code>true</code> to turn on
+     *        document-based deduplication
+     * @since 2.0.0
+     */
+    public void setDocumentDeduplicate(boolean documentDeduplicate) {
+        this.documentDeduplicate = documentDeduplicate;
+    }
+
     @Override
     public void saveToXML(XML xml) {
         xml.setAttribute("id", id);
@@ -574,7 +659,10 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
             xml.addElement("importer", importerConfig);
         }
         xml.addElementList("committers", "committer", committers);
+        xml.addElement("metadataChecksummer", metadataChecksummer);
+        xml.addElement("metadataDeduplicate", metadataDeduplicate);
         xml.addElement("documentChecksummer", documentChecksummer);
+        xml.addElement("documentDeduplicate", documentDeduplicate);
         xml.addElement(
                 "spoiledReferenceStrategizer", spoiledReferenceStrategizer);
 
@@ -618,8 +706,14 @@ public abstract class CrawlerConfig implements IXMLConfigurable {
                 IDataStoreEngine.class, "dataStoreEngine", dataStoreEngine));
         setCommitters(xml.getObjectListImpl(ICommitter.class,
                 "committers/committer", committers));
+        setMetadataChecksummer(xml.getObjectImpl(IMetadataChecksummer.class,
+                "metadataChecksummer", metadataChecksummer));
+        setMetadataDeduplicate(xml.getBoolean("metadataDeduplicate",
+                metadataDeduplicate));
         setDocumentChecksummer(xml.getObjectImpl(IDocumentChecksummer.class,
                 "documentChecksummer", documentChecksummer));
+        setDocumentDeduplicate(xml.getBoolean("documentDeduplicate",
+                documentDeduplicate));
         setSpoiledReferenceStrategizer(xml.getObjectImpl(
                 ISpoiledReferenceStrategizer.class,
                 "spoiledReferenceStrategizer", spoiledReferenceStrategizer));

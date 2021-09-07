@@ -75,14 +75,21 @@ public class CrawlerEvent extends Event {
     public static final String CRAWLER_CLEAN_END = "CRAWLER_CLEAN_END";
 
     /**
-     * A crawled document was rejected by a filters.
+     * A document was rejected by a filters.
      */
     public static final String REJECTED_FILTER = "REJECTED_FILTER";
     /**
-     * A crawled document was rejected as it was not modified since
+     * A document was rejected as it was not modified since
      * last time it was crawled.
      */
     public static final String REJECTED_UNMODIFIED = "REJECTED_UNMODIFIED";
+    /**
+     * A document was rejected since another document with a different
+     * reference was already processed with the same digital signature (
+     * checksum).
+     * @since 2.0.0
+     */
+    public static final String REJECTED_DUPLICATE = "REJECTED_DUPLICATE";
     /**
      * A document could not be re-crawled because it is not yet ready to be
      * re-crawled.
