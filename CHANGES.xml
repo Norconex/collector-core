@@ -10,6 +10,10 @@
     <release version="2.0.0-SNAPSHOT" date="2021-??-??" 
         description="Changes since last milestone for this upcoming major release.">
       <action dev="essiembre" type="add">
+        New DeleteRejectedEventListener class to delete documents matching
+        specific document "rejected" events.
+      </action>
+      <action dev="essiembre" type="add">
         Added deduplication configuration options via 
         CrawlerConfig#setMetadataDeduplicate and 
         CrawlerConfig#setDocumentDeduplicate

@@ -42,16 +42,18 @@ public class CrawlerEvent extends Event {
     public static final String CRAWLER_INIT_END = "CRAWLER_INIT_END";
 
     /**
-     * The crawler started crawling.
+     * The crawler is about to begin crawling.
      */
     public static final String CRAWLER_RUN_BEGIN = "CRAWLER_RUN_BEGIN";
     /**
-     * The crawler completed crawling execution (without being stopped).
+     * The crawler completed crawling execution normally
+     * (without being stopped). This event is triggered before the crawler
+     * resources are released.
      */
     public static final String CRAWLER_RUN_END = "CRAWLER_RUN_END";
 
     /**
-     * The crawler started a new crawling thread.
+     * The crawler just started a new crawling thread.
      */
     public static final String CRAWLER_RUN_THREAD_BEGIN =
             "CRAWLER_RUN_THREAD_BEGIN";
