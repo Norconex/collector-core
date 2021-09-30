@@ -75,6 +75,12 @@
       <listener class="com.norconex.collector.core.crawler.MockCrawlerEventListener">
         <sample sample="sample">sample</sample>
       </listener>
+      <listener class="DeleteRejectedEventListener">
+        <eventMatcher method="csv">REJECTED_NOTFOUND,REJECTED_FILTER</eventMatcher>
+      </listener>
+      <listener class="StopCrawlerOnMaxEventListener" maximum="100" onMultiple="sum">
+        <eventMatcher method="csv">DOCUMENT_COMMITTED_UPSERT,DOCUMENT_COMMITTED_DELETE</eventMatcher>
+      </listener>
     </eventListeners>
 
     <!-- Importer is purposely slim since the full config is tested in

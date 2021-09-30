@@ -293,6 +293,8 @@ public abstract class Crawler {
     }
 
     protected boolean initCrawler() {
+        Thread.currentThread().setName(getId());
+
         getEventManager().fire(new CrawlerEvent.Builder(
                 CRAWLER_INIT_BEGIN, this).message(
                         "Initializing crawler \"" + getId() + "\"...").build());

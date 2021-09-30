@@ -10,6 +10,10 @@
     <release version="2.0.0-SNAPSHOT" date="2021-??-??" 
         description="Changes since last milestone for this upcoming major release.">
       <action dev="essiembre" type="add">
+        New StopCrawlerOnMaxEventListener class to stop crawlers upon reaching
+        a maximum number of specific crawler events.
+      </action>
+      <action dev="essiembre" type="add">
         New DeleteRejectedEventListener class to delete documents matching
         specific document "rejected" events.
       </action>
@@ -20,6 +24,10 @@
       </action>
       <action dev="essiembre" type="add">
         New crawler event: REJECTED_DUPLICATE.
+      </action>
+      <action dev="essiembre" type="update">
+        Launching crawler now sets crawler name as thread name even
+        before starting to process references.
       </action>
       <action dev="essiembre" type="update">
         Metadata checksummer now an element of CrawlerConfig.
