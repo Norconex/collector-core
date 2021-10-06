@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="2.0.0-SNAPSHOT" date="2021-??-??" 
+    <release version="2.0.0-RC1" date="2021-??-??" 
         description="Changes since last milestone for this upcoming major release.">
       <action dev="essiembre" type="add">
         New StopCrawlerOnMaxEventListener class to stop crawlers upon reaching
@@ -24,6 +24,9 @@
       </action>
       <action dev="essiembre" type="add">
         New crawler event: REJECTED_DUPLICATE.
+      </action>
+      <action dev="essiembre" type="update">
+        Maven dependency updates: MongoDB Driver 4.3.2, Testcontainers 1.16.0.
       </action>
       <action dev="essiembre" type="update">
         Launching crawler now sets crawler name as thread name even

@@ -772,7 +772,8 @@ public abstract class Crawler {
                     // Delete if previous state exists and is not already
                     // marked as deleted.
                     if (cachedDocInfo != null
-                            && !cachedDocInfo.getState().isOneOf(CrawlState.DELETED)) {
+                            && !cachedDocInfo.getState().isOneOf(
+                                    CrawlState.DELETED)) {
                         deleteReference(doc);
                     }
                 } else {
