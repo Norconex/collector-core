@@ -3,14 +3,6 @@ TODO:
 
 - Force crawler to stop after X amount of time of no progress.
 
-- Add placeholders for making file-base logging sharing same base path
-  as work dir.
-
-- Add global disable feature where appropriate so it does not have to be in 
-  each class.
-
-- Have ability to turn off backups (off by defaults?).
-
 - Performance: 
   - Keep tack of counts by having counters in memory instead of querying
     for count.  And have maxXXX for different types instead of just
@@ -37,39 +29,17 @@ TODO:
 
 - Re-introduce CommitCommand? Or is it no longer applicable? 
 
-- Rename CrawlReference* to shorter CrawlObject (preffered), or CrawlItem.
+- Rename CrawlReference* to shorter CrawlObject (preferred), or CrawlItem.
 
 - Create a MemoryDataStore for testing only
 
 - Consider Lucene as a data store.
 
-- Make sure command line arguments can also be specified as system properties
-  or env variables (or properties files?).  Similar to spring boot?
-
 - Add ability to have multiple crawlers talk to the same crawl store
-  for managing their queue (maybe MapReduce/Spark would be best?).
-
-- Add support for event listeners at crawler level, which would only
-  get events for that crawler (since events are bubbling up, not down/sideways).
+  for managing their queue (maybe Kafka would be best?).
 
 - AbstractCrawlerConfig.xsd has the anyComplexRequiredClassType "class" being
   optional. See if we can make it required, except for self-closing tags.
-
-- Rename RegexReferenceFilter here or the one in Importer module
-  to avoid sharing same name.
-
-- Extract out crawl store implementations to reduce dependencies 
-  (only keep one). and potentially redesign as well.
-
-- Make sure validation reporting works fine (ignore vs throw exception)
-
-- Remove the need for XXXConfigLoader?
-
-- Add parent pom for managed dependencies.
-
-- Add workdir to collector, and by default, have log, progress share it.
-  At crawler level, have all other paths relative to collector workdir,
-  or crawler workdir if that one is specified.  
 
 - Similar to above, maybe create a FileResource object and provide a way to 
   "register" it when classes need to write files, labeling them as "backup", 
@@ -78,20 +48,12 @@ TODO:
   mention its scope, to say if it can be shared between threads, crawler,
   all or else (multiple collectors??).
 
-- Add <regex> to RegexReferenceFilter to match how it is done
-  in Importer.
-
 - Rename RegexReferenceFilter to avoid confusion with class of the same name
   in Importer.
-
-- Add a new flag to start crawling "fresh" (deleting the crawl database).
 
 - In Allow crawler to "expire" after configurable delay if 
   activeCount in AbstractCrawler#processNextReference is equal or less
   than number of thread and the crawler has been running idle for too long.
-
-- Consider adding metadata checksummer to AbstractCrawlerConfig
-  given there are already metadata filters. Add Metadata checksum stage as well?
 
 - Refactor the whole approach of passing if new or modified to simplify it.
 
@@ -103,9 +65,6 @@ TODO:
   client-server databases.  Ship with no drivers
   except maybe for testing (or 1 for convenience, like H2).
 
-- Consider changing default base directory for logs and progress 
-  (to avoid logs and progress appearing twice in path by default).
-  
 - Consider a way to merge documents by temporarily storing mergeable
   docs in a queue until all mergable siblings are encountered.
   Maybe this should be made a wrapping committer instead?
