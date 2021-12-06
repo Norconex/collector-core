@@ -33,7 +33,6 @@ import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.collector.core.store.DataStoreException;
 import com.norconex.collector.core.store.IDataStore;
 import com.norconex.collector.core.store.IDataStoreEngine;
-import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
@@ -69,7 +68,7 @@ import com.zaxxer.hikari.HikariDataSource;
  * </p>
  *
  * {@nx.xml.usage
- * <dataStoreEngine class="com.norconex.collector.core.store.impl.jdbc.JdbcDataStoreEngine" />
+ * <dataStoreEngine class="com.norconex.collector.core.store.impl.jdbc.JdbcDataStoreEngine">
  *   <!-- Hikari datasource configuration properties: -->
  *   <datasource>
  *     <property name="(property name)">(property value)</property>
@@ -91,7 +90,7 @@ import com.zaxxer.hikari.HikariDataSource;
  * }
  *
  * {@nx.xml.example
- * <dataStoreEngine class="JdbcDataStoreEngine" />
+ * <dataStoreEngine class="JdbcDataStoreEngine">
  *   <datasource>
  *     <property name="jdbcUrl">jdbc:mysql://localhost:33060/sample</property>
  *     <property name="username">dbuser</property>
@@ -161,8 +160,10 @@ public class JdbcDataStoreEngine
     public void init(Crawler crawler) {
         // create a clean table name prefix to avoid collisions in case
         // multiple crawlers use the same DB.
-        this.tablePrefix = FileUtil.toSafeFileName(
-                crawler.getCollector().getId() + "_" + crawler.getId() + "_");
+        if (this.tablePrefix == null) {
+            this.tablePrefix = crawler.getCollector().getId()
+                    + "_" + crawler.getId() + "_";
+        }
 
         // create data source
         datasource = new HikariDataSource(
@@ -186,14 +187,14 @@ public class JdbcDataStoreEngine
     public boolean clean() {
         // the table storing the store types is not returned by getStoreNames
         // so we have to explicitly delete it.
-        dropStore(STORE_TYPES_NAME);
         Set<String> names = getStoreNames();
-        if (!names.isEmpty()) {
+        boolean hasStores = !names.isEmpty();
+        if (hasStores) {
             names.stream().forEach(this::dropStore);
-            close();
-            return true;
         }
-        return false;
+        dropStore(STORE_TYPES_NAME);
+        close();
+        return hasStores;
     }
 
     @Override
@@ -209,7 +210,8 @@ public class JdbcDataStoreEngine
     }
 
     @Override
-    public <T> IDataStore<T> openStore(String storeName, Class<T> type) {
+    public <T> IDataStore<T> openStore(
+            String storeName, Class<? extends T> type) {
         storeTypes.save(storeName, type.getName());
         return new JdbcDataStore<>(this, storeName, type);
     }
@@ -301,11 +303,6 @@ public class JdbcDataStoreEngine
         setTimestapType(
                 xml.getString("dataTypes/timestamp/@use", getTimestapType()));
         setTextType(xml.getString("dataTypes/text/@use", getTextType()));
-        for (XML node : nodes) {
-            String name = node.getString("@name");
-            String value = node.getString(".");
-            configProperties.add(name, value);
-        }
     }
 
     @Override
@@ -340,7 +337,10 @@ public class JdbcDataStoreEngine
         }
     }
     String tableName(String storeName) {
-        return tablePrefix + storeName;
+        String n = tablePrefix + storeName.trim();
+        n = n.replaceFirst("(?i)^[^a-z]", "x");
+        n = n.replaceAll("\\W+", "_");
+        return n;
     }
 
     boolean tableExist(String tableName) {
@@ -359,6 +359,4 @@ public class JdbcDataStoreEngine
                     "Could not check if table '" + tableName + "' exists.", e);
         }
     }
-
-
 }

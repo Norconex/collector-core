@@ -28,6 +28,7 @@ import com.mongodb.MongoNamespace;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.FindOneAndDeleteOptions;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.RenameCollectionOptions;
@@ -43,11 +44,13 @@ public class MongoDataStore<T> implements IDataStore<T> {
     private final MongoCollection<Document> collection;
     private final ReplaceOptions replaceOptions =
             new ReplaceOptions().upsert(true);
-    private final Class<T> type;
+    private final FindOneAndDeleteOptions findOneAndDeleteOptions =
+            new FindOneAndDeleteOptions().sort(fifoSort());
+    private final Class<? extends T> type;
     private static final Gson GSON = new Gson();
 
     MongoDataStore(
-            MongoDatabase db, String name, Class<T> type) {
+            MongoDatabase db, String name, Class<? extends T> type) {
         super();
         this.type = type;
         requireNonNull(db, "'db' must not be null.");
@@ -100,7 +103,8 @@ public class MongoDataStore<T> implements IDataStore<T> {
 
     @Override
     public Optional<T> deleteFirst() {
-        return unwrap(collection.findOneAndDelete(fifoSort()));
+        return unwrap(collection.findOneAndDelete(
+                new Document(), findOneAndDeleteOptions));
     }
 
     @Override

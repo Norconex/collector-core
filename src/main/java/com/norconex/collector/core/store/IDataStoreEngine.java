@@ -27,7 +27,7 @@ public interface IDataStoreEngine extends Closeable {
     @Override
     void close();
 
-    <T> IDataStore<T> openStore(String name, Class<T> type);
+    <T> IDataStore<T> openStore(String name, Class<? extends T> type);
     boolean dropStore(String name);
 
     // returns true if target was deleted

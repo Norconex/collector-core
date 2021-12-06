@@ -7,6 +7,36 @@
   </properties>
   <body>
 
+    <release version="2.0.0-SNAPSHOT" date="2021-??-??"
+        description="Changes since RC1.">
+      <action dev="essiembre" type="update">
+        Updated dependencies to avoid logging library detection conflict. 
+      </action>
+      <action dev="essiembre" type="update">
+        Updated JdbcDataStoreEngine table name automatic creation to take into
+        account more special characters.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed JdbcDataStoreEngine XML configuration being loaded twice. 
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed MongoDataStore#deleteFirst not successfully deleting and
+        returning the first record.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed data store deserialization not taking into account sub-types,
+        affecting JDBC and MongoDB implementations.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed data store engine resources not being being included as part
+        of the crawler resource cleaning process.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed throwing an error when trying to log the execution summary
+        after the data store engine was closed. 
+      </action>
+    </release>
+
     <release version="2.0.0-RC1" date="2021-10-09" 
         description="Release Candidate 1.">
       <action dev="essiembre" type="add">

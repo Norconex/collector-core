@@ -84,6 +84,7 @@ public class MongoDataStoreEngine
 
     @Override
     public void init(Crawler crawler) {
+        LOG.info("Initializing MongoDB data store engine...");
         // create a clean db name
         String dbName = crawler.getCollector().getId() + "_" + crawler.getId();
         dbName = FileUtil.toSafeFileName(dbName);
@@ -104,6 +105,7 @@ public class MongoDataStoreEngine
         database = client.getDatabase(dbName);
 
         storeTypes = database.getCollection(STORE_TYPES_KEY);
+        LOG.info("MongoDB data store engine initialized.");
     }
 
     @Override
@@ -125,7 +127,7 @@ public class MongoDataStoreEngine
     }
 
     @Override
-    public <T> IDataStore<T> openStore(String name, Class<T> type) {
+    public <T> IDataStore<T> openStore(String name, Class<? extends T> type) {
         storeTypes.replaceOne(idFilter(name), new Document().append(
                 "id", name).append("type", type.getName()));
         return new MongoDataStore<>(database, name, type);

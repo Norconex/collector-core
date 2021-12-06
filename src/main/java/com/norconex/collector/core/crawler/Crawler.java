@@ -273,13 +273,16 @@ public abstract class Crawler {
                 afterCrawlerExecution();
             } finally {
                 progressLogger.stopTracking();
-                destroyCrawler();
+                try {
+                    LOG.info("Execution Summary:{}",
+                            progressLogger.getExecutionSummary());
+                } finally {
+                    destroyCrawler();
+                }
             }
             if (Boolean.getBoolean("enableJMX")) {
                 CrawlerMonitorJMX.unregister(this);
             }
-            LOG.info("Execution Summary:{}",
-                    progressLogger.getExecutionSummary());
         }
     }
 
@@ -309,7 +312,8 @@ public abstract class Crawler {
         this.downloadDir = getWorkDir().resolve("downloads");
         this.dataStoreEngine = config.getDataStoreEngine();
         this.dataStoreEngine.init(this);
-        this.crawlDocInfoService = new CrawlDocInfoService(this);
+        this.crawlDocInfoService = new CrawlDocInfoService(
+                this, getCrawlDocInfoType());
 
         //--- Committers ---
         // index will be appended to committer workdir for each one
@@ -327,7 +331,7 @@ public abstract class Crawler {
         return resuming;
     }
 
-    protected Class<? extends CrawlDocInfo> getCrawlReferenceType() {
+    protected Class<? extends CrawlDocInfo> getCrawlDocInfoType() {
         return CrawlDocInfo.class;
     }
 
@@ -348,6 +352,7 @@ public abstract class Crawler {
                     .build());
         try {
             committers.clean();
+            dataStoreEngine.clean();
             destroyCrawler();
             FileUtils.deleteDirectory(getTempDir().toFile());
             FileUtils.deleteDirectory(getWorkDir().toFile());

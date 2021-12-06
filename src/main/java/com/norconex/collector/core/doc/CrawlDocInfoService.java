@@ -63,14 +63,18 @@ public class CrawlDocInfoService implements Closeable {
     //TODO split into rejected/accepted?
     private IDataStore<CrawlDocInfo> processed;
     private IDataStore<CrawlDocInfo> cached;
+    private Class<? extends CrawlDocInfo> type;
 
     private final Crawler crawler;
 
     private boolean open;
 
-    public CrawlDocInfoService(Crawler crawler) {
+    public CrawlDocInfoService(
+            Crawler crawler, Class<? extends CrawlDocInfo> type) {
         this.crawler = Objects.requireNonNull(
                 crawler, "'crawler' must not be null.");
+        this.type = Objects.requireNonNull(
+                type, "'type' must not be null.");
     }
 
     // return true if resuming, false otherwise
@@ -81,10 +85,10 @@ public class CrawlDocInfoService implements Closeable {
 
         IDataStoreEngine storeEngine = crawler.getDataStoreEngine();
 
-        queue = storeEngine.openStore("queued", CrawlDocInfo.class);
-        active = storeEngine.openStore("active", CrawlDocInfo.class);
-        processed = storeEngine.openStore("processed", CrawlDocInfo.class);
-        cached = storeEngine.openStore("cached", CrawlDocInfo.class);
+        queue = storeEngine.openStore("queued", type);
+        active = storeEngine.openStore("active", type);
+        processed = storeEngine.openStore("processed", type);
+        cached = storeEngine.openStore("cached", type);
 
         boolean resuming = !isQueueEmpty() || !isActiveEmpty();
 

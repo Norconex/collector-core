@@ -14,6 +14,7 @@
  */
 package com.norconex.collector.core.store.impl.mvstore;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -123,16 +124,17 @@ public class MVStoreDataStoreEngine
 
     @Override
     public boolean clean() {
-        dropStore(STORE_TYPES_KEY);
         Set<String> names = getStoreNames();
         boolean hadStores = false;
         if (!names.isEmpty()) {
             hadStores = true;
             names.stream().forEach(this::dropStore);
-            close();
         }
+        dropStore(STORE_TYPES_KEY);
+        File dirToDelete = engineDir.toFile();
+        close();
         try {
-            FileUtils.deleteDirectory(engineDir.toFile());
+            FileUtils.deleteDirectory(dirToDelete);
         } catch (IOException e) {
             throw new CollectorException(
                     "Could not delete data store directory.", e);
@@ -153,7 +155,7 @@ public class MVStoreDataStoreEngine
     }
     @Override
     public synchronized <T> IDataStore<T> openStore(
-            String name, Class<T> type) {
+            String name, Class<? extends T> type) {
         storeTypes.put(name, type);
         return new MVStoreDataStore<>(mvstore,  name);
     }
@@ -161,11 +163,16 @@ public class MVStoreDataStoreEngine
     public synchronized boolean dropStore(String name) {
         if (mvstore.hasMap(name)) {
             mvstore.removeMap(name);
-            storeTypes.remove(name);
+            if (STORE_TYPES_KEY.equals(name)) {
+                storeTypes = null;
+            } else {
+                storeTypes.remove(name);
+            }
             return true;
         }
         return false;
     }
+
     @Override
     public boolean renameStore(IDataStore<?> store, String newName) {
         MVStoreDataStore<?> mvDateStore = (MVStoreDataStore<?>) store;

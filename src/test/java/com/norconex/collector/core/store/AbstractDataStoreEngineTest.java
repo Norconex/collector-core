@@ -136,6 +136,19 @@ public abstract class AbstractDataStoreEngineTest {
     }
 
     @Test
+    void testDeleteFirst() {
+        savePojo(obj);
+
+        inNewStoreSession((store) -> {
+            Assertions.assertEquals(1, store.count());
+            Assertions.assertTrue(store.deleteFirst().isPresent());
+        });
+        inNewStoreSession((store) -> {
+            Assertions.assertEquals(0, store.count());
+        });
+    }
+
+    @Test
     void testModify() {
         // 1st save:
         savePojo(obj);

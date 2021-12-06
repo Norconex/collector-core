@@ -41,13 +41,13 @@ public class JdbcDataStore<T> implements IDataStore<T> {
     private final JdbcDataStoreEngine engine;
     private String tableName;
     private String storeName;
-    private final Class<T> type;
+    private final Class<? extends T> type;
     private final TableAdapter adapter;
 
     JdbcDataStore(
             JdbcDataStoreEngine engine,
             String storeName,
-            Class<T> type) {
+            Class<? extends T> type) {
         super();
         this.engine = requireNonNull(engine, "'engine' must not be null.");
         this.type = requireNonNull(type, "'type' must not be null.");
