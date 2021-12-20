@@ -227,7 +227,7 @@ public abstract class Collector {
             int poolSize,
             Function<Integer, ExecutorService> poolSupplier,
             BiConsumer<ExecutorService, Runnable> crawlerExecuter) {
-        final CountDownLatch latch = new CountDownLatch(poolSize);
+        final CountDownLatch latch = new CountDownLatch(crawlers.size());
         ExecutorService pool = poolSupplier.apply(poolSize);
         crawlers.forEach(c -> crawlerExecuter.accept(pool, () -> {
             c.start();
@@ -237,8 +237,9 @@ public abstract class Collector {
             latch.await();
             pool.shutdown();
         } catch (InterruptedException e) {
-             Thread.currentThread().interrupt();
-             throw new CollectorException(e);
+            pool.shutdownNow();
+            Thread.currentThread().interrupt();
+            throw new CollectorException(e);
         }
     }
 

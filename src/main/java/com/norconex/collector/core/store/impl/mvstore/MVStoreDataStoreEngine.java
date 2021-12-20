@@ -46,7 +46,7 @@ public class MVStoreDataStoreEngine
             LoggerFactory.getLogger(MVStoreDataStoreEngine.class);
 
     private static final String STORE_TYPES_KEY =
-            MVStoreDataStoreEngine.class.getName() + "--storetypes";
+            MVStoreDataStoreEngine.class.getSimpleName() + "--storetypes";
 
     private final MVStoreDataStoreConfig cfg = new MVStoreDataStoreConfig();
 

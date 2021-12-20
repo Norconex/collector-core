@@ -51,7 +51,7 @@ import com.norconex.commons.lang.xml.XML;
  * </p>
  *
  * {@nx.xml.usage
- * <dataStoreEngine class="com.norconex.collector.core.store.impl.mongodb.MongoDataStoreEngine" />
+ * <dataStoreEngine class="MongoDataStoreEngine" />
  *   <connectionString>(MongoDB connection string.)</connectionString>
  * </dataStoreEngine>
  * }
@@ -65,7 +65,7 @@ public class MongoDataStoreEngine
             LoggerFactory.getLogger(MongoDataStoreEngine.class);
 
     private static final String STORE_TYPES_KEY =
-            MongoDataStoreEngine.class.getName() + "--storetypes";
+            MongoDataStoreEngine.class.getSimpleName() + "--storetypes";
 
     // Non-configurable:
     private MongoClient client;

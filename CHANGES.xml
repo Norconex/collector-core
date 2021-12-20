@@ -10,11 +10,20 @@
     <release version="2.0.0-SNAPSHOT" date="2021-??-??"
         description="Changes since RC1.">
       <action dev="essiembre" type="update">
+        The name of the data store engine "storetypes" collection/table has 
+        been shorten to just the class "simple" name + "--storetypes".
+      </action>
+      <action dev="essiembre" type="update">
         Updated dependencies to avoid logging library detection conflict. 
       </action>
       <action dev="essiembre" type="update">
         Updated JdbcDataStoreEngine table name automatic creation to take into
         account more special characters.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed "maxConcurrentCrawlers" throwing IllegalStateException with 
+        "Connection Pool Shut Down" message when different than default value
+        or does not match the number of crawlers.
       </action>
       <action dev="essiembre" type="fix">
         Fixed JdbcDataStoreEngine XML configuration being loaded twice. 
