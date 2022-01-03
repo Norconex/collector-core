@@ -1,4 +1,4 @@
-/* Copyright 2021 Norconex Inc.
+/* Copyright 2021-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package com.norconex.collector.core.store.impl.jdbc;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,8 @@ public class JdbcDataStoreEngineTest extends AbstractDataStoreEngineTest {
     @Override
     protected IDataStoreEngine createEngine() {
         return Assertions.assertDoesNotThrow(() -> {
-            String connStr = "jdbc:h2:" + tempFolder.toUri().toURL() + "test";
+            String connStr = "jdbc:h2:file:" + StringUtils.removeStart(
+                    tempFolder.toUri().toURL() + "test", "file:/");
             LOG.info("Creating new JDBC data store engine using: {}", connStr);
             JdbcDataStoreEngine engine = new JdbcDataStoreEngine();
             Properties cfg = new Properties();

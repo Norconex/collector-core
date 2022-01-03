@@ -27,6 +27,7 @@ import static com.norconex.collector.core.crawler.CrawlerEvent.CRAWLER_STOP_END;
 import static com.norconex.collector.core.crawler.CrawlerEvent.DOCUMENT_IMPORTED;
 import static com.norconex.collector.core.crawler.CrawlerEvent.REJECTED_ERROR;
 import static com.norconex.collector.core.crawler.CrawlerEvent.REJECTED_IMPORT;
+import static java.util.Optional.ofNullable;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -391,13 +392,13 @@ public abstract class Crawler {
     }
 
     protected void destroyCrawler() {
-        crawlDocInfoService.close();
-        dataStoreEngine.close();
+        ofNullable(crawlDocInfoService).ifPresent(CrawlDocInfoService::close);
+        ofNullable(dataStoreEngine).ifPresent(IDataStoreEngine::close);
 
         //TODO shall we clear crawler listeners, or leave to collector impl
         // to clean all?
         // eventManager.clearListeners();
-        committers.close();
+        ofNullable(committers).ifPresent(CrawlerCommitterService::close);
     }
 
     // Really needed since we have events for that now?

@@ -7,8 +7,14 @@
   </properties>
   <body>
 
-    <release version="2.0.0-SNAPSHOT" date="2021-??-??"
-        description="Changes since RC1.">
+    <release version="2.0.0" date="2022-01-02"
+            description="Major release. NOT a drop-in replacement for 1.x.">
+
+      <!-- 2.0.0 (GA) -->
+
+      <action dev="essiembre" type="update">
+        Updated transitive dependencies with known vulnerabilities.
+      </action>
       <action dev="essiembre" type="update">
         The name of the data store engine "storetypes" collection/table has 
         been shorten to just the class "simple" name + "--storetypes".
@@ -44,10 +50,9 @@
         Fixed throwing an error when trying to log the execution summary
         after the data store engine was closed. 
       </action>
-    </release>
-
-    <release version="2.0.0-RC1" date="2021-10-09" 
-        description="Release Candidate 1.">
+      
+      <!-- 2.0.0-RC1 -->      
+      
       <action dev="essiembre" type="add">
         New StopCrawlerOnMaxEventListener class to stop crawlers upon reaching
         a maximum number of specific crawler events.
@@ -89,10 +94,9 @@
       <action dev="essiembre" type="fix">
         Fixed invalid configuration in POM "maven-dependency-plugin".
       </action>
-    </release>
-
-    <release version="2.0.0-M2" date="2021-07-28" 
-        description="Changes since last milestone for this upcoming major release.">
+      
+      <!-- 2.0.0-M2 -->
+      
       <action dev="essiembre" type="add">
         Added JdbcDataStoreEngine as a data store implementation.
       </action>
@@ -112,11 +116,9 @@
       <action dev="essiembre" type="remove">
         Removed JEF dependency in favor of improved JMX for tracking.
       </action>      
-    </release>
 
-    
-    <release version="2.0.0-M1" date="2021-03-01" 
-        description="Milestone towards next major release">
+      <!-- 2.0.0-M1 -->
+
       <action dev="essiembre" type="add">
         Now supports providing multiple committers.
       </action>
