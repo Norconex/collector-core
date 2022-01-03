@@ -14,6 +14,9 @@
  */
 package com.norconex.collector.core.store.impl.jdbc;
 
+import static org.apache.commons.lang3.StringUtils.removeStart;
+import static org.apache.commons.lang3.StringUtils.startsWithIgnoreCase;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -259,10 +262,13 @@ public class JdbcDataStoreEngine
             try (ResultSet rs = conn.getMetaData().getTables(
                     null, null, "%", new String[]{"TABLE"})) {
                 while (rs.next()) {
-                    String name = rs.getString(3);
-                    if (StringUtils.startsWithIgnoreCase(name, tablePrefix)
-                            && !name.equalsIgnoreCase(storeTypes.getName())) {
-                        names.add(name);
+                    String tableName = rs.getString(3);
+                    if (startsWithIgnoreCase(tableName, tablePrefix)) {
+                        // only add if not the table holding store types
+                        String storeName = removeStart(tableName, tablePrefix);
+                        if (!STORE_TYPES_NAME.equalsIgnoreCase(storeName)) {
+                            names.add(storeName);
+                        }
                     }
                 }
             }

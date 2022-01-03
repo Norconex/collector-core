@@ -32,6 +32,9 @@
         or does not match the number of crawlers.
       </action>
       <action dev="essiembre" type="fix">
+        Fixed JdbcDataStoreEngine#getStoreNames not returning proper names. 
+      </action>
+      <action dev="essiembre" type="fix">
         Fixed JdbcDataStoreEngine XML configuration being loaded twice. 
       </action>
       <action dev="essiembre" type="fix">

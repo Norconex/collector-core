@@ -94,11 +94,11 @@ public class MVStoreDataStoreEngine
             builder.autoCompactFillRate(cfg.getAutoCompactFillRate());
         }
         if (cfg.getAutoCommitBufferSize() != null) {
-            //MVStore expects it as kilobyutes
+            //MVStore expects it as kilobytes
             builder.autoCommitBufferSize(DataUnit.B.to(
                     cfg.getAutoCommitBufferSize(), DataUnit.KB).intValue());
         }
-        if (Integer.valueOf(0).equals(cfg.getAutoCommitDelay())) {
+        if (Long.valueOf(0).equals(cfg.getAutoCommitDelay())) {
             builder.autoCommitDisabled();
         }
         builder.fileName(
