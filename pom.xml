@@ -233,11 +233,11 @@
   <distributionManagement>
     <site>
       <id>norconex-site-deployment</id>
-      <url>${site.baseurl}/collectors/core/v2</url>
+      <url>${site.baseurl}/crawlers/core/v2</url>
     </site>
   </distributionManagement>
 
-  <url>https://opensource.norconex.com/collectors/core</url>
+  <url>https://opensource.norconex.com/crawlers/core</url>
   <description>Norconex Collector Core contains core functionalities shared between collectors.</description>
   <issueManagement>
     <system>GitHub</system>
