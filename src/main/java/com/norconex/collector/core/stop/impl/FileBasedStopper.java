@@ -17,6 +17,7 @@ package com.norconex.collector.core.stop.impl;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
@@ -62,19 +63,24 @@ public class FileBasedStopper implements ICollectorStopper {
             }
         }
 
-        Executors.newSingleThreadExecutor().submit(() -> {
-            Thread.currentThread().setName("Collector stop file monitor");
-            monitoring = true;
-            while(monitoring) {
-                if (stopFile.toFile().exists()) {
-                    stopMonitoring(startedCollector);
-                    LOG.info("STOP request received.");
-                    startedCollector.stop();
+        ExecutorService execService = Executors.newSingleThreadExecutor();
+        try {
+            execService.submit(() -> {
+                Thread.currentThread().setName("Collector stop file monitor");
+                monitoring = true;
+                while(monitoring) {
+                    if (stopFile.toFile().exists()) {
+                        stopMonitoring(startedCollector);
+                        LOG.info("STOP request received.");
+                        startedCollector.stop();
+                    }
+                    Sleeper.sleepMillis(100);
                 }
-                Sleeper.sleepMillis(100);
-            }
-            return null;
-        });
+                return null;
+            });
+        } finally {
+            execService.shutdownNow();
+        }
     }
 
     @Override

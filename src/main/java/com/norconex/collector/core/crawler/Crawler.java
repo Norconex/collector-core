@@ -124,7 +124,7 @@ public abstract class Crawler {
         Objects.requireNonNull(config, "'collector' must not be null");
         this.config = config;
         this.collector = collector;
-        this.committers = new CrawlerCommitterService(this);
+        committers = new CrawlerCommitterService(this);
     }
 
     /**
@@ -310,10 +310,10 @@ public abstract class Crawler {
         }
 
         //--- Directories ---
-        this.downloadDir = getWorkDir().resolve("downloads");
-        this.dataStoreEngine = config.getDataStoreEngine();
-        this.dataStoreEngine.init(this);
-        this.crawlDocInfoService = new CrawlDocInfoService(
+        downloadDir = getWorkDir().resolve("downloads");
+        dataStoreEngine = config.getDataStoreEngine();
+        dataStoreEngine.init(this);
+        crawlDocInfoService = new CrawlDocInfoService(
                 this, getCrawlDocInfoType());
 
         //--- Committers ---
@@ -510,20 +510,20 @@ public abstract class Crawler {
     protected void processReferences(final ProcessFlags flags) {
         int numThreads = getCrawlerConfig().getNumThreads();
         final CountDownLatch latch = new CountDownLatch(numThreads);
-        ExecutorService pool = Executors.newFixedThreadPool(numThreads);
-
-        for (int i = 0; i < numThreads; i++) {
-            final int threadIndex = i + 1;
-            LOG.debug("Crawler thread #{} starting...", threadIndex);
-            pool.execute(new ProcessReferencesRunnable(
-                    latch, flags, threadIndex));
-        }
+        ExecutorService execService = Executors.newFixedThreadPool(numThreads);
         try {
+            for (int i = 0; i < numThreads; i++) {
+                final int threadIndex = i + 1;
+                LOG.debug("Crawler thread #{} starting...", threadIndex);
+                execService.execute(new ProcessReferencesRunnable(
+                        latch, flags, threadIndex));
+            }
             latch.await();
-            pool.shutdown();
         } catch (InterruptedException e) {
              Thread.currentThread().interrupt();
              throw new CollectorException(e);
+        } finally {
+            execService.shutdown();
         }
     }
 
@@ -782,21 +782,19 @@ public abstract class Crawler {
                                     CrawlState.DELETED)) {
                         deleteReference(doc);
                     }
-                } else {
-                    // GRACE_ONCE:
-                    // Delete if previous state exists and is a bad state,
-                    // but not already marked as deleted.
-                    if (cachedDocInfo != null
-                            && !cachedDocInfo.getState().isOneOf(
-                                    CrawlState.DELETED)) {
-                        if (!cachedDocInfo.getState().isGoodState()) {
-                            deleteReference(doc);
-                        } else {
-                            LOG.debug("This spoiled reference is "
-                                    + "being graced once (will be deleted "
-                                    + "next time if still spoiled): {}",
-                                    docInfo.getReference());
-                        }
+                } else // GRACE_ONCE:
+                // Delete if previous state exists and is a bad state,
+                // but not already marked as deleted.
+                if (cachedDocInfo != null
+                        && !cachedDocInfo.getState().isOneOf(
+                                CrawlState.DELETED)) {
+                    if (!cachedDocInfo.getState().isGoodState()) {
+                        deleteReference(doc);
+                    } else {
+                        LOG.debug("This spoiled reference is "
+                                + "being graced once (will be deleted "
+                                + "next time if still spoiled): {}",
+                                docInfo.getReference());
                     }
                 }
             }
@@ -875,15 +873,15 @@ public abstract class Crawler {
     }
 
     //TODO make enum if never mixed, and add "default"
-    private final class ProcessFlags {
+    private static final class ProcessFlags {
         private boolean delete;
         private boolean orphan;
         private ProcessFlags delete() {
-            this.delete = true;
+            delete = true;
             return this;
         }
         private ProcessFlags orphan() {
-            this.orphan = true;
+            orphan = true;
             return this;
         }
     }
@@ -924,7 +922,8 @@ public abstract class Crawler {
                         if (status == MAX_REACHED) {
                             stop();
                             break;
-                        } else if (status == QUEUE_EMPTY) {
+                        }
+                        if (status == QUEUE_EMPTY) {
                             if (isQueueInitialized()) {
                                 break;
                             }

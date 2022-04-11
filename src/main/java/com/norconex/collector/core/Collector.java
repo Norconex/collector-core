@@ -34,13 +34,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -89,7 +90,7 @@ public abstract class Collector {
             new InheritableThreadLocal<>();
 
     private final CollectorConfig collectorConfig;
-    private final List<Crawler> crawlers = new ArrayList<>();
+    private final List<Crawler> crawlers = new CopyOnWriteArrayList<>();
     private final EventManager eventManager;
 
     private CachedStreamFactory streamFactory;
@@ -182,15 +183,15 @@ public abstract class Collector {
             eventManager.fire(new CollectorEvent.Builder(
                     COLLECTOR_RUN_BEGIN, this).build());
 
-            List<Crawler> crawlers = getCrawlers();
+            List<Crawler> crawlerList = getCrawlers();
             int maxConcurrent = collectorConfig.getMaxConcurrentCrawlers();
             if (maxConcurrent <= 0) {
-                maxConcurrent = crawlers.size();
+                maxConcurrent = crawlerList.size();
             }
 
-            if (crawlers.size() == 1) {
+            if (crawlerList.size() == 1) {
                 // no concurrent crawlers, just start
-                crawlers.forEach(Crawler::start);
+                crawlerList.forEach(Crawler::start);
             } else {
                 // Multilpe crawlers, run concurrently
                 startConcurrentCrawlers(maxConcurrent);
@@ -225,21 +226,27 @@ public abstract class Collector {
     }
     private void startConcurrentCrawlers(
             int poolSize,
-            Function<Integer, ExecutorService> poolSupplier,
+            IntFunction<ExecutorService> poolSupplier,
             BiConsumer<ExecutorService, Runnable> crawlerExecuter) {
         final CountDownLatch latch = new CountDownLatch(crawlers.size());
         ExecutorService pool = poolSupplier.apply(poolSize);
-        crawlers.forEach(c -> crawlerExecuter.accept(pool, () -> {
-            c.start();
-            latch.countDown();
-        }));
         try {
+            getCrawlers().forEach(c -> crawlerExecuter.accept(pool, () -> {
+                c.start();
+                latch.countDown();
+            }));
             latch.await();
-            pool.shutdown();
         } catch (InterruptedException e) {
-            pool.shutdownNow();
             Thread.currentThread().interrupt();
             throw new CollectorException(e);
+        } finally {
+            pool.shutdown();
+            try {
+                pool.awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                LOG.error("Collector thread pool interrupted.", e);
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
@@ -272,9 +279,8 @@ public abstract class Collector {
             initCollector();
             eventManager.fire(new CollectorEvent.Builder(
                     COLLECTOR_STORE_IMPORT_BEGIN, this).build());
-            inFiles.forEach(f -> {
-                getCrawlers().forEach(c -> c.importDataStore(f));
-            });
+            inFiles.forEach(
+                    f -> getCrawlers().forEach(c -> c.importDataStore(f)));
             destroyCollector();
             eventManager.fire(new CollectorEvent.Builder(
                     COLLECTOR_STORE_IMPORT_END, this).build());
@@ -313,7 +319,7 @@ public abstract class Collector {
         createCrawlers();
 
         //--- Register event listeners ---
-        eventManager.addListenersFromScan(this.collectorConfig);
+        eventManager.addListenersFromScan(collectorConfig);
 
         //TODO move this code to a config validator class?
         //--- Ensure good state/config ---
@@ -386,7 +392,7 @@ public abstract class Collector {
     private void createCrawlers() {
         if (getCrawlers().isEmpty()) {
             List<CrawlerConfig> crawlerConfigs =
-                    this.collectorConfig.getCrawlerConfigs();
+                    collectorConfig.getCrawlerConfigs();
             if (crawlerConfigs != null) {
                 for (CrawlerConfig crawlerConfig : crawlerConfigs) {
                     crawlers.add(createCrawler(crawlerConfig));
