@@ -36,7 +36,7 @@ public final class MdcUtil {
      *   </li>
      *   <li>
      *     <code>crawler.id.safe</code> &rarr; the crawler id encoded
-     *     to be safe to use as filename on any file system, as
+     *     to be safe to use as a file name on any file system, as
      *     per {@link FileUtil}.
      *   </li>
      * </ul>
@@ -55,7 +55,8 @@ public final class MdcUtil {
      *   </li>
      *   <li>
      *     <code>collector.id.safe</code> &rarr; the collector id encoded to be
-     *     safe to use as filename on any file system, as per {@link FileUtil}.
+     *     safe to use as a file name on any file system, as
+     *     per {@link FileUtil}.
      *   </li>
      * </ul>
      * @param collectorId collector id
