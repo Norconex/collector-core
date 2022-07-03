@@ -1,4 +1,4 @@
-/* Copyright 2014-2021 Norconex Inc.
+/* Copyright 2014-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,9 +47,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.collector.core.crawler.CrawlerConfig;
+import com.norconex.collector.core.monitor.MdcUtil;
 import com.norconex.collector.core.stop.ICollectorStopper;
 import com.norconex.collector.core.stop.impl.FileBasedStopper;
 import com.norconex.committer.core3.ICommitter;
@@ -170,7 +172,7 @@ public abstract class Collector {
      * Starts all crawlers defined in configuration.
      */
     public void start() {
-
+        MdcUtil.setCollectorId(getId());
         Thread.currentThread().setName(getId());
 
         // Version intro
@@ -251,6 +253,7 @@ public abstract class Collector {
     }
 
     public void clean() {
+        MdcUtil.setCollectorId(getId());
         Thread.currentThread().setName(getId() + "/CLEAN");
         lock();
         try {
@@ -273,6 +276,7 @@ public abstract class Collector {
     }
 
     public void importDataStore(List<Path> inFiles) {
+        MdcUtil.setCollectorId(getId());
         Thread.currentThread().setName(getId() + "/IMPORT");
         lock();
         try {
@@ -290,6 +294,7 @@ public abstract class Collector {
         }
     }
     public void exportDataStore(Path dir) {
+        MdcUtil.setCollectorId(getId());
         Thread.currentThread().setName(getId() + "/EXPORT");
         lock();
         try {
@@ -344,6 +349,7 @@ public abstract class Collector {
             eventManager.clearListeners();
             unlock();
         }
+        MDC.clear();
     }
 
     public void fireStopRequest() {
@@ -359,7 +365,7 @@ public abstract class Collector {
             LOG.info("CANNOT STOP: Collector is not running.");
             return;
         }
-
+        MdcUtil.setCollectorId(getId());
         Thread.currentThread().setName(getId() + "/STOP");
         eventManager.fire(new CollectorEvent.Builder(
                 CollectorEvent.COLLECTOR_STOP_BEGIN, this).build());

@@ -1,4 +1,4 @@
-/* Copyright 2014-2021 Norconex Inc.
+/* Copyright 2014-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ import com.norconex.collector.core.doc.CrawlDocMetadata;
 import com.norconex.collector.core.doc.CrawlState;
 import com.norconex.collector.core.monitor.CrawlerMonitor;
 import com.norconex.collector.core.monitor.CrawlerMonitorJMX;
+import com.norconex.collector.core.monitor.MdcUtil;
 import com.norconex.collector.core.pipeline.importer.ImporterPipelineContext;
 import com.norconex.collector.core.spoil.ISpoiledReferenceStrategizer;
 import com.norconex.collector.core.spoil.SpoiledReferenceStrategy;
@@ -298,6 +299,7 @@ public abstract class Crawler {
 
     protected boolean initCrawler() {
         Thread.currentThread().setName(getId());
+        MdcUtil.setCrawlerId(getId());
 
         getEventManager().fire(new CrawlerEvent.Builder(
                 CRAWLER_INIT_BEGIN, this).message(
@@ -906,6 +908,7 @@ public abstract class Crawler {
 
         @Override
         public void run() {
+            MdcUtil.setCrawlerId(getId());
             Thread.currentThread().setName(getId() + "#" + threadIndex);
 
             LOG.debug("Crawler thread #{} started.", threadIndex);

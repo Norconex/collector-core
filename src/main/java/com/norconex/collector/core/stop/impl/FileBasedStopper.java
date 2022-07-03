@@ -1,4 +1,4 @@
-/* Copyright 2021 Norconex Inc.
+/* Copyright 2021-2022 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.collector.core.Collector;
+import com.norconex.collector.core.monitor.MdcUtil;
 import com.norconex.collector.core.stop.CollectorStopperException;
 import com.norconex.collector.core.stop.ICollectorStopper;
 import com.norconex.commons.lang.Sleeper;
@@ -66,6 +67,7 @@ public class FileBasedStopper implements ICollectorStopper {
         ExecutorService execService = Executors.newSingleThreadExecutor();
         try {
             execService.submit(() -> {
+                MdcUtil.setCollectorId(startedCollector.getId());
                 Thread.currentThread().setName("Collector stop file monitor");
                 monitoring = true;
                 while(monitoring) {
