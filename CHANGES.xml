@@ -7,6 +7,12 @@
   </properties>
   <body>
 
+    <release version="2.0.2-SNAPSHOT" date="2023-??-??" description="Maintenance release">
+      <action dev="essiembre" type="update">
+        Maven dependency updates: norconex-commons-maven-parent 1.0.2-SNAPSHOT.
+      </action>
+    </release>
+  
     <release version="2.0.1" date="2022-08-30" description="Maintenance release">
       <action dev="essiembre" type="add">
         New MDC attributes which can be used in supporting logging framework:
