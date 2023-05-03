@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -56,12 +58,14 @@ import com.norconex.collector.core.stop.ICollectorStopper;
 import com.norconex.collector.core.stop.impl.FileBasedStopper;
 import com.norconex.committer.core3.ICommitter;
 import com.norconex.commons.lang.ClassFinder;
+import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.VersionUtil;
 import com.norconex.commons.lang.event.EventManager;
 import com.norconex.commons.lang.file.FileAlreadyLockedException;
 import com.norconex.commons.lang.file.FileLocker;
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.time.DurationFormatter;
 import com.norconex.importer.Importer;
 
 /**
@@ -202,11 +206,25 @@ public abstract class Collector {
             try {
                 eventManager.fire(new CollectorEvent.Builder(
                         COLLECTOR_RUN_END, this).build());
+                deferShutdown();
                 destroyCollector();
             } finally {
                 stopper.destroy();
             }
         }
+    }
+
+    private void deferShutdown() {
+        Optional.ofNullable(collectorConfig.getDeferredShutdownDuration())
+            .filter(d -> d.toMillis() > 0)
+            .ifPresent(d -> {
+                LOG.info("Deferred shutdown requested. Pausing for {} "
+                        + "starting from this UTC moment: {}",
+                        DurationFormatter.FULL.format(d),
+                        LocalDateTime.now(ZoneOffset.UTC));
+                Sleeper.sleepMillis(d.toMillis());
+                LOG.info("Shutdown resumed.");
+            });
     }
 
     private void startConcurrentCrawlers(int poolSize) {

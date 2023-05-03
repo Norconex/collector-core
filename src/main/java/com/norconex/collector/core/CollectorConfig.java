@@ -130,13 +130,16 @@ public abstract class CollectorConfig implements IXMLConfigurable {
 
     private final List<IEventListener<?>> eventListeners = new ArrayList<>();
 
-    public CollectorConfig() {
+    private Duration deferredShutdownDuration = Duration.ZERO;
+
+    protected CollectorConfig() {
         this((Class<? extends CrawlerConfig>) null);
     }
-    public CollectorConfig(
+    protected CollectorConfig(
             Class<? extends CrawlerConfig> crawlerConfigClass) {
         this.crawlerConfigClass = crawlerConfigClass;
     }
+
 
 	/**
 	 * Gets this collector unique identifier.
@@ -354,7 +357,32 @@ public abstract class CollectorConfig implements IXMLConfigurable {
      * @since 2.0.0
      */
     public void clearEventListeners() {
-        this.eventListeners.clear();
+        eventListeners.clear();
+    }
+
+    /**
+     * Gets the amount of time to defer the collector shutdown when it is
+     * done executing. This is useful for giving external processes
+     * with polling intervals enough time to grab the latest state of
+     * the collector before it shuts down.  Default is zero (does not
+     * wait to shutdown after completion).
+     * @return duration
+     * @since 2.0.2
+     */
+    public Duration getDeferredShutdownDuration() {
+        return deferredShutdownDuration;
+    }
+    /**
+     * Sets the amount of time to defer the collector shutdown when it is
+     * done executing. This is useful for giving external processes
+     * with polling intervals enough time to grab the latest state of
+     * the collector before it shuts down.  Default is zero (does not
+     * wait to shutdown after completion).
+     * @param deferredShutdownDuration duration
+     * @since 2.0.2
+     */
+    public void setDeferredShutdownDuration(Duration deferredShutdownDuration) {
+        this.deferredShutdownDuration = deferredShutdownDuration;
     }
 
     @Override
@@ -366,6 +394,8 @@ public abstract class CollectorConfig implements IXMLConfigurable {
         xml.addElement("crawlersStartInterval", getCrawlersStartInterval());
         xml.addElement("maxMemoryPool", getMaxMemoryPool());
         xml.addElement("maxMemoryInstance", getMaxMemoryInstance());
+        xml.addElement(
+                "deferredShutdownDuration", getDeferredShutdownDuration());
         xml.addElementList("eventListeners", "listener", eventListeners);
         xml.addElementList("crawlers", "crawler", getCrawlerConfigs());
         saveCollectorConfigToXML(xml);
@@ -395,6 +425,8 @@ public abstract class CollectorConfig implements IXMLConfigurable {
         setMaxMemoryPool(xml.getDataSize("maxMemoryPool", getMaxMemoryPool()));
         setMaxMemoryInstance(
                 xml.getDataSize("maxMemoryInstance", getMaxMemoryInstance()));
+        setDeferredShutdownDuration(
+                xml.getDuration("deferredShutdownDuration"));
 
         if (crawlerConfigClass != null) {
             List<CrawlerConfig> cfgs = new CrawlerConfigLoader(

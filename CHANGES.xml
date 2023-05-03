@@ -8,8 +8,12 @@
   <body>
 
     <release version="2.0.2-SNAPSHOT" date="2023-??-??" description="Maintenance release">
+      <action dev="essiembre" type="add">
+        New "deferredShutdownDuration" collector configuration option to delay
+        the collector shutdown when it's done executing.
+      </action>
       <action dev="essiembre" type="update">
-        Maven dependency updates: norconex-commons-maven-parent 1.0.2-SNAPSHOT.
+        Maven dependency updates: norconex-commons-maven-parent 1.0.2.
       </action>
     </release>
   
