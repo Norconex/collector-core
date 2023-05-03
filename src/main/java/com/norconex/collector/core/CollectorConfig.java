@@ -80,6 +80,11 @@ import com.norconex.importer.ImporterConfig;
  *   (Maximum number of bytes used for memory caching of each individual
  *    documents document. Defaults to 100 MB.)
  * </maxMemoryInstance>
+ * <deferredShutdownDuration>
+ *   (Optional amount of time to defer the collector shutdown when it is
+ *    done executing. This is useful if you have external processes that
+ *    need a bit of time to catch up. E.g.,: 10 seconds. Defaults to 0.)
+ * </deferredShutdownDuration>
  *
  * <crawlerDefaults>
  *   <!-- All crawler options defined in a "crawler" section (except for
