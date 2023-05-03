@@ -53,6 +53,7 @@ import org.slf4j.MDC;
 
 import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.collector.core.crawler.CrawlerConfig;
+import com.norconex.collector.core.monitor.CrawlerMonitorJMX;
 import com.norconex.collector.core.monitor.MdcUtil;
 import com.norconex.collector.core.stop.ICollectorStopper;
 import com.norconex.collector.core.stop.impl.FileBasedStopper;
@@ -203,28 +204,38 @@ public abstract class Collector {
                 startConcurrentCrawlers(maxConcurrent);
             }
         } finally {
-            try {
-                eventManager.fire(new CollectorEvent.Builder(
-                        COLLECTOR_RUN_END, this).build());
-                deferShutdown();
-                destroyCollector();
-            } finally {
-                stopper.destroy();
-            }
+            orderlyShutdown();
         }
     }
 
-    private void deferShutdown() {
-        Optional.ofNullable(collectorConfig.getDeferredShutdownDuration())
-            .filter(d -> d.toMillis() > 0)
-            .ifPresent(d -> {
-                LOG.info("Deferred shutdown requested. Pausing for {} "
-                        + "starting from this UTC moment: {}",
-                        DurationFormatter.FULL.format(d),
-                        LocalDateTime.now(ZoneOffset.UTC));
-                Sleeper.sleepMillis(d.toMillis());
-                LOG.info("Shutdown resumed.");
-            });
+    private void orderlyShutdown() {
+        try {
+            eventManager.fire(new CollectorEvent.Builder(
+                    COLLECTOR_RUN_END, this).build());
+
+            // Defer shutdown
+            Optional.ofNullable(collectorConfig.getDeferredShutdownDuration())
+                .filter(d -> d.toMillis() > 0)
+                .ifPresent(d -> {
+                    LOG.info("Deferred shutdown requested. Pausing for {} "
+                            + "starting from this UTC moment: {}",
+                            DurationFormatter.FULL.format(d),
+                            LocalDateTime.now(ZoneOffset.UTC));
+                    Sleeper.sleepMillis(d.toMillis());
+                    LOG.info("Shutdown resumed.");
+                });
+
+            // Unregister JMX crawlers
+            if (Boolean.getBoolean("enableJMX")) {
+                LOG.info("Unregistering JMX crawler MBeans.");
+                getCrawlers().forEach(CrawlerMonitorJMX::unregister);
+            }
+
+            // Close other collector resources
+            destroyCollector();
+        } finally {
+            stopper.destroy();
+        }
     }
 
     private void startConcurrentCrawlers(int poolSize) {

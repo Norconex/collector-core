@@ -15,6 +15,10 @@
       <action dev="essiembre" type="update">
         Maven dependency updates: norconex-commons-maven-parent 1.0.2.
       </action>
+      <action dev="essiembre" type="update">
+        JMX crawler MBeans are now unregistered as the last thing before
+        collector shutdown.
+      </action>
     </release>
   
     <release version="2.0.1" date="2022-08-30" description="Maintenance release">

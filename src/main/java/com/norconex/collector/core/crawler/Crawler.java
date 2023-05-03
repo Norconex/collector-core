@@ -282,9 +282,7 @@ public abstract class Crawler {
                     destroyCrawler();
                 }
             }
-            if (Boolean.getBoolean("enableJMX")) {
-                CrawlerMonitorJMX.unregister(this);
-            }
+            //Note: JMX MBean unregistration happens in Collector
         }
     }
 
