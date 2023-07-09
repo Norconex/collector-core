@@ -7,13 +7,14 @@
   </properties>
   <body>
 
-    <release version="2.0.2-SNAPSHOT" date="2023-??-??" description="Maintenance release">
+    <release version="2.0.2" date="2023-07-09" description="Maintenance release">
       <action dev="essiembre" type="add">
         New "deferredShutdownDuration" collector configuration option to delay
         the collector shutdown when it's done executing.
       </action>
       <action dev="essiembre" type="update">
-        Maven dependency updates: norconex-commons-maven-parent 1.0.2.
+        Maven dependency updates: norconex-commons-maven-parent 1.0.2,
+        H2 2.2.220, JSoup 1.15.3.
       </action>
       <action dev="essiembre" type="update">
         JMX crawler MBeans are now unregistered as the last thing before
