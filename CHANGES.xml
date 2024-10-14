@@ -6,7 +6,16 @@
     <author email="info@norconex.com">Norconex Inc.</author>
   </properties>
   <body>
-
+  
+    <release version="2.1.0-SNAPSHOT" date="2024-??-??">
+      <action dev="essiembre" type="update">
+        Minimum Java Version is now 11.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed crawler throwing error when issuing a stop command. 
+      </action>
+    </release>
+    
     <release version="2.0.2" date="2023-07-09" description="Maintenance release">
       <action dev="essiembre" type="add">
         New "deferredShutdownDuration" collector configuration option to delay

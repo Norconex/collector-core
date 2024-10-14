@@ -26,7 +26,6 @@ import static com.norconex.collector.core.CollectorEvent.COLLECTOR_STORE_IMPORT_
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -62,8 +61,6 @@ import com.norconex.commons.lang.ClassFinder;
 import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.VersionUtil;
 import com.norconex.commons.lang.event.EventManager;
-import com.norconex.commons.lang.file.FileAlreadyLockedException;
-import com.norconex.commons.lang.file.FileLocker;
 import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.time.DurationFormatter;
@@ -89,7 +86,6 @@ public abstract class Collector {
           + "| |\\  | |_| |  _ <| |__| |_| | |\\  | |___ /  \\ \n"
           + "|_| \\_|\\___/|_| \\_\\\\____\\___/|_| \\_|_____/_/\\_\\\n\n"
           + "============== C O L L E C T O R ==============\n";
-
     private static final Logger LOG =
             LoggerFactory.getLogger(Collector.class);
 
@@ -103,7 +99,6 @@ public abstract class Collector {
     private CachedStreamFactory streamFactory;
     private Path workDir;
     private Path tempDir;
-    private FileLocker lock;
 
     //TODO make configurable
     private final ICollectorStopper stopper = new FileBasedStopper();
@@ -162,8 +157,8 @@ public abstract class Collector {
 
     private Path createCollectorSubDirectory(Path parentDir) {
         Objects.requireNonNull(parentDir, "'parentDir' must not be null.");
-        String fileSafeId = FileUtil.toSafeFileName(getId());
-        Path subDir = parentDir.resolve(fileSafeId);
+        var fileSafeId = FileUtil.toSafeFileName(getId());
+        var subDir = parentDir.resolve(fileSafeId);
         try {
             Files.createDirectories(subDir);
         } catch (IOException e) {
@@ -190,8 +185,8 @@ public abstract class Collector {
             eventManager.fire(new CollectorEvent.Builder(
                     COLLECTOR_RUN_BEGIN, this).build());
 
-            List<Crawler> crawlerList = getCrawlers();
-            int maxConcurrent = collectorConfig.getMaxConcurrentCrawlers();
+            var crawlerList = getCrawlers();
+            var maxConcurrent = collectorConfig.getMaxConcurrentCrawlers();
             if (maxConcurrent <= 0) {
                 maxConcurrent = crawlerList.size();
             }
@@ -239,7 +234,7 @@ public abstract class Collector {
     }
 
     private void startConcurrentCrawlers(int poolSize) {
-        Duration d = collectorConfig.getCrawlersStartInterval();
+        var d = collectorConfig.getCrawlersStartInterval();
         if (d == null || d.toMillis() <= 0) {
             startConcurrentCrawlers(
                     poolSize,
@@ -259,8 +254,8 @@ public abstract class Collector {
             int poolSize,
             IntFunction<ExecutorService> poolSupplier,
             BiConsumer<ExecutorService, Runnable> crawlerExecuter) {
-        final CountDownLatch latch = new CountDownLatch(crawlers.size());
-        ExecutorService pool = poolSupplier.apply(poolSize);
+        final var latch = new CountDownLatch(crawlers.size());
+        var pool = poolSupplier.apply(poolSize);
         try {
             getCrawlers().forEach(c -> crawlerExecuter.accept(pool, () -> {
                 c.start();
@@ -284,6 +279,7 @@ public abstract class Collector {
     public void clean() {
         MdcUtil.setCollectorId(getId());
         Thread.currentThread().setName(getId() + "/CLEAN");
+
         lock();
         try {
             initCollector();
@@ -293,6 +289,7 @@ public abstract class Collector {
                                + "impact previously committed data)...")
                         .build());
             getCrawlers().forEach(Crawler::clean);
+            Thread.currentThread().setName(getId() + "/CLEAN");
             destroyCollector();
             eventManager.fire(new CollectorEvent.Builder(
                     COLLECTOR_CLEAN_END, this)
@@ -382,7 +379,10 @@ public abstract class Collector {
     }
 
     public void fireStopRequest() {
-        stopper.fireStopRequest();
+        LOG.info("Firing stop request...");
+        if (stopper.fireStopRequest(this)) {
+            LOG.info("Stop request fired.");
+        }
     }
 
     /**
@@ -390,6 +390,7 @@ public abstract class Collector {
      * different JVM instance than the instance we want to stop.
      */
     public void stop() {
+        LOG.debug("Stopping the crawler.");
         if (!isRunning()) {
             LOG.info("CANNOT STOP: Collector is not running.");
             return;
@@ -425,14 +426,15 @@ public abstract class Collector {
      * Loads all crawlers from configuration.
      */
     private void createCrawlers() {
-        if (getCrawlers().isEmpty()) {
-            List<CrawlerConfig> crawlerConfigs =
+        if (crawlers.isEmpty()) {
+            var crawlerConfigs =
                     collectorConfig.getCrawlerConfigs();
             if (crawlerConfigs != null) {
                 for (CrawlerConfig crawlerConfig : crawlerConfigs) {
                     crawlers.add(createCrawler(crawlerConfig));
                 }
             }
+            LOG.debug("Created {} crawler(s).", crawlers.size());
         } else {
             LOG.debug("Crawlers already created.");
         }
@@ -480,7 +482,7 @@ public abstract class Collector {
     }
 
     public String getReleaseVersions() {
-        StringBuilder b = new StringBuilder()
+        var b = new StringBuilder()
             .append(NORCONEX_ASCII)
             .append("\nCollector and main components:\n")
             .append("\n");
@@ -529,39 +531,81 @@ public abstract class Collector {
 
     protected synchronized void lock() {
         LOG.debug("Locking collector execution...");
-        lock = new FileLocker(getWorkDir().resolve(".collector-lock"));
-        try {
-            lock.lock();
-        } catch (FileAlreadyLockedException e) {
+
+        if (isRunning()) {
             throw new CollectorException(
-                    "The collector you are attempting to run is already "
-                  + "running or executing a command. Wait for "
+                    "The collector you are attempting to run is "
+                  + "already running or executing a command. Wait for "
                   + "it to complete or stop it and try again.");
+        }
+
+        var pidFile = getLockFile();
+        var pid = ProcessHandle.current().pid();
+        try {
+            Files.writeString(pidFile, Long.toString(pid));
+            LOG.debug("PID saved to {}", pidFile.toAbsolutePath());
         } catch (IOException e) {
             throw new CollectorException(
-                    "Could not create a collector execution lock.", e);
+                    "Could not create the following file to lock the "
+                    + "crawler execution: " + pidFile.toAbsolutePath(), e);
         }
-        LOG.debug("Collector execution locked");
+
+        LOG.debug("Collector execution locked.");
     }
     protected synchronized void unlock() {
+        var pidFile = getLockFile();
         try {
-            if (lock != null) {
-                lock.unlock();
+            if (Files.exists(pidFile)) {
+                Files.delete(pidFile);
+            } else {
+                LOG.debug("Could not unlock crawler execution. "
+                        + "Lock file not found: {}", pidFile);
             }
         } catch (IOException e) {
             throw new CollectorException(
-                    "Cannot unlock collector execution.", e);
+                  "Cannot unlock collector execution. Could not delete "
+                    + "this file: " + pidFile.toAbsolutePath(), e);
         }
-        lock = null;
         LOG.debug("Collector execution unlocked");
     }
 
     public boolean isRunning() {
-        return lock != null && lock.isLocked();
+        var pidFile = getLockFile();
+
+        // If PID file already exist, check if the process it references is
+        // currently running. Else, we consider it not running.
+        if (Files.exists(pidFile)) {
+            try {
+                var pidStr = Files.readString(pidFile).trim();
+                var pid = Long.parseLong(pidStr);
+                var processHandle = ProcessHandle.of(pid);
+                if (!processHandle.isPresent()
+                        || !processHandle.get().isAlive()) {
+                    LOG.debug("Found a lock file but the corresponding process "
+                            + "is not running. Deleting it: {}",
+                            pidFile.toAbsolutePath());
+                    Files.delete(pidFile);
+                    return false;
+                }
+                return true;
+            } catch (IOException | NumberFormatException e) {
+                throw new CollectorException(
+                        "Could not verify if the collector is already running. "
+                        + "If you get this error again after confirming it is "
+                        + "not running, delete the following file and try "
+                        + "again: " + pidFile.toAbsolutePath(), e);
+            }
+        }
+        return false;
     }
 
     @Override
     public String toString() {
-        return getId();
+        var id = getId();
+        return StringUtils.isBlank(id) ? "<COLLECTOR_ID_UNDEFINED>" : id;
+    }
+
+    private Path getLockFile() {
+        return getWorkDir().resolve(".collector-lock");
     }
 }

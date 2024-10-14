@@ -24,7 +24,6 @@ import java.io.Reader;
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.jupiter.api.Test;
 
-import com.norconex.collector.core.crawler.CrawlerConfig;
 import com.norconex.collector.core.crawler.MockCrawlerConfig;
 import com.norconex.collector.core.filter.impl.ExtensionReferenceFilter;
 import com.norconex.committer.core3.fs.impl.JSONFileCommitter;
@@ -40,16 +39,16 @@ public class CollectorTest {
 
     @Test
     public void testWriteRead() {
-        MockCollectorConfig config = new MockCollectorConfig();
+        var config = new MockCollectorConfig();
         config.setId("test-collector");
         config.setMaxConcurrentCrawlers(100);
         config.setEventListeners(new MockCollectorEventListener());
 
-        MockCrawlerConfig crawlerCfg = new MockCrawlerConfig();
+        var crawlerCfg = new MockCrawlerConfig();
         crawlerCfg.setId("myCrawler");
         crawlerCfg.setCommitters(new JSONFileCommitter());
 
-        config.setCrawlerConfigs(new CrawlerConfig[] {crawlerCfg});
+        config.setCrawlerConfigs(crawlerCfg);
 
         XML.assertWriteRead(config, "collector");
     }
@@ -57,13 +56,13 @@ public class CollectorTest {
     @SuppressWarnings("deprecation")
     @Test
     public void testOverwriteCrawlerDefaults() throws IOException {
-        MockCollectorConfig cfg = new MockCollectorConfig();
+        var cfg = new MockCollectorConfig();
         try (Reader r = new InputStreamReader(getClass().getResourceAsStream(
                 "overwrite-crawlerDefaults.xml"))) {
             XML.of(r).create().populate(cfg);
         }
 
-        MockCrawlerConfig crawlA =
+        var crawlA =
                 (MockCrawlerConfig) cfg.getCrawlerConfigs().get(0);
         assertEquals(22, crawlA.getNumThreads(),
                 "crawlA");
@@ -81,7 +80,7 @@ public class CollectorTest {
                 crawlA.getCommitters().get(0)).getDirectory().toString(),
                 "crawlA");
 
-        MockCrawlerConfig crawlB =
+        var crawlB =
                 (MockCrawlerConfig) cfg.getCrawlerConfigs().get(1);
         assertEquals(1, crawlB.getNumThreads(), "crawlB");
         assertEquals("defaultFilter", ((ExtensionReferenceFilter)
@@ -105,7 +104,7 @@ public class CollectorTest {
     public void testValidation() throws IOException {
         try (Reader r = new InputStreamReader(getClass().getResourceAsStream(
                 "/validation/collector-core-full.xml"))) {
-            ErrorHandlerCapturer eh = new ErrorHandlerCapturer();
+            var eh = new ErrorHandlerCapturer();
             XML.of(r).setErrorHandler(eh).create().populate(
                     new MockCollectorConfig());
             assertEquals(0, eh.getErrors().size(),
