@@ -7,7 +7,7 @@
   </properties>
   <body>
   
-    <release version="2.1.0-SNAPSHOT" date="2024-??-??">
+    <release version="2.1.0-SNAPSHOT" date="2024-??-??" description="Minor release.">
       <action dev="essiembre" type="update">
         Minimum Java Version is now 11.
       </action>
@@ -16,7 +16,7 @@
       </action>
     </release>
     
-    <release version="2.0.2" date="2023-07-09" description="Maintenance release">
+    <release version="2.0.2" date="2023-07-09" description="Maintenance release.">
       <action dev="essiembre" type="add">
         New "deferredShutdownDuration" collector configuration option to delay
         the collector shutdown when it's done executing.
@@ -31,7 +31,7 @@
       </action>
     </release>
   
-    <release version="2.0.1" date="2022-08-30" description="Maintenance release">
+    <release version="2.0.1" date="2022-08-30" description="Maintenance release.">
       <action dev="essiembre" type="add">
         New MDC attributes which can be used in supporting logging framework:
         "ctx:crawler.id", "ctx:crawler.id.safe", "ctx:collector.id.safe", 
