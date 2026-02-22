@@ -34,7 +34,7 @@
     <norconex-committer-core.version>3.0.0</norconex-committer-core.version>
     <norconex-importer.version>3.2.0-SNAPSHOT</norconex-importer.version>
   
-    <commons-compress.version>1.21</commons-compress.version>
+    <commons-compress.version>1.26.0</commons-compress.version>
     <cxf.version>3.4.5</cxf.version>
     <gson.version>2.13.2</gson.version>
     <h2.version>2.4.240</h2.version>
