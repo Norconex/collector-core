@@ -17,8 +17,9 @@ package com.norconex.collector.core.stop.impl;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -28,7 +29,6 @@ import com.norconex.collector.core.Collector;
 import com.norconex.collector.core.monitor.MdcUtil;
 import com.norconex.collector.core.stop.CollectorStopperException;
 import com.norconex.collector.core.stop.ICollectorStopper;
-import com.norconex.commons.lang.Sleeper;
 
 /**
  * Listens for STOP requests using a stop file.  The stop file
@@ -44,17 +44,19 @@ public class FileBasedStopper implements ICollectorStopper {
             LoggerFactory.getLogger(FileBasedStopper.class);
 
     private Collector startedCollector;
-    private boolean monitoring;
+    private ScheduledExecutorService execService;
+    private volatile boolean shutdownRequested = false;
 
     @Override
     public void listenForStopRequest(Collector startedCollector)
             throws CollectorStopperException {
         this.startedCollector = startedCollector;
-        final Path stopFile = stopFile(startedCollector);
+        final var stopFile = getStopFile(startedCollector);
 
-        // If there is already a stop file and the collector is not running,
-        // delete it
-        if (stopFile.toFile().exists() && !startedCollector.isRunning()) {
+        // At this point, we know there is only one instance of this crawler
+        // running. So upon starting, if there is a stop file, it has to be
+        // an old one that was not properly deleted. Delete it here.
+        if (stopFile.toFile().exists()) {
             LOG.info("Old stop file found, deleting it.");
             try {
                 FileUtils.forceDelete(stopFile.toFile());
@@ -64,25 +66,18 @@ public class FileBasedStopper implements ICollectorStopper {
             }
         }
 
-        ExecutorService execService = Executors.newSingleThreadExecutor();
-        try {
-            execService.submit(() -> {
-                MdcUtil.setCollectorId(startedCollector.getId());
-                Thread.currentThread().setName("Collector stop file monitor");
-                monitoring = true;
-                while(monitoring) {
-                    if (stopFile.toFile().exists()) {
-                        stopMonitoring(startedCollector);
-                        LOG.info("STOP request received.");
-                        startedCollector.stop();
-                    }
-                    Sleeper.sleepMillis(100);
-                }
-                return null;
-            });
-        } finally {
-            execService.shutdownNow();
-        }
+        execService = Executors.newSingleThreadScheduledExecutor();
+        execService.scheduleWithFixedDelay(() -> {
+            if (shutdownRequested) {
+                return;
+            }
+            MdcUtil.setCollectorId(startedCollector.getId());
+            Thread.currentThread().setName("Collector stop file monitor");
+            if (stopFile.toFile().exists()) {
+                LOG.info("STOP request received.");
+                startedCollector.stop();
+            }
+        }, 0, 500, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -94,10 +89,12 @@ public class FileBasedStopper implements ICollectorStopper {
     }
 
     @Override
-    public boolean fireStopRequest() throws CollectorStopperException {
-        final Path stopFile = stopFile(startedCollector);
+    public boolean fireStopRequest(
+            Collector shallowCollector) throws CollectorStopperException {
 
-        if (!startedCollector.isRunning()) {
+        final var stopFile = getStopFile(shallowCollector);
+
+        if (!shallowCollector.isRunning()) {
             LOG.info("CANNOT STOP: The Collector is not running.");
             return false;
         }
@@ -119,8 +116,18 @@ public class FileBasedStopper implements ICollectorStopper {
 
     private synchronized void stopMonitoring(Collector collector)
             throws CollectorStopperException {
-        monitoring = false;
-        Path stopFile = stopFile(collector);
+        LOG.debug("Shutting down stop monitor service...");
+        if (execService != null) {
+            try {
+                shutdownRequested = true;
+                execService.shutdown();
+            } finally {
+                execService = null;
+                shutdownRequested = false;
+            }
+        }
+        LOG.debug("Stop monitor service stopped");
+        var stopFile = getStopFile(collector);
         try {
             Files.deleteIfExists(stopFile);
         } catch (IOException e) {
@@ -128,7 +135,7 @@ public class FileBasedStopper implements ICollectorStopper {
                     "Cannot delete stop file: " + stopFile.toAbsolutePath(), e);
         }
     }
-    private static Path stopFile(Collector collector) {
+    private static Path getStopFile(Collector collector) {
         return collector.getWorkDir().resolve(".collector-stop");
     }
 }

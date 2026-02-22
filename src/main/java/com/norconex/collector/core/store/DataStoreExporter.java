@@ -32,10 +32,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonWriter;
 import com.norconex.collector.core.CollectorException;
 import com.norconex.collector.core.crawler.Crawler;
 import com.norconex.commons.lang.file.FileUtil;
+
+import java.time.ZonedDateTime;
+import com.google.gson.TypeAdapter;
 
 /**
  * Exports data stores to a format that can be imported back to the same
@@ -96,7 +100,9 @@ public final class DataStoreExporter extends CollectorException {
     private static void exportStore(Crawler crawler, IDataStore<?> store,
             OutputStream out, Class<?> type)
                     throws IOException {
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(ZonedDateTime.class, new ZonedDateTimeTypeAdapter())
+                .create();
         JsonWriter writer = new JsonWriter(
                 new OutputStreamWriter(out, StandardCharsets.UTF_8));
         //TODO add "nice" option?
@@ -137,5 +143,27 @@ public final class DataStoreExporter extends CollectorException {
         writer.endArray();
         writer.endObject();
         writer.flush();
+    }
+
+    // TypeAdapter for ZonedDateTime serializing to/from ISO-8601 string
+    private static class ZonedDateTimeTypeAdapter extends TypeAdapter<ZonedDateTime> {
+        @Override
+        public void write(com.google.gson.stream.JsonWriter out, ZonedDateTime value) throws IOException {
+            if (value == null) {
+                out.nullValue();
+            } else {
+                out.value(value.toString());
+            }
+        }
+
+        @Override
+        public ZonedDateTime read(com.google.gson.stream.JsonReader in) throws IOException {
+            if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            String s = in.nextString();
+            return s == null ? null : ZonedDateTime.parse(s);
+        }
     }
 }

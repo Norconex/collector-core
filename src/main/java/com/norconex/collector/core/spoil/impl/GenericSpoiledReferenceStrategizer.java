@@ -42,7 +42,8 @@ import com.norconex.commons.lang.xml.XML;
  * The mappings defined by default are as follow:
  * </p>
  *
- * <table border="1" style="width:300px;" summary="Default mappings">
+ * <table border="1" style="width:300px;">
+ *   <caption>Default mappings</caption>
  *   <tr><td><b>Crawl state</b></td><td><b>Strategy</b></td></tr>
  *   <tr><td>NOT_FOUND</td><td>DELETE</td></tr>
  *   <tr><td>BAD_STATUS</td><td>GRACE_ONCE</td></tr>
@@ -86,7 +87,6 @@ public class GenericSpoiledReferenceStrategizer implements
             DEFAULT_FALLBACK_STRATEGY;
 
     public GenericSpoiledReferenceStrategizer() {
-        super();
         // store default mappings
         mappings.put(CrawlState.NOT_FOUND, SpoiledReferenceStrategy.DELETE);
         mappings.put(CrawlState.BAD_STATUS,
@@ -98,7 +98,7 @@ public class GenericSpoiledReferenceStrategizer implements
     public SpoiledReferenceStrategy resolveSpoiledReferenceStrategy(
             String reference, CrawlState state) {
 
-        SpoiledReferenceStrategy strategy = mappings.get(state);
+        var strategy = mappings.get(state);
         if (strategy == null) {
             strategy = getFallbackStrategy();
         }
@@ -122,7 +122,7 @@ public class GenericSpoiledReferenceStrategizer implements
 
     @Override
     public void loadFromXML(XML xml) {
-        SpoiledReferenceStrategy fallback = xml.getEnum(
+        var fallback = xml.getEnum(
                 "@fallbackStrategy",
                 SpoiledReferenceStrategy.class, fallbackStrategy);
         if (fallback != null) {
@@ -130,13 +130,13 @@ public class GenericSpoiledReferenceStrategizer implements
         }
 
         for (XML node : xml.getXMLList("mapping")) {
-            String attribState = node.getString("@state", null);
-            SpoiledReferenceStrategy strategy = node.getEnum(
+            var attribState = node.getString("@state", null);
+            var strategy = node.getEnum(
                     "@strategy", SpoiledReferenceStrategy.class);
             if (StringUtils.isBlank(attribState) || strategy == null) {
                 continue;
             }
-            CrawlState state = CrawlState.valueOf(attribState);
+            var state = CrawlState.valueOf(attribState);
             addMapping(state, strategy);
         }
     }
@@ -158,7 +158,7 @@ public class GenericSpoiledReferenceStrategizer implements
         if (!(other instanceof GenericSpoiledReferenceStrategizer)) {
             return false;
         }
-        GenericSpoiledReferenceStrategizer castOther =
+        var castOther =
                 (GenericSpoiledReferenceStrategizer) other;
         return new EqualsBuilder()
                 .append(fallbackStrategy, castOther.fallbackStrategy)

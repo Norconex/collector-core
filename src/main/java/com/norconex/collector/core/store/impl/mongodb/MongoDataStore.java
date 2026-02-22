@@ -16,7 +16,9 @@ package com.norconex.collector.core.store.impl.mongodb;
 
 import static java.util.Objects.requireNonNull;
 
+import java.io.IOException;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 
@@ -24,6 +26,11 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
 import com.mongodb.MongoNamespace;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -47,7 +54,10 @@ public class MongoDataStore<T> implements IDataStore<T> {
     private final FindOneAndDeleteOptions findOneAndDeleteOptions =
             new FindOneAndDeleteOptions().sort(fifoSort());
     private final Class<? extends T> type;
-    private static final Gson GSON = new Gson();
+    // Register a ZonedDateTime adapter similar to JdbcDataStore
+    private static final Gson GSON = new GsonBuilder()
+            .registerTypeAdapter(ZonedDateTime.class, new ZonedDateTimeTypeAdapter())
+            .create();
 
     MongoDataStore(
             MongoDatabase db, String name, Class<? extends T> type) {
@@ -165,5 +175,27 @@ public class MongoDataStore<T> implements IDataStore<T> {
     }
     private static <T> T fromDocument(Document doc, Class<T> type) {
         return GSON.fromJson(doc.getString("object"), type);
+    }
+
+    // TypeAdapter for ZonedDateTime serializing to/from ISO-8601 string
+    private static class ZonedDateTimeTypeAdapter extends TypeAdapter<ZonedDateTime> {
+        @Override
+        public void write(JsonWriter out, ZonedDateTime value) throws IOException {
+            if (value == null) {
+                out.nullValue();
+            } else {
+                out.value(value.toString());
+            }
+        }
+
+        @Override
+        public ZonedDateTime read(JsonReader in) throws IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            String s = in.nextString();
+            return s == null ? null : ZonedDateTime.parse(s);
+        }
     }
 }

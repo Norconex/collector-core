@@ -19,21 +19,29 @@
   <parent>
     <groupId>com.norconex.commons</groupId>
     <artifactId>norconex-commons-maven-parent</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.2.0</version>
   </parent>  
   <groupId>com.norconex.collectors</groupId>
   <artifactId>norconex-collector-core</artifactId>
-  <version>2.0.2-SNAPSHOT</version>
+  <version>2.2.0-SNAPSHOT</version>
   <name>Norconex Collector Core</name>
 
   <properties>
-    <commons-compress.version>1.21</commons-compress.version>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <java.version>17</java.version>    
+  
+    <norconex-committer-core.version>3.0.0</norconex-committer-core.version>
+    <norconex-importer.version>3.2.0-SNAPSHOT</norconex-importer.version>
+  
+    <commons-compress.version>1.26.0</commons-compress.version>
     <cxf.version>3.4.5</cxf.version>
-    <h2.version>2.2.220</h2.version>
+    <gson.version>2.13.2</gson.version>
+    <h2.version>2.4.240</h2.version>
     <hikaricp.version>4.0.3</hikaricp.version>
     <jdom2.version>2.0.6.1</jdom2.version>
-    <jsoup.version>1.14.3</jsoup.version>
-    <mongodb.version>4.3.2</mongodb.version>
+    <jsoup.version>1.21.1</jsoup.version>
+    <mongodb.version>4.11.5</mongodb.version>
   </properties>
 
   <inceptionYear>2014</inceptionYear>
@@ -73,6 +81,7 @@
     <dependency>
       <groupId>com.norconex.collectors</groupId>
       <artifactId>norconex-importer</artifactId>
+      <version>${norconex-importer.version}</version>
       <exclusions>
         <exclusion>
           <groupId>commons-logging</groupId>
@@ -83,6 +92,7 @@
     <dependency>
       <groupId>com.norconex.collectors</groupId>
       <artifactId>norconex-committer-core</artifactId>
+      <version>${norconex-committer-core.version}</version>
     </dependency>
 
     <!-- Databases for crawl store -->
@@ -120,8 +130,13 @@
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
-    </dependency>      
+    </dependency>
     
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>${gson.version}</version>
+    </dependency>
 
     <!-- Tests and provided. -->
     <dependency>
@@ -130,6 +145,12 @@
       <classifier>resources</classifier>
       <type>zip</type>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -139,7 +160,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-slf4j-impl</artifactId>
+      <artifactId>log4j-slf4j2-impl</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -154,13 +175,13 @@
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>mongodb</artifactId>
+      <artifactId>testcontainers-mongodb</artifactId>
       <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
+      <artifactId>testcontainers-junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
     
@@ -184,7 +205,15 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-      </plugin>
+        <configuration>
+          <failOnError>false</failOnError>
+          <failOnWarning>false</failOnWarning>
+          <quiet>true</quiet>
+          <options>
+            <option>-Xdoclint:none</option>
+          </options>
+        </configuration>
+      </plugin>      
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -203,8 +232,8 @@
       </plugin>
 
       <plugin>
-        <groupId>org.sonatype.plugins</groupId>
-        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
       </plugin>
       
       <plugin>

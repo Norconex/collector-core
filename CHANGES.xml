@@ -6,14 +6,56 @@
     <author email="info@norconex.com">Norconex Inc.</author>
   </properties>
   <body>
+  
+    <release version="2.2.0-SNAPSHOT" date="2026-??-??" description="Minor release.">
+      <action dev="essiembre" type="update">
+        Minimum Java version is now 17.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed ZonedDateTime serialization/deserialization errors under the Java
+        module system by registering a custom Gson TypeAdapter for ZonedDateTime
+        in DataStoreExporter, DataStoreImporter, JdbcDataStore, and
+        MongoDataStore.
+      </action>
+      <action dev="essiembre" type="add">
+        Added Gson as an explicit direct dependency (was previously only
+        transitive).
+      </action>
+      <action dev="essiembre" type="update">
+        Updated SLF4J bridge from log4j-slf4j-impl to log4j-slf4j2-impl
+        for SLF4J 2.x compatibility.
+      </action>
+      <action dev="essiembre" type="update">
+        Updated Testcontainers artifact IDs to current naming convention
+        (testcontainers-mongodb, testcontainers-junit-jupiter).
+      </action>
+      <action dev="essiembre" type="update">
+        Migrated Maven publishing from Nexus Staging Plugin to Sonatype Central
+        Publishing Plugin.
+      </action>
+      <action dev="essiembre" type="update">
+        Dependency updates: norconex-commons-maven-parent 1.2.0, H2 2.4.240,
+        JSoup 1.21.1, MongoDB driver 4.11.5, Gson 2.13.2.
+      </action>
+    </release>
 
-    <release version="2.0.2-SNAPSHOT" date="2023-??-??" description="Maintenance release">
+    <release version="2.1.0" date="2025-05-24" description="Minor release.">
+      <action dev="essiembre" type="update">
+        Minimum Java Version is now 11.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed crawler throwing error when issuing a stop command. 
+      </action>
+    </release>
+    
+    <release version="2.0.2" date="2023-07-09" description="Maintenance release.">
       <action dev="essiembre" type="add">
         New "deferredShutdownDuration" collector configuration option to delay
         the collector shutdown when it's done executing.
       </action>
       <action dev="essiembre" type="update">
-        Maven dependency updates: norconex-commons-maven-parent 1.0.2.
+        Maven dependency updates: norconex-commons-maven-parent 1.0.2,
+        H2 2.2.220, JSoup 1.15.3.
       </action>
       <action dev="essiembre" type="update">
         JMX crawler MBeans are now unregistered as the last thing before
@@ -21,7 +63,7 @@
       </action>
     </release>
   
-    <release version="2.0.1" date="2022-08-30" description="Maintenance release">
+    <release version="2.0.1" date="2022-08-30" description="Maintenance release.">
       <action dev="essiembre" type="add">
         New MDC attributes which can be used in supporting logging framework:
         "ctx:crawler.id", "ctx:crawler.id.safe", "ctx:collector.id.safe", 

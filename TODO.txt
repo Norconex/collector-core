@@ -3,6 +3,9 @@ TODO:
 
 - Force crawler to stop after X amount of time of no progress.
 
+- Have the GenericURLNormalizer offer a mix of replacements and canned rules 
+  in desired order of execution. 
+
 - Performance: 
   - Keep tack of counts by having counters in memory instead of querying
     for count.  And have maxXXX for different types instead of just
