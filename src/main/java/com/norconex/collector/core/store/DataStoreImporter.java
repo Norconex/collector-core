@@ -30,11 +30,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
 import com.norconex.collector.core.CollectorException;
 import com.norconex.collector.core.crawler.Crawler;
+
+import java.time.ZonedDateTime;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonWriter;
+import com.google.gson.stream.JsonToken;
 
 /**
  * Imports from a previously exported data store.
@@ -73,7 +79,9 @@ public final class DataStoreImporter extends CollectorException {
     private static boolean importStore(
             Crawler crawler, InputStream in) throws IOException {
 
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(ZonedDateTime.class, new ZonedDateTimeTypeAdapter())
+                .create();
         JsonReader reader = new JsonReader(
                 new InputStreamReader(in, StandardCharsets.UTF_8));
 
@@ -139,6 +147,28 @@ public final class DataStoreImporter extends CollectorException {
         if (LOG.isInfoEnabled() && (cnt % 10000 == 0 ^ done)) {
             LOG.info("{} imported.",
                     NumberFormat.getIntegerInstance().format(cnt));
+        }
+    }
+
+    // TypeAdapter for ZonedDateTime serializing to/from ISO-8601 string
+    private static class ZonedDateTimeTypeAdapter extends TypeAdapter<ZonedDateTime> {
+        @Override
+        public void write(com.google.gson.stream.JsonWriter out, ZonedDateTime value) throws IOException {
+            if (value == null) {
+                out.nullValue();
+            } else {
+                out.value(value.toString());
+            }
+        }
+
+        @Override
+        public ZonedDateTime read(com.google.gson.stream.JsonReader in) throws IOException {
+            if (in.peek() == com.google.gson.stream.JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            String s = in.nextString();
+            return s == null ? null : ZonedDateTime.parse(s);
         }
     }
 }
