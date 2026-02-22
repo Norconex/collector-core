@@ -19,7 +19,7 @@ import com.norconex.collector.core.Collector;
 /**
  * <p>
  * Responsible for shutting down a Collector upon explicit invocation
- * of {@link #fireStopRequest()} or when specific conditions are met.
+ * of {@link #fireStopRequest(Collector)} or when specific conditions are met.
  * See concrete implementation for what those conditions could be.
  * </p>
  * <p>
@@ -48,10 +48,16 @@ public interface ICollectorStopper {
     void destroy() throws CollectorStopperException;
 
     /**
-     * Stops a currently running Collector.
+     * Stops a currently running Collector. The supplied collector
+     * may or may not be the same instance has the one to be stopped.
+     * Implementors should account for an <b><i>non-initialized</i></b>
+     * instance (where configuration for crawlers is set, but no crawlers
+     * were yet created with those configurations).
+     * @param collector collector instance
      * @return <code>true</code> if the Collector was running and successfully
      *         stopped or <code>false</code> if the Collector was not running.
      * @throws CollectorStopperException could not stop running Collector.
      */
-    boolean fireStopRequest() throws CollectorStopperException;
+    boolean fireStopRequest(Collector collector)
+            throws CollectorStopperException;
 }

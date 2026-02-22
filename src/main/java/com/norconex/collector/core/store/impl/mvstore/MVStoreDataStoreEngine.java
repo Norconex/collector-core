@@ -146,7 +146,7 @@ public class MVStoreDataStoreEngine
         LOG.info("Closing data store engine...");
         if (mvstore != null && !mvstore.isClosed()) {
             LOG.info("Compacting data store...");
-            mvstore.compactMoveChunks();
+            mvstore.compactFile(5 * 1000);
             mvstore.close();
         }
         mvstore = null;

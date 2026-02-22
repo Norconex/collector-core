@@ -243,15 +243,16 @@ public abstract class Crawler {
      * Starts crawling.
      */
     public void start() {
-        boolean resume = initCrawler();
+        initCrawler();
+        boolean resume = crawlDocInfoService.open();
+
         importer = new Importer(
                 getCrawlerConfig().getImporterConfig(),
                 getEventManager());
         monitor = new CrawlerMonitor(this);
         //TODO make interval configurable
         //TODO make general logging messages verbosity configurable
-        progressLogger = new CrawlProgressLogger(
-                monitor, 30 * 1000);
+        progressLogger = new CrawlProgressLogger(monitor, 30_000);
         progressLogger.startTracking();
 
         if (Boolean.getBoolean("enableJMX")) {
@@ -266,8 +267,8 @@ public abstract class Crawler {
 
             //TODO move this code to a config validator class?
             if (StringUtils.isBlank(getCrawlerConfig().getId())) {
-                throw new CollectorException("Crawler must be given "
-                        + "a unique identifier (id).");
+                throw new CollectorException(
+                        "Crawler must be given a unique identifier (id).");
             }
             doExecute();
         } finally {
@@ -282,9 +283,7 @@ public abstract class Crawler {
                     destroyCrawler();
                 }
             }
-            if (Boolean.getBoolean("enableJMX")) {
-                CrawlerMonitorJMX.unregister(this);
-            }
+            //Note: JMX MBean unregistration happens in Collector
         }
     }
 
@@ -297,7 +296,7 @@ public abstract class Crawler {
         }
     }
 
-    protected boolean initCrawler() {
+    protected void initCrawler() {
         Thread.currentThread().setName(getId());
         MdcUtil.setCrawlerId(getId());
 
@@ -327,11 +326,9 @@ public abstract class Crawler {
                 .build();
         committers.init(committerContext);
 
-        boolean resuming = crawlDocInfoService.open();
         getEventManager().fire(new CrawlerEvent.Builder(CRAWLER_INIT_END, this)
                 .message("Crawler \"" + getId()
                         + "\" initialized successfully.").build());
-        return resuming;
     }
 
     protected Class<? extends CrawlDocInfo> getCrawlDocInfoType() {

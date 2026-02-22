@@ -30,12 +30,23 @@ import java.util.Optional;
 import java.util.function.BiPredicate;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
 import com.norconex.collector.core.store.DataStoreException;
 import com.norconex.collector.core.store.IDataStore;
 
+import java.time.ZonedDateTime;
+
 public class JdbcDataStore<T> implements IDataStore<T> {
 
-    private static final Gson GSON = new Gson();
+    // Use a GsonBuilder and register a TypeAdapter for java.time.ZonedDateTime
+    // to avoid illegal reflective access errors under the Java module system.
+    private static final Gson GSON = new GsonBuilder()
+            .registerTypeAdapter(ZonedDateTime.class, new ZonedDateTimeTypeAdapter())
+            .create();
     private static final PreparedStatementConsumer NO_ARGS = stmt -> {};
 
     private final JdbcDataStoreEngine engine;
@@ -305,6 +316,28 @@ public class JdbcDataStore<T> implements IDataStore<T> {
         private Optional<T> object = Optional.empty();
         private boolean isEmpty() {
             return id == null;
+        }
+    }
+
+    // TypeAdapter for ZonedDateTime serializing to/from ISO-8601 string
+    private static class ZonedDateTimeTypeAdapter extends TypeAdapter<ZonedDateTime> {
+        @Override
+        public void write(JsonWriter out, ZonedDateTime value) throws IOException {
+            if (value == null) {
+                out.nullValue();
+            } else {
+                out.value(value.toString());
+            }
+        }
+
+        @Override
+        public ZonedDateTime read(JsonReader in) throws IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            String s = in.nextString();
+            return s == null ? null : ZonedDateTime.parse(s);
         }
     }
 }
