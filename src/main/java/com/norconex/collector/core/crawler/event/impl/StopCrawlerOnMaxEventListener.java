@@ -39,18 +39,18 @@ import com.norconex.commons.lang.xml.XML;
  * <p>
  * Alternative to {@link CrawlerConfig#setMaxDocuments(int)} for stopping
  * the crawler upon reaching specific event counts. The event counts are only
- * kept for a crawling session.  They are reset to zero upon restarting
+ * kept for a crawling session. They are reset to zero upon restarting
  * the crawler.
  * </p>
  * <p>
  * Not specifying any maximum or events has no effect.
  * </p>
  *
- * <h3>Difference with "maxDocuments"</h3>
+ * <h2>Difference with "maxDocuments"</h2>
  * <p>
- * The "maxDocuments" option deals with "processed" documents.  Those are
+ * The "maxDocuments" option deals with "processed" documents. Those are
  * documents that were initially queued for crawling and crawling was attempted
- * on them, whether that exercise what successful or not.  That is,
+ * on them, whether that exercise what successful or not. That is,
  * "maxDocuments" will not count documents that were sent to your committer
  * for additions or deletions, but also documents that were rejected
  * by your Importer configuration, produced errors, etc.
@@ -61,41 +61,43 @@ import com.norconex.commons.lang.xml.XML;
  * a high enough number or is set <code>-1</code> (unlimited).
  * </p>
  *
- * <h3>Combining events</h3>
+ * <h2>Combining events</h2>
  * <p>
  * If your event matcher matches more than one event, you can decide what
  * should be the expected behavior. Options are:
  * </p>
  * <ul>
- *   <li>
- *     <b>any</b>: Stop the crawler when any of the matching event count
- *     reaches the specified maximum.
- *   </li>
- *   <li>
- *     <b>all</b>: Stop the crawler when all of the matching event counts
- *     have reached the maximum.
- *   </li>
- *   <li>
- *     <b>sum</b>: Stop the crawler when the sum of all matching event counts
- *     have reached the maximum.
- *   </li>
+ * <li>
+ * <b>any</b>: Stop the crawler when any of the matching event count
+ * reaches the specified maximum.
+ * </li>
+ * <li>
+ * <b>all</b>: Stop the crawler when all of the matching event counts
+ * have reached the maximum.
+ * </li>
+ * <li>
+ * <b>sum</b>: Stop the crawler when the sum of all matching event counts
+ * have reached the maximum.
+ * </li>
  * </ul>
  *
  * {@nx.xml.usage
  * <listener
- *     class="com.norconex.collector.core.crawler.event.impl.StopCrawlerOnMaxEventListener"
- *     max="(maximum count)"
- *     onMultiple="[any|all|sum]">
- *   <eventMatcher
- *     {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
- *       (event name-matching expression)
- *   </eventMatcher>
+ * class=
+ * "com.norconex.collector.core.crawler.event.impl.StopCrawlerOnMaxEventListener"
+ * max="(maximum count)"
+ * onMultiple="[any|all|sum]">
+ * <eventMatcher
+ * {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ * (event name-matching expression)
+ * </eventMatcher>
  * </listener>
  * }
  *
  * {@nx.xml.example
  * <listener class="StopCrawlerOnMaxEventListener" max="100" onMultiple="sum">
- *   <eventMatcher method="csv">DOCUMENT_COMMITTED_UPSERT,DOCUMENT_COMMITTED_DELETE</eventMatcher>
+ * <eventMatcher method=
+ * "csv">DOCUMENT_COMMITTED_UPSERT,DOCUMENT_COMMITTED_DELETE</eventMatcher>
  * </listener>
  * }
  * <p>
@@ -110,8 +112,7 @@ import com.norconex.commons.lang.xml.XML;
 public class StopCrawlerOnMaxEventListener
         implements IEventListener<Event>, IXMLConfigurable {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(StopCrawlerOnMaxEventListener.class);
+    private static final Logger LOG = LoggerFactory.getLogger(StopCrawlerOnMaxEventListener.class);
 
     public enum OnMultiple {
         /**
@@ -140,13 +141,16 @@ public class StopCrawlerOnMaxEventListener
 
     /**
      * Gets the event matcher used to identify which events will be counted.
+     * 
      * @return text matcher, never <code>null</code>
      */
     public TextMatcher getEventMatcher() {
         return eventMatcher;
     }
+
     /**
      * Sets the event matcher used to identify which events will be counted.
+     * 
      * @param eventMatcher event matcher
      */
     public void setEventMatcher(TextMatcher eventMatcher) {
@@ -156,6 +160,7 @@ public class StopCrawlerOnMaxEventListener
     public OnMultiple getOnMultiple() {
         return onMultiple;
     }
+
     public void setOnMultiple(OnMultiple onMultiple) {
         this.onMultiple = onMultiple;
     }
@@ -163,6 +168,7 @@ public class StopCrawlerOnMaxEventListener
     public long getMaximum() {
         return maximum;
     }
+
     public void setMaximum(long maximum) {
         this.maximum = maximum;
     }
@@ -207,6 +213,7 @@ public class StopCrawlerOnMaxEventListener
         maximum = xml.getLong("@maximum", maximum);
         eventMatcher.loadFromXML(xml.getXML("eventMatcher"));
     }
+
     @Override
     public void saveToXML(XML xml) {
         xml.setAttribute("onMultiple", onMultiple);
@@ -218,10 +225,12 @@ public class StopCrawlerOnMaxEventListener
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
     }
+
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
+
     @Override
     public String toString() {
         return new ReflectionToStringBuilder(this,

@@ -46,59 +46,59 @@ import com.norconex.importer.ImporterConfig;
  * Base Collector configuration.
  * </p>
  *
- * <h3>XML Configuration</h3>
+ * <h2>XML Configuration</h2>
  * <p>
  * Subclasses inherit the following XML configuration items.
  * </p>
  *
  * {@nx.xml #collector
  * <workDir>
- *   (Directory where generated files are written. Defaults to "./work")
+ * (Directory where generated files are written. Defaults to "./work")
  * </workDir>
  * <tempDir>
- *   (Directory where generated files are written. Defaults to the working
- *   directory + "./temp")
+ * (Directory where generated files are written. Defaults to the working
+ * directory + "./temp")
  * </tempDir>
  * <eventListeners>
- *   <!-- Repeat as needed. -->
- *   <listener class="(IEventListener implementation class name.)"/>
+ * <!-- Repeat as needed. -->
+ * <listener class="(IEventListener implementation class name.)"/>
  * </eventListeners>
  * <maxConcurrentCrawlers>
- *   (Maximum number of crawlers that can run simultaneously.
- *    Only applicable when more than one crawler is configured.
- *    Defaults to -1, unlimited.)
+ * (Maximum number of crawlers that can run simultaneously.
+ * Only applicable when more than one crawler is configured.
+ * Defaults to -1, unlimited.)
  * </maxConcurrentCrawlers>
  * <crawlersStartInterval>
- *   (Millisecond interval between each crawlers start. Defaut starts them
- *    all at once.)
+ * (Millisecond interval between each crawlers start. Defaut starts them
+ * all at once.)
  * </crawlersStartInterval>
  * <maxMemoryPool>
- *   (Maximum number of bytes used for memory caching of documents data. E.g.,
- *    when processing documents. Defaults to 1 GB.)
+ * (Maximum number of bytes used for memory caching of documents data. E.g.,
+ * when processing documents. Defaults to 1 GB.)
  * </maxMemoryPool>
  * <maxMemoryInstance>
- *   (Maximum number of bytes used for memory caching of each individual
- *    documents document. Defaults to 100 MB.)
+ * (Maximum number of bytes used for memory caching of each individual
+ * documents document. Defaults to 100 MB.)
  * </maxMemoryInstance>
  * <deferredShutdownDuration>
- *   (Optional amount of time to defer the collector shutdown when it is
- *    done executing. This is useful if you have external processes that
- *    need a bit of time to catch up. E.g.,: 10 seconds. Defaults to 0.)
+ * (Optional amount of time to defer the collector shutdown when it is
+ * done executing. This is useful if you have external processes that
+ * need a bit of time to catch up. E.g.,: 10 seconds. Defaults to 0.)
  * </deferredShutdownDuration>
  *
  * <crawlerDefaults>
- *   <!-- All crawler options defined in a "crawler" section (except for
- *        the crawler "id") can be set here as default shared between
- *        multiple crawlers. Configuration blocks defined for a specific
- *        crawler always takes precedence. -->
+ * <!-- All crawler options defined in a "crawler" section (except for
+ * the crawler "id") can be set here as default shared between
+ * multiple crawlers. Configuration blocks defined for a specific
+ * crawler always takes precedence. -->
  * </crawlerDefaults>
  * }
  * {@nx.xml
  * <crawlers>
- *   <!-- You need to define at least one crawler. -->
- *   <crawler id="(Unique identifier for this crawler)">
- *     <!-- Crawler settings -->
- *   </crawler>
+ * <!-- You need to define at least one crawler. -->
+ * <crawler id="(Unique identifier for this crawler)">
+ * <!-- Crawler settings -->
+ * </crawler>
  * </crawlers>
  * }
  *
@@ -118,7 +118,7 @@ public abstract class CollectorConfig implements IXMLConfigurable {
     /** Default relative directory where progress files are stored. */
     public static final Path DEFAULT_WORK_DIR = Paths.get("./work");
 
-    //TODO still needed?
+    // TODO still needed?
     private final Class<? extends CrawlerConfig> crawlerConfigClass;
 
     private String id;
@@ -140,24 +140,27 @@ public abstract class CollectorConfig implements IXMLConfigurable {
     protected CollectorConfig() {
         this((Class<? extends CrawlerConfig>) null);
     }
+
     protected CollectorConfig(
             Class<? extends CrawlerConfig> crawlerConfigClass) {
         this.crawlerConfigClass = crawlerConfigClass;
     }
 
-
-	/**
-	 * Gets this collector unique identifier.
-	 * @return unique identifier
-	 */
+    /**
+     * Gets this collector unique identifier.
+     * 
+     * @return unique identifier
+     */
     public String getId() {
         return id;
     }
+
     /**
      * Sets this collector unique identifier. It is important
-     * the id of the collector is unique amongst your collectors.  This
+     * the id of the collector is unique amongst your collectors. This
      * facilitates integration with different systems and facilitates
      * tracking.
+     * 
      * @param id unique identifier
      */
     public void setId(String id) {
@@ -166,21 +169,26 @@ public abstract class CollectorConfig implements IXMLConfigurable {
 
     /**
      * Gets crawler configurations.
+     * 
      * @return crawler configurations (never <code>null</code>)
      * @since 1.7.0
      */
     public List<CrawlerConfig> getCrawlerConfigs() {
         return Collections.unmodifiableList(crawlerConfigs);
     }
+
     /**
      * Sets crawler configurations.
+     * 
      * @param crawlerConfigs crawler configurations
      */
     public void setCrawlerConfigs(CrawlerConfig... crawlerConfigs) {
         setCrawlerConfigs(Arrays.asList(crawlerConfigs));
     }
+
     /**
      * Sets crawler configurations.
+     * 
      * @param crawlerConfigs crawler configurations
      * @since 2.0.0
      */
@@ -193,16 +201,19 @@ public abstract class CollectorConfig implements IXMLConfigurable {
      * are created.
      * When <code>null</code> the collector will use <code>./work</code>.
      * at runtime.
+     * 
      * @return working directory path
      */
     public Path getWorkDir() {
         return workDir;
     }
+
     /**
      * Sets the base directory location where files created during execution
      * are created.
      * When <code>null</code> the collector will use <code>./work</code>.
      * at runtime.
+     * 
      * @param workDir working directory path
      */
     public void setWorkDir(Path workDir) {
@@ -214,33 +225,40 @@ public abstract class CollectorConfig implements IXMLConfigurable {
      * or other processes when the collector is not running.
      * When <code>null</code> the collector will use the working directory
      * + <code>/temp</code> at runtime.
+     * 
      * @return temporary directory
      * @since 3.0.0
      */
     public Path getTempDir() {
         return tempDir;
     }
+
     /**
-    /**
+     * /**
      * Sets the temporary directory where files can be deleted safely by the OS
      * or other processes when the collector is not running.
      * When <code>null</code> the collector will use the working directory
      * + <code>/temp</code> at runtime.
+     * 
      * @param tempDir temporary directory
      * @since 3.0.0
      */
     public void setTempDir(Path tempDir) {
         this.tempDir = tempDir;
     }
+
     public long getMaxMemoryPool() {
         return maxMemoryPool;
     }
+
     public void setMaxMemoryPool(long maxMemoryPool) {
         this.maxMemoryPool = maxMemoryPool;
     }
+
     public long getMaxMemoryInstance() {
         return maxMemoryInstance;
     }
+
     public void setMaxMemoryInstance(long maxMemoryInstance) {
         this.maxMemoryInstance = maxMemoryInstance;
     }
@@ -248,6 +266,7 @@ public abstract class CollectorConfig implements IXMLConfigurable {
     /**
      * Gets the maximum number of crawlers that can be executed concurrently.
      * Default is <code>-1</code>, which means no maximum.
+     * 
      * @return maximum crawlers to be executed in parallel
      * @since 1.10.0
      * @deprecated Since 2.0.0, use {@link #getMaxConcurrentCrawlers()}
@@ -256,9 +275,11 @@ public abstract class CollectorConfig implements IXMLConfigurable {
     public int getMaxParallelCrawlers() {
         return getMaxConcurrentCrawlers();
     }
+
     /**
      * Sets the maximum number of crawlers that can be executed concurrently.
      * Use <code>-1</code> for no maximum.
+     * 
      * @param maxParallelCrawlers number of maximum parallel crawlers
      * @since 1.10.0
      * @deprecated Since 2.0.0, use {@link #setMaxConcurrentCrawlers(int)}
@@ -267,18 +288,22 @@ public abstract class CollectorConfig implements IXMLConfigurable {
     public void setMaxParallelCrawlers(int maxParallelCrawlers) {
         setMaxConcurrentCrawlers(maxParallelCrawlers);
     }
+
     /**
      * Gets the maximum number of crawlers that can be executed concurrently.
      * Default is <code>-1</code>, which means no maximum.
+     * 
      * @return maximum crawlers to be executed concurrently
      * @since 2.0.0
      */
     public int getMaxConcurrentCrawlers() {
         return maxConcurrentCrawlers;
     }
+
     /**
      * Sets the maximum number of crawlers that can be executed concurrently.
      * Use <code>-1</code> for no maximum.
+     * 
      * @param maxConcurrentCrawlers maximum number of concurrent crawlers
      * @since 2.0.0
      */
@@ -290,14 +315,17 @@ public abstract class CollectorConfig implements IXMLConfigurable {
      * Gets the amount of time between each concurrent crawlers are started.
      * Default is <code>null</code> (does not wait before launching concurrent
      * crawlers).
+     * 
      * @return duration
      * @since 2.0.0
      */
     public Duration getCrawlersStartInterval() {
         return crawlersStartInterval;
     }
+
     /**
      * Sets the amount of time in between each concurrent crawlers are started.
+     * 
      * @param crawlersStartInterval amount of time
      * @since 2.0.0
      */
@@ -309,56 +337,67 @@ public abstract class CollectorConfig implements IXMLConfigurable {
      * Gets event listeners.
      * Those are considered additions to automatically
      * detected configuration objects implementing {@link IEventListener}.
+     * 
      * @return event listeners.
      * @since 2.0.0
      */
     public List<IEventListener<?>> getEventListeners() {
         return Collections.unmodifiableList(eventListeners);
     }
+
     /**
      * Sets event listeners.
      * Those are considered additions to automatically
      * detected configuration objects implementing {@link IEventListener}.
+     * 
      * @param eventListeners event listeners.
      * @since 2.0.0
      */
     public void setEventListeners(IEventListener<?>... eventListeners) {
         setEventListeners(Arrays.asList(eventListeners));
     }
+
     /**
      * Sets event listeners.
      * Those are considered additions to automatically
      * detected configuration objects implementing {@link IEventListener}.
+     * 
      * @param eventListeners event listeners.
      * @since 2.0.0
      */
     public void setEventListeners(List<IEventListener<?>> eventListeners) {
         CollectionUtil.setAll(this.eventListeners, eventListeners);
     }
+
     /**
      * Adds event listeners.
      * Those are considered additions to automatically
      * detected configuration objects implementing {@link IEventListener}.
+     * 
      * @param eventListeners event listeners.
      * @since 2.0.0
      */
     public void addEventListeners(IEventListener<?>... eventListeners) {
         addEventListeners(Arrays.asList(eventListeners));
     }
+
     /**
      * Adds event listeners.
      * Those are considered additions to automatically
      * detected configuration objects implementing {@link IEventListener}.
+     * 
      * @param eventListeners event listeners.
      * @since 2.0.0
      */
     public void addEventListeners(List<IEventListener<?>> eventListeners) {
         this.eventListeners.addAll(eventListeners);
     }
+
     /**
      * Clears all event listeners. The automatically
      * detected configuration objects implementing {@link IEventListener}
      * are not cleared.
+     * 
      * @since 2.0.0
      */
     public void clearEventListeners() {
@@ -369,20 +408,23 @@ public abstract class CollectorConfig implements IXMLConfigurable {
      * Gets the amount of time to defer the collector shutdown when it is
      * done executing. This is useful for giving external processes
      * with polling intervals enough time to grab the latest state of
-     * the collector before it shuts down.  Default is zero (does not
+     * the collector before it shuts down. Default is zero (does not
      * wait to shutdown after completion).
+     * 
      * @return duration
      * @since 2.0.2
      */
     public Duration getDeferredShutdownDuration() {
         return deferredShutdownDuration;
     }
+
     /**
      * Sets the amount of time to defer the collector shutdown when it is
      * done executing. This is useful for giving external processes
      * with polling intervals enough time to grab the latest state of
-     * the collector before it shuts down.  Default is zero (does not
+     * the collector before it shuts down. Default is zero (does not
      * wait to shutdown after completion).
+     * 
      * @param deferredShutdownDuration duration
      * @since 2.0.2
      */
@@ -405,6 +447,7 @@ public abstract class CollectorConfig implements IXMLConfigurable {
         xml.addElementList("crawlers", "crawler", getCrawlerConfigs());
         saveCollectorConfigToXML(xml);
     }
+
     protected abstract void saveCollectorConfigToXML(XML xml);
 
     @Override
@@ -457,10 +500,12 @@ public abstract class CollectorConfig implements IXMLConfigurable {
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
     }
+
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
+
     @Override
     public String toString() {
         return new ReflectionToStringBuilder(

@@ -47,22 +47,23 @@ import com.zaxxer.hikari.HikariDataSource;
  * Data store engine using a JDBC-compatible database for storing
  * crawl data.
  * </p>
- * <h3>Database JDBC driver</h3>
+ * <h2>Database JDBC driver</h2>
  * <p>
  * To use this data store engine, you need its JDBC database driver
  * on the classpath.
  * </p>
- * <h3>Database datasource configuration</h3>
+ * <h2>Database datasource configuration</h2>
  * <p>
  * This JDBC data store engine uses
  * <a href="https://github.com/brettwooldridge/HikariCP">Hikari</a> as the JDBC
  * datasource implementation, which provides efficient connection-pooling.
  * Refer to
- * <a href="https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby">
- * Hikari's documentation</a> for all configuration options.  The Hikari options
+ * <a href=
+ * "https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby">
+ * Hikari's documentation</a> for all configuration options. The Hikari options
  * are passed as-is, via <code>datasource</code> properties as shown below.
  * </p>
- * <h3>Data types</h3>
+ * <h2>Data types</h2>
  * <p>
  * This class only use a few data types to store its data in a generic way.
  * It will try to detect what data type to use for your database. If you
@@ -71,47 +72,48 @@ import com.zaxxer.hikari.HikariDataSource;
  * </p>
  *
  * {@nx.xml.usage
- * <dataStoreEngine class="com.norconex.collector.core.store.impl.jdbc.JdbcDataStoreEngine">
- *   <!-- Hikari datasource configuration properties: -->
- *   <datasource>
- *     <property name="(property name)">(property value)</property>
- *   </datasource>
- *   <tablePrefix>
- *     (Optional prefix used for table creation. Default is the collector
- *      id plus the crawler id, each followed by an underscore character.)
- *   </tablePrefix>
- *   <!--
- *     Optionally overwrite default SQL data type used.  You should only
- *     use if you get data type-related errors.
- *     -->
- *   <dataTypes>
- *     <varchar   use="(equivalent data type for your database)" />
- *     <timestamp use="(equivalent data type for your database)" />
- *     <text      use="(equivalent data type for your database)" />
- *   </dataTypes>
+ * <dataStoreEngine class=
+ * "com.norconex.collector.core.store.impl.jdbc.JdbcDataStoreEngine">
+ * <!-- Hikari datasource configuration properties: -->
+ * <datasource>
+ * <property name="(property name)">(property value)</property>
+ * </datasource>
+ * <tablePrefix>
+ * (Optional prefix used for table creation. Default is the collector
+ * id plus the crawler id, each followed by an underscore character.)
+ * </tablePrefix>
+ * <!--
+ * Optionally overwrite default SQL data type used. You should only
+ * use if you get data type-related errors.
+ * -->
+ * <dataTypes>
+ * <varchar use="(equivalent data type for your database)" />
+ * <timestamp use="(equivalent data type for your database)" />
+ * <text use="(equivalent data type for your database)" />
+ * </dataTypes>
  * </dataStoreEngine>
  * }
  *
  * {@nx.xml.example
  * <dataStoreEngine class="JdbcDataStoreEngine">
- *   <datasource>
- *     <property name="jdbcUrl">jdbc:mysql://localhost:33060/sample</property>
- *     <property name="username">dbuser</property>
- *     <property name="password">dbpwd</property>
- *     <property name="connectionTimeout">1000</property>
- *   </datasource>
+ * <datasource>
+ * <property name="jdbcUrl">jdbc:mysql://localhost:33060/sample</property>
+ * <property name="username">dbuser</property>
+ * <property name="password">dbpwd</property>
+ * <property name="connectionTimeout">1000</property>
+ * </datasource>
  * </dataStoreEngine>
  * }
  * <p>
  * The above example contains basic settings for creating a MySQL data source.
  * </p>
+ * 
  * @author Pascal Essiembre
  */
 public class JdbcDataStoreEngine
         implements IDataStoreEngine, IXMLConfigurable {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(JdbcDataStoreEngine.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JdbcDataStoreEngine.class);
 
     private static final String STORE_TYPES_NAME = "_storetypes";
 
@@ -131,30 +133,39 @@ public class JdbcDataStoreEngine
     public Properties getConfigProperties() {
         return configProperties;
     }
+
     public void setConfigProperties(Properties configProperties) {
         this.configProperties = configProperties;
     }
+
     public String getTablePrefix() {
         return tablePrefix;
     }
+
     public void setTablePrefix(String tablePrefix) {
         this.tablePrefix = tablePrefix;
     }
+
     public String getVarcharType() {
         return varcharType;
     }
+
     public void setVarcharType(String varcharType) {
         this.varcharType = varcharType;
     }
+
     public String getTimestapType() {
         return timestapType;
     }
+
     public void setTimestapType(String timestapType) {
         this.timestapType = timestapType;
     }
+
     public String getTextType() {
         return textType;
     }
+
     public void setTextType(String textType) {
         this.textType = textType;
     }
@@ -181,9 +192,9 @@ public class JdbcDataStoreEngine
     private TableAdapter resolveTableAdapter() {
         return TableAdapter.detect(StringUtils.firstNonBlank(
                 datasource.getJdbcUrl(), datasource.getDriverClassName()))
-            .withIdType(varcharType)
-            .withModifiedType(timestapType)
-            .withJsonType(textType);
+                .withIdType(varcharType)
+                .withModifiedType(timestapType)
+                .withJsonType(textType);
     }
 
     @Override
@@ -260,7 +271,7 @@ public class JdbcDataStoreEngine
         Set<String> names = new HashSet<>();
         try (Connection conn = datasource.getConnection()) {
             try (ResultSet rs = conn.getMetaData().getTables(
-                    null, null, "%", new String[]{"TABLE"})) {
+                    null, null, "%", new String[] { "TABLE" })) {
                 while (rs.next()) {
                     String tableName = rs.getString(3);
                     if (startsWithIgnoreCase(tableName, tablePrefix)) {
@@ -342,6 +353,7 @@ public class JdbcDataStoreEngine
                     "Could not get database connection.", e);
         }
     }
+
     String tableName(String storeName) {
         String n = tablePrefix + storeName.trim();
         n = n.replaceFirst("(?i)^[^a-z]", "x");
@@ -352,7 +364,7 @@ public class JdbcDataStoreEngine
     boolean tableExist(String tableName) {
         try (Connection conn = datasource.getConnection()) {
             try (ResultSet rs = conn.getMetaData().getTables(
-                    null, null, "%", new String[]{"TABLE"})) {
+                    null, null, "%", new String[] { "TABLE" })) {
                 while (rs.next()) {
                     if (rs.getString(3).equalsIgnoreCase(tableName)) {
                         return true;

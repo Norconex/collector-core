@@ -17,6 +17,7 @@ package com.norconex.collector.core.stop;
 /**
  * Exception thrown when a problem occurred while trying to stop
  * a collector.
+ * 
  * @author Pascal Essiembre
  * @since 2.0.0
  */
@@ -24,12 +25,30 @@ public class CollectorStopperException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Constructor.
+     * 
+     * @param message error message
+     */
     public CollectorStopperException(final String message) {
         super(message);
     }
+
+    /**
+     * Constructor.
+     * 
+     * @param exception root cause
+     */
     public CollectorStopperException(final Throwable exception) {
         super(exception);
     }
+
+    /**
+     * Constructor.
+     * 
+     * @param message   error message
+     * @param exception root cause
+     */
     public CollectorStopperException(
             final String message, final Throwable exception) {
         super(message, exception);

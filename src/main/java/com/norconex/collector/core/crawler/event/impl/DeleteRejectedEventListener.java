@@ -41,7 +41,7 @@ import com.norconex.commons.lang.xml.XML;
  * encountered in a previous crawling session or not.
  * </p>
  *
- * <h3>Supported events</h3>
+ * <h2>Supported events</h2>
  * <p>
  * By default this listener will send deletion requests for all references
  * associated with a {@link CrawlerEvent} name starting with
@@ -52,7 +52,7 @@ import com.norconex.commons.lang.xml.XML;
  * Keep limiting events to "rejected" ones to avoid unexpected results.
  * </p>
  *
- * <h3>Deletion requests sent once</h3>
+ * <h2>Deletion requests sent once</h2>
  * <p>
  * This class tries to handles each reference for "rejected" events only once.
  * To do so it will queue all such references and wait until normal
@@ -63,7 +63,7 @@ import com.norconex.commons.lang.xml.XML;
  * reference.
  * </p>
  *
- * <h3>Only references</h3>
+ * <h2>Only references</h2>
  * <p>
  * Since several rejection events are triggered before document are processed,
  * we can't assume there is any metadata attached with rejected
@@ -73,17 +73,18 @@ import com.norconex.commons.lang.xml.XML;
  *
  * {@nx.xml.usage
  * <listener
- *     class="com.norconex.collector.core.crawler.event.impl.DeleteRejectedEventListener">
- *   <eventMatcher
- *     {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
- *       (event name-matching expression)
- *   </eventMatcher>
+ * class=
+ * "com.norconex.collector.core.crawler.event.impl.DeleteRejectedEventListener">
+ * <eventMatcher
+ * {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ * (event name-matching expression)
+ * </eventMatcher>
  * </listener>
  * }
  *
  * {@nx.xml.example
  * <listener class="DeleteRejectedEventListener">
- *   <eventMatcher method="csv">REJECTED_NOTFOUND,REJECTED_FILTER</eventMatcher>
+ * <eventMatcher method="csv">REJECTED_NOTFOUND,REJECTED_FILTER</eventMatcher>
  * </listener>
  * }
  * <p>
@@ -99,8 +100,7 @@ import com.norconex.commons.lang.xml.XML;
 public class DeleteRejectedEventListener
         implements IEventListener<Event>, IXMLConfigurable {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(DeleteRejectedEventListener.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DeleteRejectedEventListener.class);
 
     public static final String DEFAULT_FILENAME_PREFIX = "urlstatuses-";
 
@@ -114,14 +114,17 @@ public class DeleteRejectedEventListener
      * Gets the event matcher used to identify which events can trigger
      * a deletion request. Default is regular expression
      * <code>REJECTED_.*</code>.
+     * 
      * @return text matcher, never <code>null</code>
      */
     public TextMatcher getEventMatcher() {
         return eventMatcher;
     }
+
     /**
      * Sets the event matcher used to identify which events can trigger
      * a deletion request.
+     * 
      * @param eventMatcher event matcher
      */
     public void setEventMatcher(TextMatcher eventMatcher) {
@@ -159,6 +162,7 @@ public class DeleteRejectedEventListener
                 "rejected-refs", Boolean.class);
 
     }
+
     private void close(Crawler crawler) {
         if (refStore != null) {
             refStore.close();
@@ -213,6 +217,7 @@ public class DeleteRejectedEventListener
     public void loadFromXML(XML xml) {
         eventMatcher.loadFromXML(xml.getXML("eventMatcher"));
     }
+
     @Override
     public void saveToXML(XML xml) {
         eventMatcher.saveToXML(xml.addElement("eventMatcher"));
@@ -222,10 +227,12 @@ public class DeleteRejectedEventListener
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
     }
+
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
+
     @Override
     public String toString() {
         return new ReflectionToStringBuilder(this,

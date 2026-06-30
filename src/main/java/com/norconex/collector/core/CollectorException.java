@@ -17,24 +17,44 @@ package com.norconex.collector.core;
 /**
  * Runtime exception for most unrecoverable issues thrown by Collector
  * classes.
+ * 
  * @author Pascal Essiembre
  */
 public class CollectorException extends RuntimeException {
 
     private static final long serialVersionUID = -805913995358009121L;
 
+    /**
+     * Constructor.
+     */
     public CollectorException() {
         super();
     }
 
+    /**
+     * Constructor.
+     * 
+     * @param message error message
+     */
     public CollectorException(String message) {
         super(message);
     }
 
+    /**
+     * Constructor.
+     * 
+     * @param cause root cause
+     */
     public CollectorException(Throwable cause) {
         super(cause);
     }
 
+    /**
+     * Constructor.
+     * 
+     * @param message error message
+     * @param cause   root cause
+     */
     public CollectorException(String message, Throwable cause) {
         super(message, cause);
     }

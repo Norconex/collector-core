@@ -18,6 +18,7 @@ import com.norconex.commons.lang.event.IEventListener;
 
 /**
  * Collector event listener adapter for collector startup/shutdown.
+ * 
  * @author Pascal Essiembre
  * @since 2.0.0
  */
@@ -51,7 +52,7 @@ public class CollectorLifeCycleListener
     }
 
     protected void onCollectorEvent(CollectorEvent event) {
-        //NOOP
+        // NOOP
     }
 
     /**
@@ -59,30 +60,73 @@ public class CollectorLifeCycleListener
      * a {@link CollectorEvent#COLLECTOR_ERROR},
      * {@link CollectorEvent#COLLECTOR_RUN_END} or
      * {@link CollectorEvent#COLLECTOR_STOP_END} event.
+     * 
      * @param event collector event
      */
     protected void onCollectorShutdown(CollectorEvent event) {
-        //NOOP
+        // NOOP
     }
+
+    /**
+     * Triggered when a collector emits an error event.
+     * 
+     * @param event collector event
+     */
     protected void onCollectorError(CollectorEvent event) {
-        //NOOP
+        // NOOP
     }
+
+    /**
+     * Triggered when a collector run begins.
+     * 
+     * @param event collector event
+     */
     protected void onCollectorRunBegin(CollectorEvent event) {
-        //NOOP
+        // NOOP
     }
+
+    /**
+     * Triggered when a collector run ends.
+     * 
+     * @param event collector event
+     */
     protected void onCollectorRunEnd(CollectorEvent event) {
-        //NOOP
+        // NOOP
     }
+
+    /**
+     * Triggered when a collector stop begins.
+     * 
+     * @param event collector event
+     */
     protected void onCollectorStopBegin(CollectorEvent event) {
-        //NOOP
+        // NOOP
     }
+
+    /**
+     * Triggered when a collector stop ends.
+     * 
+     * @param event collector event
+     */
     protected void onCollectorStopEnd(CollectorEvent event) {
-        //NOOP
+        // NOOP
     }
+
+    /**
+     * Triggered when a collector clean begins.
+     * 
+     * @param event collector event
+     */
     protected void onCollectorCleanBegin(CollectorEvent event) {
-        //NOOP
+        // NOOP
     }
+
+    /**
+     * Triggered when a collector clean ends.
+     * 
+     * @param event collector event
+     */
     protected void onCollectorCleanEnd(CollectorEvent event) {
-        //NOOP
+        // NOOP
     }
 }
