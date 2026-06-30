@@ -13,27 +13,23 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>com.norconex.commons</groupId>
-    <artifactId>norconex-commons-maven-parent</artifactId>
-    <version>1.2.0</version>
-  </parent>  
-  <groupId>com.norconex.collectors</groupId>
+    <groupId>com.norconex.collectors.v3</groupId>
+    <artifactId>norconex-collector-parent</artifactId>
+    <version>3.2.0-SNAPSHOT</version>
+  </parent>
+  <groupId>com.norconex.collectors.v3</groupId>
   <artifactId>norconex-collector-core</artifactId>
-  <version>2.2.0-SNAPSHOT</version>
+  <version>3.2.0-SNAPSHOT</version>
   <name>Norconex Collector Core</name>
-
   <properties>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
-    <java.version>17</java.version>    
-  
-    <norconex-committer-core.version>3.0.0</norconex-committer-core.version>
+    <java.version>17</java.version>
+    <norconex-committer-core.version>3.2.0-SNAPSHOT</norconex-committer-core.version>
     <norconex-importer.version>3.2.0-SNAPSHOT</norconex-importer.version>
-  
     <commons-compress.version>1.26.0</commons-compress.version>
     <cxf.version>3.4.5</cxf.version>
     <gson.version>2.13.2</gson.version>
@@ -43,9 +39,7 @@
     <jsoup.version>1.21.1</jsoup.version>
     <mongodb.version>4.11.5</mongodb.version>
   </properties>
-
   <inceptionYear>2014</inceptionYear>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -75,11 +69,9 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
   <dependencies>
-
     <dependency>
-      <groupId>com.norconex.collectors</groupId>
+      <groupId>com.norconex.collectors.v3</groupId>
       <artifactId>norconex-importer</artifactId>
       <version>${norconex-importer.version}</version>
       <exclusions>
@@ -90,17 +82,16 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.norconex.collectors</groupId>
+      <groupId>com.norconex.collectors.v3</groupId>
       <artifactId>norconex-committer-core</artifactId>
       <version>${norconex-committer-core.version}</version>
     </dependency>
-
     <!-- Databases for crawl store -->
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2-mvstore</artifactId>
       <version>${h2.version}</version>
-    </dependency>    
+    </dependency>
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongodb-driver-sync</artifactId>
@@ -116,8 +107,7 @@
       <artifactId>h2</artifactId>
       <version>${h2.version}</version>
       <!-- <scope>test</scope> -->
-    </dependency>        
-    
+    </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
@@ -126,18 +116,15 @@
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jdk8</artifactId>
     </dependency>
-    
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
     </dependency>
-    
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <version>${gson.version}</version>
     </dependency>
-
     <!-- Tests and provided. -->
     <dependency>
       <groupId>com.norconex.commons</groupId>
@@ -152,7 +139,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
@@ -184,7 +170,6 @@
       <artifactId>testcontainers-junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
-    
     <!-- Included as test due to incompatible license -->
     <dependency>
       <groupId>com.github.jai-imageio</groupId>
@@ -192,16 +177,13 @@
       <version>1.4.0</version>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
-
   <build>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
       </plugin>
-     
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
@@ -213,29 +195,24 @@
             <option>-Xdoclint:none</option>
           </options>
         </configuration>
-      </plugin>      
-
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
       </plugin>
-    
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
       </plugin>
-      
       <!--  Use VM argument -Dgpg.skip=true to disable GPG signing. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
       </plugin>
-
       <plugin>
         <groupId>org.sonatype.central</groupId>
         <artifactId>central-publishing-maven-plugin</artifactId>
       </plugin>
-      
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -258,14 +235,12 @@
       </plugin>
     </plugins>
   </build>
-
   <distributionManagement>
     <site>
       <id>norconex-site-deployment</id>
       <url>${site.baseurl}/crawlers/core/v2</url>
     </site>
   </distributionManagement>
-
   <url>https://opensource.norconex.com/crawlers/core</url>
   <description>Norconex Collector Core contains core functionalities shared between collectors.</description>
   <issueManagement>
@@ -277,5 +252,4 @@
     <connection>scm:git:git@github.com:Norconex/collector-core.git</connection>
     <developerConnection>scm:git:git@github.com:Norconex/collector-core.git</developerConnection>
   </scm>
-
 </project>
