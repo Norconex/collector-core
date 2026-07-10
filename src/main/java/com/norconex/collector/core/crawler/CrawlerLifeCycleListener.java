@@ -14,87 +14,102 @@
  */
 package com.norconex.collector.core.crawler;
 
+import com.norconex.commons.lang.event.Event;
 import com.norconex.commons.lang.event.IEventListener;
 
 /**
  * Listener adapter for crawler events.
+ * 
  * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class CrawlerLifeCycleListener
-        implements IEventListener<CrawlerEvent/*  */> {
+        implements IEventListener<Event> {
 
     @Override
-    public final void accept(CrawlerEvent event) {
-        if (event == null) {
+    public final void accept(Event event) {
+        if (!(event instanceof CrawlerEvent)) {
             return;
         }
-        onCrawlerEvent(event);
-        if (event.is(CrawlerEvent.CRAWLER_INIT_BEGIN)) {
-            onCrawlerInitBegin(event);
-        } else if (event.is(CrawlerEvent.CRAWLER_INIT_END)) {
-            onCrawlerInitEnd(event);
-        } else if (event.is(CrawlerEvent.CRAWLER_RUN_BEGIN)) {
-            onCrawlerRunBegin(event);
-        } else if (event.is(CrawlerEvent.CRAWLER_RUN_END)) {
-            onCrawlerRunEnd(event);
-            onCrawlerShutdown(event);
-        } else if (event.is(CrawlerEvent.CRAWLER_RUN_THREAD_BEGIN)) {
-            onCrawlerRunThreadBegin(event);
-        } else if (event.is(CrawlerEvent.CRAWLER_RUN_THREAD_END)) {
-            onCrawlerRunThreadEnd(event);
-        } else if (event.is(CrawlerEvent.CRAWLER_STOP_BEGIN)) {
-            onCrawlerStopBegin(event);
-        } else if (event.is(CrawlerEvent.CRAWLER_STOP_END)) {
-            onCrawlerStopEnd(event);
-            onCrawlerShutdown(event);
-        } else if (event.is(CrawlerEvent.CRAWLER_CLEAN_BEGIN)) {
-            onCrawlerCleanBegin(event);
-        } else if (event.is(CrawlerEvent.CRAWLER_CLEAN_END)) {
-            onCrawlerCleanEnd(event);
+        var crawlerEvent = (CrawlerEvent) event;
+        onCrawlerEvent(crawlerEvent);
+        if (crawlerEvent.is(CrawlerEvent.CRAWLER_INIT_BEGIN)) {
+            onCrawlerInitBegin(crawlerEvent);
+        } else if (crawlerEvent.is(CrawlerEvent.CRAWLER_INIT_END)) {
+            onCrawlerInitEnd(crawlerEvent);
+        } else if (crawlerEvent.is(CrawlerEvent.CRAWLER_RUN_BEGIN)) {
+            onCrawlerRunBegin(crawlerEvent);
+        } else if (crawlerEvent.is(CrawlerEvent.CRAWLER_RUN_END)) {
+            onCrawlerRunEnd(crawlerEvent);
+            onCrawlerShutdown(crawlerEvent);
+        } else if (crawlerEvent.is(CrawlerEvent.CRAWLER_RUN_THREAD_BEGIN)) {
+            onCrawlerRunThreadBegin(crawlerEvent);
+        } else if (crawlerEvent.is(CrawlerEvent.CRAWLER_RUN_THREAD_END)) {
+            onCrawlerRunThreadEnd(crawlerEvent);
+        } else if (crawlerEvent.is(CrawlerEvent.CRAWLER_STOP_BEGIN)) {
+            onCrawlerStopBegin(crawlerEvent);
+        } else if (crawlerEvent.is(CrawlerEvent.CRAWLER_STOP_END)) {
+            onCrawlerStopEnd(crawlerEvent);
+            onCrawlerShutdown(crawlerEvent);
+        } else if (crawlerEvent.is(CrawlerEvent.CRAWLER_CLEAN_BEGIN)) {
+            onCrawlerCleanBegin(crawlerEvent);
+        } else if (crawlerEvent.is(CrawlerEvent.CRAWLER_CLEAN_END)) {
+            onCrawlerCleanEnd(crawlerEvent);
         }
     }
 
     protected void onCrawlerEvent(CrawlerEvent event) {
-        //NOOP
+        // NOOP
     }
+
     /**
      * Triggered when a crawler is ending its execution on either
      * a {@link CrawlerEvent#CRAWLER_RUN_END} or
      * {@link CrawlerEvent#CRAWLER_STOP_END} event.
+     * 
      * @param event crawler event
      */
     protected void onCrawlerShutdown(CrawlerEvent event) {
-        //NOOP
+        // NOOP
     }
+
     protected void onCrawlerInitBegin(CrawlerEvent event) {
-        //NOOP
+        // NOOP
     }
+
     protected void onCrawlerInitEnd(CrawlerEvent event) {
-        //NOOP
+        // NOOP
     }
+
     protected void onCrawlerRunBegin(CrawlerEvent event) {
-        //NOOP
+        // NOOP
     }
+
     protected void onCrawlerRunEnd(CrawlerEvent event) {
-        //NOOP
+        // NOOP
     }
+
     protected void onCrawlerRunThreadBegin(CrawlerEvent event) {
-        //NOOP
+        // NOOP
     }
+
     protected void onCrawlerRunThreadEnd(CrawlerEvent event) {
-        //NOOP
+        // NOOP
     }
+
     protected void onCrawlerStopBegin(CrawlerEvent event) {
-        //NOOP
+        // NOOP
     }
+
     protected void onCrawlerStopEnd(CrawlerEvent event) {
-        //NOOP
+        // NOOP
     }
+
     protected void onCrawlerCleanBegin(CrawlerEvent event) {
-        //NOOP
+        // NOOP
     }
+
     protected void onCrawlerCleanEnd(CrawlerEvent event) {
-        //NOOP
+        // NOOP
     }
 }
